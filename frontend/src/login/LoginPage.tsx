@@ -9,6 +9,7 @@ import {
   Heading,
   Icon,
   Circle,
+  Text,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
 
@@ -17,15 +18,50 @@ interface LoginFormData {
   password: string;
 }
 
-const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  onLoginSuccess: (token: string) => void;
+}
+
+const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log(formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      localStorage.setItem('token', data.token);
+      onLoginSuccess(data.token);
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +81,8 @@ const LoginPage: React.FC = () => {
         <Heading as="h1" size="lg">
           Sign in
         </Heading>
+
+        {error && <Text color="red.500">{error}</Text>}
 
         <Box as="form" w="100%" onSubmit={handleSubmit}>
           <VStack spacing={4}>
@@ -71,7 +109,7 @@ const LoginPage: React.FC = () => {
               />
             </FormControl>
 
-            <Button type="submit" colorScheme="purple" width="100%" mt={4}>
+            <Button type="submit" colorScheme="purple" width="100%" mt={4} isLoading={loading}>
               Sign In
             </Button>
           </VStack>
