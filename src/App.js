@@ -13,22 +13,22 @@ function App() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email: email.trim(),
-          password: password.trim()
-        })
+          password: password.trim(),
+        }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Login failed');
       }
@@ -48,9 +48,9 @@ function App() {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/children`, {
         headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${currentToken}`
-        }
+          Accept: 'application/json',
+          Authorization: `Bearer ${currentToken}`,
+        },
       });
 
       if (!response.ok) {
@@ -84,12 +84,7 @@ function App() {
         <form onSubmit={handleLogin}>
           <div>
             <label>Email:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
             <label>Heslo:</label>
@@ -133,7 +128,7 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {children.map(child => (
+            {children.map((child) => (
               <tr key={child.id}>
                 <td>{child.name}</td>
                 <td>{child.age}</td>

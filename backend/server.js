@@ -9,7 +9,6 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// Middleware setup
 app.use(cors());
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -30,16 +29,19 @@ const initDatabase = async () => {
     console.log('Database tables verified successfully');
   } catch (err) {
     console.error('Database verification error:', err);
-    throw new Error('Required database tables do not exist. Please ensure the database is properly initialized.');
+    throw new Error(
+      'Required database tables do not exist. Please ensure the database is properly initialized.'
+    );
   }
 };
 
-pool.connect()
+pool
+  .connect()
   .then(() => {
     console.log('Database connected successfully');
     return initDatabase();
   })
-  .catch(err => {
+  .catch((err) => {
     console.error('Database setup error:', err);
     process.exit(1);
   });
@@ -73,27 +75,25 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const result = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
-    
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     // Compare with stored hash
-    const validPassword = (result.rows[0].password === '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG');
-    
+    const validPassword =
+      result.rows[0].password === '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG';
+
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
-      { 
+      {
         id: result.rows[0].id,
         email: result.rows[0].email,
-        role: result.rows[0].role 
+        role: result.rows[0].role,
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
@@ -119,7 +119,7 @@ app.get('/api/children', authenticateToken, async (req, res) => {
       FROM children 
       ORDER BY name ASC
     `);
-    
+
     if (result.rows.length === 0) {
       return res.json([]);
     }
@@ -127,9 +127,9 @@ app.get('/api/children', authenticateToken, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Database query error:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch children',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }
 });
@@ -142,10 +142,12 @@ app.use((req, res) => {
 // Error handling middleware should be last
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
-    details: process.env.DEBUG === 'true' ? err.message : undefined
+    details: process.env.DEBUG === 'true' ? err.message : undefined,
   });
 });
 
-app.listen(process.env.PORT || 5000, () => console.log(`Server running on port ${process.env.PORT || 5000}`));
+app.listen(process.env.PORT || 5000, () =>
+  console.log(`Server running on port ${process.env.PORT || 5000}`)
+);
