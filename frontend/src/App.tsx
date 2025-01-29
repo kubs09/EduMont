@@ -7,7 +7,12 @@ import LoginPage from './login/LoginPage';
 import Dashboard from './childern-dashboard/pages/Dashboard';
 
 function App(): React.ReactElement {
-  const isAuthenticated = !!localStorage.getItem('token');
+  const [isAuthenticated, setIsAuthenticated] = React.useState(!!localStorage.getItem('token'));
+
+  const handleLoginSuccess = (token: string) => {
+    setIsAuthenticated(true);
+    window.location.href = '/dashboard';
+  };
 
   return (
     <React.StrictMode>
@@ -18,11 +23,11 @@ function App(): React.ReactElement {
               <Route
                 path="/login"
                 element={
-                  <LoginPage
-                    onLoginSuccess={function (token: string): void {
-                      throw new Error('Function not implemented.');
-                    }}
-                  />
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <LoginPage onLoginSuccess={handleLoginSuccess} />
+                  )
                 }
               />
             </Route>

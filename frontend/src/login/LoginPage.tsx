@@ -12,6 +12,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
+import { login } from '../services/api';
 
 interface LoginFormData {
   email: string;
@@ -36,29 +37,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          password: formData.password.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-
-      localStorage.setItem('token', data.token);
-      onLoginSuccess(data.token);
+      const { token } = await login(formData.email.trim(), formData.password.trim());
+      localStorage.setItem('token', token);
+      onLoginSuccess(token);
     } catch (err) {
       console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to connect to the server. Please try again later.'
+      );
     } finally {
       setLoading(false);
     }
