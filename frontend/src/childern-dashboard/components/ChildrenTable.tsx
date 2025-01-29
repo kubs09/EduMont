@@ -5,7 +5,9 @@ interface Child {
   id: number;
   name: string;
   age: number;
-  class: string;
+  parent_name: string;
+  contact: string;
+  notes: string;
 }
 
 interface ChildrenTableProps {
@@ -27,9 +29,11 @@ const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) 
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Name</Th>
-            <Th>Age</Th>
-            <Th>Class</Th>
+            <Th>Jméno</Th>
+            <Th>Věk</Th>
+            <Th>Rodič</Th>
+            <Th>Kontakt na rodiče</Th>
+            <Th>Poznámka</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -37,7 +41,9 @@ const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) 
             <Tr key={child.id}>
               <Td>{child.name}</Td>
               <Td>{child.age}</Td>
-              <Td>{child.class}</Td>
+              <Td>{child.parent_name}</Td>
+              <Td>{child.contact}</Td>
+              <Td>{child.notes}</Td>
             </Tr>
           ))}
         </Tbody>

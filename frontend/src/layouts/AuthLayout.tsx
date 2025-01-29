@@ -23,7 +23,7 @@ const AuthLayout = () => {
         justify="space-between"
         align="center"
       >
-        <Heading size="lg">Montessori školka - Správa dětí</Heading>
+        <Heading size="2xl">EduMont</Heading>
         <Button onClick={handleLogout}>Odhlásit se</Button>
       </Flex>
       <Box p={4}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardHeader, CardBody } from '@chakra-ui/react';
+import { Box, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react';
 import ChildrenTable from '../components/ChildrenTable';
 import api from '../../services/api';
 
@@ -7,7 +7,6 @@ interface Child {
   id: number;
   name: string;
   age: number;
-  class: string;
   parent_name: string;
   contact: string;
   notes: string;
@@ -20,7 +19,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchChildren = async () => {
       try {
-        const response = await api.get('/children');
+        const response = await api.get('/api/children');
         setChildren(response.data);
         setLoading(false);
       } catch (error) {
@@ -35,7 +34,9 @@ const Dashboard: React.FC = () => {
   return (
     <Box p={6}>
       <Card>
-        <CardHeader>Children Overview</CardHeader>
+        <CardHeader>
+          <Heading>Naši školáci</Heading>
+        </CardHeader>
         <CardBody>
           <ChildrenTable data={children} loading={loading} />
         </CardBody>

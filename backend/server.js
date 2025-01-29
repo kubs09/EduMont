@@ -9,9 +9,15 @@ const { Pool } = require('pg');
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+const PORT = process.env.PORT || 5000;
 
 const pool = new Pool({
   user: process.env.POSTGRES_USER,
@@ -71,11 +77,14 @@ app.use((err, req, res, next) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Login attempt for email:', email); // Add logging
+
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    console.log('Database response:', result.rows.length > 0 ? 'User found' : 'User not found');
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -102,7 +111,7 @@ app.post('/api/login', async (req, res) => {
     res.json({ token });
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: 'Login failed', details: err.message });
   }
 });
 
