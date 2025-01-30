@@ -3,6 +3,7 @@ import { ROUTES } from './shared/route';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
 import LoginPage from './login/LoginPage';
+import HomePage from './home/HomePage';
 import Dashboard from './children-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
@@ -28,6 +29,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
     <RouterRoutes>
       {/* Public routes */}
       <Route element={<PublicLayout />}>
+        <Route path={ROUTES.HOME} element={<HomePage />} />
         <Route
           path={ROUTES.LOGIN}
           element={

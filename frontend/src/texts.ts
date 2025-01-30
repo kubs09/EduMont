@@ -223,4 +223,66 @@ export const texts = {
       },
     },
   },
+  home: {
+    hero: {
+      title: {
+        cs: 'Vzdělávací platforma EduMont',
+        en: 'EduMont Learning Platform',
+      },
+      subtitle: {
+        cs: 'Podporujeme studenty a učitele prostřednictvím inovativního vzdělávání',
+        en: 'Empowering students and teachers through innovative education',
+      },
+      getStarted: {
+        cs: 'Začít',
+        en: 'Get Started',
+      },
+    },
+    features: {
+      qualityEducation: {
+        title: {
+          cs: 'Kvalitní vzdělávání',
+          en: 'Quality Education',
+        },
+        description: {
+          cs: 'Komplexní vzdělávací programy navržené pro úspěch studentů',
+          en: 'Comprehensive learning programs designed for student success',
+        },
+      },
+      expertTeachers: {
+        title: {
+          cs: 'Zkušení učitelé',
+          en: 'Expert Teachers',
+        },
+        description: {
+          cs: 'Učte se od zkušených a oddaných pedagogických profesionálů',
+          en: 'Learn from experienced and dedicated teaching professionals',
+        },
+      },
+      interactiveLearning: {
+        title: {
+          cs: 'Interaktivní výuka',
+          en: 'Interactive Learning',
+        },
+        description: {
+          cs: 'Zapojte se do společného a interaktivního vzdělávání',
+          en: 'Engage in collaborative and interactive learning experiences',
+        },
+      },
+    },
+    cta: {
+      title: {
+        cs: 'Připraveni začít se učit?',
+        en: 'Ready to Start Learning?',
+      },
+      subtitle: {
+        cs: 'Připojte se k naší vzdělávací komunitě ještě dnes',
+        en: 'Join our community of learners today',
+      },
+      button: {
+        cs: 'Registrujte se nyní',
+        en: 'Sign Up Now',
+      },
+    },
+  },
 };
