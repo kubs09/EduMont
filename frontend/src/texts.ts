@@ -226,47 +226,47 @@ export const texts = {
   home: {
     hero: {
       title: {
-        cs: 'Vzdělávací platforma EduMont',
-        en: 'EduMont Learning Platform',
+        cs: 'EduMont - Montessori Vzdělávací Platforma',
+        en: 'EduMont - Montessori Education Platform',
       },
       subtitle: {
-        cs: 'Podporujeme studenty a učitele prostřednictvím inovativního vzdělávání',
-        en: 'Empowering students and teachers through innovative education',
+        cs: 'Propojujeme rodiče, učitele a děti v duchu Montessori vzdělávání',
+        en: 'Connecting parents, teachers, and children in the spirit of Montessori education',
       },
       getStarted: {
-        cs: 'Začít',
-        en: 'Get Started',
+        cs: 'Připojit se',
+        en: 'Join Us',
       },
     },
     features: {
       qualityEducation: {
         title: {
-          cs: 'Kvalitní vzdělávání',
-          en: 'Quality Education',
+          cs: 'Montessori Přístup',
+          en: 'Montessori Approach',
         },
         description: {
-          cs: 'Komplexní vzdělávací programy navržené pro úspěch studentů',
-          en: 'Comprehensive learning programs designed for student success',
+          cs: 'Respektujeme individuální tempo a potřeby každého dítěte',
+          en: 'Respecting individual pace and needs of each child',
         },
       },
       expertTeachers: {
         title: {
-          cs: 'Zkušení učitelé',
-          en: 'Expert Teachers',
+          cs: 'Aktivní Komunikace',
+          en: 'Active Communication',
         },
         description: {
-          cs: 'Učte se od zkušených a oddaných pedagogických profesionálů',
-          en: 'Learn from experienced and dedicated teaching professionals',
+          cs: 'Pravidelné sdílení pokroku a aktivit vašeho dítěte',
+          en: "Regular updates on your child's progress and activities",
         },
       },
       interactiveLearning: {
         title: {
-          cs: 'Interaktivní výuka',
-          en: 'Interactive Learning',
+          cs: 'Připravené Prostředí',
+          en: 'Prepared Environment',
         },
         description: {
-          cs: 'Zapojte se do společného a interaktivního vzdělávání',
-          en: 'Engage in collaborative and interactive learning experiences',
+          cs: 'Sledujte rozvoj dítěte v pečlivě připraveném Montessori prostředí',
+          en: "Track your child's development in carefully prepared Montessori environment",
         },
       },
     },
@@ -283,6 +283,28 @@ export const texts = {
         cs: 'Registrujte se nyní',
         en: 'Sign Up Now',
       },
+    },
+  },
+  communication: {
+    title: {
+      cs: 'Komunikace',
+      en: 'Communication',
+    },
+    messages: {
+      cs: 'Zprávy',
+      en: 'Messages',
+    },
+    progress: {
+      cs: 'Pokrok dítěte',
+      en: "Child's Progress",
+    },
+    activities: {
+      cs: 'Denní aktivity',
+      en: 'Daily Activities',
+    },
+    newMessage: {
+      cs: 'Nová zpráva',
+      en: 'New Message',
     },
   },
 };

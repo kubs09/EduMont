@@ -3,9 +3,19 @@ import { extendTheme } from '@chakra-ui/react';
 const colors = {
   brand: {
     primary: {
-      900: '#1A365D', // matches Chakra's blue.900
-      800: '#2A4365', // matches Chakra's blue.800
-      700: '#2C5282', // matches Chakra's blue.700
+      900: '#557A95', // Calm blue
+      800: '#7A8B99',
+      700: '#89A1B5',
+    },
+    secondary: {
+      900: '#BE8A60', // Warm earth tone
+      800: '#C99B76',
+      700: '#D4AC8B',
+    },
+    accent: {
+      900: '#8E9B6C', // Sage green
+      800: '#A1AC82',
+      700: '#B4BD98',
     },
   },
 };
@@ -25,9 +35,23 @@ const theme = extendTheme({
           bg: 'brand.primary.900',
           color: 'white',
           _hover: {
-            bg: 'black',
+            bg: 'brand.primary.800',
           },
         },
+        secondary: {
+          bg: 'brand.secondary.900',
+          color: 'white',
+          _hover: {
+            bg: 'brand.secondary.800',
+          },
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
+        bg: '#FAF9F6', // Soft off-white background
       },
     },
   },
