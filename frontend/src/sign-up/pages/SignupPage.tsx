@@ -7,41 +7,28 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../shared/route';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { SignupSchema, createSignupSchema } from '../schema';
 
 const SignupPage = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const toast = useToast();
 
-  const signupSchema = z
-    .object({
-      email: z.string().email(texts.auth.signUp.validation.invalidEmail[language]),
-      password: z.string().min(8, texts.auth.signUp.validation.passwordLength[language]),
-      confirmPassword: z.string(),
-      firstName: z.string().min(2, texts.auth.signUp.validation.firstNameRequired[language]),
-      lastName: z.string().min(2, texts.auth.signUp.validation.lastNameRequired[language]),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: texts.auth.signUp.validation.passwordsMatch[language],
-      path: ['confirmPassword'],
-    });
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof signupSchema>>({
-    resolver: zodResolver(signupSchema),
+  } = useForm<SignupSchema>({
+    resolver: zodResolver(createSignupSchema(language)),
   });
 
-  const onSubmit = async (data: z.infer<typeof signupSchema>) => {
+  const onSubmit = async (data: SignupSchema) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/signup`, {
         method: 'POST',

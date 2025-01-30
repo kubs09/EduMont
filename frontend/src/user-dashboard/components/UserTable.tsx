@@ -62,7 +62,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
             <Tr key={user.id}>
               <Td>{`${user.firstname} ${user.surname}`}</Td>
               <Td>{user.email}</Td>
-              <Td>{user.role}</Td>
+              <Td>{texts.userTable.roles[user.role][language]}</Td>
             </Tr>
           ))}
         </Tbody>

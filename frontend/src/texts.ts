@@ -208,5 +208,19 @@ export const texts = {
       cs: 'Role',
       en: 'Role',
     },
+    roles: {
+      admin: {
+        cs: 'Administrátor',
+        en: 'Administrator',
+      },
+      teacher: {
+        cs: 'Učitel',
+        en: 'Teacher',
+      },
+      parent: {
+        cs: 'Rodič',
+        en: 'Parent',
+      },
+    },
   },
 };

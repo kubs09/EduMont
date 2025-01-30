@@ -3,7 +3,7 @@ import { ROUTES } from './shared/route';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
 import LoginPage from './login/LoginPage';
-import Dashboard from './childern-dashboard/pages/Dashboard';
+import Dashboard from './children-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
 import SignupPage from './sign-up/pages/SignupPage';
