@@ -60,7 +60,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   return (
     <Container maxW="md">
       <VStack spacing={8} mt={20}>
-        <Circle size="40px" bg="purple.500" color="white">
+        <Circle size="40px" bg="brand.primary.900" color="white">
           <Icon as={LockIcon} />
         </Circle>
 
@@ -90,7 +90,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
             </FormControl>
 
-            <Button type="submit" colorScheme="purple" width="100%" mt={4} isLoading={loading}>
+            <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
               {texts.auth.signIn.submitButton[language]}
             </Button>
           </VStack>

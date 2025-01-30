@@ -3,9 +3,9 @@ import { extendTheme } from '@chakra-ui/react';
 const colors = {
   brand: {
     primary: {
-      900: '#1a365d', // dark blue
-      800: '#2a4365',
-      700: '#2c5282',
+      900: '#1A365D', // matches Chakra's blue.900
+      800: '#2A4365', // matches Chakra's blue.800
+      700: '#2C5282', // matches Chakra's blue.700
     },
   },
 };
@@ -17,6 +17,17 @@ const theme = extendTheme({
       baseStyle: {
         bg: 'brand.primary.900',
         color: 'white',
+      },
+    },
+    Button: {
+      variants: {
+        brand: {
+          bg: 'brand.primary.900',
+          color: 'white',
+          _hover: {
+            bg: 'black',
+          },
+        },
       },
     },
   },
