@@ -37,7 +37,8 @@ class ApiError extends Error {
 
 interface LoginResponse {
   token: string;
-  name: string;
+  firstname: string;
+  surname: string;
   role: string;
 }
 

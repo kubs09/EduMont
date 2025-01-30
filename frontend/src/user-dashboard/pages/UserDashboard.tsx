@@ -8,7 +8,8 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 interface User {
   id: number;
   email: string;
-  name: string;
+  firstname: string;
+  surname: string;
   role: 'admin' | 'teacher' | 'parent';
 }
 

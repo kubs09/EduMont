@@ -5,8 +5,9 @@ import { texts } from '../../texts';
 
 interface Child {
   id: number;
-  name: string;
-  age: number;
+  firstname: string;
+  surname: string;
+  date_of_birth: string;
   parent_name: string;
   contact: string;
   notes: string;
@@ -16,6 +17,18 @@ interface ChildrenTableProps {
   data: Child[];
   loading?: boolean;
 }
+
+// Helper function to calculate age
+const calculateAge = (dateOfBirth: string) => {
+  const birthDate = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
 
 const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) => {
   const { language } = useLanguage();
@@ -33,7 +46,8 @@ const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) 
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>{texts.childrenTable.name[language]}</Th>
+            <Th>{texts.childrenTable.firstname[language]}</Th>
+            <Th>{texts.childrenTable.surname[language]}</Th>
             <Th>{texts.childrenTable.age[language]}</Th>
             <Th>{texts.childrenTable.parent[language]}</Th>
             <Th>{texts.childrenTable.contact[language]}</Th>
@@ -43,8 +57,9 @@ const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) 
         <Tbody>
           {data.map((child) => (
             <Tr key={child.id}>
-              <Td>{child.name}</Td>
-              <Td>{child.age}</Td>
+              <Td>{child.firstname}</Td>
+              <Td>{child.surname}</Td>
+              <Td>{calculateAge(child.date_of_birth)}</Td>
               <Td>{child.parent_name}</Td>
               <Td>{child.contact}</Td>
               <Td>{child.notes}</Td>

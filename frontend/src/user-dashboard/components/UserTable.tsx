@@ -17,7 +17,8 @@ import { texts } from '../../texts';
 interface User {
   id: number;
   email: string;
-  name: string;
+  firstname: string;
+  surname: string;
   role: 'admin' | 'teacher' | 'parent';
 }
 
@@ -59,7 +60,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
         <Tbody>
           {data.map((user) => (
             <Tr key={user.id}>
-              <Td>{user.name}</Td>
+              <Td>{`${user.firstname} ${user.surname}`}</Td>
               <Td>{user.email}</Td>
               <Td>{user.role}</Td>
             </Tr>

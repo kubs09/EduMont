@@ -3,26 +3,27 @@ CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
-    name VARCHAR(100) NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     role user_role NOT NULL
 );
 
 CREATE TABLE children (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    age INTEGER NOT NULL,
+    firstname VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
+    date_of_birth DATE NOT NULL,
     parent_name VARCHAR(100) NOT NULL,
     contact VARCHAR(50) NOT NULL,
     notes TEXT
 );
 
-INSERT INTO users (email, name, password, role) VALUES
-('admin@example.com', 'Admin Admin', '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG', 'admin')
+INSERT INTO users (email, firstname, surname, password, role) VALUES
+('admin@example.com', 'Admin', 'Admin', '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG', 'admin')
 ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO children (name, age, parent_name, contact, notes) VALUES
-('Jakub Novák', 5, 'Petr Novák', 'petr.novak@example.com', 'Alergie na ořechy'),
-('Ema Dvořáková', 4, 'Lucie Dvořáková', 'lucie.dvorakova@example.com', 'Bez speciálních požadavků'),
-('Tereza Svobodová', 6, 'Karel Svoboda', 'karel.svoboda@example.com', 'Vegetariánská strava'),
-('Tereza Svobodová', 6, 'Karel Svoboda', 'karel.svoboda@example.com', 'Vsaddsa')
+INSERT INTO children (firstname, surname, date_of_birth, parent_name, contact, notes) VALUES
+('Jakub', 'Novák', '2018-01-01', 'Petr Novák', 'petr.novak@example.com', 'Alergie na ořechy'),
+('Ema', 'Dvořáková', '2019-01-01', 'Lucie Dvořáková', 'lucie.dvorakova@example.com', 'Bez speciálních požadavků'),
+('Tereza', 'Svobodová', '2017-01-01', 'Karel Svoboda', 'karel.svoboda@example.com', 'Vegetariánská strava');

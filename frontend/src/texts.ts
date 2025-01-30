@@ -76,9 +76,13 @@ export const texts = {
     },
   },
   childrenTable: {
-    name: {
+    firstname: {
       cs: 'Jméno',
-      en: 'Name',
+      en: 'First Name',
+    },
+    surname: {
+      cs: 'Příjmení',
+      en: 'Surname',
     },
     age: {
       cs: 'Věk',

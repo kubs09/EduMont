@@ -7,8 +7,9 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 
 interface Child {
   id: number;
-  name: string;
-  age: number;
+  firstname: string;
+  surname: string;
+  date_of_birth: string;
   parent_name: string;
   contact: string;
   notes: string;

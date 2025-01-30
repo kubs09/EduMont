@@ -9,13 +9,14 @@ router.get('/', authenticateToken, async (req, res) => {
     const result = await pool.query(`
       SELECT 
         id, 
-        name, 
-        age,
+        firstname,
+        surname, 
+        date_of_birth,
         parent_name,
         contact,
         notes
       FROM children 
-      ORDER BY name ASC
+      ORDER BY surname ASC
     `);
 
     if (result.rows.length === 0) {
