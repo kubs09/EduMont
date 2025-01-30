@@ -1,8 +1,3 @@
-type TextKey = {
-  cs: string;
-  en: string;
-};
-
 export const texts = {
   auth: {
     signIn: {
@@ -25,6 +20,22 @@ export const texts = {
       serverError: {
         cs: 'Nepodařilo se připojit k serveru. Zkuste to prosím později.',
         en: 'Unable to connect to the server. Please try again later.',
+      },
+      emailRequired: {
+        cs: 'Emailová adresa je povinná',
+        en: 'Email address is required',
+      },
+      passwordRequired: {
+        cs: 'Heslo je povinné',
+        en: 'Password is required',
+      },
+      invalidEmail: {
+        cs: 'Prosím zadejte platnou emailovou adresu',
+        en: 'Please enter a valid email address',
+      },
+      invalidCredentials: {
+        cs: 'Nesprávný email nebo heslo',
+        en: 'Invalid email or password',
       },
     },
     login: {

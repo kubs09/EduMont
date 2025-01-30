@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Box,
   Button,
   Container,
   FormControl,
+  FormErrorMessage,
   Input,
   VStack,
   Heading,
@@ -15,11 +18,7 @@ import { LockIcon } from '@chakra-ui/icons';
 import { login } from '../services/api';
 import { texts } from '../texts';
 import { useLanguage } from '../contexts/LanguageContext';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { createLoginSchema, LoginFormData } from './schema';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string) => void;
@@ -27,39 +26,35 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const { language } = useLanguage();
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(createLoginSchema(language)),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     setError(null);
 
     try {
-      const { token } = await login(formData.email.trim(), formData.password.trim());
+      const { token } = await login(data.email.trim(), data.password.trim());
       localStorage.setItem('token', token);
       onLoginSuccess(token);
     } catch (err) {
-      console.error('Login error:', err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to connect to the server. Please try again later.'
-      );
+      const error = err as { status?: number };
+      if (error && error.status === 401) {
+        setError(texts.auth.signIn.invalidCredentials[language]);
+      } else {
+        setError(texts.auth.signIn.serverError[language]);
+      }
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
   };
 
   return (
@@ -73,31 +68,26 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           {texts.auth.signIn.title[language]}
         </Heading>
 
-        {error && <Text color="red.500">{texts.auth.signIn.serverError[language]}</Text>}
+        {error && <Text color="red.500">{error}</Text>}
 
-        <Box as="form" w="100%" onSubmit={handleSubmit}>
+        <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
           <VStack spacing={4}>
-            <FormControl>
+            <FormControl isInvalid={!!errors.email}>
               <Input
-                name="email"
                 type="email"
                 placeholder={texts.auth.signIn.emailPlaceholder[language]}
-                required
-                autoFocus
-                value={formData.email}
-                onChange={handleChange}
+                {...register('email')}
               />
+              <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl>
+            <FormControl isInvalid={!!errors.password}>
               <Input
-                name="password"
                 type="password"
                 placeholder={texts.auth.signIn.passwordPlaceholder[language]}
-                required
-                value={formData.password}
-                onChange={handleChange}
+                {...register('password')}
               />
+              <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
             </FormControl>
 
             <Button type="submit" colorScheme="purple" width="100%" mt={4} isLoading={loading}>

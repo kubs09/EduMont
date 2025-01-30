@@ -27,6 +27,14 @@ api.interceptors.response.use(
   }
 );
 
+class ApiError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 interface LoginResponse {
   token: string;
 }
@@ -40,8 +48,9 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
+      const status = error.response?.status;
       const message = error.response?.data?.error || 'Authentication failed';
-      throw new Error(message);
+      throw new ApiError(message, status);
     }
     throw error;
   }
