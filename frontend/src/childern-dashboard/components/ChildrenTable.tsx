@@ -1,5 +1,7 @@
 import React from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Spinner, Center } from '@chakra-ui/react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { texts } from '../../texts';
 
 interface Child {
   id: number;
@@ -16,6 +18,8 @@ interface ChildrenTableProps {
 }
 
 const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) => {
+  const { language } = useLanguage();
+
   if (loading) {
     return (
       <Center p={8}>
@@ -29,11 +33,11 @@ const ChildrenTable: React.FC<ChildrenTableProps> = ({ data, loading = false }) 
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>Jméno</Th>
-            <Th>Věk</Th>
-            <Th>Rodič</Th>
-            <Th>Kontakt na rodiče</Th>
-            <Th>Poznámka</Th>
+            <Th>{texts.childrenTable.name[language]}</Th>
+            <Th>{texts.childrenTable.age[language]}</Th>
+            <Th>{texts.childrenTable.parent[language]}</Th>
+            <Th>{texts.childrenTable.contact[language]}</Th>
+            <Th>{texts.childrenTable.notes[language]}</Th>
           </Tr>
         </Thead>
         <Tbody>

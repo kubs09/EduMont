@@ -3,6 +3,8 @@ import { ChakraProvider } from '@chakra-ui/react';
 import React from 'react';
 import Routes from './Routes';
 import { ROUTES } from './shared/route';
+import { LanguageProvider } from './contexts/LanguageContext';
+import Header from './shared/atoms/header/Header';
 
 function App(): React.ReactElement {
   const [isAuthenticated, setIsAuthenticated] = React.useState(!!localStorage.getItem('token'));
@@ -15,9 +17,12 @@ function App(): React.ReactElement {
   return (
     <React.StrictMode>
       <ChakraProvider>
-        <BrowserRouter>
-          <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
-        </BrowserRouter>
+        <LanguageProvider>
+          <BrowserRouter>
+            <Header />
+            <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
+          </BrowserRouter>
+        </LanguageProvider>
       </ChakraProvider>
     </React.StrictMode>
   );

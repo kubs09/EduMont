@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Box, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react';
 import ChildrenTable from '../components/ChildrenTable';
 import api from '../../services/api';
+import { texts } from '../../texts';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface Child {
   id: number;
@@ -13,6 +15,7 @@ interface Child {
 }
 
 const Dashboard: React.FC = () => {
+  const { language } = useLanguage();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +38,7 @@ const Dashboard: React.FC = () => {
     <Box p={6}>
       <Card>
         <CardHeader>
-          <Heading>Naši školáci</Heading>
+          <Heading>{texts.dashboard.title[language]}</Heading>
         </CardHeader>
         <CardBody>
           <ChildrenTable data={children} loading={loading} />

@@ -13,6 +13,8 @@ import {
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
 import { login } from '../services/api';
+import { texts } from '../texts';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface LoginFormData {
   email: string;
@@ -24,6 +26,7 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+  const { language } = useLanguage();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -67,10 +70,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         </Circle>
 
         <Heading as="h1" size="lg">
-          Sign in
+          {texts.auth.signIn.title[language]}
         </Heading>
 
-        {error && <Text color="red.500">{error}</Text>}
+        {error && <Text color="red.500">{texts.auth.signIn.serverError[language]}</Text>}
 
         <Box as="form" w="100%" onSubmit={handleSubmit}>
           <VStack spacing={4}>
@@ -78,7 +81,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <Input
                 name="email"
                 type="email"
-                placeholder="Email Address"
+                placeholder={texts.auth.signIn.emailPlaceholder[language]}
                 required
                 autoFocus
                 value={formData.email}
@@ -90,7 +93,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <Input
                 name="password"
                 type="password"
-                placeholder="Password"
+                placeholder={texts.auth.signIn.passwordPlaceholder[language]}
                 required
                 value={formData.password}
                 onChange={handleChange}
@@ -98,7 +101,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </FormControl>
 
             <Button type="submit" colorScheme="purple" width="100%" mt={4} isLoading={loading}>
-              Sign In
+              {texts.auth.signIn.submitButton[language]}
             </Button>
           </VStack>
         </Box>
