@@ -4,7 +4,7 @@ import React from 'react';
 import theme from './design/theme';
 import Routes from './Routes';
 import { ROUTES } from './shared/route';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider } from './shared/contexts/LanguageContext';
 import Header from './shared/atoms/header/Header';
 import Footer from './shared/atoms/footer/Footer';
 

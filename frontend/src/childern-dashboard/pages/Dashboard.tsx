@@ -3,7 +3,7 @@ import { Box, Card, CardHeader, CardBody, Heading } from '@chakra-ui/react';
 import ChildrenTable from '../components/ChildrenTable';
 import api from '../../services/api';
 import { texts } from '../../texts';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
 
 interface Child {
   id: number;

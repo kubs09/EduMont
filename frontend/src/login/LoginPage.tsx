@@ -17,7 +17,7 @@ import {
 import { LockIcon } from '@chakra-ui/icons';
 import { login } from '../services/api';
 import { texts } from '../texts';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../shared/contexts/LanguageContext';
 import { createLoginSchema, LoginFormData } from './schema';
 
 interface LoginPageProps {

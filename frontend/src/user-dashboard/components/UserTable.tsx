@@ -11,7 +11,7 @@ import {
   Center,
   Text,
 } from '@chakra-ui/react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 
 interface User {

@@ -2,7 +2,7 @@ import { Heading, Text, Button, Center, VStack } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../shared/route';
 import { texts } from '../texts';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useLanguage } from '../shared/contexts/LanguageContext';
 
 const UnauthorizedPage = () => {
   const navigate = useNavigate();

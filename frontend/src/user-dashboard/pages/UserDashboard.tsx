@@ -3,7 +3,7 @@ import { Box, Card, CardHeader, CardBody, Heading, useToast } from '@chakra-ui/r
 import UserTable from '../components/UserTable';
 import api from '../../services/api';
 import { texts } from '../../texts';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
 
 interface User {
   id: number;

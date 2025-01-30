@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Spinner, Center } from '@chakra-ui/react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 
 interface Child {

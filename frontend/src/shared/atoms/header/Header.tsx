@@ -12,7 +12,7 @@ import {
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '../../../texts';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ROUTES } from '../../route';
 import icon from './icon.png';
 
