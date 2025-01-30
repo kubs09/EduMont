@@ -106,6 +106,14 @@ export const texts = {
       cs: 'Správa uživatelů',
       en: 'User Management',
     },
+    errorTitle: {
+      cs: 'Chyba',
+      en: 'Error',
+    },
+    fetchError: {
+      cs: 'Nepodařilo se načíst seznam uživatelů. Zkuste to prosím později.',
+      en: 'Failed to load user list. Please try again later.',
+    },
   },
   userTable: {
     name: {

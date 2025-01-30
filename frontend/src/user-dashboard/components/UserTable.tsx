@@ -1,5 +1,16 @@
 import React from 'react';
-import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Spinner, Center } from '@chakra-ui/react';
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  TableContainer,
+  Spinner,
+  Center,
+  Text,
+} from '@chakra-ui/react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { texts } from '../../texts';
 
@@ -13,15 +24,24 @@ interface User {
 interface UserTableProps {
   data: User[];
   loading?: boolean;
+  error?: string | null;
 }
 
-const UserTable: React.FC<UserTableProps> = ({ data, loading = false }) => {
+const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null }) => {
   const { language } = useLanguage();
 
   if (loading) {
     return (
       <Center p={8}>
         <Spinner />
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center p={8}>
+        <Text color="red.500">{error}</Text>
       </Center>
     );
   }
