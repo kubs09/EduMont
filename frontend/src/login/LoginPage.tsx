@@ -42,9 +42,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      const { token } = await login(data.email.trim(), data.password.trim());
-      localStorage.setItem('token', token);
-      onLoginSuccess(token);
+      const response = await login(data.email.trim(), data.password.trim());
+      console.log('Login success:', response); // Add debug logging
+      if (!response.name || !response.role) {
+        console.error('Missing user data in response:', response);
+        throw new Error('Incomplete user data');
+      }
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('userName', response.name);
+      localStorage.setItem('userRole', response.role);
+      onLoginSuccess(response.token);
     } catch (err) {
       const error = err as { status?: number };
       if (error && error.status === 401) {

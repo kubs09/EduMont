@@ -97,4 +97,28 @@ export const texts = {
       en: 'Notes',
     },
   },
+  userDashboard: {
+    title: {
+      cs: 'Seznam uživatelů',
+      en: 'User List',
+    },
+    menuItem: {
+      cs: 'Správa uživatelů',
+      en: 'User Management',
+    },
+  },
+  userTable: {
+    name: {
+      cs: 'Jméno',
+      en: 'Name',
+    },
+    email: {
+      cs: 'Email',
+      en: 'Email',
+    },
+    role: {
+      cs: 'Role',
+      en: 'Role',
+    },
+  },
 };

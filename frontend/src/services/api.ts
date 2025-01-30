@@ -37,6 +37,8 @@ class ApiError extends Error {
 
 interface LoginResponse {
   token: string;
+  name: string;
+  role: string;
 }
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
@@ -45,6 +47,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       email,
       password,
     });
+    console.log('Login response:', response.data); // Add debug logging
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {

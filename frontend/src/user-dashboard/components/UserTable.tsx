@@ -1,0 +1,53 @@
+import React from 'react';
+import { Table, Thead, Tbody, Tr, Th, Td, TableContainer, Spinner, Center } from '@chakra-ui/react';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { texts } from '../../texts';
+
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: 'admin' | 'teacher' | 'parent';
+}
+
+interface UserTableProps {
+  data: User[];
+  loading?: boolean;
+}
+
+const UserTable: React.FC<UserTableProps> = ({ data, loading = false }) => {
+  const { language } = useLanguage();
+
+  if (loading) {
+    return (
+      <Center p={8}>
+        <Spinner />
+      </Center>
+    );
+  }
+
+  return (
+    <TableContainer>
+      <Table variant="simple">
+        <Thead>
+          <Tr>
+            <Th>{texts.userTable.name[language]}</Th>
+            <Th>{texts.userTable.email[language]}</Th>
+            <Th>{texts.userTable.role[language]}</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          {data.map((user) => (
+            <Tr key={user.id}>
+              <Td>{user.name}</Td>
+              <Td>{user.email}</Td>
+              <Td>{user.role}</Td>
+            </Tr>
+          ))}
+        </Tbody>
+      </Table>
+    </TableContainer>
+  );
+};
+
+export default UserTable;

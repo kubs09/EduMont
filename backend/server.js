@@ -90,9 +90,9 @@ app.post('/api/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Compare with stored hash
+    const user = result.rows[0];
     const validPassword =
-      result.rows[0].password === '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG';
+      user.password === '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG';
 
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -100,15 +100,19 @@ app.post('/api/login', async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        role: result.rows[0].role,
+        id: user.id,
+        email: user.email,
+        role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    res.json({ token });
+    res.json({
+      token,
+      name: user.name,
+      role: user.role,
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Login failed', details: err.message });

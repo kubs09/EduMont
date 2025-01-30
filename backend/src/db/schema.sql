@@ -1,8 +1,11 @@
+CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    role VARCHAR(50) NOT NULL
+    role user_role NOT NULL
 );
 
 CREATE TABLE children (
@@ -14,8 +17,8 @@ CREATE TABLE children (
     notes TEXT
 );
 
-INSERT INTO users (email, password, role) VALUES
-('admin@example.com', '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG', 'admin')
+INSERT INTO users (email, name, password, role) VALUES
+('admin@example.com', 'Admin Admin', '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG', 'admin')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO children (name, age, parent_name, contact, notes) VALUES

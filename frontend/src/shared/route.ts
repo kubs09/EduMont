@@ -3,4 +3,5 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   ROOT: '/',
   UNAUTHORIZED: '/unauthorized',
+  USER_DASHBOARD: '/users',
 } as const;

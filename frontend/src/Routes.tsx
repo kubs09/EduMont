@@ -5,6 +5,7 @@ import PublicLayout from './layouts/PublicLayout';
 import LoginPage from './login/LoginPage';
 import Dashboard from './childern-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
+import UserDashboard from './user-dashboard/pages/UserDashboard';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -19,6 +20,9 @@ const RequireAuth = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
 };
 
 const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
+  const userRole = localStorage.getItem('userRole');
+  const isAdmin = userRole === 'admin';
+
   return (
     <RouterRoutes>
       {/* Public routes */}
@@ -40,6 +44,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       <Route element={<RequireAuth isAuthenticated={isAuthenticated} />}>
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+          {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
         </Route>
       </Route>
 
