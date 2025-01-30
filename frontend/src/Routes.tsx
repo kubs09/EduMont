@@ -6,6 +6,7 @@ import LoginPage from './login/LoginPage';
 import Dashboard from './childern-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
+import SignupPage from './sign-up/pages/SignupPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -36,6 +37,10 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
               <LoginPage onLoginSuccess={onLoginSuccess} />
             )
           }
+        />
+        <Route
+          path={ROUTES.SIGNUP}
+          element={isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : <SignupPage />}
         />
         <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
       </Route>
