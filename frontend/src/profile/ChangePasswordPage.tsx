@@ -11,11 +11,13 @@ import {
   Input,
   Button,
   useToast,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { texts } from '../texts';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { ROUTES } from '../shared/route';
 import { changePassword } from '../services/api';
+import { createPasswordChangeSchema, PasswordChangeSchema } from './schemas/passwordSchema';
 
 const ChangePasswordPage = () => {
   const { language } = useLanguage();
@@ -23,51 +25,64 @@ const ChangePasswordPage = () => {
   const toast = useToast();
   const userId = Number(localStorage.getItem('userId'));
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formData, setFormData] = useState<PasswordChangeSchema>({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!currentPassword) {
-      toast({
-        title: texts.profile.currentPasswordRequired[language],
-        status: 'error',
-      });
-      return;
-    }
-
-    if (!newPassword) {
-      toast({
-        title: texts.profile.newPasswordRequired[language],
-        status: 'error',
-      });
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: texts.profile.passwordsDoNotMatch[language],
-        status: 'error',
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
-      await changePassword(userId, currentPassword, newPassword);
+      const schema = createPasswordChangeSchema(language);
+      schema.parse(formData);
+      setErrors({});
+
+      setIsSubmitting(true);
+      await changePassword(userId, formData.currentPassword, formData.newPassword);
       toast({
         title: texts.profile.passwordChanged[language],
         status: 'success',
       });
       navigate(ROUTES.PROFILE);
     } catch (error) {
-      toast({
-        title: texts.profile.passwordError[language],
-        status: 'error',
-      });
+      if (error.errors) {
+        const validationErrors: Record<string, string> = {};
+        interface ZodError {
+          path: string[];
+          message: string;
+        }
+        (error.errors as ZodError[]).forEach((err: ZodError) => {
+          validationErrors[err.path[0]] = err.message;
+        });
+        setErrors(validationErrors);
+        return;
+      }
+      if (error instanceof Error) {
+        if (error.message === 'Current password is incorrect') {
+          toast({
+            title: texts.profile.incorrectCurrentPassword[language],
+            status: 'error',
+          });
+        } else {
+          toast({
+            title: texts.profile.passwordError[language],
+            status: 'error',
+          });
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -80,31 +95,38 @@ const ChangePasswordPage = () => {
         <CardBody>
           <form onSubmit={handleSubmit}>
             <VStack spacing={4}>
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.currentPassword}>
                 <FormLabel>{texts.profile.currentPassword[language]}</FormLabel>
                 <Input
                   type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  name="currentPassword"
+                  value={formData.currentPassword}
+                  onChange={handleChange}
                 />
+                <FormErrorMessage>{errors.currentPassword}</FormErrorMessage>
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.newPassword}>
                 <FormLabel>{texts.profile.newPassword[language]}</FormLabel>
                 <Input
                   type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleChange}
                 />
+                <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
               </FormControl>
-              <FormControl isRequired>
+              <FormControl isInvalid={!!errors.confirmPassword}>
                 <FormLabel>{texts.profile.confirmNewPassword[language]}</FormLabel>
                 <Input
                   type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                 />
+                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
               </FormControl>
               <Button type="submit" colorScheme="blue" isLoading={isSubmitting} w="full">
+                {' '}
                 {texts.profile.save[language]}
               </Button>
               <Button variant="ghost" onClick={() => navigate(ROUTES.PROFILE)} w="full">

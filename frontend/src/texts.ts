@@ -388,5 +388,55 @@ export const texts = {
       cs: 'Hesla se neshodují',
       en: 'Passwords do not match',
     },
+    incorrectCurrentPassword: {
+      cs: 'Současné heslo není správné',
+      en: 'Current password is incorrect',
+    },
+    validation: {
+      currentPasswordRequired: {
+        cs: 'Současné heslo je povinné',
+        en: 'Current password is required',
+      },
+      newPasswordRequired: {
+        cs: 'Nové heslo je povinné',
+        en: 'New password is required',
+      },
+      newPasswordLength: {
+        cs: 'Nové heslo musí mít alespoň 8 znaků',
+        en: 'New password must be at least 8 characters',
+      },
+      confirmPasswordRequired: {
+        cs: 'Potvrďte prosím nové heslo',
+        en: 'Please confirm your new password',
+      },
+      passwordsDoNotMatch: {
+        cs: 'Hesla se neshodují',
+        en: "Passwords don't match",
+      },
+      firstNameRequired: {
+        cs: 'Jméno je povinné',
+        en: 'First name is required',
+      },
+      firstNameLength: {
+        cs: 'Jméno musí mít alespoň 2 znaky',
+        en: 'First name must be at least 2 characters',
+      },
+      lastNameRequired: {
+        cs: 'Příjmení je povinné',
+        en: 'Last name is required',
+      },
+      lastNameLength: {
+        cs: 'Příjmení musí mít alespoň 2 znaky',
+        en: 'Last name must be at least 2 characters',
+      },
+      emailRequired: {
+        cs: 'Email je povinný',
+        en: 'Email is required',
+      },
+      emailInvalid: {
+        cs: 'Zadejte platnou emailovou adresu',
+        en: 'Please enter a valid email address',
+      },
+    },
   },
 };

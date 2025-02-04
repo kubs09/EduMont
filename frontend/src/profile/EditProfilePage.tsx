@@ -13,11 +13,13 @@ import {
   FormLabel,
   useToast,
   ButtonGroup,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { texts } from '../texts';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { ROUTES } from '../shared/route';
 import { updateUser } from '../services/api';
+import { createProfileSchema, type ProfileSchema } from './schemas/profileSchema';
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
@@ -29,11 +31,12 @@ const EditProfilePage = () => {
   const userId = parseInt(localStorage.getItem('userId') || '0');
   const [firstName, lastName] = userName.split(' ');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileSchema>({
     firstname: firstName,
     surname: lastName,
     email: userEmail,
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -44,6 +47,10 @@ const EditProfilePage = () => {
 
   const handleSubmit = async () => {
     try {
+      const schema = createProfileSchema(language);
+      schema.parse(formData);
+      setErrors({});
+
       if (!userId) {
         throw new Error('No user ID found');
       }
@@ -59,11 +66,19 @@ const EditProfilePage = () => {
 
       navigate(ROUTES.PROFILE);
     } catch (error) {
-      toast({
-        title: texts.profile.error[language],
-        status: 'error',
-        duration: 3000,
-      });
+      if (error.errors) {
+        const validationErrors: Record<string, string> = {};
+        error.errors.forEach((err: { path: string[]; message: string }) => {
+          validationErrors[err.path[0]] = err.message;
+        });
+        setErrors(validationErrors);
+      } else {
+        toast({
+          title: texts.profile.error[language],
+          status: 'error',
+          duration: 3000,
+        });
+      }
     }
   };
 
@@ -73,17 +88,20 @@ const EditProfilePage = () => {
       <Card>
         <CardBody>
           <Stack spacing={4}>
-            <FormControl>
+            <FormControl isRequired isInvalid={!!errors.firstname}>
               <FormLabel>{texts.profile.firstName[language]}</FormLabel>
               <Input name="firstname" value={formData.firstname} onChange={handleChange} />
+              <FormErrorMessage>{errors.firstname}</FormErrorMessage>
             </FormControl>
-            <FormControl>
+            <FormControl isRequired isInvalid={!!errors.surname}>
               <FormLabel>{texts.profile.lastName[language]}</FormLabel>
               <Input name="surname" value={formData.surname} onChange={handleChange} />
+              <FormErrorMessage>{errors.surname}</FormErrorMessage>
             </FormControl>
-            <FormControl>
+            <FormControl isRequired isInvalid={!!errors.email}>
               <FormLabel>{texts.profile.email[language]}</FormLabel>
               <Input name="email" type="email" value={formData.email} onChange={handleChange} />
+              <FormErrorMessage>{errors.email}</FormErrorMessage>
             </FormControl>
             <FormControl>
               <FormLabel>{texts.profile.role[language]}</FormLabel>
