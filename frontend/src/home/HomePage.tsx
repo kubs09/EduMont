@@ -75,9 +75,6 @@ const HomePage = () => {
           <Text fontSize="lg" mb={8}>
             {texts.home.cta.subtitle[language]}
           </Text>
-          <Button size="lg" colorScheme="blue" onClick={() => navigate(ROUTES.SIGNUP)}>
-            {texts.home.cta.button[language]}
-          </Button>
         </Container>
       </Box>
     </Box>

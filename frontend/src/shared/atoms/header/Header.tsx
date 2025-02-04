@@ -35,16 +35,12 @@ const Header = () => {
     navigate(ROUTES.LOGIN);
   };
 
-  const handleSignup = () => {
-    navigate(ROUTES.SIGNUP);
+  const handleProfile = () => {
+    navigate(ROUTES.PROFILE);
   };
 
   const handleUserDashboard = () => {
     navigate(ROUTES.USER_DASHBOARD);
-  };
-
-  const handleProfile = () => {
-    navigate(ROUTES.PROFILE);
   };
 
   return (
@@ -113,14 +109,9 @@ const Header = () => {
             </MenuList>
           </Menu>
         ) : (
-          <ButtonGroup>
-            <Button colorScheme="whiteAlpha" onClick={handleLogin}>
-              {texts.auth.login[language]}
-            </Button>
-            <Button colorScheme="whiteAlpha" variant="outline" onClick={handleSignup}>
-              {texts.auth.signup[language]}
-            </Button>
-          </ButtonGroup>
+          <Button colorScheme="whiteAlpha" onClick={handleLogin}>
+            {texts.auth.login[language]}
+          </Button>
         )}
       </Flex>
     </Flex>

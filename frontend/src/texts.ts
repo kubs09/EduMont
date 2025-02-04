@@ -43,34 +43,6 @@ export const texts = {
       en: 'Sign Up',
     },
     signUp: {
-      title: {
-        cs: 'Registrace',
-        en: 'Sign Up',
-      },
-      firstName: {
-        cs: 'Jméno',
-        en: 'First Name',
-      },
-      lastName: {
-        cs: 'Příjmení',
-        en: 'Last Name',
-      },
-      email: {
-        cs: 'Email',
-        en: 'Email',
-      },
-      password: {
-        cs: 'Heslo',
-        en: 'Password',
-      },
-      confirmPassword: {
-        cs: 'Potvrďte heslo',
-        en: 'Confirm Password',
-      },
-      submitButton: {
-        cs: 'Registrovat',
-        en: 'Sign Up',
-      },
       validation: {
         firstNameRequired: {
           cs: 'Jméno musí mít alespoň 2 znaky',
@@ -91,26 +63,6 @@ export const texts = {
         passwordsMatch: {
           cs: 'Hesla se neshodují',
           en: "Passwords don't match",
-        },
-      },
-      success: {
-        title: {
-          cs: 'Účet vytvořen',
-          en: 'Account created',
-        },
-        description: {
-          cs: 'Váš účet byl úspěšně vytvořen',
-          en: "We've created your account for you",
-        },
-      },
-      error: {
-        title: {
-          cs: 'Chyba',
-          en: 'Error',
-        },
-        description: {
-          cs: 'Nepodařilo se vytvořit účet',
-          en: 'Failed to create account',
         },
       },
     },

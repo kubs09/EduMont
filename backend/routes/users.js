@@ -6,7 +6,7 @@ const auth = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const emailTexts = require('../../shared/texts');
+const getInvitationEmail = require('../templates/invitationEmail');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -28,20 +28,6 @@ transporter.verify(function (error, success) {
     console.log('SMTP server is ready to take our messages');
   }
 });
-
-const getEmailContent = (role, inviteUrl, language = 'en') => {
-  const t = emailTexts.invitation;
-  return {
-    subject: t.emailSubject[language],
-    html: `
-      <h1>${t.emailTitle[language]}</h1>
-      <p>${t.emailMessage[language]} ${emailTexts.roles[role][language].toLowerCase()}.</p>
-      <p>${t.emailAction[language]}</p>
-      <a href="${inviteUrl}">${inviteUrl}</a>
-      <p>${t.emailExpiry[language]}</p>
-    `,
-  };
-};
 
 router.get('/', auth, async (req, res) => {
   try {
@@ -141,7 +127,7 @@ router.post('/', auth, async (req, res) => {
 
     // Send invitation email
     const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
-    const emailContent = getEmailContent(role, inviteUrl, language);
+    const emailContent = getInvitationEmail(role, inviteUrl, language);
 
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
