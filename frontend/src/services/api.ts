@@ -82,4 +82,25 @@ export const updateUser = async (userId: number, userData: UpdateUserData) => {
   }
 };
 
+export const changePassword = async (
+  userId: number,
+  currentPassword: string,
+  newPassword: string
+) => {
+  try {
+    const response = await api.put(`/api/users/${userId}/password`, {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Password change failed';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
 export default api;

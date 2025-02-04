@@ -39,6 +39,13 @@ const ProfilePage = () => {
             <Button colorScheme="blue" onClick={() => navigate(ROUTES.PROFILE_EDIT)}>
               {texts.profile.edit[language]}
             </Button>
+            <Button
+              colorScheme="blue"
+              variant="outline"
+              onClick={() => navigate(ROUTES.PROFILE_CHANGE_PASSWORD)}
+            >
+              {texts.profile.changePassword[language]}
+            </Button>
           </Stack>
         </CardBody>
       </Card>

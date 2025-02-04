@@ -352,5 +352,41 @@ export const texts = {
       cs: 'Nepodařilo se aktualizovat profil',
       en: 'Failed to update profile',
     },
+    changePassword: {
+      cs: 'Změnit heslo',
+      en: 'Change Password',
+    },
+    currentPassword: {
+      cs: 'Současné heslo',
+      en: 'Current Password',
+    },
+    newPassword: {
+      cs: 'Nové heslo',
+      en: 'New Password',
+    },
+    confirmNewPassword: {
+      cs: 'Potvrďte nové heslo',
+      en: 'Confirm New Password',
+    },
+    passwordChanged: {
+      cs: 'Heslo bylo úspěšně změněno',
+      en: 'Password changed successfully',
+    },
+    passwordError: {
+      cs: 'Nepodařilo se změnit heslo',
+      en: 'Failed to change password',
+    },
+    currentPasswordRequired: {
+      cs: 'Zadejte současné heslo',
+      en: 'Current password is required',
+    },
+    newPasswordRequired: {
+      cs: 'Zadejte nové heslo',
+      en: 'New password is required',
+    },
+    passwordsDoNotMatch: {
+      cs: 'Hesla se neshodují',
+      en: 'Passwords do not match',
+    },
   },
 };

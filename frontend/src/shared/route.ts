@@ -13,4 +13,5 @@ export const ROUTES = {
   TEACHER_DASHBOARD: '/teacher-dashboard',
   PROFILE: '/profile',
   PROFILE_EDIT: '/profile/edit',
+  PROFILE_CHANGE_PASSWORD: '/profile/change-password',
 } as const;
