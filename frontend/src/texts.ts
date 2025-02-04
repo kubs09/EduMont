@@ -307,4 +307,50 @@ export const texts = {
       en: 'New Message',
     },
   },
+  profile: {
+    title: {
+      cs: 'Můj profil',
+      en: 'My Profile',
+    },
+    menuItem: {
+      cs: 'Můj profil',
+      en: 'My Profile',
+    },
+    email: {
+      cs: 'Emailová adresa',
+      en: 'Email Address',
+    },
+    firstName: {
+      cs: 'Jméno',
+      en: 'First Name',
+    },
+    lastName: {
+      cs: 'Příjmení',
+      en: 'Last Name',
+    },
+    role: {
+      cs: 'Role',
+      en: 'Role',
+    },
+    edit: {
+      cs: 'Upravit profil',
+      en: 'Edit Profile',
+    },
+    save: {
+      cs: 'Uložit změny',
+      en: 'Save Changes',
+    },
+    cancel: {
+      cs: 'Zrušit',
+      en: 'Cancel',
+    },
+    success: {
+      cs: 'Profil byl úspěšně aktualizován',
+      en: 'Profile updated successfully',
+    },
+    error: {
+      cs: 'Nepodařilo se aktualizovat profil',
+      en: 'Failed to update profile',
+    },
+  },
 };

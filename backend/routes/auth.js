@@ -8,41 +8,60 @@ const pool = require('../config/database');
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt for email:', email);
+    console.log('Login attempt:', {
+      email,
+      password,
+      passwordLength: password.length,
+      trimmedLength: password.trim().length,
+    });
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    console.log('Database response:', result.rows.length > 0 ? 'User found' : 'User not found');
+    const result = await pool.query(
+      'SELECT id, email, password as hash, firstname, surname, role FROM users WHERE email = $1',
+      [email]
+    );
 
     if (result.rows.length === 0) {
+      console.log('User not found:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
-    const validPassword = await bcrypt.compare(password, user.password);
+    console.log('Found user:', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      hash: user.hash, // Log the stored hash for debugging
+    });
+
+    const validPassword = await bcrypt.compare(password.trim(), user.hash);
+    console.log('Password comparison:', {
+      inputPassword: password,
+      trimmedPassword: password.trim(),
+      hash: user.hash,
+      isValid: validPassword,
+      bcryptVersion: bcrypt.getRounds(user.hash),
+    });
 
     if (!validPassword) {
+      console.log('Invalid password for user:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
 
     res.json({
       token,
+      id: user.id,
       firstname: user.firstname,
       surname: user.surname,
       role: user.role,
+      email: user.email,
     });
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed', details: err.message });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

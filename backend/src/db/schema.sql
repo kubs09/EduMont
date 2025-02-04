@@ -1,5 +1,6 @@
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
+DROP TABLE IF EXISTS users, children CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -20,7 +21,7 @@ CREATE TABLE children (
 );
 
 INSERT INTO users (email, firstname, surname, password, role) VALUES
-('admin@example.com', 'Admin', 'Admin', '$2b$10$ZqFhH0wzC/sdfh34g98H8O7j1yGm5gQVpWFX9z3GkzMYBR1tFaG', 'admin')
+('admin@example.com', 'Admin', 'Admin', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'admin')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO children (firstname, surname, date_of_birth, parent_name, contact, notes) VALUES

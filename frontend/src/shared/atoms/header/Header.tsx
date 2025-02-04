@@ -43,6 +43,10 @@ const Header = () => {
     navigate(ROUTES.USER_DASHBOARD);
   };
 
+  const handleProfile = () => {
+    navigate(ROUTES.PROFILE);
+  };
+
   return (
     <Flex
       as="header"
@@ -83,6 +87,13 @@ const Header = () => {
               {userName}
             </MenuButton>
             <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
+              <MenuItem
+                bg="brand.primary.900"
+                _hover={{ bg: 'brand.primary.800' }}
+                onClick={handleProfile}
+              >
+                {texts.profile.menuItem[language]}
+              </MenuItem>
               {isAdmin && (
                 <MenuItem
                   bg="brand.primary.900"

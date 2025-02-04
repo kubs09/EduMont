@@ -8,6 +8,8 @@ import Dashboard from './children-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
 import SignupPage from './sign-up/pages/SignupPage';
+import ProfilePage from './profile/ProfilePage';
+import EditProfilePage from './profile/EditProfilePage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -52,6 +54,8 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
+          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+          <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
         </Route>
       </Route>
 

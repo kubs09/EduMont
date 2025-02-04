@@ -43,13 +43,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
     try {
       const response = await login(data.email.trim(), data.password.trim());
+      console.log('Login success:', { role: response.role, id: response.id }); // Debug log
+
+      // Store all user data
       localStorage.setItem('token', response.token);
-      localStorage.setItem('userName', response.firstname + ' ' + response.surname);
+      localStorage.setItem('userName', `${response.firstname} ${response.surname}`);
       localStorage.setItem('userRole', response.role);
+      localStorage.setItem('userEmail', response.email);
+      localStorage.setItem('userId', response.id.toString());
+
       onLoginSuccess(response.token);
     } catch (err) {
-      const error = err as { status?: number };
-      if (error && error.status === 401) {
+      console.error('Login error:', err); // Debug log
+      const error = err as { status?: number; message?: string };
+
+      if (error.status === 401) {
         setError(texts.auth.signIn.invalidCredentials[language]);
       } else {
         setError(texts.auth.signIn.serverError[language]);

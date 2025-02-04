@@ -11,4 +11,6 @@ export const ROUTES = {
   DAILY_ACTIVITIES: '/activities',
   PARENT_DASHBOARD: '/parent-dashboard',
   TEACHER_DASHBOARD: '/teacher-dashboard',
+  PROFILE: '/profile',
+  PROFILE_EDIT: '/profile/edit',
 } as const;
