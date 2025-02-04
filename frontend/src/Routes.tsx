@@ -11,6 +11,7 @@ import SignupPage from './sign-up/pages/SignupPage';
 import ProfilePage from './profile/ProfilePage';
 import EditProfilePage from './profile/EditProfilePage';
 import ChangePasswordPage from './profile/ChangePasswordPage';
+import InviteSignupPage from './sign-up/pages/InviteSignupPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -48,6 +49,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           element={isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : <SignupPage />}
         />
         <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
+        <Route path={ROUTES.REGISTER_INVITE} element={<InviteSignupPage />} />
       </Route>
 
       {/* Protected routes */}

@@ -20,6 +20,15 @@ CREATE TABLE children (
     notes TEXT
 );
 
+CREATE TABLE invitations (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    token VARCHAR(100) UNIQUE NOT NULL,
+    role user_role NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL
+);
+
 INSERT INTO users (email, firstname, surname, password, role) VALUES
 ('admin@example.com', 'Admin', 'Admin', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'admin')
 ON CONFLICT (email) DO NOTHING;

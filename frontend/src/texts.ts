@@ -194,6 +194,34 @@ export const texts = {
       cs: 'Nepodařilo se načíst seznam uživatelů. Zkuste to prosím později.',
       en: 'Failed to load user list. Please try again later.',
     },
+    addUser: {
+      cs: 'Přidat uživatele',
+      en: 'Add User',
+    },
+    addUserButton: {
+      cs: 'Nový uživatel',
+      en: 'New User',
+    },
+    emailLabel: {
+      cs: 'Email',
+      en: 'Email',
+    },
+    roleLabel: {
+      cs: 'Role',
+      en: 'Role',
+    },
+    cancel: {
+      cs: 'Zrušit',
+      en: 'Cancel',
+    },
+    submit: {
+      cs: 'Vytvořit',
+      en: 'Create',
+    },
+    success: {
+      cs: 'Uživatel byl úspěšně vytvořen',
+      en: 'User created successfully',
+    },
   },
   userTable: {
     name: {
@@ -436,6 +464,76 @@ export const texts = {
       emailInvalid: {
         cs: 'Zadejte platnou emailovou adresu',
         en: 'Please enter a valid email address',
+      },
+    },
+  },
+  invitation: {
+    emailSubject: {
+      cs: 'Pozvánka do systému EduMont',
+      en: 'Invitation to EduMont',
+    },
+    emailTitle: {
+      cs: 'Vítejte v EduMont',
+      en: 'Welcome to EduMont',
+    },
+    emailMessage: {
+      cs: 'Byli jste pozváni do systému EduMont jako',
+      en: 'You have been invited to join EduMont as a',
+    },
+    emailAction: {
+      cs: 'Pro dokončení registrace klikněte na tento odkaz:',
+      en: 'Please click the link below to complete your registration:',
+    },
+    emailExpiry: {
+      cs: 'Tento odkaz vyprší za 48 hodin.',
+      en: 'This link will expire in 48 hours.',
+    },
+    invalid: {
+      cs: 'Neplatná nebo expirovaná pozvánka',
+      en: 'Invalid or expired invitation',
+    },
+  },
+  inviteSignup: {
+    title: {
+      cs: 'Dokončení registrace',
+      en: 'Complete Registration',
+    },
+    success: {
+      title: {
+        cs: 'Registrace dokončena',
+        en: 'Registration Complete',
+      },
+      description: {
+        cs: 'Váš účet byl úspěšně vytvořen. Nyní se můžete přihlásit.',
+        en: 'Your account has been created successfully. You can now log in.',
+      },
+    },
+    error: {
+      title: {
+        cs: 'Chyba při registraci',
+        en: 'Registration Error',
+      },
+      description: {
+        cs: 'Nepodařilo se dokončit registraci. Zkuste to prosím později.',
+        en: 'Failed to complete registration. Please try again later.',
+      },
+    },
+    form: {
+      firstName: {
+        cs: 'Jméno',
+        en: 'First Name',
+      },
+      lastName: {
+        cs: 'Příjmení',
+        en: 'Last Name',
+      },
+      password: {
+        cs: 'Heslo',
+        en: 'Password',
+      },
+      submit: {
+        cs: 'Dokončit registraci',
+        en: 'Complete Registration',
       },
     },
   },
