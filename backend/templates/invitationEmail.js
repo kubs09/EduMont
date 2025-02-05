@@ -63,7 +63,7 @@ const getInvitationEmail = (role, inviteUrl, language = 'en') => {
             .button {
               display: inline-block;
               background-color: #2B6CB0;
-              color: white;
+              color: white !important;
               padding: 12px 24px;
               text-decoration: none;
               border-radius: 5px;
