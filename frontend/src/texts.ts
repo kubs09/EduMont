@@ -37,6 +37,10 @@ export const texts = {
         cs: 'Nesprávný email nebo heslo',
         en: 'Invalid email or password',
       },
+      forgotPassword: {
+        cs: 'Zapomněli jste heslo?',
+        en: 'Forgot your password?',
+      },
     },
     signup: {
       cs: 'Registrace',
@@ -73,6 +77,92 @@ export const texts = {
     logout: {
       cs: 'Odhlásit',
       en: 'Logout',
+    },
+    forgotPassword: {
+      title: {
+        cs: 'Zapomenuté heslo',
+        en: 'Forgot Password',
+      },
+      description: {
+        cs: 'Zadejte svůj email a my vám pošleme odkaz pro obnovení hesla.',
+        en: 'Enter your email and we will send you a password reset link.',
+      },
+      emailPlaceholder: {
+        cs: 'Emailová adresa',
+        en: 'Email Address',
+      },
+      submitButton: {
+        cs: 'Odeslat odkaz pro obnovení',
+        en: 'Send Reset Link',
+      },
+      loginLink: {
+        cs: 'Zpět na přihlášení',
+        en: 'Back to Login',
+      },
+      success: {
+        title: {
+          cs: 'Email odeslán',
+          en: 'Email Sent',
+        },
+        message: {
+          cs: 'Pokud účet s tímto emailem existuje, poslali jsme vám odkaz pro obnovení hesla.',
+          en: 'If an account exists with this email, we have sent you a password reset link.',
+        },
+        cs: 'Email byl odeslán',
+        en: 'Email has been sent',
+      },
+      error: {
+        title: {
+          cs: 'Chyba',
+          en: 'Error',
+        },
+        message: {
+          cs: 'Nepodařilo se odeslat email pro obnovení hesla. Zkuste to prosím později.',
+          en: 'Failed to send password reset email. Please try again later.',
+        },
+        cs: 'Nepodařilo se odeslat email',
+        en: 'Failed to send email',
+      },
+      validation: {
+        emailRequired: {
+          cs: 'Email je povinný',
+          en: 'Email is required',
+        },
+        invalidEmail: {
+          cs: 'Zadejte platnou emailovou adresu',
+          en: 'Please enter a valid email address',
+        },
+      },
+    },
+    resetPassword: {
+      title: {
+        cs: 'Obnovení hesla',
+        en: 'Reset Password',
+      },
+      passwordPlaceholder: {
+        cs: 'Nové heslo',
+        en: 'New Password',
+      },
+      confirmPasswordPlaceholder: {
+        cs: 'Potvrďte nové heslo',
+        en: 'Confirm New Password',
+      },
+      submitButton: {
+        cs: 'Změnit heslo',
+        en: 'Reset Password',
+      },
+      success: {
+        cs: 'Heslo bylo úspěšně změněno',
+        en: 'Password has been reset successfully',
+      },
+      error: {
+        cs: 'Nepodařilo se změnit heslo',
+        en: 'Failed to reset password',
+      },
+      invalidToken: {
+        cs: 'Neplatný nebo expirovaný odkaz pro obnovení hesla',
+        en: 'Invalid or expired password reset link',
+      },
     },
   },
   unauthorized: {
@@ -416,6 +506,18 @@ export const texts = {
       emailInvalid: {
         cs: 'Zadejte platnou emailovou adresu',
         en: 'Please enter a valid email address',
+      },
+      passwordUppercase: {
+        cs: 'Heslo musí obsahovat alespoň jedno velké písmeno',
+        en: 'Password must contain at least one uppercase letter',
+      },
+      passwordNumber: {
+        cs: 'Heslo musí obsahovat alespoň jedno číslo',
+        en: 'Password must contain at least one number',
+      },
+      passwordMatch: {
+        cs: 'Hesla se musí shodovat',
+        en: 'Passwords must match',
       },
     },
     children: {

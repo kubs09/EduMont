@@ -1,13 +1,15 @@
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS users, children, classes, class_teachers, class_children CASCADE;
+DROP TABLE IF EXISTS users, invitations, children, classes, class_teachers, class_children CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
     firstname VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    role user_role NOT NULL
+    role user_role NOT NULL,
+    reset_token VARCHAR(64),
+    reset_token_expiry TIMESTAMP
 );
 
 CREATE TABLE children (
@@ -47,6 +49,12 @@ CREATE TABLE class_children (
     child_id INTEGER REFERENCES children(id),
     PRIMARY KEY (class_id, child_id)
 );
+
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64),
+ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
 
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES

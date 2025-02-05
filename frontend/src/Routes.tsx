@@ -12,6 +12,8 @@ import EditProfilePage from './profile/EditProfilePage';
 import ChangePasswordPage from './profile/ChangePasswordPage';
 import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
+import ForgotPasswordPage from './login/ForgotPasswordPage';
+import ResetPasswordPage from './login/ResetPasswordPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -45,6 +47,8 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           }
         />
         <Route path={ROUTES.UNAUTHORIZED} element={<UnauthorizedPage />} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+        <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
         <Route path={ROUTES.REGISTER_INVITE} element={<InviteSignupPage />} />
       </Route>
 

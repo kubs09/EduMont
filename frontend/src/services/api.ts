@@ -103,6 +103,72 @@ export const changePassword = async (
   }
 };
 
+export const requestPasswordReset = async (email: string): Promise<void> => {
+  try {
+    await api.post('/api/forgot-password', { email });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Password reset request failed';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const checkResetToken = async (token: string): Promise<boolean> => {
+  try {
+    // Clean the token - remove any URL parts if present
+    const cleanToken = token.includes('=') ? token.split('=').pop() : token;
+
+    if (!cleanToken) {
+      console.error('Invalid token format');
+      return false;
+    }
+
+    const response = await api.get(`/api/check-token/${cleanToken}`);
+    return response.data.valid && !response.data.expired;
+  } catch (error) {
+    console.error('Token check failed:', error);
+    return false;
+  }
+};
+
+export const resetPassword = async (token: string, password: string): Promise<void> => {
+  // Clean the token first
+  const cleanToken = token.includes('=') ? token.split('=').pop() : token;
+
+  if (!cleanToken) {
+    throw new ApiError('Reset token is missing', 400);
+  }
+
+  console.log('Sending reset request:', {
+    tokenLength: cleanToken.length,
+    token: cleanToken,
+  });
+
+  try {
+    // Check token validity first
+    const isValid = await checkResetToken(cleanToken);
+    if (!isValid) {
+      throw new ApiError('Invalid or expired reset token', 400);
+    }
+
+    await api.post('/api/reset-password', { token: cleanToken, password });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error;
+
+      if (status === 400) {
+        throw new ApiError('Invalid or expired reset token', status);
+      }
+      throw new ApiError(message || 'Failed to reset password', status);
+    }
+    throw error;
+  }
+};
+
 interface Child {
   id: number;
   firstname: string;

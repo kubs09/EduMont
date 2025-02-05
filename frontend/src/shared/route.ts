@@ -15,4 +15,6 @@ export const ROUTES = {
   PROFILE_CHANGE_PASSWORD: '/profile/change-password',
   REGISTER_INVITE: '/register/invite/:token',
   CLASSES: '/classes',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
 } as const;

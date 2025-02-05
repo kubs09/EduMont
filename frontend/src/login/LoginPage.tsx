@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Box,
@@ -19,13 +20,14 @@ import { login } from '../services/api';
 import { texts } from '../texts';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { createLoginSchema, LoginFormData } from './schema';
+import { ROUTES } from '../shared/route';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string) => void;
 }
-
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -102,6 +104,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
             <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
               {texts.auth.signIn.submitButton[language]}
+            </Button>
+
+            <Button
+              variant="link"
+              color="brand.primary.500"
+              onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
+            >
+              {texts.auth.signIn.forgotPassword[language]}
             </Button>
           </VStack>
         </Box>

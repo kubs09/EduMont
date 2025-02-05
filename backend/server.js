@@ -9,6 +9,7 @@ const initDatabase = require('./db/init');
 const authRoutes = require('./routes/auth');
 const childrenRoutes = require('./routes/children');
 const usersRoutes = require('./routes/users');
+const passwordResetRoutes = require('./routes/password-reset');
 
 const app = express();
 
@@ -33,6 +34,18 @@ pool
     process.exit(1);
   });
 
+// Add before routes
+app.use((req, res, next) => {
+  console.log('Request:', {
+    method: req.method,
+    path: req.path,
+    body: req.body,
+    query: req.query,
+    params: req.params,
+  });
+  next();
+});
+
 // Error handler for JSON parsing
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -46,6 +59,7 @@ app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/classes', require('./routes/classes'));
+app.use('/api', passwordResetRoutes);
 
 // Catch-all handler for undefined routes
 app.use((req, res) => {
