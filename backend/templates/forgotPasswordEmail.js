@@ -1,4 +1,6 @@
 /* eslint-disable */
+const sharedTexts = require('../../shared/texts');
+
 const emailTexts = {
   emailSubject: {
     cs: 'Obnovení hesla EduMont',
@@ -35,7 +37,7 @@ const emailTexts = {
 };
 
 // Change to match the invitation email pattern
-const getForgotPasswordEmail = (resetUrl, language = 'en') => ({
+const getForgotPasswordEmail = (resetUrl, language) => ({
   subject: emailTexts.emailSubject[language],
   html: `
     <!DOCTYPE html>
@@ -108,5 +110,4 @@ const getForgotPasswordEmail = (resetUrl, language = 'en') => ({
   `,
 });
 
-// Change to CommonJS export to match invitation email
 module.exports = getForgotPasswordEmail;

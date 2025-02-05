@@ -11,11 +11,11 @@ const bcrypt = require('bcrypt');
 const generateResetToken = () => crypto.randomBytes(32).toString('hex');
 
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
+  const { email, language } = req.body;
   const client = await pool.connect();
 
   try {
-    console.log('Processing password reset request for:', email);
+    console.log('Processing password reset request for:', email, 'language:', language);
 
     // Check if user exists
     const userResult = await client.query(
@@ -45,7 +45,7 @@ router.post('/forgot-password', async (req, res) => {
 
     // Send email with better error handling
     try {
-      const { subject, html } = getForgotPasswordEmail(resetUrl, 'en');
+      const { subject, html } = getForgotPasswordEmail(resetUrl, language || 'en');
       console.log('Sending password reset email to:', email);
 
       await sendEmail({
