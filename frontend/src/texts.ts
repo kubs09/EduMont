@@ -499,4 +499,34 @@ export const texts = {
       },
     },
   },
+  classes: {
+    menuItem: {
+      cs: 'Třídy',
+      en: 'Classes',
+    },
+    title: {
+      cs: 'Seznam tříd',
+      en: 'Class List',
+    },
+    noClasses: {
+      cs: 'Žádné třídy k zobrazení',
+      en: 'No classes to display',
+    },
+    name: {
+      cs: 'Název třídy',
+      en: 'Class Name',
+    },
+    description: {
+      cs: 'Popis',
+      en: 'Description',
+    },
+    teachers: {
+      cs: 'Učitelé',
+      en: 'Teachers',
+    },
+    children: {
+      cs: 'Děti',
+      en: 'Children',
+    },
+  },
 };

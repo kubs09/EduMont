@@ -170,4 +170,89 @@ export const updateChild = async (childData: UpdateChildData): Promise<Child> =>
   }
 };
 
+interface Teacher {
+  id: number;
+  firstname: string;
+  surname: string;
+}
+
+interface ClassChild {
+  id: number;
+  firstname: string;
+  surname: string;
+}
+
+interface Class {
+  id: number;
+  name: string;
+  description: string;
+  teachers: Teacher[];
+  children: ClassChild[];
+}
+
+interface CreateClassData {
+  name: string;
+  description: string;
+  teacherIds: number[];
+  childrenIds: number[];
+}
+
+interface UpdateClassData extends CreateClassData {
+  id: number;
+}
+
+export const getClasses = async (): Promise<Class[]> => {
+  try {
+    const response = await api.get<Class[]>('/api/classes');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to fetch classes';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const createClass = async (classData: CreateClassData): Promise<{ id: number }> => {
+  try {
+    const response = await api.post<{ id: number }>('/api/classes', classData);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to create class';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const updateClass = async (classData: UpdateClassData): Promise<void> => {
+  try {
+    await api.put(`/api/classes/${classData.id}`, classData);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to update class';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const deleteClass = async (classId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/classes/${classId}`);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to delete class';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
 export default api;

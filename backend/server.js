@@ -45,6 +45,7 @@ app.use((err, req, res, next) => {
 app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/classes', require('./routes/classes'));
 
 // Catch-all handler for undefined routes
 app.use((req, res) => {

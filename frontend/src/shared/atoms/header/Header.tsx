@@ -43,6 +43,10 @@ const Header = () => {
     navigate(ROUTES.USER_DASHBOARD);
   };
 
+  const handleClasses = () => {
+    navigate(ROUTES.CLASSES);
+  };
+
   return (
     <Flex
       as="header"
@@ -70,6 +74,11 @@ const Header = () => {
       </Button>
       <Flex gap={4}>
         <ButtonGroup>
+          {isAuthenticated && (
+            <Button colorScheme="whiteAlpha" onClick={handleClasses}>
+              {texts.classes.menuItem[language]}
+            </Button>
+          )}
           <Button
             colorScheme="whiteAlpha"
             variant={language === 'cs' ? 'solid' : 'outline'}
