@@ -418,6 +418,16 @@ export const texts = {
         en: 'Please enter a valid email address',
       },
     },
+    children: {
+      title: {
+        cs: 'Moje děti',
+        en: 'My Children',
+      },
+      noChildren: {
+        cs: 'Zatím nemáte přiřazené žádné děti',
+        en: 'No children assigned yet',
+      },
+    },
   },
   invitation: {
     emailSubject: {

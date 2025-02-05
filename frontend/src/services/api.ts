@@ -103,4 +103,71 @@ export const changePassword = async (
   }
 };
 
+interface Child {
+  id: number;
+  firstname: string;
+  surname: string;
+  date_of_birth: string;
+  contact: string;
+  notes: string;
+  parent_firstname?: string;
+  parent_surname?: string;
+  parent_email?: string;
+}
+
+interface CreateChildData {
+  firstname: string;
+  surname: string;
+  date_of_birth: string;
+  parent_id: number;
+  contact: string;
+  notes?: string;
+}
+
+interface UpdateChildData extends CreateChildData {
+  id: number;
+}
+
+export const getChildren = async (): Promise<Child[]> => {
+  try {
+    const response = await api.get<Child[]>('/api/children');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to fetch children';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const createChild = async (childData: CreateChildData): Promise<Child> => {
+  try {
+    const response = await api.post<Child>('/api/children', childData);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to create child';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const updateChild = async (childData: UpdateChildData): Promise<Child> => {
+  try {
+    const response = await api.put<Child>(`/api/children/${childData.id}`, childData);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to update child';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
 export default api;
