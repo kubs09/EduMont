@@ -103,9 +103,9 @@ export const changePassword = async (
   }
 };
 
-export const requestPasswordReset = async (email: string): Promise<void> => {
+export const requestPasswordReset = async (email: string, language: string): Promise<void> => {
   try {
-    await api.post('/api/forgot-password', { email });
+    await api.post('/api/forgot-password', { email, language });
   } catch (error) {
     if (error instanceof AxiosError) {
       const status = error.response?.status;

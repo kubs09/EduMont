@@ -43,7 +43,7 @@ const ForgotPasswordPage = () => {
   const onSubmit = async (data: { email: string }) => {
     setLoading(true);
     try {
-      await requestPasswordReset(data.email);
+      await requestPasswordReset(data.email, language);
       toast({
         title: texts.auth.forgotPassword.success[language],
         status: 'success',
