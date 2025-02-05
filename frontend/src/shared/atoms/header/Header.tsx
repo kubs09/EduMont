@@ -56,10 +56,18 @@ const Header = () => {
       top={0}
       zIndex={1000}
     >
-      <Flex align="center" gap={4}>
-        <Image src={icon} alt="EduMont logo" height="50px" />
-        <Heading size="xl">EduMont</Heading>
-      </Flex>
+      <Button
+        variant="unstyled"
+        onClick={() => navigate(ROUTES.HOME)}
+        _hover={{ opacity: 0.8 }}
+        display="flex"
+        alignItems="center"
+      >
+        <Flex align="center" gap={4}>
+          <Image src={icon} alt="EduMont logo" height="50px" />
+          <Heading size="xl">EduMont</Heading>
+        </Flex>
+      </Button>
       <Flex gap={4}>
         <ButtonGroup>
           <Button
