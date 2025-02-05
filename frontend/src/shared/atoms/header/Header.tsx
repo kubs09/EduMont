@@ -74,11 +74,6 @@ const Header = () => {
       </Button>
       <Flex gap={4}>
         <ButtonGroup>
-          {isAuthenticated && (
-            <Button colorScheme="whiteAlpha" onClick={handleClasses}>
-              {texts.classes.menuItem[language]}
-            </Button>
-          )}
           <Button
             colorScheme="whiteAlpha"
             variant={language === 'cs' ? 'solid' : 'outline'}
@@ -106,6 +101,13 @@ const Header = () => {
                 onClick={handleProfile}
               >
                 {texts.profile.menuItem[language]}
+              </MenuItem>
+              <MenuItem
+                bg="brand.primary.900"
+                _hover={{ bg: 'brand.primary.800' }}
+                onClick={handleClasses}
+              >
+                {texts.classes.menuItem[language]}
               </MenuItem>
               {isAdmin && (
                 <MenuItem
