@@ -27,7 +27,7 @@ router.get('/', auth, async (req, res) => {
   try {
     const result = await pool.query(
       `
-      SELECT m.*, 
+      SELECT DISTINCT ON (m.subject, m.content, m.created_at) m.*, 
         json_build_object(
           'firstname', f.firstname,
           'surname', f.surname,
@@ -43,7 +43,7 @@ router.get('/', auth, async (req, res) => {
       JOIN users t ON m.to_user_id = t.id
       WHERE m.to_user_id = $1 AND NOT m.deleted_by_recipient
       OR m.from_user_id = $1 AND NOT m.deleted_by_sender
-      ORDER BY m.created_at DESC
+      ORDER BY m.subject, m.content, m.created_at DESC, m.id DESC
     `,
       [req.user.id]
     );
@@ -93,17 +93,34 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 router.post('/', auth, async (req, res) => {
-  const { to_user_id, subject, content } = req.body;
-
+  const client = await pool.connect();
   try {
-    const result = await pool.query(
-      'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4) RETURNING *',
-      [req.user.id, to_user_id, subject, content]
-    );
+    await client.query('BEGIN');
 
+    const { to_user_ids, subject, content } = req.body;
+    const from_user_id = req.user.id;
+
+    // Create all messages in a single query
+    const values = to_user_ids
+      .map((to_user_id) => `(${from_user_id}, ${to_user_id}, $1, $2)`)
+      .join(', ');
+
+    const query = `
+      INSERT INTO messages (from_user_id, to_user_id, subject, content)
+      VALUES ${values}
+      RETURNING *;
+    `;
+
+    const result = await client.query(query, [subject, content]);
+    await client.query('COMMIT');
+
+    // Return only the first message for confirmation
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: 'Failed to send message' });
+  } finally {
+    client.release();
   }
 });
 

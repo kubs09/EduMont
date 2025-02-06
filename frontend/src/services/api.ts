@@ -385,12 +385,15 @@ export const getMessage = async (id: number): Promise<Message> => {
 };
 
 export const sendMessage = async (data: {
-  to_user_id: number;
+  to_user_ids: number[];
   subject: string;
   content: string;
 }): Promise<Message> => {
   try {
     const response = await api.post<Message>('/api/messages', data);
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {

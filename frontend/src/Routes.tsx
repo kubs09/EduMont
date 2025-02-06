@@ -14,7 +14,7 @@ import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
 import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
-import Messages from './pages/Messages';
+import Messages from './messages/pages/Messages';
 
 interface RoutesProps {
   isAuthenticated: boolean;

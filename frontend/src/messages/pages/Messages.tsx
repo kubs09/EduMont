@@ -9,34 +9,28 @@ import {
   IconButton,
   Divider,
   Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Select,
-  Input,
-  Textarea,
   VStack,
   HStack,
   useColorModeValue,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
 import { DeleteIcon, EmailIcon, RepeatIcon } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { texts } from '../texts';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { texts } from '../../texts';
 import {
   getMessage,
   getMessages,
   sendMessage,
   deleteMessage,
   getMessageUsers,
-} from '../services/api';
+} from '../../services/api';
 import { useSnackbar } from 'notistack';
+import ComposeMessageModal from '../components/ComposeMessageModal';
 
 interface Message {
   id: number;
@@ -126,7 +120,7 @@ const Messages: React.FC = () => {
   const handleSend = async () => {
     try {
       await sendMessage({
-        to_user_id: parseInt(newMessage.to_user_id),
+        to_user_ids: [parseInt(newMessage.to_user_id)],
         subject: newMessage.subject,
         content: newMessage.content,
       });
@@ -138,6 +132,46 @@ const Messages: React.FC = () => {
       enqueueSnackbar('Failed to send message', { variant: 'error' });
     }
   };
+
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const receivedMessages = messages.filter((msg) => msg.to_user_id === currentUser.id);
+  const sentMessages = messages.filter((msg) => msg.from_user_id === currentUser.id);
+
+  const MessageList: React.FC<{ messages: Message[] }> = ({ messages }) => (
+    <List spacing={0}>
+      {messages.map((message) => (
+        <React.Fragment key={message.id}>
+          <ListItem
+            p={3}
+            cursor="pointer"
+            bg={selectedMessage?.id === message.id ? 'gray.100' : 'transparent'}
+            _hover={{ bg: 'gray.50' }}
+            onClick={() => handleMessageClick(message.id)}
+          >
+            <VStack align="stretch" spacing={1}>
+              <Text fontWeight="bold">{message.subject}</Text>
+              <Text fontSize="sm" color="gray.600">
+                {message.from_user_id === currentUser.id ? (
+                  <>
+                    To: {message.to_user?.firstname} {message.to_user?.surname}
+                  </>
+                ) : (
+                  <>
+                    From: {message.from_user?.firstname} {message.from_user?.surname}
+                  </>
+                )}
+              </Text>
+              <Text fontSize="sm" color="gray.500">
+                {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
+              </Text>
+            </VStack>
+          </ListItem>
+          <Divider />
+        </React.Fragment>
+      ))}
+    </List>
+  );
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -163,44 +197,40 @@ const Messages: React.FC = () => {
             borderWidth="1px"
             borderColor={borderColor}
             h="calc(100vh - 200px)"
-            overflow="auto"
+            overflow="hidden"
           >
-            {messages.length > 0 ? (
-              <List spacing={0}>
-                {messages.map((message) => (
-                  <React.Fragment key={message.id}>
-                    <ListItem
-                      p={3}
-                      cursor="pointer"
-                      bg={selectedMessage?.id === message.id ? 'gray.100' : 'transparent'}
-                      _hover={{ bg: 'gray.50' }}
-                      onClick={() => handleMessageClick(message.id)}
-                    >
-                      <VStack align="stretch" spacing={1}>
-                        <Text fontWeight="bold">{message.subject}</Text>
-                        <Text fontSize="sm" color="gray.600">
-                          {message.from_user?.firstname} {message.from_user?.surname}
-                        </Text>
-                        <Text fontSize="sm" color="gray.500">
-                          {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
-                        </Text>
-                      </VStack>
-                    </ListItem>
-                    <Divider />
-                  </React.Fragment>
-                ))}
-              </List>
-            ) : (
-              <VStack p={3} spacing={3}>
-                <EmailIcon boxSize={12} color="gray.400" />
-                <Text color="gray.500" fontWeight="medium">
-                  {t.noMessages[language]}
-                </Text>
-                <Text color="gray.400" fontSize="sm">
-                  {t.compose[language]}
-                </Text>
-              </VStack>
-            )}
+            <Tabs isFitted variant="enclosed">
+              <TabList>
+                <Tab>{t.inbox[language]}</Tab>
+                <Tab>{t.sent[language]}</Tab>
+              </TabList>
+              <TabPanels overflow="auto" maxH="calc(100vh - 270px)">
+                <TabPanel p={0}>
+                  {receivedMessages.length > 0 ? (
+                    <MessageList messages={receivedMessages} />
+                  ) : (
+                    <VStack p={3} spacing={3}>
+                      <EmailIcon boxSize={12} color="gray.400" />
+                      <Text color="gray.500" fontWeight="medium">
+                        {t.noMessages[language]}
+                      </Text>
+                    </VStack>
+                  )}
+                </TabPanel>
+                <TabPanel p={0}>
+                  {sentMessages.length > 0 ? (
+                    <MessageList messages={sentMessages} />
+                  ) : (
+                    <VStack p={3} spacing={3}>
+                      <EmailIcon boxSize={12} color="gray.400" />
+                      <Text color="gray.500" fontWeight="medium">
+                        {t.noMessages[language]}
+                      </Text>
+                    </VStack>
+                  )}
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </Box>
         </GridItem>
 
@@ -258,57 +288,20 @@ const Messages: React.FC = () => {
         </GridItem>
       </Grid>
 
-      <Modal isOpen={composeOpen} onClose={() => setComposeOpen(false)} size="xl">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{t.compose[language]}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4}>
-              <FormControl>
-                <FormLabel>{t.to[language]}</FormLabel>
-                <Select
-                  value={newMessage.to_user_id}
-                  onChange={(e) => setNewMessage({ ...newMessage, to_user_id: e.target.value })}
-                  placeholder={
-                    users.length === 0 ? t.noUsersAvailable[language] : t.selectUser[language]
-                  }
-                  isDisabled={users.length === 0}
-                >
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.firstname} {user.surname}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl>
-                <FormLabel>{t.subject[language]}</FormLabel>
-                <Input
-                  value={newMessage.subject}
-                  onChange={(e) => setNewMessage({ ...newMessage, subject: e.target.value })}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>{t.content[language]}</FormLabel>
-                <Textarea
-                  rows={4}
-                  value={newMessage.content}
-                  onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
-                />
-              </FormControl>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button mr={3} onClick={() => setComposeOpen(false)}>
-              {texts.classes.cancel[language]}
-            </Button>
-            <Button colorScheme="blue" onClick={handleSend}>
-              {t.send[language]}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <ComposeMessageModal
+        isOpen={composeOpen}
+        onClose={() => setComposeOpen(false)}
+        onSend={async (data) => {
+          try {
+            await sendMessage(data);
+            fetchMessages();
+            enqueueSnackbar('Message sent', { variant: 'success' });
+          } catch (error) {
+            enqueueSnackbar('Failed to send message', { variant: 'error' });
+          }
+        }}
+        users={users}
+      />
     </Box>
   );
 };
