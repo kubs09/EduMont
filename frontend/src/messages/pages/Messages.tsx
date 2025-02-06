@@ -60,11 +60,6 @@ const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [newMessage, setNewMessage] = useState({
-    to_user_id: '',
-    subject: '',
-    content: '',
-  });
   const [users, setUsers] = useState<Array<{ id: number; firstname: string; surname: string }>>([]);
 
   const fetchMessages = React.useCallback(async () => {
@@ -114,22 +109,6 @@ const Messages: React.FC = () => {
       enqueueSnackbar('Message deleted', { variant: 'success' });
     } catch (error) {
       enqueueSnackbar('Failed to delete message', { variant: 'error' });
-    }
-  };
-
-  const handleSend = async () => {
-    try {
-      await sendMessage({
-        to_user_ids: [parseInt(newMessage.to_user_id)],
-        subject: newMessage.subject,
-        content: newMessage.content,
-      });
-      setComposeOpen(false);
-      setNewMessage({ to_user_id: '', subject: '', content: '' });
-      fetchMessages();
-      enqueueSnackbar('Message sent', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Failed to send message', { variant: 'error' });
     }
   };
 
