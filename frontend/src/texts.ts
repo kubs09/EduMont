@@ -746,5 +746,9 @@ export const texts = {
       cs: 'Vyberte příjemce',
       en: 'Select recipient',
     },
+    refresh: {
+      cs: 'Obnovit',
+      en: 'Refresh',
+    },
   },
 };

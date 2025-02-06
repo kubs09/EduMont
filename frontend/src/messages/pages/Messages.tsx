@@ -3,14 +3,7 @@ import {
   Box,
   Grid,
   GridItem,
-  Text,
-  List,
-  ListItem,
-  IconButton,
-  Divider,
   Button,
-  VStack,
-  HStack,
   useColorModeValue,
   Tabs,
   TabList,
@@ -18,8 +11,7 @@ import {
   TabPanels,
   TabPanel,
 } from '@chakra-ui/react';
-import { DeleteIcon, EmailIcon, RepeatIcon } from '@chakra-ui/icons';
-import { format } from 'date-fns';
+import { EmailIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import {
@@ -31,26 +23,9 @@ import {
 } from '../../services/api';
 import { useSnackbar } from 'notistack';
 import ComposeMessageModal from '../components/ComposeMessageModal';
-
-interface Message {
-  id: number;
-  subject: string;
-  content: string;
-  from_user_id: number;
-  to_user_id: number;
-  created_at: string;
-  read_at: string | null;
-  from_user?: {
-    firstname: string;
-    surname: string;
-    email: string;
-  };
-  to_user?: {
-    firstname: string;
-    surname: string;
-    email: string;
-  };
-}
+import MessageList from '../components/MessageList';
+import MessageDetail from '../components/MessageDetail';
+import { Message } from '../types/message';
 
 const Messages: React.FC = () => {
   const { language } = useLanguage();
@@ -61,13 +36,17 @@ const Messages: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [users, setUsers] = useState<Array<{ id: number; firstname: string; surname: string }>>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchMessages = React.useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const data = await getMessages();
       setMessages(data);
     } catch (error) {
       enqueueSnackbar('Failed to fetch messages', { variant: 'error' });
+    } finally {
+      setIsRefreshing(false);
     }
   }, [enqueueSnackbar]);
 
@@ -113,44 +92,8 @@ const Messages: React.FC = () => {
   };
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-
   const receivedMessages = messages.filter((msg) => msg.to_user_id === currentUser.id);
   const sentMessages = messages.filter((msg) => msg.from_user_id === currentUser.id);
-
-  const MessageList: React.FC<{ messages: Message[] }> = ({ messages }) => (
-    <List spacing={0}>
-      {messages.map((message) => (
-        <React.Fragment key={message.id}>
-          <ListItem
-            p={3}
-            cursor="pointer"
-            bg={selectedMessage?.id === message.id ? 'gray.100' : 'transparent'}
-            _hover={{ bg: 'gray.50' }}
-            onClick={() => handleMessageClick(message.id)}
-          >
-            <VStack align="stretch" spacing={1}>
-              <Text fontWeight="bold">{message.subject}</Text>
-              <Text fontSize="sm" color="gray.600">
-                {message.from_user_id === currentUser.id ? (
-                  <>
-                    To: {message.to_user?.firstname} {message.to_user?.surname}
-                  </>
-                ) : (
-                  <>
-                    From: {message.from_user?.firstname} {message.from_user?.surname}
-                  </>
-                )}
-              </Text>
-              <Text fontSize="sm" color="gray.500">
-                {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
-              </Text>
-            </VStack>
-          </ListItem>
-          <Divider />
-        </React.Fragment>
-      ))}
-    </List>
-  );
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -164,8 +107,12 @@ const Messages: React.FC = () => {
             colorScheme="blue"
             onClick={() => setComposeOpen(true)}
             mb={2}
+            mr={2}
           >
             {t.compose[language]}
+          </Button>
+          <Button leftIcon={<RepeatIcon />} onClick={fetchMessages} isLoading={isRefreshing} mb={2}>
+            {t.refresh?.[language] || 'Refresh'}
           </Button>
         </GridItem>
 
@@ -185,28 +132,22 @@ const Messages: React.FC = () => {
               </TabList>
               <TabPanels overflow="auto" maxH="calc(100vh - 270px)">
                 <TabPanel p={0}>
-                  {receivedMessages.length > 0 ? (
-                    <MessageList messages={receivedMessages} />
-                  ) : (
-                    <VStack p={3} spacing={3}>
-                      <EmailIcon boxSize={12} color="gray.400" />
-                      <Text color="gray.500" fontWeight="medium">
-                        {t.noMessages[language]}
-                      </Text>
-                    </VStack>
-                  )}
+                  <MessageList
+                    messages={receivedMessages}
+                    selectedMessageId={selectedMessage?.id}
+                    currentUserId={currentUser.id}
+                    onMessageClick={handleMessageClick}
+                    emptyMessage={t.noMessages[language]}
+                  />
                 </TabPanel>
                 <TabPanel p={0}>
-                  {sentMessages.length > 0 ? (
-                    <MessageList messages={sentMessages} />
-                  ) : (
-                    <VStack p={3} spacing={3}>
-                      <EmailIcon boxSize={12} color="gray.400" />
-                      <Text color="gray.500" fontWeight="medium">
-                        {t.noMessages[language]}
-                      </Text>
-                    </VStack>
-                  )}
+                  <MessageList
+                    messages={sentMessages}
+                    selectedMessageId={selectedMessage?.id}
+                    currentUserId={currentUser.id}
+                    onMessageClick={handleMessageClick}
+                    emptyMessage={t.noMessages[language]}
+                  />
                 </TabPanel>
               </TabPanels>
             </Tabs>
@@ -222,47 +163,17 @@ const Messages: React.FC = () => {
             h="calc(100vh - 200px)"
             p={4}
           >
-            {selectedMessage ? (
-              <VStack align="stretch" spacing={4}>
-                <HStack justify="space-between">
-                  <Text fontSize="2xl">{selectedMessage.subject}</Text>
-                  <HStack>
-                    <IconButton
-                      icon={<RepeatIcon />}
-                      aria-label="Reply"
-                      onClick={() => setComposeOpen(true)}
-                    />
-                    <IconButton
-                      icon={<DeleteIcon />}
-                      aria-label="Delete"
-                      onClick={() => handleDelete(selectedMessage.id)}
-                    />
-                  </HStack>
-                </HStack>
-                <Text fontSize="sm" color="gray.600">
-                  {t.from[language]}: {selectedMessage.from_user?.firstname}{' '}
-                  {selectedMessage.from_user?.surname}
-                </Text>
-                <Text fontSize="sm" color="gray.500">
-                  {format(new Date(selectedMessage.created_at), 'dd.MM.yyyy HH:mm')}
-                </Text>
-                <Text>{selectedMessage.content}</Text>
-              </VStack>
-            ) : (
-              <VStack h="100%" justify="center" spacing={4}>
-                <EmailIcon boxSize={16} color="gray.400" />
-                <Text fontSize="xl" color="gray.500">
-                  {t.title[language]}
-                </Text>
-                <Button
-                  leftIcon={<EmailIcon />}
-                  colorScheme="blue"
-                  onClick={() => setComposeOpen(true)}
-                >
-                  {t.compose[language]}
-                </Button>
-              </VStack>
-            )}
+            <MessageDetail
+              message={selectedMessage}
+              onDelete={handleDelete}
+              onCompose={() => setComposeOpen(true)}
+              translations={{
+                from: t.from[language],
+                to: t.to[language],
+                title: t.title[language],
+                compose: t.compose[language],
+              }}
+            />
           </Box>
         </GridItem>
       </Grid>
