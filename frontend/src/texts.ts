@@ -762,5 +762,15 @@ export const texts = {
       cs: 'Žádné zprávy nenalezeny',
       en: 'No messages found',
     },
+    notification: {
+      subject: {
+        cs: 'Nová zpráva od',
+        en: 'New message from',
+      },
+      viewMessage: {
+        cs: 'Zobrazit zprávu',
+        en: 'View Message',
+      },
+    },
   },
 };

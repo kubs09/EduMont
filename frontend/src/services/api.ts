@@ -388,6 +388,7 @@ export const sendMessage = async (data: {
   to_user_ids: number[];
   subject: string;
   content: string;
+  language: string;
 }): Promise<Message> => {
   try {
     const response = await api.post<Message>('/api/messages', data);

@@ -221,7 +221,7 @@ const Messages: React.FC = () => {
         onClose={() => setComposeOpen(false)}
         onSend={async (data) => {
           try {
-            await sendMessage(data);
+            await sendMessage({ ...data, language });
             fetchMessages();
             enqueueSnackbar('Message sent', { variant: 'success' });
           } catch (error) {

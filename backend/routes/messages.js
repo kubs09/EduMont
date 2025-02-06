@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const auth = require('../middleware/auth');
+const { transporter } = require('../config/mail');
+const getMessageNotificationEmail = require('../templates/messageNotificationEmail');
 
 // Move /users route before /:id to avoid route conflicts
 router.get('/users', auth, async (req, res) => {
@@ -130,7 +132,6 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Message not found' });
     }
 
-    // Mark message as read if recipient is viewing it
     if (result.rows[0].to_user_id === req.user.id && !result.rows[0].read_at) {
       await pool.query('UPDATE messages SET read_at = NOW() WHERE id = $1', [req.params.id]);
     }
@@ -146,28 +147,105 @@ router.post('/', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const { to_user_ids, subject, content } = req.body;
+    const { to_user_ids, subject, content, language } = req.body;
     const from_user_id = req.user.id;
 
-    // Create all messages in a single query
-    const values = to_user_ids
-      .map((to_user_id) => `(${from_user_id}, ${to_user_id}, $1, $2)`)
-      .join(', ');
+    console.log('Creating message with:', {
+      to_user_ids,
+      subject,
+      content: content.substring(0, 50) + '...',
+      language,
+    });
 
-    const query = `
-      INSERT INTO messages (from_user_id, to_user_id, subject, content)
-      VALUES ${values}
-      RETURNING *;
-    `;
+    if (!Array.isArray(to_user_ids) || to_user_ids.length === 0) {
+      throw new Error('Invalid recipients');
+    }
 
-    const result = await client.query(query, [subject, content]);
+    // Get sender info for notification (simplified)
+    const senderResult = await client.query('SELECT firstname, surname FROM users WHERE id = $1', [
+      from_user_id,
+    ]);
+
+    const senderName = `${senderResult.rows[0].firstname} ${senderResult.rows[0].surname}`;
+    console.log('Sender:', senderName, 'Language:', language);
+
+    // Create single message and get its ID
+    const messageResult = await client.query(
+      'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4) RETURNING *',
+      [from_user_id, to_user_ids[0], subject, content]
+    );
+
+    const messageId = messageResult.rows[0].id;
+    console.log('Created message with ID:', messageId);
+
+    // Create additional messages for other recipients
+    if (to_user_ids.length > 1) {
+      const additionalValues = to_user_ids
+        .slice(1)
+        .map((id) => `(${from_user_id}, ${id}, $1, $2)`)
+        .join(', ');
+
+      if (additionalValues) {
+        await client.query(
+          `
+          INSERT INTO messages (from_user_id, to_user_id, subject, content)
+          VALUES ${additionalValues}
+        `,
+          [subject, content]
+        );
+      }
+    }
+
+    // Get recipient info and send notifications with sender's language
+    const recipientsResult = await client.query('SELECT id, email FROM users WHERE id = ANY($1)', [
+      to_user_ids,
+    ]);
+
+    console.log('Found recipients:', recipientsResult.rows.length);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    // Send notifications using provided language
+    for (const recipient of recipientsResult.rows) {
+      try {
+        console.log('Sending notification to:', recipient.email, 'Using language:', language);
+
+        const emailContent = getMessageNotificationEmail(
+          senderName,
+          messageId,
+          frontendUrl,
+          language // Use language from request
+        );
+
+        const mailResult = await transporter.sendMail({
+          from: process.env.SMTP_FROM,
+          to: recipient.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        });
+
+        console.log(
+          'Email sent successfully to:',
+          recipient.email,
+          'MessageId:',
+          mailResult.messageId,
+          'Language:',
+          language
+        );
+      } catch (emailError) {
+        console.error('Failed to send email to:', recipient.email, 'Error:', emailError);
+      }
+    }
+
     await client.query('COMMIT');
-
-    // Return only the first message for confirmation
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(messageResult.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Failed to send message' });
+    console.error('Message creation error:', error);
+    res.status(500).json({
+      error: 'Failed to send message',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
   } finally {
     client.release();
   }

@@ -124,4 +124,15 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Remove language parameter and use default 'en'
+    // ...rest of the code remains the same with 'en' as default language
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
