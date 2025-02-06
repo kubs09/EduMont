@@ -21,7 +21,6 @@ router.get('/', authenticateToken, async (req, res) => {
       JOIN users u ON c.parent_id = u.id
     `;
 
-    // If user is a parent, only show their children
     const params = [];
     if (req.user.role === 'parent') {
       query += ' WHERE c.parent_id = $1';
@@ -38,7 +37,6 @@ router.get('/', authenticateToken, async (req, res) => {
 
     res.json(result.rows);
   } catch (err) {
-    console.error('Database query error:', err);
     res.status(500).json({
       error: 'Failed to fetch children',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined,
@@ -54,7 +52,6 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const { firstname, surname, date_of_birth, parent_id, contact, notes } = req.body;
 
-    // Validate date format
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date_of_birth)) {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
@@ -69,7 +66,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Database query error:', err);
     res.status(500).json({ error: 'Failed to create child record' });
   }
 });
@@ -103,7 +99,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Database query error:', err);
     res.status(500).json({ error: 'Failed to update child record' });
   }
 });

@@ -13,25 +13,10 @@ import {
   Heading,
   useToast,
 } from '@chakra-ui/react';
-import { z } from 'zod';
-import { resetPassword } from '../services/api';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-
-const createSchema = (language: 'en' | 'cs') =>
-  z
-    .object({
-      password: z
-        .string()
-        .min(8, texts.profile.validation.newPasswordLength[language])
-        .regex(/[A-Z]/, texts.profile.validation.passwordUppercase[language])
-        .regex(/[0-9]/, texts.profile.validation.passwordNumber[language]),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      message: texts.profile.validation.passwordMatch[language],
-      path: ['confirmPassword'],
-    });
+import { resetPassword } from '../../services/api';
+import { texts } from '../../texts';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { createResetPasswordSchema, ResetPasswordSchema } from '../schemas/ResetPasswordSchema';
 
 const ResetPasswordPage = () => {
   const { language } = useLanguage();
@@ -44,20 +29,13 @@ const ResetPasswordPage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<ReturnType<typeof createSchema>>>({
-    resolver: zodResolver(createSchema(language)),
+  } = useForm<ResetPasswordSchema>({
+    resolver: zodResolver(createResetPasswordSchema(language)),
   });
 
-  const onSubmit = async (data: z.infer<ReturnType<typeof createSchema>>) => {
+  const onSubmit = async (data: ResetPasswordSchema) => {
     const rawToken = searchParams.get('token');
     const token = rawToken?.includes('=') ? rawToken.split('=').pop() : rawToken;
-
-    console.log('Reset attempt:', {
-      rawToken,
-      cleanToken: token,
-      tokenLength: token?.length,
-      timestamp: new Date().toISOString(),
-    });
 
     if (!token) {
       toast({
@@ -78,7 +56,6 @@ const ResetPasswordPage = () => {
       });
       navigate('/login');
     } catch (error) {
-      console.error('Reset error:', error);
       let errorMessage = texts.auth.resetPassword.error[language];
       if (error instanceof Error) {
         if (error.message.includes('Token is invalid')) {

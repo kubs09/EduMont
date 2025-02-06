@@ -18,9 +18,8 @@ async function migrate() {
     const schema = fs.readFileSync(schemaFile, 'utf8');
 
     await pool.query(schema);
-    console.log('Migration completed successfully');
   } catch (error) {
-    console.error('Migration failed:', error);
+    throw error;
   } finally {
     await pool.end();
   }

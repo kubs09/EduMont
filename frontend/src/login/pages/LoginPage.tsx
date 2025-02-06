@@ -16,11 +16,11 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
-import { login } from '../services/api';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { createLoginSchema, LoginFormData } from './schema';
-import { ROUTES } from '../shared/route';
+import { login } from '../../services/api';
+import { texts } from '../../texts';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { createLoginSchema, LoginFormData } from '../schemas/LoginSchema';
+import { ROUTES } from '../../shared/route';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string) => void;
@@ -45,9 +45,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
     try {
       const response = await login(data.email.trim(), data.password.trim());
-      console.log('Login success:', { role: response.role, id: response.id }); // Debug log
 
-      // Store all user data
       localStorage.setItem('token', response.token);
       localStorage.setItem('userName', `${response.firstname} ${response.surname}`);
       localStorage.setItem('userRole', response.role);
@@ -56,7 +54,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
       onLoginSuccess(response.token);
     } catch (err) {
-      console.error('Login error:', err); // Debug log
       const error = err as { status?: number; message?: string };
 
       if (error.status === 401) {

@@ -10,12 +10,10 @@ const auth = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('Decoded token:', decoded); // Debug log
 
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
     res.status(401).json({ error: 'Please authenticate' });
   }
 };

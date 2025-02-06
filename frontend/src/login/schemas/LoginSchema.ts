@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { texts } from '../texts';
+import { texts } from '../../texts';
 
 export const createLoginSchema = (language: 'en' | 'cs') => {
   return z.object({

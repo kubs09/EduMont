@@ -90,12 +90,10 @@ router.get('/', auth, async (req, res) => {
     const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching classes:', error);
     res.status(500).json({ error: 'Failed to fetch classes' });
   }
 });
 
-// Create a new class
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
@@ -130,14 +128,12 @@ router.post('/', auth, async (req, res) => {
     res.status(201).json({ id: classId });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error creating class:', error);
     res.status(500).json({ error: 'Failed to create class' });
   } finally {
     client.release();
   }
 });
 
-// Update a class
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
@@ -149,7 +145,6 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { name, description, teacherIds, childrenIds } = req.body;
 
-    // Only update class details if name or description is provided
     if (name || description) {
       const updates = [];
       const values = [];
@@ -231,7 +226,6 @@ router.delete('/:id', auth, async (req, res) => {
     res.json({ message: 'Class deleted successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error deleting class:', error);
     res.status(500).json({ error: 'Failed to delete class' });
   } finally {
     client.release();

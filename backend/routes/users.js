@@ -21,14 +21,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error('SMTP verification failed:', error);
-  } else {
-    console.log('SMTP server is ready to take our messages');
-  }
-});
-
 router.get('/', auth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -36,7 +28,6 @@ router.get('/', auth, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
@@ -44,9 +35,8 @@ router.get('/', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id; // Get the authenticated user's ID
+    const userId = req.user.id;
 
-    // Check if user is trying to update their own profile
     if (parseInt(id) !== userId) {
       return res.status(403).json({ error: 'You can only update your own profile' });
     }
@@ -64,7 +54,6 @@ router.put('/:id', auth, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error updating user:', error);
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
@@ -80,29 +69,24 @@ router.put('/:id/password', auth, async (req, res) => {
 
     const { currentPassword, newPassword } = req.body;
 
-    // Get current user's password hash
     const user = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
 
     if (user.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Verify current password
     const validPassword = await bcrypt.compare(currentPassword, user.rows[0].password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Current password is incorrect' });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password
     await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
 
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
-    console.error('Error changing password:', error);
     res.status(500).json({ error: 'Failed to change password' });
   }
 });
@@ -114,13 +98,11 @@ router.post('/', auth, async (req, res) => {
     await client.query('BEGIN');
     const { email, role, language = 'en' } = req.body;
 
-    // Check if user already exists
     const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       return res.status(409).json({ error: 'user_exists' });
     }
 
-    // Check if there's a pending invitation
     const existingInvitation = await client.query(
       'SELECT id FROM invitations WHERE email = $1 AND expires_at > NOW()',
       [email]
@@ -129,18 +111,15 @@ router.post('/', auth, async (req, res) => {
       return res.status(409).json({ error: 'invitation_exists' });
     }
 
-    // Create invitation token
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 48); // Token expires in 48 hours
+    expiresAt.setHours(expiresAt.getHours() + 48);
 
-    // Insert invitation
     await client.query(
       'INSERT INTO invitations (email, token, role, expires_at) VALUES ($1, $2, $3, $4)',
       [email, token, role, expiresAt]
     );
 
-    // Send invitation email
     const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
     const emailContent = getInvitationEmail(role, inviteUrl, language);
 
@@ -155,7 +134,6 @@ router.post('/', auth, async (req, res) => {
     res.status(201).json({ message: 'Invitation sent successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error creating invitation:', error);
     res.status(500).json({ error: 'Failed to create invitation' });
   } finally {
     client.release();
@@ -170,7 +148,6 @@ router.post('/register/:token', async (req, res) => {
     const { token } = req.params;
     const { firstname, surname, password } = req.body;
 
-    // Find and validate invitation
     const invitation = await client.query(
       'SELECT * FROM invitations WHERE token = $1 AND expires_at > NOW()',
       [token]
@@ -182,24 +159,20 @@ router.post('/register/:token', async (req, res) => {
 
     const { email, role } = invitation.rows[0];
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
     const result = await client.query(
       'INSERT INTO users (email, firstname, surname, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role',
       [email, firstname, surname, hashedPassword, role]
     );
 
-    // Delete used invitation
     await client.query('DELETE FROM invitations WHERE token = $1', [token]);
 
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error registering user:', error);
     res.status(500).json({ error: 'Failed to register user' });
   } finally {
     client.release();

@@ -13,18 +13,13 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { z } from 'zod';
-import { requestPasswordReset } from '../services/api';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-
-const createSchema = (language: 'en' | 'cs') =>
-  z.object({
-    email: z
-      .string()
-      .min(1, texts.profile.validation.emailRequired[language])
-      .email(texts.profile.validation.emailInvalid[language]),
-  });
+import { requestPasswordReset } from '../../services/api';
+import { texts } from '../../texts';
+import { useLanguage } from '../../shared/contexts/LanguageContext';
+import {
+  createForgotPasswordSchema,
+  ForgotPasswordFormData,
+} from '../schemas/ForgotPasswordSchema';
 
 const ForgotPasswordPage = () => {
   const { language } = useLanguage();
@@ -36,8 +31,8 @@ const ForgotPasswordPage = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<{ email: string }>({
-    resolver: zodResolver(createSchema(language)),
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(createForgotPasswordSchema(language)),
   });
 
   const onSubmit = async (data: { email: string }) => {

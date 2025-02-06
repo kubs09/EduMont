@@ -2,7 +2,7 @@ import { Route, Routes as RouterRoutes, Navigate, Outlet } from 'react-router-do
 import { ROUTES } from './shared/route';
 import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
-import LoginPage from './login/LoginPage';
+import LoginPage from './login/pages/LoginPage';
 import HomePage from './home/HomePage';
 import Dashboard from './children-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
@@ -12,8 +12,8 @@ import EditProfilePage from './profile/EditProfilePage';
 import ChangePasswordPage from './profile/ChangePasswordPage';
 import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
-import ForgotPasswordPage from './login/ForgotPasswordPage';
-import ResetPasswordPage from './login/ResetPasswordPage';
+import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
+import ResetPasswordPage from './login/pages/ResetPasswordPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
