@@ -750,5 +750,17 @@ export const texts = {
       cs: 'Obnovit',
       en: 'Refresh',
     },
+    search: {
+      cs: 'Hledat zprávy...',
+      en: 'Search messages...',
+    },
+    sortDate: {
+      cs: 'Datum',
+      en: 'Date',
+    },
+    noMessagesFound: {
+      cs: 'Žádné zprávy nenalezeny',
+      en: 'No messages found',
+    },
   },
 };

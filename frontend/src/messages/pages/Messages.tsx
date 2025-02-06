@@ -27,6 +27,10 @@ import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
 import { Message } from '../types/message';
 
+const POLL_INTERVAL = 5000;
+
+type SortDirection = 'asc' | 'desc';
+
 const Messages: React.FC = () => {
   const { language } = useLanguage();
   const { enqueueSnackbar } = useSnackbar();
@@ -37,6 +41,8 @@ const Messages: React.FC = () => {
   const [composeOpen, setComposeOpen] = useState(false);
   const [users, setUsers] = useState<Array<{ id: number; firstname: string; surname: string }>>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const fetchMessages = React.useCallback(async () => {
     setIsRefreshing(true);
@@ -53,12 +59,8 @@ const Messages: React.FC = () => {
   const fetchUsers = React.useCallback(async () => {
     try {
       const data = await getMessageUsers();
-      if (!data || data.length === 0) {
-        console.log('No users returned from API');
-      }
       setUsers(data);
     } catch (error) {
-      console.error('Error in fetchUsers:', error);
       enqueueSnackbar(texts.messages.fetchUsersError[language] || 'Failed to fetch users', {
         variant: 'error',
         autoHideDuration: 5000,
@@ -69,12 +71,16 @@ const Messages: React.FC = () => {
   useEffect(() => {
     fetchMessages();
     fetchUsers();
+
+    const interval = setInterval(fetchMessages, POLL_INTERVAL);
+    return () => clearInterval(interval);
   }, [fetchMessages, fetchUsers]);
 
   const handleMessageClick = async (id: number) => {
     try {
       const message = await getMessage(id);
       setSelectedMessage(message);
+      fetchMessages();
     } catch (error) {
       enqueueSnackbar('Failed to fetch message details', { variant: 'error' });
     }
@@ -94,6 +100,27 @@ const Messages: React.FC = () => {
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const receivedMessages = messages.filter((msg) => msg.to_user_id === currentUser.id);
   const sentMessages = messages.filter((msg) => msg.from_user_id === currentUser.id);
+
+  const filterAndSortMessages = (messages: Message[]) => {
+    let filtered = messages;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (msg) =>
+          msg.subject.toLowerCase().includes(query) ||
+          msg.content.toLowerCase().includes(query) ||
+          msg.from_user?.firstname.toLowerCase().includes(query) ||
+          msg.from_user?.surname.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+  };
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -136,20 +163,28 @@ const Messages: React.FC = () => {
               >
                 <TabPanel p={0}>
                   <MessageList
-                    messages={receivedMessages}
+                    messages={filterAndSortMessages(receivedMessages)}
                     selectedMessageId={selectedMessage?.id}
                     currentUserId={currentUser.id}
                     onMessageClick={handleMessageClick}
                     emptyMessage={t.noMessages[language]}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    sortDirection={sortDirection}
+                    onSortChange={setSortDirection}
                   />
                 </TabPanel>
                 <TabPanel p={0}>
                   <MessageList
-                    messages={sentMessages}
+                    messages={filterAndSortMessages(sentMessages)}
                     selectedMessageId={selectedMessage?.id}
                     currentUserId={currentUser.id}
                     onMessageClick={handleMessageClick}
                     emptyMessage={t.noMessages[language]}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    sortDirection={sortDirection}
+                    onSortChange={setSortDirection}
                   />
                 </TabPanel>
               </TabPanels>

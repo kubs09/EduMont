@@ -10,6 +10,7 @@ import {
   MenuItem,
   Show,
   Hide,
+  Circle,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +18,10 @@ import { texts } from '../../../texts';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ROUTES } from '../../route';
 import icon from './icon.png';
+import { useState, useEffect } from 'react';
+import { getMessages } from '../../../services/api';
+
+const POLL_INTERVAL = 5000;
 
 const Header = () => {
   const { language, setLanguage } = useLanguage();
@@ -25,6 +30,27 @@ const Header = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const messages = await getMessages();
+        const unread = messages.filter(
+          (m) => m.to_user_id === parseInt(localStorage.getItem('userId') || '0') && !m.read_at
+        ).length;
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUnreadCount(); // Initial fetch
+      const interval = setInterval(fetchUnreadCount, POLL_INTERVAL);
+      return () => clearInterval(interval); // Cleanup on unmount
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -83,6 +109,7 @@ const Header = () => {
       <Flex gap={{ base: 2, md: 4 }} align="center">
         {isAuthenticated && (
           <Button
+            position="relative"
             leftIcon={<EmailIcon />}
             colorScheme="whiteAlpha"
             onClick={handleMessages}
@@ -90,6 +117,20 @@ const Header = () => {
             px={{ base: 2, md: 4 }}
           >
             <Hide below="md">{texts.messages.title[language]}</Hide>
+            {unreadCount > 0 && (
+              <Circle
+                size="20px"
+                bg="red.500"
+                color="white"
+                position="absolute"
+                top="-8px"
+                right="-8px"
+                fontSize="xs"
+                fontWeight="bold"
+              >
+                {unreadCount}
+              </Circle>
+            )}
           </Button>
         )}
         <ButtonGroup spacing={{ base: 1, md: 2 }}>
