@@ -45,13 +45,15 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+// Add password reset routes before any other routes
+app.use('/api', passwordResetRoutes);
+
 // Routes
 app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/messages', require('./routes/messages')); // Add messages routes
-app.use('/api', passwordResetRoutes);
 
 // Catch-all handler for undefined routes
 app.use((req, res) => {

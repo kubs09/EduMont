@@ -123,6 +123,10 @@ export const texts = {
         cs: 'Nepodařilo se odeslat email',
         en: 'Failed to send email',
       },
+      checkEmail: {
+        cs: 'Pokud je email registrován, poslali jsme vám instrukce pro obnovení hesla.',
+        en: 'If the email is registered, we have sent you password reset instructions.',
+      },
       validation: {
         emailRequired: {
           cs: 'Email je povinný',

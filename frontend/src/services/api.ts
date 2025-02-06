@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // Set global timeout to 30 seconds
 });
 
 api.interceptors.request.use((config) => {
@@ -125,14 +126,30 @@ export const changePassword = async (
 
 export const requestPasswordReset = async (email: string, language: string): Promise<void> => {
   try {
-    await api.post('/api/forgot-password', { email, language });
+    console.log('Sending password reset request:', { email, language });
+
+    // Change from '/api/login/forgot-password' to '/api/forgot-password'
+    const response = await api.post('/api/forgot-password', {
+      email: email.toLowerCase(),
+      language,
+    });
+
+    console.log('Password reset response:', response.data);
+
+    if (!response.data.success) {
+      throw new Error('Failed to send reset email');
+    }
   } catch (error) {
+    console.error('Password reset failed:', error);
     if (error instanceof AxiosError) {
+      if (error.code === 'ECONNABORTED') {
+        throw new ApiError('Request timed out', 408);
+      }
       const status = error.response?.status;
-      const message = error.response?.data?.error || 'Password reset request failed';
+      const message = error.response?.data?.error || 'Failed to send reset email';
       throw new ApiError(message, status);
     }
-    throw error;
+    throw new ApiError('Failed to send reset email', 500);
   }
 };
 

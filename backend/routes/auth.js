@@ -4,6 +4,8 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const pool = require('../config/database');
+const { sendEmail } = require('../config/mail');
+const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
 
 router.post('/login', async (req, res) => {
   try {
@@ -105,13 +107,50 @@ router.post('/signup', async (req, res) => {
 });
 
 router.post('/forgot-password', async (req, res) => {
+  const client = await pool.connect();
   try {
-    const { email } = req.body;
-    // Remove language parameter and use default 'en'
-    // ...rest of the code remains the same with 'en' as default language
+    const { email, language } = req.body;
+    console.log('Starting forgot password process:', { email, language });
+
+    const userResult = await client.query(
+      'SELECT id, firstname, surname, email FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    // Always send a success response for security
+    if (userResult.rows.length === 0) {
+      console.log('User not found:', email);
+      return res.json({ success: true });
+    }
+
+    const user = userResult.rows[0];
+    const resetToken = crypto.randomBytes(32).toString('hex');
+
+    await client.query(
+      "UPDATE users SET reset_token = $1, reset_token_expiry = NOW() + interval '1 hour' WHERE id = $2",
+      [resetToken, user.id]
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+    const emailData = getForgotPasswordEmail(resetUrl, language || 'en');
+
+    await sendEmail({
+      to: user.email,
+      subject: emailData.subject,
+      html: emailData.html,
+      from: `EduMont <${process.env.SMTP_FROM}>`,
+    });
+
+    console.log('Password reset email sent successfully');
+    return res.json({ success: true });
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to process password reset request',
+    });
+  } finally {
+    client.release();
   }
 });
 
