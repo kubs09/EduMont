@@ -35,7 +35,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
     setIsSubmitting(true);
 
     try {
-      await api.post('/api/users', { email, role, language }); // Add language to the request
+      await api.post('/api/users', { email, role, language });
       toast({
         title: texts.userDashboard.success[language],
         status: 'success',
@@ -45,9 +45,26 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
       onClose();
       setEmail('');
       setRole('teacher');
-    } catch (error) {
+    } catch (error: unknown) {
+      interface ApiError extends Error {
+        response?: {
+          data: {
+            error?: string;
+          };
+        };
+      }
+      const errorResponse =
+        error instanceof Error && 'response' in error ? (error as ApiError).response?.data : null;
+      let errorMessage = texts.userDashboard.errorTitle[language];
+
+      if (errorResponse?.error === 'user_exists') {
+        errorMessage = texts.userDashboard.userExists[language];
+      } else if (errorResponse?.error === 'invitation_exists') {
+        errorMessage = texts.userDashboard.invitationExists[language];
+      }
+
       toast({
-        title: texts.userDashboard.errorTitle[language],
+        title: errorMessage,
         status: 'error',
         duration: 3000,
       });

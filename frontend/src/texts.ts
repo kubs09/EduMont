@@ -264,6 +264,14 @@ export const texts = {
       cs: 'Uživatel byl úspěšně vytvořen',
       en: 'User created successfully',
     },
+    userExists: {
+      cs: 'Uživatel s tímto emailem již existuje',
+      en: 'User with this email already exists',
+    },
+    invitationExists: {
+      cs: 'Pozvánka pro tento email již byla odeslána',
+      en: 'An invitation has already been sent to this email',
+    },
   },
   userTable: {
     name: {

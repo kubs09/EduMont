@@ -114,6 +114,21 @@ router.post('/', auth, async (req, res) => {
     await client.query('BEGIN');
     const { email, role, language = 'en' } = req.body;
 
+    // Check if user already exists
+    const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'user_exists' });
+    }
+
+    // Check if there's a pending invitation
+    const existingInvitation = await client.query(
+      'SELECT id FROM invitations WHERE email = $1 AND expires_at > NOW()',
+      [email]
+    );
+    if (existingInvitation.rows.length > 0) {
+      return res.status(409).json({ error: 'invitation_exists' });
+    }
+
     // Create invitation token
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date();
