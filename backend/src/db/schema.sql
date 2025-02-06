@@ -1,6 +1,6 @@
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS users, invitations, messages, children, classes, class_teachers, class_children CASCADE;
+DROP TABLE IF EXISTS class_history, users, invitations, messages, children, classes, class_teachers, class_children CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -9,7 +9,8 @@ CREATE TABLE users (
     password VARCHAR(100) NOT NULL,
     role user_role NOT NULL,
     reset_token VARCHAR(64),
-    reset_token_expiry TIMESTAMP
+    reset_token_expiry TIMESTAMP,
+    message_notifications BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE children (

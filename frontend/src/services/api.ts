@@ -41,7 +41,8 @@ interface LoginResponse {
   firstname: string;
   surname: string;
   role: string;
-  id: number; // Add id to the interface
+  id: number;
+  messageNotifications: boolean;
 }
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
@@ -61,6 +62,12 @@ export const login = async (email: string, password: string): Promise<LoginRespo
         firstname: response.data.firstname,
         surname: response.data.surname,
         role: response.data.role,
+      })
+    );
+    localStorage.setItem(
+      'userSettings',
+      JSON.stringify({
+        messageNotifications: response.data.messageNotifications,
       })
     );
 
@@ -464,6 +471,22 @@ export const getMessageUsers = async (): Promise<User[]> => {
       );
     }
     throw new Error('Failed to fetch users');
+  }
+};
+
+export const updateNotificationSettings = async (
+  userId: number,
+  settings: { messageNotifications: boolean }
+): Promise<void> => {
+  try {
+    await api.put(`/api/users/${userId}/notifications`, settings);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to update notification settings';
+      throw new ApiError(message, status);
+    }
+    throw error;
   }
 };
 

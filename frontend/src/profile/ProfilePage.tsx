@@ -11,11 +11,14 @@ import {
   useToast,
   Tr,
   Td,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { texts } from '../texts';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { ROUTES } from '../shared/route';
-import { getChildren } from '../services/api';
+import { getChildren, updateNotificationSettings } from '../services/api';
 import ProfileChildrenTable from './components/ProfileChildrenTable';
 import { Child } from '../types/child';
 
@@ -28,6 +31,15 @@ const ProfilePage = () => {
   const [firstName, lastName] = userName.split(' ');
   const [children, setChildren] = useState<Child[]>([]);
   const toast = useToast();
+  const [messageNotifications, setMessageNotifications] = useState<boolean>(() => {
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      const settings = JSON.parse(userSettings);
+      return settings.messageNotifications ?? true;
+    }
+    return true;
+  });
+  const userId = parseInt(localStorage.getItem('userId') || '0');
 
   useEffect(() => {
     if (userRole === 'parent') {
@@ -48,7 +60,37 @@ const ProfilePage = () => {
 
       fetchChildren();
     }
+
+    const userSettings = localStorage.getItem('userSettings');
+    if (userSettings) {
+      const { messageNotifications } = JSON.parse(userSettings);
+      setMessageNotifications(messageNotifications);
+    }
   }, [userRole, language, toast]);
+
+  const handleNotificationToggle = async () => {
+    try {
+      await updateNotificationSettings(userId, { messageNotifications: !messageNotifications });
+      setMessageNotifications(!messageNotifications);
+      localStorage.setItem(
+        'userSettings',
+        JSON.stringify({ messageNotifications: !messageNotifications })
+      );
+      toast({
+        title: texts.profile.notifications.updateSuccess[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.profile.notifications.updateError[language],
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <Box maxW="container.md" mx="auto" py={8} px={4}>
@@ -85,6 +127,24 @@ const ProfilePage = () => {
               {texts.profile.changePassword[language]}
             </Button>
           </Stack>
+        </CardBody>
+      </Card>
+
+      <Card mb={6}>
+        <CardBody>
+          <Heading size="md" mb={4}>
+            {texts.profile.notifications.title[language]}
+          </Heading>
+          <FormControl display="flex" alignItems="center">
+            <FormLabel htmlFor="message-notifications" mb="0">
+              {texts.profile.notifications.messages[language]}
+            </FormLabel>
+            <Switch
+              id="message-notifications"
+              isChecked={messageNotifications}
+              onChange={handleNotificationToggle}
+            />
+          </FormControl>
         </CardBody>
       </Card>
 

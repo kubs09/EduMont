@@ -91,6 +91,36 @@ router.put('/:id/password', auth, async (req, res) => {
   }
 });
 
+// Add this new route for notification settings
+router.put('/:id/notifications', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { messageNotifications } = req.body;
+    const userId = parseInt(req.params.id);
+
+    // Verify user is updating their own settings
+    if (userId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized to update other users settings' });
+    }
+
+    const result = await client.query(
+      'UPDATE users SET message_notifications = $1 WHERE id = $2 RETURNING message_notifications',
+      [messageNotifications, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ messageNotifications: result.rows[0].message_notifications });
+  } catch (error) {
+    console.error('Error updating notification settings:', error);
+    res.status(500).json({ error: 'Failed to update notification settings' });
+  } finally {
+    client.release();
+  }
+});
+
 router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
 

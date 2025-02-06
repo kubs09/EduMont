@@ -538,6 +538,24 @@ export const texts = {
         en: 'No children assigned yet',
       },
     },
+    notifications: {
+      title: {
+        cs: 'Nastavení upozornění',
+        en: 'Notification Settings',
+      },
+      messages: {
+        cs: 'Emailová upozornění na nové zprávy',
+        en: 'Email notifications for new messages',
+      },
+      updateSuccess: {
+        cs: 'Nastavení upozornění bylo aktualizováno',
+        en: 'Notification settings updated successfully',
+      },
+      updateError: {
+        cs: 'Nepodařilo se aktualizovat nastavení upozornění',
+        en: 'Failed to update notification settings',
+      },
+    },
   },
   invitation: {
     emailSubject: {

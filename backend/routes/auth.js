@@ -10,7 +10,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     const result = await pool.query(
-      'SELECT id, email, password as hash, firstname, surname, role FROM users WHERE email = $1',
+      'SELECT id, email, password as hash, firstname, surname, role, message_notifications FROM users WHERE email = $1',
       [email]
     );
 
@@ -37,6 +37,7 @@ router.post('/login', async (req, res) => {
       surname: user.surname,
       role: user.role,
       email: user.email,
+      messageNotifications: user.message_notifications,
     });
   } catch (error) {
     console.error('Login error:', error);

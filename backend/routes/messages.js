@@ -310,30 +310,33 @@ router.post('/', auth, async (req, res) => {
     }
 
     // Get recipient info and send notifications with sender's language
-    const recipientsResult = await client.query('SELECT id, email FROM users WHERE id = ANY($1)', [
-      to_user_ids,
-    ]);
+    const recipientsResult = await client.query(
+      'SELECT id, email, message_notifications FROM users WHERE id = ANY($1)',
+      [to_user_ids]
+    );
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    // Send notifications using provided language
+    // Only send emails to users who have notifications enabled
     for (const recipient of recipientsResult.rows) {
-      try {
-        const emailContent = getMessageNotificationEmail(
-          senderName,
-          messageId,
-          frontendUrl,
-          language // Use language from request
-        );
+      if (recipient.message_notifications) {
+        try {
+          const emailContent = getMessageNotificationEmail(
+            senderName,
+            messageId,
+            frontendUrl,
+            language // Use language from request
+          );
 
-        const mailResult = await transporter.sendMail({
-          from: process.env.SMTP_FROM,
-          to: recipient.email,
-          subject: emailContent.subject,
-          html: emailContent.html,
-        });
-      } catch (emailError) {
-        console.error('Failed to send email to:', recipient.email, 'Error:', emailError);
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: recipient.email,
+            subject: emailContent.subject,
+            html: emailContent.html,
+          });
+        } catch (emailError) {
+          console.error('Failed to send email to:', recipient.email, 'Error:', emailError);
+        }
       }
     }
 
