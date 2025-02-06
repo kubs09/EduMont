@@ -726,6 +726,22 @@ export const texts = {
         en: 'Enter notes for this day...',
       },
     },
+    editInfo: {
+      cs: 'Upravit informace',
+      en: 'Edit Info',
+    },
+    manageMembers: {
+      cs: 'Spravovat členy',
+      en: 'Manage Members',
+    },
+    editClassTitle: {
+      cs: 'Upravit informace o třídě',
+      en: 'Edit Class Information',
+    },
+    manageClassTitle: {
+      cs: 'Spravovat členy třídy',
+      en: 'Manage Class Members',
+    },
   },
   messages: {
     title: {

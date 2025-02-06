@@ -28,22 +28,24 @@ import {
   useDisclosure,
   Input,
   Textarea,
+  HStack,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '../../services/api';
 import { ROUTES } from '../../shared/route';
+import { EditClassInfoModal } from '../components/EditClassInfoModal';
+import { ManageClassMembersModal } from '../components/ManageClassMembersModal';
+import { Child } from 'types/child';
+
+import { Teacher } from 'types/teacher';
 
 interface Class {
   id: number;
   name: string;
   description: string;
-  teachers: Array<{
-    id: number;
-    firstname: string;
-    surname: string;
-  }>;
+  teachers: Teacher[];
   children: Array<{
     id: number;
     firstname: string;
@@ -66,6 +68,13 @@ interface ClassHistory {
   };
 }
 
+interface User {
+  id: number;
+  firstname: string;
+  surname: string;
+  role: string;
+}
+
 const ClassDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -76,16 +85,67 @@ const ClassDetailPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newHistoryDate, setNewHistoryDate] = useState('');
   const [newHistoryNotes, setNewHistoryNotes] = useState('');
+  const [isEditInfoModalOpen, setIsEditInfoModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
+  const [availableChildren, setAvailableChildren] = useState<Child[]>([]);
 
   useEffect(() => {
-    const fetchClassData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get(`/api/classes/${id}`);
-        setClassData(response.data);
+        const userJson = localStorage.getItem('user');
+        const userInfo = userJson ? JSON.parse(userJson) : null;
+        const isUserAdmin = userInfo?.role === 'admin';
+        setIsAdmin(isUserAdmin);
+
+        const fetchClassData = async () => {
+          try {
+            const response = await api.get(`/api/classes/${id}`);
+            setClassData(response.data);
+          } catch (error) {
+            toast({
+              title: 'Error',
+              description: 'Failed to load class data',
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        };
+
+        const fetchHistory = async () => {
+          try {
+            const response = await api.get(`/api/classes/${id}/history`);
+            setHistory(response.data);
+          } catch (error) {
+            toast({
+              title: 'Error',
+              description: 'Failed to load class history',
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        };
+
+        fetchClassData();
+        if (id) {
+          fetchHistory();
+        }
+
+        if (isUserAdmin) {
+          const [teachersResponse, childrenResponse] = await Promise.all([
+            api.get('/api/users?role=teacher'),
+            api.get('/api/children'),
+          ]);
+          setAvailableTeachers(teachersResponse.data);
+          setAvailableChildren(childrenResponse.data);
+        }
       } catch (error) {
         toast({
           title: 'Error',
-          description: 'Failed to load class data',
+          description: 'Failed to load data',
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -93,25 +153,7 @@ const ClassDetailPage = () => {
       }
     };
 
-    const fetchHistory = async () => {
-      try {
-        const response = await api.get(`/api/classes/${id}/history`);
-        setHistory(response.data);
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load class history',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchClassData();
-    if (id) {
-      fetchHistory();
-    }
+    fetchData();
   }, [id, toast]);
 
   const handleAddHistory = async () => {
@@ -144,6 +186,65 @@ const ClassDetailPage = () => {
       toast({
         title: 'Error',
         description: 'Failed to delete history entry',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSaveClassInfo = async (updatedInfo: { name: string; description: string }) => {
+    if (!classData || !id) return;
+
+    try {
+      await api.put(`/api/classes/${id}`, {
+        ...updatedInfo,
+        teacherIds: classData.teachers.map((t) => t.id),
+        childrenIds: classData.children.map((c) => c.id),
+      });
+
+      const updatedClass = await api.get(`/api/classes/${id}`);
+      setClassData(updatedClass.data);
+
+      toast({
+        title: texts.classes.updateSuccess[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.classes.updateError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleSaveClassMembers = async (teacherIds: number[], childrenIds: number[]) => {
+    if (!classData || !id) return;
+
+    try {
+      await api.put(`/api/classes/${id}`, {
+        name: classData.name,
+        description: classData.description,
+        teacherIds,
+        childrenIds,
+      });
+
+      const updatedClass = await api.get(`/api/classes/${id}`);
+      setClassData(updatedClass.data);
+
+      toast({
+        title: texts.classes.updateSuccess[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.classes.updateError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -186,6 +287,16 @@ const ClassDetailPage = () => {
                   ))}
                 </Box>
               </VStack>
+              {isAdmin && (
+                <HStack mt={4} spacing={4}>
+                  <Button colorScheme="blue" onClick={() => setIsEditInfoModalOpen(true)}>
+                    {texts.classes.editInfo[language]}
+                  </Button>
+                  <Button colorScheme="blue" onClick={() => setIsMembersModalOpen(true)}>
+                    {texts.classes.manageMembers[language]}
+                  </Button>
+                </HStack>
+              )}
             </CardBody>
           </Card>
         </GridItem>
@@ -289,6 +400,25 @@ const ClassDetailPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {isAdmin && classData && (
+        <>
+          <EditClassInfoModal
+            isOpen={isEditInfoModalOpen}
+            onClose={() => setIsEditInfoModalOpen(false)}
+            classData={classData}
+            onSave={handleSaveClassInfo}
+          />
+          <ManageClassMembersModal
+            isOpen={isMembersModalOpen}
+            onClose={() => setIsMembersModalOpen(false)}
+            classData={classData}
+            availableTeachers={availableTeachers}
+            availableChildren={availableChildren}
+            onSave={handleSaveClassMembers}
+          />
+        </>
+      )}
     </Box>
   );
 };
