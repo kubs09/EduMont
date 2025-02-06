@@ -149,28 +149,55 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { name, description, teacherIds, childrenIds } = req.body;
 
-    await client.query('UPDATE classes SET name = $1, description = $2 WHERE id = $3', [
-      name,
-      description,
-      id,
-    ]);
+    // Only update class details if name or description is provided
+    if (name || description) {
+      const updates = [];
+      const values = [];
+      let paramCount = 1;
 
-    // Update teachers
-    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
-    if (teacherIds?.length) {
-      const teacherValues = teacherIds.map((teacherId) => `(${id}, ${teacherId})`).join(',');
-      await client.query(`
-        INSERT INTO class_teachers (class_id, teacher_id) VALUES ${teacherValues}
-      `);
+      if (name !== undefined) {
+        updates.push(`name = $${paramCount}`);
+        values.push(name);
+        paramCount++;
+      }
+
+      if (description !== undefined) {
+        updates.push(`description = $${paramCount}`);
+        values.push(description);
+        paramCount++;
+      }
+
+      if (updates.length > 0) {
+        values.push(id);
+        await client.query(
+          `UPDATE classes 
+           SET ${updates.join(', ')} 
+           WHERE id = $${paramCount}`,
+          values
+        );
+      }
     }
 
-    // Update children
-    await client.query('DELETE FROM class_children WHERE class_id = $1', [id]);
-    if (childrenIds?.length) {
-      const childrenValues = childrenIds.map((childId) => `(${id}, ${childId})`).join(',');
-      await client.query(`
-        INSERT INTO class_children (class_id, child_id) VALUES ${childrenValues}
-      `);
+    // Update teachers if provided
+    if (Array.isArray(teacherIds)) {
+      await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
+      if (teacherIds.length > 0) {
+        const teacherValues = teacherIds.map((teacherId) => `(${id}, ${teacherId})`).join(',');
+        await client.query(`
+          INSERT INTO class_teachers (class_id, teacher_id) VALUES ${teacherValues}
+        `);
+      }
+    }
+
+    // Update children if provided
+    if (Array.isArray(childrenIds)) {
+      await client.query('DELETE FROM class_children WHERE class_id = $1', [id]);
+      if (childrenIds.length > 0) {
+        const childrenValues = childrenIds.map((childId) => `(${id}, ${childId})`).join(',');
+        await client.query(`
+          INSERT INTO class_children (class_id, child_id) VALUES ${childrenValues}
+        `);
+      }
     }
 
     await client.query('COMMIT');

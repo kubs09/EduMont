@@ -610,6 +610,10 @@ export const texts = {
     },
   },
   classes: {
+    action: {
+      cs: 'Akce',
+      en: 'Action',
+    },
     menuItem: {
       cs: 'Třídy',
       en: 'Classes',
@@ -637,6 +641,44 @@ export const texts = {
     children: {
       cs: 'Děti',
       en: 'Children',
+    },
+    manageClass: {
+      cs: 'Správa třídy',
+      en: 'Manage Class',
+    },
+    saveChanges: {
+      cs: 'Uložit změny',
+      en: 'Save Changes',
+    },
+    cancel: {
+      cs: 'Zrušit',
+      en: 'Cancel',
+    },
+    selectTeachers: {
+      cs: 'Vybrat učitele',
+      en: 'Select Teachers',
+    },
+    selectChildren: {
+      cs: 'Vybrat děti',
+      en: 'Select Children',
+    },
+    updateSuccess: {
+      cs: 'Třída byla úspěšně aktualizována',
+      en: 'Class updated successfully',
+    },
+    updateError: {
+      cs: 'Nepodařilo se aktualizovat třídu',
+      en: 'Failed to update class',
+    },
+    validation: {
+      teacherRequired: {
+        cs: 'Třída musí mít alespoň jednoho učitele',
+        en: 'Class must have at least one teacher',
+      },
+      childRequired: {
+        cs: 'Třída musí mít alespoň jedno dítě',
+        en: 'Class must have at least one child',
+      },
     },
   },
 };

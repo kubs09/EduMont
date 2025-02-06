@@ -50,7 +50,20 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       email,
       password,
     });
-    console.log('Login response:', response.data); // Add debug logging
+
+    // Store both token and user info
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: response.data.id,
+        email: response.data.email,
+        firstname: response.data.firstname,
+        surname: response.data.surname,
+        role: response.data.role,
+      })
+    );
+
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
