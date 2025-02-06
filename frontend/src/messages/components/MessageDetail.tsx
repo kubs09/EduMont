@@ -38,11 +38,24 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
 
   return (
     <VStack align="stretch" spacing={4}>
-      <HStack justify="space-between">
-        <Text fontSize="2xl">{message.subject}</Text>
-        <HStack>
-          <IconButton icon={<RepeatIcon />} aria-label="Reply" onClick={onCompose} />
+      <HStack
+        justify="space-between"
+        flexDir={{ base: 'column', sm: 'row' }}
+        spacing={{ base: 2, sm: 0 }}
+        align={{ base: 'stretch', sm: 'center' }}
+      >
+        <Text fontSize={{ base: 'xl', md: '2xl' }} noOfLines={1}>
+          {message.subject}
+        </Text>
+        <HStack justify={{ base: 'flex-end', sm: 'flex-start' }}>
           <IconButton
+            size={{ base: 'sm', md: 'md' }}
+            icon={<RepeatIcon />}
+            aria-label="Reply"
+            onClick={onCompose}
+          />
+          <IconButton
+            size={{ base: 'sm', md: 'md' }}
             icon={<DeleteIcon />}
             aria-label="Delete"
             onClick={() => onDelete(message.id)}

@@ -70,9 +70,9 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }}>
       <ModalOverlay />
-      <ModalContent maxWidth="800px">
+      <ModalContent maxWidth={{ base: '100%', md: '800px' }} m={{ base: 0, md: 4 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>{t.compose[language]}</ModalHeader>
           <ModalCloseButton />
@@ -92,7 +92,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                       borderWidth={1}
                       borderRadius="md"
                     >
-                      <SimpleGrid columns={2} spacing={2}>
+                      <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={2}>
                         {users.map((user) => (
                           <Checkbox
                             key={user.id}

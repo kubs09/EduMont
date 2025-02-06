@@ -8,6 +8,8 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Show,
+  Hide,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -54,7 +56,7 @@ const Header = () => {
   return (
     <Flex
       as="header"
-      p={4}
+      p={{ base: 2, md: 4 }}
       bg="brand.primary.900"
       color="white"
       borderBottomWidth={1}
@@ -71,22 +73,31 @@ const Header = () => {
         display="flex"
         alignItems="center"
       >
-        <Flex align="center" gap={4}>
-          <Image src={icon} alt="EduMont logo" height="50px" />
-          <Heading size="xl">EduMont</Heading>
+        <Flex align="center" gap={{ base: 2, md: 4 }}>
+          <Image src={icon} alt="EduMont logo" height={{ base: '40px', md: '50px' }} />
+          <Hide below="md">
+            <Heading size={{ base: 'lg', md: 'xl' }}>EduMont</Heading>
+          </Hide>
         </Flex>
       </Button>
-      <Flex gap={4}>
+      <Flex gap={{ base: 2, md: 4 }} align="center">
         {isAuthenticated && (
-          <Button leftIcon={<EmailIcon />} colorScheme="whiteAlpha" onClick={handleMessages}>
-            {texts.messages.title[language]}
+          <Button
+            leftIcon={<EmailIcon />}
+            colorScheme="whiteAlpha"
+            onClick={handleMessages}
+            size={{ base: 'sm', md: 'md' }}
+            px={{ base: 2, md: 4 }}
+          >
+            <Hide below="md">{texts.messages.title[language]}</Hide>
           </Button>
         )}
-        <ButtonGroup>
+        <ButtonGroup spacing={{ base: 1, md: 2 }}>
           <Button
             colorScheme="whiteAlpha"
             variant={language === 'cs' ? 'solid' : 'outline'}
             onClick={() => setLanguage('cs')}
+            size={{ base: 'sm', md: 'md' }}
           >
             CZ
           </Button>
@@ -94,14 +105,21 @@ const Header = () => {
             colorScheme="whiteAlpha"
             variant={language === 'en' ? 'solid' : 'outline'}
             onClick={() => setLanguage('en')}
+            size={{ base: 'sm', md: 'md' }}
           >
             EN
           </Button>
         </ButtonGroup>
         {isAuthenticated ? (
           <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} colorScheme="whiteAlpha">
-              {userName}
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              colorScheme="whiteAlpha"
+              size={{ base: 'sm', md: 'md' }}
+            >
+              <Hide below="md">{userName}</Hide>
+              <Show below="md">👤</Show>
             </MenuButton>
             <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
               <MenuItem
@@ -137,7 +155,7 @@ const Header = () => {
             </MenuList>
           </Menu>
         ) : (
-          <Button colorScheme="whiteAlpha" onClick={handleLogin}>
+          <Button colorScheme="whiteAlpha" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
             {texts.auth.login[language]}
           </Button>
         )}

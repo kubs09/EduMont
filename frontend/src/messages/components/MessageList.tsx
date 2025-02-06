@@ -35,15 +35,17 @@ const MessageList: React.FC<MessageListProps> = ({
       {messages.map((message) => (
         <React.Fragment key={message.id}>
           <ListItem
-            p={3}
+            p={{ base: 2, md: 3 }}
             cursor="pointer"
             bg={selectedMessageId === message.id ? 'gray.100' : 'transparent'}
             _hover={{ bg: 'gray.50' }}
             onClick={() => onMessageClick(message.id)}
           >
-            <VStack align="stretch" spacing={1}>
-              <Text fontWeight="bold">{message.subject}</Text>
-              <Text fontSize="sm" color="gray.600">
+            <VStack align="stretch" spacing={{ base: 0.5, md: 1 }}>
+              <Text fontWeight="bold" fontSize={{ base: 'sm', md: 'md' }} noOfLines={1}>
+                {message.subject}
+              </Text>
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" noOfLines={1}>
                 {message.from_user_id === currentUserId ? (
                   <>
                     To:{' '}
@@ -57,7 +59,7 @@ const MessageList: React.FC<MessageListProps> = ({
                   </>
                 )}
               </Text>
-              <Text fontSize="sm" color="gray.500">
+              <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
                 {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
               </Text>
             </VStack>

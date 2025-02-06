@@ -116,13 +116,13 @@ const Messages: React.FC = () => {
           </Button>
         </GridItem>
 
-        <GridItem colSpan={4}>
+        <GridItem colSpan={{ base: 12, md: 5, lg: 4 }}>
           <Box
             bg={bgColor}
             borderRadius="md"
             borderWidth="1px"
             borderColor={borderColor}
-            h="calc(100vh - 200px)"
+            h={{ base: 'calc(50vh - 100px)', md: 'calc(100vh - 250px)' }}
             overflow="hidden"
           >
             <Tabs isFitted variant="enclosed">
@@ -130,7 +130,10 @@ const Messages: React.FC = () => {
                 <Tab>{t.inbox[language]}</Tab>
                 <Tab>{t.sent[language]}</Tab>
               </TabList>
-              <TabPanels overflow="auto" maxH="calc(100vh - 270px)">
+              <TabPanels
+                overflow="auto"
+                maxH={{ base: 'calc(50vh - 170px)', md: 'calc(100vh - 320px)' }}
+              >
                 <TabPanel p={0}>
                   <MessageList
                     messages={receivedMessages}
@@ -154,13 +157,13 @@ const Messages: React.FC = () => {
           </Box>
         </GridItem>
 
-        <GridItem colSpan={8}>
+        <GridItem colSpan={{ base: 12, md: 7, lg: 8 }}>
           <Box
             bg={bgColor}
             borderRadius="md"
             borderWidth="1px"
             borderColor={borderColor}
-            h="calc(100vh - 200px)"
+            h={{ base: 'calc(50vh - 100px)', md: 'calc(100vh - 250px)' }}
             p={4}
           >
             <MessageDetail
