@@ -9,7 +9,6 @@ const getMessageNotificationEmail = require('../templates/messageNotificationEma
 // Move /users route before /:id to avoid route conflicts
 router.get('/users', auth, async (req, res) => {
   try {
-    console.log('Fetching users for messages, current user:', req.user.id);
     const result = await pool.query(
       `SELECT id, firstname, surname, email, role 
        FROM users 
@@ -17,10 +16,8 @@ router.get('/users', auth, async (req, res) => {
        ORDER BY role, surname, firstname`,
       [req.user.id]
     );
-    console.log(`Found ${result.rows.length} users`);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error in /messages/users:', error);
     res.status(500).json({ error: 'Failed to fetch users', details: error.message });
   }
 });
@@ -150,24 +147,15 @@ router.post('/', auth, async (req, res) => {
     const { to_user_ids, subject, content, language } = req.body;
     const from_user_id = req.user.id;
 
-    console.log('Creating message with:', {
-      to_user_ids,
-      subject,
-      content: content.substring(0, 50) + '...',
-      language,
-    });
-
     if (!Array.isArray(to_user_ids) || to_user_ids.length === 0) {
       throw new Error('Invalid recipients');
     }
 
-    // Get sender info for notification (simplified)
     const senderResult = await client.query('SELECT firstname, surname FROM users WHERE id = $1', [
       from_user_id,
     ]);
 
     const senderName = `${senderResult.rows[0].firstname} ${senderResult.rows[0].surname}`;
-    console.log('Sender:', senderName, 'Language:', language);
 
     // Create single message and get its ID
     const messageResult = await client.query(
@@ -176,7 +164,6 @@ router.post('/', auth, async (req, res) => {
     );
 
     const messageId = messageResult.rows[0].id;
-    console.log('Created message with ID:', messageId);
 
     // Create additional messages for other recipients
     if (to_user_ids.length > 1) {
@@ -201,15 +188,11 @@ router.post('/', auth, async (req, res) => {
       to_user_ids,
     ]);
 
-    console.log('Found recipients:', recipientsResult.rows.length);
-
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     // Send notifications using provided language
     for (const recipient of recipientsResult.rows) {
       try {
-        console.log('Sending notification to:', recipient.email, 'Using language:', language);
-
         const emailContent = getMessageNotificationEmail(
           senderName,
           messageId,
@@ -223,15 +206,6 @@ router.post('/', auth, async (req, res) => {
           subject: emailContent.subject,
           html: emailContent.html,
         });
-
-        console.log(
-          'Email sent successfully to:',
-          recipient.email,
-          'MessageId:',
-          mailResult.messageId,
-          'Language:',
-          language
-        );
       } catch (emailError) {
         console.error('Failed to send email to:', recipient.email, 'Error:', emailError);
       }

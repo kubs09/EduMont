@@ -26,23 +26,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 pool
   .connect()
   .then(() => {
-    console.log('Database connected successfully');
     return initDatabase();
   })
   .catch((err) => {
-    console.error('Database setup error:', err);
     process.exit(1);
   });
 
 // Add before routes
 app.use((req, res, next) => {
-  console.log('Request:', {
-    method: req.method,
-    path: req.path,
-    body: req.body,
-    query: req.query,
-    params: req.params,
-  });
   next();
 });
 
@@ -69,7 +60,6 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
   res.status(500).json({
     error: 'Internal server error',
     details: process.env.DEBUG === 'true' ? err.message : undefined,

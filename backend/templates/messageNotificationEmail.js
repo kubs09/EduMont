@@ -1,7 +1,5 @@
 /* eslint-disable */
 const getMessageNotificationEmail = (senderName, messageId, frontendUrl, language = 'en') => {
-  console.log('Generating email template with:', { senderName, messageId, frontendUrl, language });
-
   const translations = {
     subject: {
       cs: 'Dostali jste novou zprávu',
@@ -30,7 +28,6 @@ const getMessageNotificationEmail = (senderName, messageId, frontendUrl, languag
   };
 
   const viewUrl = `${frontendUrl}/messages/${messageId}`;
-  console.log('View URL:', viewUrl);
 
   return {
     subject: `${translations.subject[language]}`,

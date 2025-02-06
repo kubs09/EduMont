@@ -29,28 +29,11 @@ const sendEmail = async ({ to, subject, html, from }) => {
       html,
     };
 
-    console.log('Sending email:', {
-      to: mailOptions.to,
-      subject: mailOptions.subject,
-      from: mailOptions.from,
-    });
-
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', info.messageId);
     return info;
   } catch (error) {
-    console.error('Email sending failed:', error);
     throw error;
   }
 };
-
-// Verify transporter connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('SMTP connection error:', error);
-  } else {
-    console.log('SMTP server is ready to send messages');
-  }
-});
 
 module.exports = { sendEmail, transporter };

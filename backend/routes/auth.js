@@ -8,12 +8,6 @@ const pool = require('../config/database');
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt:', {
-      email,
-      password,
-      passwordLength: password.length,
-      trimmedLength: password.trim().length,
-    });
 
     const result = await pool.query(
       'SELECT id, email, password as hash, firstname, surname, role FROM users WHERE email = $1',
@@ -21,29 +15,14 @@ router.post('/login', async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      console.log('User not found:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
-    console.log('Found user:', {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      hash: user.hash, // Log the stored hash for debugging
-    });
 
     const validPassword = await bcrypt.compare(password.trim(), user.hash);
-    console.log('Password comparison:', {
-      inputPassword: password,
-      trimmedPassword: password.trim(),
-      hash: user.hash,
-      isValid: validPassword,
-      bcryptVersion: bcrypt.getRounds(user.hash),
-    });
 
     if (!validPassword) {
-      console.log('Invalid password for user:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
