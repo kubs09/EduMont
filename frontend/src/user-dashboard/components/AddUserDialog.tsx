@@ -73,7 +73,12 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
           </FormControl>
           <FormControl mt={4} isRequired>
             <FormLabel>{texts.userDashboard.roleLabel[language]}</FormLabel>
-            <Select value={role} onChange={(e) => setRole(e.target.value as any)}>
+            <Select
+              value={role}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setRole(e.target.value as 'admin' | 'teacher' | 'parent')
+              }
+            >
               <option value="admin">{texts.userTable.roles.admin[language]}</option>
               <option value="teacher">{texts.userTable.roles.teacher[language]}</option>
               <option value="parent">{texts.userTable.roles.parent[language]}</option>
