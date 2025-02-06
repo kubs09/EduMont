@@ -96,8 +96,8 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
   try {
-    const classDetails = await pool.query(
-      `SELECT 
+    let query = `
+      SELECT 
         c.id,
         c.name,
         c.description,
@@ -112,10 +112,18 @@ router.get('/:id', auth, async (req, res) => {
           'surname', ch.surname,
           'date_of_birth', ch.date_of_birth,
           'contact', ch.contact,
+          'parent_id', ch.parent_id,
           'parent_firstname', p.firstname,
           'parent_surname', p.surname,
           'parent_email', p.email
-        )) as children
+        )) FILTER (WHERE ch.id IS NOT NULL`;
+
+    // Add parent filtering condition
+    if (req.user.role === 'parent') {
+      query += ` AND ch.parent_id = ${req.user.id}`;
+    }
+
+    query += `) as children
       FROM classes c
       LEFT JOIN class_teachers ct ON c.id = ct.class_id
       LEFT JOIN users t ON ct.teacher_id = t.id
@@ -123,9 +131,9 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN children ch ON cc.child_id = ch.id
       LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1
-      GROUP BY c.id, c.name, c.description`,
-      [req.params.id]
-    );
+      GROUP BY c.id, c.name, c.description`;
+
+    const classDetails = await pool.query(query, [req.params.id]);
 
     if (classDetails.rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
@@ -329,7 +337,9 @@ router.get('/:id/history', auth, async (req, res) => {
 // Add class history entry
 router.post('/:id/history', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res.status(403).json({ error: 'Unauthorized' });
+    return res
+      .status(403)
+      .json({ error: 'Only teachers and administrators can add history entries' });
   }
 
   try {
@@ -347,7 +357,9 @@ router.post('/:id/history', auth, async (req, res) => {
 // Delete class history entry
 router.delete('/:classId/history/:historyId', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res.status(403).json({ error: 'Unauthorized' });
+    return res
+      .status(403)
+      .json({ error: 'Only teachers and administrators can delete history entries' });
   }
 
   try {

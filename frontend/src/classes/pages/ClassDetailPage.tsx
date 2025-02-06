@@ -53,6 +53,7 @@ interface Class {
     age: number;
     parent: string;
     contact: string;
+    parent_id: number;
   }>;
 }
 
@@ -88,6 +89,9 @@ const ClassDetailPage = () => {
   const [isEditInfoModalOpen, setIsEditInfoModalOpen] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTeacher, setIsTeacher] = useState(false);
+  const [isParent, setIsParent] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
   const [availableChildren, setAvailableChildren] = useState<Child[]>([]);
 
@@ -97,7 +101,12 @@ const ClassDetailPage = () => {
         const userJson = localStorage.getItem('user');
         const userInfo = userJson ? JSON.parse(userJson) : null;
         const isUserAdmin = userInfo?.role === 'admin';
+        const isUserTeacher = userInfo?.role === 'teacher';
+        const isUserParent = userInfo?.role === 'parent';
         setIsAdmin(isUserAdmin);
+        setIsTeacher(isUserTeacher);
+        setIsParent(isUserParent);
+        setCurrentUserId(userInfo?.id || null);
 
         const fetchClassData = async () => {
           try {
@@ -252,6 +261,16 @@ const ClassDetailPage = () => {
     }
   };
 
+  const getVisibleChildren = () => {
+    if (!classData) return [];
+    if (isAdmin || isTeacher) return classData.children;
+    if (isParent) {
+      // For parents, only show their own children
+      return classData.children.filter((child) => child.parent_id === currentUserId);
+    }
+    return [];
+  };
+
   if (!classData) {
     return null;
   }
@@ -304,7 +323,11 @@ const ClassDetailPage = () => {
         <GridItem colSpan={{ base: 12, md: 8 }}>
           <Card>
             <CardHeader>
-              <Heading size="md">{texts.classes.detail.students[language]}</Heading>
+              <Heading size="md">
+                {isParent
+                  ? texts.classes.detail.myChildren[language]
+                  : texts.classes.detail.students[language]}
+              </Heading>
             </CardHeader>
             <CardBody>
               <Table variant="simple">
@@ -313,18 +336,18 @@ const ClassDetailPage = () => {
                     <Th>{texts.childrenTable.firstname[language]}</Th>
                     <Th>{texts.childrenTable.surname[language]}</Th>
                     <Th>{texts.childrenTable.age[language]}</Th>
-                    <Th>{texts.childrenTable.parent[language]}</Th>
-                    <Th>{texts.childrenTable.contact[language]}</Th>
+                    {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
+                    {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {classData.children.map((child) => (
+                  {getVisibleChildren().map((child) => (
                     <Tr key={child.id}>
                       <Td>{child.firstname}</Td>
                       <Td>{child.surname}</Td>
                       <Td>{child.age}</Td>
-                      <Td>{child.parent}</Td>
-                      <Td>{child.contact}</Td>
+                      {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
+                      {(isAdmin || isTeacher) && <Td>{child.contact}</Td>}
                     </Tr>
                   ))}
                 </Tbody>
@@ -339,16 +362,18 @@ const ClassDetailPage = () => {
           <Heading size="md">{texts.classes.detail.history[language]}</Heading>
         </CardHeader>
         <CardBody>
-          <Button mb={4} colorScheme="blue" onClick={onOpen}>
-            {texts.classes.detail.addHistory[language]}
-          </Button>
+          {(isAdmin || isTeacher) && (
+            <Button mb={4} colorScheme="blue" onClick={onOpen}>
+              {texts.classes.detail.addHistory[language]}
+            </Button>
+          )}
           <Table variant="simple">
             <Thead>
               <Tr>
                 <Th>{texts.classes.detail.date[language]}</Th>
                 <Th>{texts.classes.detail.notes[language]}</Th>
                 <Th>{texts.classes.detail.createdBy[language]}</Th>
-                <Th>{texts.common.actions[language]}</Th>
+                {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
               </Tr>
             </Thead>
             <Tbody>
@@ -357,15 +382,17 @@ const ClassDetailPage = () => {
                   <Td>{new Date(entry.date).toLocaleDateString()}</Td>
                   <Td>{entry.notes}</Td>
                   <Td>{`${entry.created_by.firstname} ${entry.created_by.surname}`}</Td>
-                  <Td>
-                    <Button
-                      size="sm"
-                      colorScheme="red"
-                      onClick={() => handleDeleteHistory(entry.id)}
-                    >
-                      {texts.common.delete[language]}
-                    </Button>
-                  </Td>
+                  {(isAdmin || isTeacher) && (
+                    <Td>
+                      <Button
+                        size="sm"
+                        colorScheme="red"
+                        onClick={() => handleDeleteHistory(entry.id)}
+                      >
+                        {texts.common.delete[language]}
+                      </Button>
+                    </Td>
+                  )}
                 </Tr>
               ))}
             </Tbody>
@@ -373,33 +400,35 @@ const ClassDetailPage = () => {
         </CardBody>
       </Card>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{texts.classes.detail.addHistory[language]}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4}>
-              <Input
-                type="date"
-                value={newHistoryDate}
-                onChange={(e) => setNewHistoryDate(e.target.value)}
-              />
-              <Textarea
-                value={newHistoryNotes}
-                onChange={(e) => setNewHistoryNotes(e.target.value)}
-                placeholder={texts.classes.detail.notesPlaceholder[language]}
-              />
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleAddHistory}>
-              {texts.common.save[language]}
-            </Button>
-            <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {(isAdmin || isTeacher) && (
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>{texts.classes.detail.addHistory[language]}</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <VStack spacing={4}>
+                <Input
+                  type="date"
+                  value={newHistoryDate}
+                  onChange={(e) => setNewHistoryDate(e.target.value)}
+                />
+                <Textarea
+                  value={newHistoryNotes}
+                  onChange={(e) => setNewHistoryNotes(e.target.value)}
+                  placeholder={texts.classes.detail.notesPlaceholder[language]}
+                />
+              </VStack>
+            </ModalBody>
+            <ModalFooter>
+              <Button colorScheme="blue" mr={3} onClick={handleAddHistory}>
+                {texts.common.save[language]}
+              </Button>
+              <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
 
       {isAdmin && classData && (
         <>

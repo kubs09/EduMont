@@ -725,6 +725,10 @@ export const texts = {
         cs: 'Zadejte poznámky k tomuto dni...',
         en: 'Enter notes for this day...',
       },
+      myChildren: {
+        cs: 'Moje děti',
+        en: 'My Children',
+      },
     },
     editInfo: {
       cs: 'Upravit informace',
