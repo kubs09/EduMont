@@ -818,6 +818,24 @@ export const texts = {
         en: 'View Message',
       },
     },
+    roleGroups: {
+      admin: {
+        cs: 'Administrátoři',
+        en: 'Administrators',
+      },
+      teacher: {
+        cs: 'Učitelé',
+        en: 'Teachers',
+      },
+      parent: {
+        cs: 'Rodiče',
+        en: 'Parents',
+      },
+    },
+    classLabel: {
+      cs: 'Třída:',
+      en: 'Class:',
+    },
   },
   common: {
     actions: {

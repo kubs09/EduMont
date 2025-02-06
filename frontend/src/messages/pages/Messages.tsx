@@ -39,7 +39,9 @@ const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [users, setUsers] = useState<Array<{ id: number; firstname: string; surname: string }>>([]);
+  const [users, setUsers] = useState<
+    Array<{ id: number; firstname: string; surname: string; role: string }>
+  >([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
