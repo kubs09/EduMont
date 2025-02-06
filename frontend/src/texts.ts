@@ -680,6 +680,52 @@ export const texts = {
         en: 'Class must have at least one child',
       },
     },
+    detail: {
+      title: {
+        cs: 'Detail třídy',
+        en: 'Class Detail',
+      },
+      backToList: {
+        cs: 'Zpět na seznam tříd',
+        en: 'Back to Class List',
+      },
+      info: {
+        cs: 'Informace o třídě',
+        en: 'Class Information',
+      },
+      teachers: {
+        cs: 'Učitelé',
+        en: 'Teachers',
+      },
+      students: {
+        cs: 'Studenti',
+        en: 'Students',
+      },
+      history: {
+        cs: 'Historie třídy',
+        en: 'Class History',
+      },
+      date: {
+        cs: 'Datum',
+        en: 'Date',
+      },
+      notes: {
+        cs: 'Poznámky',
+        en: 'Notes',
+      },
+      createdBy: {
+        cs: 'Vytvořil(a)',
+        en: 'Created by',
+      },
+      addHistory: {
+        cs: 'Přidat záznam',
+        en: 'Add Entry',
+      },
+      notesPlaceholder: {
+        cs: 'Zadejte poznámky k tomuto dni...',
+        en: 'Enter notes for this day...',
+      },
+    },
   },
   messages: {
     title: {
@@ -771,6 +817,24 @@ export const texts = {
         cs: 'Zobrazit zprávu',
         en: 'View Message',
       },
+    },
+  },
+  common: {
+    actions: {
+      cs: 'Akce',
+      en: 'Actions',
+    },
+    delete: {
+      cs: 'Smazat',
+      en: 'Delete',
+    },
+    save: {
+      cs: 'Uložit',
+      en: 'Save',
+    },
+    cancel: {
+      cs: 'Zrušit',
+      en: 'Cancel',
     },
   },
 };

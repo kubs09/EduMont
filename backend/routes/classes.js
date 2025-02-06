@@ -94,6 +94,73 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const classDetails = await pool.query(
+      `SELECT 
+        c.id,
+        c.name,
+        c.description,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', t.id,
+          'firstname', t.firstname,
+          'surname', t.surname
+        )) as teachers,
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', ch.id,
+          'firstname', ch.firstname,
+          'surname', ch.surname,
+          'date_of_birth', ch.date_of_birth,
+          'contact', ch.contact,
+          'parent_firstname', p.firstname,
+          'parent_surname', p.surname,
+          'parent_email', p.email
+        )) as children
+      FROM classes c
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id
+      LEFT JOIN users t ON ct.teacher_id = t.id
+      LEFT JOIN class_children cc ON c.id = cc.class_id
+      LEFT JOIN children ch ON cc.child_id = ch.id
+      LEFT JOIN users p ON ch.parent_id = p.id
+      WHERE c.id = $1
+      GROUP BY c.id, c.name, c.description`,
+      [req.params.id]
+    );
+
+    if (classDetails.rows.length === 0) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    const result = classDetails.rows[0];
+
+    // Calculate age for each child
+    if (result.children[0] !== null) {
+      result.children = result.children.map((child) => ({
+        ...child,
+        age: calculateAge(child.date_of_birth),
+        parent: `${child.parent_firstname} ${child.parent_surname}`,
+      }));
+    }
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch class details' });
+  }
+});
+
+function calculateAge(birthDate) {
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+
+  return age;
+}
+
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
@@ -229,6 +296,68 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete class' });
   } finally {
     client.release();
+  }
+});
+
+// Get class history
+router.get('/:id/history', auth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT 
+        ch.id,
+        ch.date,
+        ch.notes,
+        ch.created_at,
+        json_build_object(
+          'id', u.id,
+          'firstname', u.firstname,
+          'surname', u.surname
+        ) as created_by
+      FROM class_history ch
+      LEFT JOIN users u ON ch.created_by = u.id
+      WHERE ch.class_id = $1
+      ORDER BY ch.date DESC`,
+      [req.params.id]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch class history' });
+  }
+});
+
+// Add class history entry
+router.post('/:id/history', auth, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const { date, notes } = req.body;
+    const result = await pool.query(
+      'INSERT INTO class_history (class_id, date, notes, created_by) VALUES ($1, $2, $3, $4) RETURNING *',
+      [req.params.id, date, notes, req.user.id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create history entry' });
+  }
+});
+
+// Delete class history entry
+router.delete('/:classId/history/:historyId', auth, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    await pool.query('DELETE FROM class_history WHERE id = $1 AND class_id = $2', [
+      req.params.historyId,
+      req.params.classId,
+    ]);
+    res.json({ message: 'History entry deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete history entry' });
   }
 });
 

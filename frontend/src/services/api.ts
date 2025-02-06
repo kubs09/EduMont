@@ -259,6 +259,11 @@ interface ClassChild {
   id: number;
   firstname: string;
   surname: string;
+  date_of_birth: string;
+  age: number;
+  contact: string;
+  parent: string;
+  parent_email: string;
 }
 
 interface Class {
@@ -328,6 +333,20 @@ export const deleteClass = async (classId: number): Promise<void> => {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
       const message = error.response?.data?.error || 'Failed to delete class';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const getClass = async (id: number): Promise<Class> => {
+  try {
+    const response = await api.get<Class>(`/api/classes/${id}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to fetch class';
       throw new ApiError(message, status);
     }
     throw error;

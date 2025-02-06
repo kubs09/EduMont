@@ -18,6 +18,7 @@ import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '../../services/api';
 import { ManageClassModal } from '../components/ManageClassModal';
+import { useNavigate } from 'react-router-dom';
 
 interface Teacher {
   id: number;
@@ -48,6 +49,7 @@ interface User {
 }
 
 const ClassesPage = () => {
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const [classes, setClasses] = useState<Class[]>([]);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
@@ -127,6 +129,10 @@ const ClassesPage = () => {
     }
   };
 
+  const handleViewDetail = (classId: number) => {
+    navigate(`/classes/${classId}`);
+  };
+
   return (
     <Box p={4}>
       <Heading mb={6}>{texts.classes.title[language]}</Heading>
@@ -145,7 +151,12 @@ const ClassesPage = () => {
           </Thead>
           <Tbody>
             {classes.map((cls) => (
-              <Tr key={cls.id}>
+              <Tr
+                key={cls.id}
+                cursor="pointer"
+                _hover={{ bg: 'gray.50' }}
+                onClick={() => handleViewDetail(cls.id)}
+              >
                 <Td>{cls.name}</Td>
                 <Td>{cls.description}</Td>
                 <Td>
