@@ -7,6 +7,7 @@ import { ROUTES } from './shared/route';
 import { LanguageProvider } from './shared/contexts/LanguageContext';
 import Header from './shared/atoms/header/Header';
 import Footer from './shared/atoms/footer/Footer';
+import { SnackbarProvider } from 'notistack';
 
 function App(): React.ReactElement {
   const [isAuthenticated, setIsAuthenticated] = React.useState(!!localStorage.getItem('token'));
@@ -20,11 +21,13 @@ function App(): React.ReactElement {
     <React.StrictMode>
       <ChakraProvider theme={theme}>
         <LanguageProvider>
-          <BrowserRouter>
-            <Header />
-            <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
-            <Footer />
-          </BrowserRouter>
+          <SnackbarProvider maxSnack={3}>
+            <BrowserRouter>
+              <Header />
+              <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
+              <Footer />
+            </BrowserRouter>
+          </SnackbarProvider>
         </LanguageProvider>
       </ChakraProvider>
     </React.StrictMode>

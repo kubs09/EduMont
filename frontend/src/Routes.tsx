@@ -14,6 +14,7 @@ import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
 import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
+import Messages from './pages/Messages';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -55,6 +56,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       {/* Protected routes */}
       <Route element={<RequireAuth isAuthenticated={isAuthenticated} />}>
         <Route element={<AuthLayout />}>
+          <Route path={ROUTES.MESSAGES} element={<Messages />} />
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
@@ -67,7 +69,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       {/* Catch all route */}
       <Route
         path="*"
-        element={<Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN} replace />}
+        element={<Navigate to={isAuthenticated ? ROUTES.MESSAGES : ROUTES.LOGIN} replace />}
       />
     </RouterRoutes>
   );

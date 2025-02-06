@@ -9,7 +9,7 @@ import {
   MenuList,
   MenuItem,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '../../../texts';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -47,6 +47,10 @@ const Header = () => {
     navigate(ROUTES.CLASSES);
   };
 
+  const handleMessages = () => {
+    navigate(ROUTES.MESSAGES);
+  };
+
   return (
     <Flex
       as="header"
@@ -73,6 +77,11 @@ const Header = () => {
         </Flex>
       </Button>
       <Flex gap={4}>
+        {isAuthenticated && (
+          <Button leftIcon={<EmailIcon />} colorScheme="whiteAlpha" onClick={handleMessages}>
+            {texts.messages.title[language]}
+          </Button>
+        )}
         <ButtonGroup>
           <Button
             colorScheme="whiteAlpha"

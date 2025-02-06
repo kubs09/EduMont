@@ -1,6 +1,6 @@
 export const ROUTES = {
   LOGIN: '/login',
-  DASHBOARD: '/dashboard',
+  DASHBOARD: '/messages', // Changed from '/dashboard'
   ROOT: '/',
   UNAUTHORIZED: '/unauthorized',
   USER_DASHBOARD: '/users',

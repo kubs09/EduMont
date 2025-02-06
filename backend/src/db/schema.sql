@@ -50,6 +50,21 @@ CREATE TABLE class_children (
     PRIMARY KEY (class_id, child_id)
 );
 
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    subject VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    from_user_id INTEGER REFERENCES users(id),
+    to_user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP,
+    deleted_by_sender BOOLEAN DEFAULT FALSE,
+    deleted_by_recipient BOOLEAN DEFAULT FALSE
+);
+
+CREATE INDEX idx_messages_from_user ON messages(from_user_id);
+CREATE INDEX idx_messages_to_user ON messages(to_user_id);
+
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64),
 ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;

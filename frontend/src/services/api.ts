@@ -334,4 +334,114 @@ export const deleteClass = async (classId: number): Promise<void> => {
   }
 };
 
+interface Message {
+  id: number;
+  subject: string;
+  content: string;
+  from_user_id: number;
+  to_user_id: number;
+  created_at: string;
+  read_at: string | null;
+  from_user?: {
+    firstname: string;
+    surname: string;
+    email: string;
+  };
+  to_user?: {
+    firstname: string;
+    surname: string;
+    email: string;
+  };
+}
+
+export const getMessages = async (): Promise<Message[]> => {
+  try {
+    const response = await api.get<Message[]>('/api/messages');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch messages',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const getMessage = async (id: number): Promise<Message> => {
+  try {
+    const response = await api.get<Message>(`/api/messages/${id}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch message',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const sendMessage = async (data: {
+  to_user_id: number;
+  subject: string;
+  content: string;
+}): Promise<Message> => {
+  try {
+    const response = await api.post<Message>('/api/messages', data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to send message',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const deleteMessage = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/api/messages/${id}`);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to delete message',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+interface User {
+  id: number;
+  firstname: string;
+  surname: string;
+  email: string;
+  role: string;
+}
+
+export const getMessageUsers = async (): Promise<User[]> => {
+  try {
+    const response = await api.get<User[]>('/api/messages/users');
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch users',
+        error.response?.status
+      );
+    }
+    throw new Error('Failed to fetch users');
+  }
+};
+
 export default api;
