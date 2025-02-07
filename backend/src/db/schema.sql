@@ -36,7 +36,10 @@ CREATE TABLE classes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    min_age INTEGER NOT NULL,
+    max_age INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (min_age >= 0 AND max_age >= min_age)
 );
 
 CREATE TABLE class_teachers (
@@ -48,6 +51,8 @@ CREATE TABLE class_teachers (
 CREATE TABLE class_children (
     class_id INTEGER REFERENCES classes(id),
     child_id INTEGER REFERENCES children(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    confirmed BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (class_id, child_id)
 );
 
@@ -99,11 +104,11 @@ ON CONFLICT (email) DO NOTHING;
 -- Insert children with correct parent_id references and proper date casting
 INSERT INTO children (firstname, surname, date_of_birth, parent_id, contact, notes)
 SELECT 
-    'Jakub', 'Novák', DATE '2018-01-01', u.id, 'petr.novak@example.com', 'Alergie na ořechy'
+    'Jakub', 'Novák', DATE '2022-01-01', u.id, 'petr.novak@example.com', 'Alergie na ořechy'
 FROM users u WHERE u.email = 'petr.novak@example.com'
 UNION ALL
 SELECT 
-    'Ema', 'Dvořáková', DATE '2019-01-01', u.id, 'lucie.dvorakova@example.com', 'Bez speciálních požadavků'
+    'Ema', 'Dvořáková', DATE '2020-01-01', u.id, 'lucie.dvorakova@example.com', 'Bez speciálních požadavků'
 FROM users u WHERE u.email = 'lucie.dvorakova@example.com'
 UNION ALL
 SELECT 
@@ -111,9 +116,10 @@ SELECT
 FROM users u WHERE u.email = 'karel.svoboda@example.com';
 
 -- Insert sample class
-INSERT INTO classes (name, description) VALUES
-('Morning Stars', 'Morning group for children aged 3-4'),
-('Afternoon Explorers', 'Afternoon group for children aged 4-5');
+INSERT INTO classes (name, description, min_age, max_age) VALUES
+('Morning Stars', 'Morning group for children aged 3-4', 3, 4),
+('Afternoon Explorers', 'Afternoon group for children aged 4-5', 4, 5),
+('Evening warriors', 'Evening group for children aged 6-10', 6, 10);
 
 -- Assign teachers to classes
 WITH teacher_ids AS (
@@ -128,15 +134,16 @@ SELECT 2, id FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
 UNION ALL
 SELECT 2, id FROM teacher_ids WHERE email = 'martin.novotny@example.com';
 
--- Assign children to classes
-WITH child_ids AS (
-  SELECT ch.id, ch.firstname, p.email as parent_email
-  FROM children ch
-  JOIN users p ON ch.parent_id = p.id
-)
-INSERT INTO class_children (class_id, child_id)
-SELECT 1, id FROM child_ids WHERE parent_email = 'petr.novak@example.com'  -- Jakub Novák -> Morning Stars
-UNION ALL
-SELECT 1, id FROM child_ids WHERE parent_email = 'lucie.dvorakova@example.com'  -- Ema Dvořáková -> Morning Stars
-UNION ALL
-SELECT 2, id FROM child_ids WHERE parent_email = 'karel.svoboda@example.com';  -- Tereza Svobodová -> Afternoon Explorers
+-- Auto-assign children to classes based on age
+INSERT INTO class_children (class_id, child_id, confirmed)
+SELECT 
+    c.id,
+    ch.id,
+    TRUE
+FROM children ch
+CROSS JOIN LATERAL (
+    SELECT id 
+    FROM classes c
+    WHERE EXTRACT(YEAR FROM AGE(CURRENT_DATE, ch.date_of_birth)) BETWEEN c.min_age AND c.max_age
+    LIMIT 1
+) c;

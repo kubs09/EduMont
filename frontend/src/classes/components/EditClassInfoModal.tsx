@@ -21,6 +21,8 @@ interface Class {
   id: number;
   name: string;
   description: string;
+  min_age: number;
+  max_age: number;
   teachers: Teacher[];
   children: Array<{ id: number; firstname: string; surname: string }>;
 }
@@ -29,7 +31,12 @@ interface EditClassInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   classData: Class;
-  onSave: (updatedInfo: { name: string; description: string }) => Promise<void>;
+  onSave: (updatedInfo: {
+    name: string;
+    description: string;
+    min_age: number;
+    max_age: number;
+  }) => Promise<void>;
 }
 
 export const EditClassInfoModal = ({
@@ -41,9 +48,16 @@ export const EditClassInfoModal = ({
   const { language } = useLanguage();
   const [name, setName] = useState(classData.name);
   const [description, setDescription] = useState(classData.description);
+  const [minAge, setMinAge] = useState(classData.min_age);
+  const [maxAge, setMaxAge] = useState(classData.max_age);
 
   const handleSave = async () => {
-    await onSave({ name, description });
+    await onSave({
+      name,
+      description,
+      min_age: minAge,
+      max_age: maxAge,
+    });
     onClose();
   };
 
@@ -61,6 +75,24 @@ export const EditClassInfoModal = ({
           <FormControl mt={4}>
             <FormLabel>{texts.classes.description[language]}</FormLabel>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+          </FormControl>
+          <FormControl mt={4}>
+            <FormLabel>{texts.classes.minAge[language]}</FormLabel>
+            <Input
+              type="number"
+              value={minAge}
+              onChange={(e) => setMinAge(parseInt(e.target.value))}
+              min={0}
+            />
+          </FormControl>
+          <FormControl mt={4}>
+            <FormLabel>{texts.classes.maxAge[language]}</FormLabel>
+            <Input
+              type="number"
+              value={maxAge}
+              onChange={(e) => setMaxAge(parseInt(e.target.value))}
+              min={minAge}
+            />
           </FormControl>
         </ModalBody>
         <ModalFooter>

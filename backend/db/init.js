@@ -6,7 +6,9 @@ const initDatabase = async () => {
     CREATE TABLE IF NOT EXISTS classes (
       id SERIAL PRIMARY KEY,
       name VARCHAR(100) NOT NULL,
-      description TEXT
+      description TEXT,
+      min_age INTEGER,
+      max_age INTEGER
     );
   `;
 
@@ -22,6 +24,7 @@ const initDatabase = async () => {
     CREATE TABLE IF NOT EXISTS class_children (
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
       child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
+      confirmed BOOLEAN DEFAULT FALSE,
       PRIMARY KEY (class_id, child_id)
     );
   `;

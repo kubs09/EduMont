@@ -5,92 +5,122 @@ const pool = require('../config/database');
 const auth = require('../middleware/auth');
 
 router.get('/', auth, async (req, res) => {
+  const client = await pool.connect();
   try {
+    console.log('Classes request from user:', req.user);
     let query = '';
     const params = [];
 
-    if (req.user.role === 'admin') {
+    if (req.user.role === 'admin' || req.user.role === 'teacher') {
       query = `
         SELECT 
           c.id,
           c.name,
           c.description,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', u.id,
-            'firstname', u.firstname,
-            'surname', u.surname
-          )) FILTER (WHERE u.id IS NOT NULL) as teachers,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname
-          )) FILTER (WHERE ch.id IS NOT NULL) as children
+          c.min_age,
+          c.max_age,
+          COALESCE(
+            (SELECT json_agg(
+              json_build_object(
+                'id', u.id,
+                'firstname', u.firstname,
+                'surname', u.surname
+              )
+            )
+            FROM class_teachers ct
+            JOIN users u ON ct.teacher_id = u.id
+            WHERE ct.class_id = c.id),
+            '[]'
+          ) as teachers,
+          COALESCE(
+            (SELECT json_agg(
+              json_build_object(
+                'id', ch.id,
+                'firstname', ch.firstname,
+                'surname', ch.surname,
+                'date_of_birth', ch.date_of_birth,
+                'contact', ch.contact,
+                'parent_firstname', p.firstname,
+                'parent_surname', p.surname,
+                'parent_email', p.email,
+                'confirmed', cc.confirmed
+              )
+            )
+            FROM class_children cc
+            JOIN children ch ON cc.child_id = ch.id
+            JOIN users p ON ch.parent_id = p.id
+            WHERE cc.class_id = c.id),
+            '[]'
+          ) as children
         FROM classes c
-        LEFT JOIN class_teachers ct ON c.id = ct.class_id
-        LEFT JOIN users u ON ct.teacher_id = u.id
-        LEFT JOIN class_children cc ON c.id = cc.class_id
-        LEFT JOIN children ch ON cc.child_id = ch.id
-        GROUP BY c.id
-        ORDER BY c.name
       `;
-    } else if (req.user.role === 'teacher') {
-      query = `
-        SELECT 
-          c.id,
-          c.name,
-          c.description,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', u.id,
-            'firstname', u.firstname,
-            'surname', u.surname
-          )) FILTER (WHERE u.id IS NOT NULL) as teachers,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname
-          )) FILTER (WHERE ch.id IS NOT NULL) as children
-        FROM classes c
-        LEFT JOIN class_teachers ct ON c.id = ct.class_id
-        LEFT JOIN users u ON ct.teacher_id = u.id
-        LEFT JOIN class_children cc ON c.id = cc.class_id
-        LEFT JOIN children ch ON cc.child_id = ch.id
-        WHERE ct.teacher_id = $1
-        GROUP BY c.id
-        ORDER BY c.name
-      `;
-      params.push(req.user.id);
+
+      if (req.user.role === 'teacher') {
+        query += ` WHERE EXISTS (
+          SELECT 1 FROM class_teachers ct 
+          WHERE ct.class_id = c.id AND ct.teacher_id = $1
+        )`;
+        params.push(req.user.id);
+      }
+
+      query += ' ORDER BY c.name';
     } else if (req.user.role === 'parent') {
       query = `
         SELECT 
           c.id,
           c.name,
           c.description,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', u.id,
-            'firstname', u.firstname,
-            'surname', u.surname
-          )) FILTER (WHERE u.id IS NOT NULL) as teachers,
-          json_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname
-          )) FILTER (WHERE ch.id IS NOT NULL) as children
+          c.min_age,
+          c.max_age,
+          COALESCE(
+            (SELECT json_agg(
+              json_build_object(
+                'id', u.id,
+                'firstname', u.firstname,
+                'surname', u.surname
+              )
+            )
+            FROM class_teachers ct
+            JOIN users u ON ct.teacher_id = u.id
+            WHERE ct.class_id = c.id),
+            '[]'
+          ) as teachers,
+          COALESCE(
+            (SELECT json_agg(
+              json_build_object(
+                'id', ch.id,
+                'firstname', ch.firstname,
+                'surname', ch.surname
+              )
+            )
+            FROM class_children cc
+            JOIN children ch ON cc.child_id = ch.id
+            WHERE cc.class_id = c.id AND ch.parent_id = $1),
+            '[]'
+          ) as children
         FROM classes c
-        LEFT JOIN class_teachers ct ON c.id = ct.class_id
-        LEFT JOIN users u ON ct.teacher_id = u.id
-        LEFT JOIN class_children cc ON c.id = cc.class_id
-        LEFT JOIN children ch ON cc.child_id = ch.id
-        WHERE ch.parent_id = $1
-        GROUP BY c.id
+        WHERE EXISTS (
+          SELECT 1 FROM class_children cc
+          JOIN children ch ON cc.child_id = ch.id
+          WHERE cc.class_id = c.id AND ch.parent_id = $1
+        )
         ORDER BY c.name
       `;
       params.push(req.user.id);
     }
 
-    const result = await pool.query(query, params);
+    console.log('Executing query:', query, 'with params:', params);
+    const result = await client.query(query, params);
+    console.log('Query result:', result.rows);
     res.json(result.rows);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch classes' });
+    console.error('Error in /classes:', error);
+    res.status(500).json({
+      error: 'Failed to fetch classes',
+      details: error.message,
+    });
+  } finally {
+    client.release();
   }
 });
 
@@ -169,6 +199,76 @@ function calculateAge(birthDate) {
   return age;
 }
 
+// New endpoint to trigger automatic class assignment
+router.post('/auto-assign', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only administrators can trigger auto-assignment' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // First, clear all unconfirmed assignments
+    await client.query('DELETE FROM class_children WHERE confirmed = FALSE');
+
+    // Get all children who aren't assigned to any class or have unconfirmed assignments
+    const childrenQuery = `
+      SELECT id, date_of_birth 
+      FROM children ch
+      WHERE NOT EXISTS (
+        SELECT 1 FROM class_children cc 
+        WHERE cc.child_id = ch.id AND cc.confirmed = TRUE
+      )
+    `;
+    const childrenResult = await client.query(childrenQuery);
+
+    // Get all classes with their age ranges
+    const classesQuery = 'SELECT id, min_age, max_age FROM classes ORDER BY min_age';
+    const classesResult = await client.query(classesQuery);
+
+    console.log('Children to assign:', childrenResult.rows.length);
+    console.log('Available classes:', classesResult.rows);
+
+    // For each child, find the most appropriate class based on age
+    for (const child of childrenResult.rows) {
+      const age = calculateAge(child.date_of_birth);
+      console.log(`Processing child ID ${child.id}, age: ${age}`);
+
+      // Find the most appropriate class for this age
+      const suitableClass = classesResult.rows.find((c) => age >= c.min_age && age <= c.max_age);
+
+      if (suitableClass) {
+        console.log(
+          `Assigning to class ${suitableClass.id} (${suitableClass.min_age}-${suitableClass.max_age})`
+        );
+        await client.query(
+          `INSERT INTO class_children (class_id, child_id, confirmed, created_at) 
+           VALUES ($1, $2, FALSE, CURRENT_TIMESTAMP)
+           ON CONFLICT (class_id, child_id) 
+           DO UPDATE SET confirmed = FALSE, created_at = CURRENT_TIMESTAMP`,
+          [suitableClass.id, child.id]
+        );
+      } else {
+        console.log(`No suitable class found for child ${child.id} (age: ${age})`);
+      }
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Automatic class assignment completed' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error in auto-assignment:', error);
+    res.status(500).json({
+      error: 'Failed to perform automatic class assignment',
+      details: error.message,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+// Modify the create class endpoint to include age range
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
@@ -177,11 +277,11 @@ router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { name, description, teacherIds, childrenIds } = req.body;
+    const { name, description, min_age, max_age, teacherIds } = req.body;
 
     const classResult = await client.query(
-      'INSERT INTO classes (name, description) VALUES ($1, $2) RETURNING id',
-      [name, description]
+      'INSERT INTO classes (name, description, min_age, max_age) VALUES ($1, $2, $3, $4) RETURNING id',
+      [name, description, min_age, max_age]
     );
     const classId = classResult.rows[0].id;
 
@@ -189,13 +289,6 @@ router.post('/', auth, async (req, res) => {
       const teacherValues = teacherIds.map((id) => `(${classId}, ${id})`).join(',');
       await client.query(`
         INSERT INTO class_teachers (class_id, teacher_id) VALUES ${teacherValues}
-      `);
-    }
-
-    if (childrenIds?.length) {
-      const childrenValues = childrenIds.map((id) => `(${classId}, ${id})`).join(',');
-      await client.query(`
-        INSERT INTO class_children (class_id, child_id) VALUES ${childrenValues}
       `);
     }
 
@@ -209,6 +302,23 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// Add endpoint to confirm child's class assignment
+router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Only administrators can confirm class assignments' });
+  }
+
+  try {
+    await pool.query(
+      'UPDATE class_children SET confirmed = TRUE WHERE class_id = $1 AND child_id = $2',
+      [req.params.classId, req.params.childId]
+    );
+    res.json({ message: 'Class assignment confirmed' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to confirm class assignment' });
+  }
+});
+
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
@@ -218,35 +328,12 @@ router.put('/:id', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
     const { id } = req.params;
-    const { name, description, teacherIds, childrenIds } = req.body;
+    const { name, description, min_age, max_age, teacherIds } = req.body;
 
-    if (name || description) {
-      const updates = [];
-      const values = [];
-      let paramCount = 1;
-
-      if (name !== undefined) {
-        updates.push(`name = $${paramCount}`);
-        values.push(name);
-        paramCount++;
-      }
-
-      if (description !== undefined) {
-        updates.push(`description = $${paramCount}`);
-        values.push(description);
-        paramCount++;
-      }
-
-      if (updates.length > 0) {
-        values.push(id);
-        await client.query(
-          `UPDATE classes 
-           SET ${updates.join(', ')} 
-           WHERE id = $${paramCount}`,
-          values
-        );
-      }
-    }
+    await client.query(
+      'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
+      [name, description, min_age, max_age, id]
+    );
 
     // Update teachers if provided
     if (Array.isArray(teacherIds)) {
@@ -259,22 +346,10 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
-    // Update children if provided
-    if (Array.isArray(childrenIds)) {
-      await client.query('DELETE FROM class_children WHERE class_id = $1', [id]);
-      if (childrenIds.length > 0) {
-        const childrenValues = childrenIds.map((childId) => `(${id}, ${childId})`).join(',');
-        await client.query(`
-          INSERT INTO class_children (class_id, child_id) VALUES ${childrenValues}
-        `);
-      }
-    }
-
     await client.query('COMMIT');
     res.json({ message: 'Class updated successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error updating class:', error);
     res.status(500).json({ error: 'Failed to update class' });
   } finally {
     client.release();

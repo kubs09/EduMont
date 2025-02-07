@@ -36,8 +36,7 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '../../services/api';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
-import { ManageClassMembersModal } from '../components/ManageClassMembersModal';
-import { Child } from 'types/child';
+import { ManageClassTeachersModal } from '../components/ManageClassMembersModal';
 
 import { Teacher } from 'types/teacher';
 
@@ -45,6 +44,8 @@ interface Class {
   id: number;
   name: string;
   description: string;
+  min_age: number;
+  max_age: number;
   teachers: Teacher[];
   children: Array<{
     id: number;
@@ -93,7 +94,6 @@ const ClassDetailPage = () => {
   const [isParent, setIsParent] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
-  const [availableChildren, setAvailableChildren] = useState<Child[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,12 +144,8 @@ const ClassDetailPage = () => {
         }
 
         if (isUserAdmin) {
-          const [teachersResponse, childrenResponse] = await Promise.all([
-            api.get('/api/users?role=teacher'),
-            api.get('/api/children'),
-          ]);
+          const teachersResponse = await api.get('/api/users?role=teacher');
           setAvailableTeachers(teachersResponse.data);
-          setAvailableChildren(childrenResponse.data);
         }
       } catch (error) {
         toast({
@@ -202,44 +198,19 @@ const ClassDetailPage = () => {
     }
   };
 
-  const handleSaveClassInfo = async (updatedInfo: { name: string; description: string }) => {
+  const handleSaveClassInfo = async (updatedInfo: {
+    name: string;
+    description: string;
+    min_age: number;
+    max_age: number;
+    teacherIds?: number[];
+  }) => {
     if (!classData || !id) return;
 
     try {
       await api.put(`/api/classes/${id}`, {
         ...updatedInfo,
         teacherIds: classData.teachers.map((t) => t.id),
-        childrenIds: classData.children.map((c) => c.id),
-      });
-
-      const updatedClass = await api.get(`/api/classes/${id}`);
-      setClassData(updatedClass.data);
-
-      toast({
-        title: texts.classes.updateSuccess[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: texts.classes.updateError[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleSaveClassMembers = async (teacherIds: number[], childrenIds: number[]) => {
-    if (!classData || !id) return;
-
-    try {
-      await api.put(`/api/classes/${id}`, {
-        name: classData.name,
-        description: classData.description,
-        teacherIds,
-        childrenIds,
       });
 
       const updatedClass = await api.get(`/api/classes/${id}`);
@@ -298,6 +269,10 @@ const ClassDetailPage = () => {
                   <Text>{classData.description}</Text>
                 </Box>
                 <Box>
+                  <Text fontWeight="bold">{texts.classes.ageRange[language]}</Text>
+                  <Text>{`${classData.min_age} - ${classData.max_age}`}</Text>
+                </Box>
+                <Box>
                   <Text fontWeight="bold">{texts.classes.detail.teachers[language]}</Text>
                   {classData.teachers.map((teacher) => (
                     <Text key={teacher.id}>
@@ -312,7 +287,7 @@ const ClassDetailPage = () => {
                     {texts.classes.editInfo[language]}
                   </Button>
                   <Button colorScheme="blue" onClick={() => setIsMembersModalOpen(true)}>
-                    {texts.classes.manageMembers[language]}
+                    {texts.classes.teachers[language]}
                   </Button>
                 </HStack>
               )}
@@ -438,13 +413,20 @@ const ClassDetailPage = () => {
             classData={classData}
             onSave={handleSaveClassInfo}
           />
-          <ManageClassMembersModal
+          <ManageClassTeachersModal
             isOpen={isMembersModalOpen}
             onClose={() => setIsMembersModalOpen(false)}
             classData={classData}
             availableTeachers={availableTeachers}
-            availableChildren={availableChildren}
-            onSave={handleSaveClassMembers}
+            onSave={(teacherIds) =>
+              handleSaveClassInfo({
+                name: classData.name,
+                description: classData.description,
+                min_age: classData.min_age,
+                max_age: classData.max_age,
+                teacherIds,
+              })
+            }
           />
         </>
       )}

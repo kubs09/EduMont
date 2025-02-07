@@ -37,6 +37,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add debug logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
 // Error handler for JSON parsing
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
@@ -62,9 +68,11 @@ app.use((req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error('Error:', err);
   res.status(500).json({
     error: 'Internal server error',
-    details: process.env.DEBUG === 'true' ? err.message : undefined,
+    message: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
   });
 });
 

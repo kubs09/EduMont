@@ -10,6 +10,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  console.log('Making request to:', config.url, 'with token:', token ? 'present' : 'missing');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -23,6 +24,8 @@ api.interceptors.response.use(
       url: error.config?.url,
       status: error.response?.status,
       data: error.response?.data,
+      headers: error.config?.headers,
+      message: error.message,
     });
     throw error;
   }
@@ -279,12 +282,17 @@ interface ClassChild {
   contact: string;
   parent: string;
   parent_email: string;
+  parent_firstname?: string;
+  parent_surname?: string;
+  confirmed?: boolean;
 }
 
 interface Class {
   id: number;
   name: string;
   description: string;
+  min_age?: number;
+  max_age?: number;
   teachers: Teacher[];
   children: ClassChild[];
 }
@@ -292,8 +300,9 @@ interface Class {
 interface CreateClassData {
   name: string;
   description: string;
+  min_age?: number;
+  max_age?: number;
   teacherIds: number[];
-  childrenIds: number[];
 }
 
 interface UpdateClassData extends CreateClassData {
@@ -362,6 +371,19 @@ export const getClass = async (id: number): Promise<Class> => {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
       const message = error.response?.data?.error || 'Failed to fetch class';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const autoAssignClasses = async (): Promise<void> => {
+  try {
+    await api.post('/api/classes/auto-assign');
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to auto-assign classes';
       throw new ApiError(message, status);
     }
     throw error;

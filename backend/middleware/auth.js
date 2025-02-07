@@ -1,9 +1,17 @@
 /* eslint-disable */
 const jwt = require('jsonwebtoken');
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log('Auth headers:', req.headers);
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      console.log('No auth header found');
+      return res.status(401).json({ error: 'No authorization header' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
 
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
@@ -14,7 +22,8 @@ const auth = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Please authenticate' });
+    console.error('Auth error:', error);
+    res.status(401).json({ error: 'Authentication failed', details: error.message });
   }
 };
 

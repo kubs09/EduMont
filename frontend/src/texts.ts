@@ -756,17 +756,29 @@ export const texts = {
       cs: 'Upravit informace',
       en: 'Edit Info',
     },
-    manageMembers: {
-      cs: 'Spravovat členy',
-      en: 'Manage Members',
-    },
     editClassTitle: {
       cs: 'Upravit informace o třídě',
       en: 'Edit Class Information',
     },
-    manageClassTitle: {
-      cs: 'Spravovat členy třídy',
-      en: 'Manage Class Members',
+    autoAssign: {
+      cs: 'Automaticky přiřadit děti',
+      en: 'Auto-assign Children',
+    },
+    ageRange: {
+      cs: 'Věkové rozmezí',
+      en: 'Age Range',
+    },
+    minAge: {
+      cs: 'Minimální věk',
+      en: 'Minimum Age',
+    },
+    maxAge: {
+      cs: 'Maximální věk',
+      en: 'Maximum Age',
+    },
+    manageTeachersTitle: {
+      cs: 'Správa učitelů třídy',
+      en: 'Manage Class Teachers',
     },
   },
   messages: {
