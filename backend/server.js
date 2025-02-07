@@ -39,7 +39,6 @@ app.use((req, res, next) => {
 
 // Add debug logging
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
   next();
 });
 

@@ -7,7 +7,6 @@ const auth = require('../middleware/auth');
 router.get('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    console.log('Classes request from user:', req.user);
     let query = '';
     const params = [];
 
@@ -108,13 +107,9 @@ router.get('/', auth, async (req, res) => {
       `;
       params.push(req.user.id);
     }
-
-    console.log('Executing query:', query, 'with params:', params);
     const result = await client.query(query, params);
-    console.log('Query result:', result.rows);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error in /classes:', error);
     res.status(500).json({
       error: 'Failed to fetch classes',
       details: error.message,
@@ -131,6 +126,8 @@ router.get('/:id', auth, async (req, res) => {
         c.id,
         c.name,
         c.description,
+        c.min_age,
+        c.max_age,
         jsonb_agg(DISTINCT jsonb_build_object(
           'id', t.id,
           'firstname', t.firstname,
@@ -143,9 +140,8 @@ router.get('/:id', auth, async (req, res) => {
           'date_of_birth', ch.date_of_birth,
           'contact', ch.contact,
           'parent_id', ch.parent_id,
-          'parent_firstname', p.firstname,
-          'parent_surname', p.surname,
-          'parent_email', p.email
+          'parent', concat(p.firstname, ' ', p.surname),
+          'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
         )) FILTER (WHERE ch.id IS NOT NULL`;
 
     // Add parent filtering condition
@@ -161,7 +157,7 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN children ch ON cc.child_id = ch.id
       LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1
-      GROUP BY c.id, c.name, c.description`;
+      GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
 
     const classDetails = await pool.query(query, [req.params.id]);
 
@@ -169,19 +165,9 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const result = classDetails.rows[0];
-
-    // Calculate age for each child
-    if (result.children[0] !== null) {
-      result.children = result.children.map((child) => ({
-        ...child,
-        age: calculateAge(child.date_of_birth),
-        parent: `${child.parent_firstname} ${child.parent_surname}`,
-      }));
-    }
-
-    res.json(result);
+    res.json(classDetails.rows[0]);
   } catch (error) {
+    console.error('Error fetching class details:', error);
     res.status(500).json({ error: 'Failed to fetch class details' });
   }
 });
@@ -227,21 +213,14 @@ router.post('/auto-assign', auth, async (req, res) => {
     const classesQuery = 'SELECT id, min_age, max_age FROM classes ORDER BY min_age';
     const classesResult = await client.query(classesQuery);
 
-    console.log('Children to assign:', childrenResult.rows.length);
-    console.log('Available classes:', classesResult.rows);
-
     // For each child, find the most appropriate class based on age
     for (const child of childrenResult.rows) {
       const age = calculateAge(child.date_of_birth);
-      console.log(`Processing child ID ${child.id}, age: ${age}`);
 
       // Find the most appropriate class for this age
       const suitableClass = classesResult.rows.find((c) => age >= c.min_age && age <= c.max_age);
 
       if (suitableClass) {
-        console.log(
-          `Assigning to class ${suitableClass.id} (${suitableClass.min_age}-${suitableClass.max_age})`
-        );
         await client.query(
           `INSERT INTO class_children (class_id, child_id, confirmed, created_at) 
            VALUES ($1, $2, FALSE, CURRENT_TIMESTAMP)
@@ -249,8 +228,6 @@ router.post('/auto-assign', auth, async (req, res) => {
            DO UPDATE SET confirmed = FALSE, created_at = CURRENT_TIMESTAMP`,
           [suitableClass.id, child.id]
         );
-      } else {
-        console.log(`No suitable class found for child ${child.id} (age: ${age})`);
       }
     }
 
@@ -258,7 +235,6 @@ router.post('/auto-assign', auth, async (req, res) => {
     res.json({ message: 'Automatic class assignment completed' });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Error in auto-assignment:', error);
     res.status(500).json({
       error: 'Failed to perform automatic class assignment',
       details: error.message,
@@ -285,18 +261,21 @@ router.post('/', auth, async (req, res) => {
     );
     const classId = classResult.rows[0].id;
 
-    if (teacherIds?.length) {
-      const teacherValues = teacherIds.map((id) => `(${classId}, ${id})`).join(',');
-      await client.query(`
-        INSERT INTO class_teachers (class_id, teacher_id) VALUES ${teacherValues}
-      `);
+    if (Array.isArray(teacherIds) && teacherIds.length > 0) {
+      const values = teacherIds.map((_, idx) => `($1, $${idx + 2})`).join(',');
+      const params = [classId, ...teacherIds];
+      const query = `INSERT INTO class_teachers (class_id, teacher_id) VALUES ${values}`;
+      await client.query(query, params);
     }
 
     await client.query('COMMIT');
     res.status(201).json({ id: classId });
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Failed to create class' });
+    res.status(500).json({
+      error: 'Failed to create class',
+      details: error.message,
+    });
   } finally {
     client.release();
   }
@@ -330,27 +309,68 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { name, description, min_age, max_age, teacherIds } = req.body;
 
+    // Validate required fields
+    if (
+      !name ||
+      min_age === undefined ||
+      min_age === null ||
+      max_age === undefined ||
+      max_age === null
+    ) {
+      throw new Error('Missing required fields: name, min_age, and max_age are required');
+    }
+
+    // Convert to numbers and validate
+    const minAge = Number(min_age);
+    const maxAge = Number(max_age);
+
+    if (isNaN(minAge) || isNaN(maxAge) || minAge < 0 || maxAge < minAge) {
+      throw new Error('Invalid age range values');
+    }
+
+    // First update the class details
     await client.query(
       'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
-      [name, description, min_age, max_age, id]
+      [name, description, minAge, maxAge, id]
     );
 
-    // Update teachers if provided
-    if (Array.isArray(teacherIds)) {
-      await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
-      if (teacherIds.length > 0) {
-        const teacherValues = teacherIds.map((teacherId) => `(${id}, ${teacherId})`).join(',');
-        await client.query(`
-          INSERT INTO class_teachers (class_id, teacher_id) VALUES ${teacherValues}
-        `);
-      }
+    // Then handle teacher assignments
+    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
+
+    if (Array.isArray(teacherIds) && teacherIds.length > 0) {
+      const values = teacherIds.map((_, idx) => `($1, $${idx + 2})`).join(',');
+      const params = [id, ...teacherIds.filter((tid) => tid !== null && tid !== undefined)];
+      const query = `INSERT INTO class_teachers (class_id, teacher_id) VALUES ${values}`;
+      await client.query(query, params);
     }
 
     await client.query('COMMIT');
-    res.json({ message: 'Class updated successfully' });
+
+    // Return the updated class data
+    const updatedClass = await client.query(
+      `
+      SELECT c.*, 
+        COALESCE(
+          json_agg(
+            json_build_object('id', t.id, 'firstname', t.firstname, 'surname', t.surname)
+          ) FILTER (WHERE t.id IS NOT NULL), 
+          '[]'
+        ) as teachers
+      FROM classes c
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id
+      LEFT JOIN users t ON ct.teacher_id = t.id
+      WHERE c.id = $1
+      GROUP BY c.id`,
+      [id]
+    );
+
+    res.json(updatedClass.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Failed to update class' });
+    res.status(500).json({
+      error: 'Failed to update class',
+      details: error.message,
+    });
   } finally {
     client.release();
   }

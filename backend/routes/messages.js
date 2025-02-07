@@ -135,7 +135,6 @@ router.get('/users', auth, async (req, res) => {
     const result = await getAllowedRecipients(req.user.id, req.user.role, client);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching allowed recipients:', error);
     res.status(500).json({ error: 'Failed to fetch users', details: error.message });
   } finally {
     client.release();
@@ -191,7 +190,6 @@ router.get('/', auth, async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
@@ -335,7 +333,7 @@ router.post('/', auth, async (req, res) => {
             html: emailContent.html,
           });
         } catch (emailError) {
-          console.error('Failed to send email to:', recipient.email, 'Error:', emailError);
+          throw emailError;
         }
       }
     }
@@ -344,7 +342,6 @@ router.post('/', auth, async (req, res) => {
     res.status(201).json(messageResult.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Message creation error:', error);
     res.status(500).json({
       error: 'Failed to send message',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,

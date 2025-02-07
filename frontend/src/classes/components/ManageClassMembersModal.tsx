@@ -13,7 +13,7 @@ import {
   Stack,
   Checkbox,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { Teacher } from '../../types/teacher';
@@ -41,11 +41,23 @@ export const ManageClassTeachersModal = ({
   onSave,
 }: ManageClassTeachersModalProps) => {
   const { language } = useLanguage();
-  const [selectedTeachers, setSelectedTeachers] = useState(classData.teachers.map((t) => t.id));
+  const [selectedTeachers, setSelectedTeachers] = useState<number[]>([]);
+
+  // Initialize selected teachers when modal opens
+  useEffect(() => {
+    if (isOpen && classData.teachers) {
+      setSelectedTeachers(classData.teachers.map((t) => t.id));
+    }
+  }, [isOpen, classData.teachers]);
 
   const handleSave = async () => {
-    await onSave(selectedTeachers);
-    onClose();
+    try {
+      console.log('Saving teachers:', selectedTeachers);
+      await onSave(selectedTeachers);
+      onClose();
+    } catch (error) {
+      console.error('Error saving teachers:', error);
+    }
   };
 
   return (

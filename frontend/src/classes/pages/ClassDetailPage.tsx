@@ -208,11 +208,10 @@ const ClassDetailPage = () => {
     if (!classData || !id) return;
 
     try {
-      await api.put(`/api/classes/${id}`, {
-        ...updatedInfo,
-        teacherIds: classData.teachers.map((t) => t.id),
-      });
+      // Don't mix class teachers from state, use the ones from the update
+      await api.put(`/api/classes/${id}`, updatedInfo);
 
+      // Fetch updated data
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
 
@@ -223,6 +222,7 @@ const ClassDetailPage = () => {
         isClosable: true,
       });
     } catch (error) {
+      console.error('Update error:', error);
       toast({
         title: texts.classes.updateError[language],
         status: 'error',

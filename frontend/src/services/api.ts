@@ -300,8 +300,8 @@ interface Class {
 interface CreateClassData {
   name: string;
   description: string;
-  min_age?: number;
-  max_age?: number;
+  min_age: number; // Change from optional to required
+  max_age: number; // Change from optional to required
   teacherIds: number[];
 }
 
@@ -339,7 +339,13 @@ export const createClass = async (classData: CreateClassData): Promise<{ id: num
 
 export const updateClass = async (classData: UpdateClassData): Promise<void> => {
   try {
-    await api.put(`/api/classes/${classData.id}`, classData);
+    // Ensure min_age and max_age are numbers
+    const data = {
+      ...classData,
+      min_age: Number(classData.min_age),
+      max_age: Number(classData.max_age),
+    };
+    await api.put(`/api/classes/${data.id}`, data);
   } catch (error) {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
