@@ -132,7 +132,7 @@ SELECT 1, id FROM teacher_ids WHERE email = 'martin.novotny@example.com'
 UNION ALL
 SELECT 2, id FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
 UNION ALL
-SELECT 2, id FROM teacher_ids WHERE email = 'martin.novotny@example.com';
+SELECT 3, id FROM teacher_ids WHERE email = 'martin.novotny@example.com';
 
 -- Auto-assign children to classes based on age
 INSERT INTO class_children (class_id, child_id, confirmed)

@@ -36,7 +36,7 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '../../services/api';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
-import { ManageClassTeachersModal } from '../components/ManageClassMembersModal';
+import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
 
 import { Teacher } from 'types/teacher';
 

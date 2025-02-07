@@ -12,11 +12,14 @@ import {
   Text,
   Stack,
   Checkbox,
+  useToast,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
+import { z } from 'zod';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { Teacher } from '../../types/teacher';
+import { classTeachersSchema } from '../validation/classValidation';
 
 interface Class {
   id: number;
@@ -41,9 +44,9 @@ export const ManageClassTeachersModal = ({
   onSave,
 }: ManageClassTeachersModalProps) => {
   const { language } = useLanguage();
+  const toast = useToast();
   const [selectedTeachers, setSelectedTeachers] = useState<number[]>([]);
 
-  // Initialize selected teachers when modal opens
   useEffect(() => {
     if (isOpen && classData.teachers) {
       setSelectedTeachers(classData.teachers.map((t) => t.id));
@@ -52,11 +55,20 @@ export const ManageClassTeachersModal = ({
 
   const handleSave = async () => {
     try {
-      console.log('Saving teachers:', selectedTeachers);
+      classTeachersSchema.parse(selectedTeachers);
       await onSave(selectedTeachers);
       onClose();
     } catch (error) {
-      console.error('Error saving teachers:', error);
+      if (error instanceof z.ZodError) {
+        toast({
+          title: texts.classes.validation.teacherRequired[language],
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        console.error('Error saving teachers:', error);
+      }
     }
   };
 

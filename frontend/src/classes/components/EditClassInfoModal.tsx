@@ -11,11 +11,14 @@ import {
   FormLabel,
   Input,
   Textarea,
+  useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { Teacher } from '../../types/teacher';
+import { classSchema } from '../validation/classValidation';
+import { z } from 'zod';
 
 interface Class {
   id: number;
@@ -46,19 +49,40 @@ export const EditClassInfoModal = ({
   onSave,
 }: EditClassInfoModalProps) => {
   const { language } = useLanguage();
+  const toast = useToast();
   const [name, setName] = useState(classData.name);
   const [description, setDescription] = useState(classData.description);
   const [minAge, setMinAge] = useState(classData.min_age);
   const [maxAge, setMaxAge] = useState(classData.max_age);
 
   const handleSave = async () => {
-    await onSave({
-      name,
-      description,
-      min_age: minAge,
-      max_age: maxAge,
-    });
-    onClose();
+    try {
+      const validationResult = classSchema.parse({
+        name,
+        description,
+        minAge,
+        maxAge,
+      });
+
+      await onSave({
+        name: validationResult.name,
+        description: validationResult.description,
+        min_age: validationResult.minAge,
+        max_age: validationResult.maxAge,
+      });
+      onClose();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: error.errors[0].message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        console.error('Error saving class:', error);
+      }
+    }
   };
 
   return (
