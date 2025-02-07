@@ -126,15 +126,11 @@ export const changePassword = async (
 
 export const requestPasswordReset = async (email: string, language: string): Promise<void> => {
   try {
-    console.log('Sending password reset request:', { email, language });
-
     // Change from '/api/login/forgot-password' to '/api/forgot-password'
     const response = await api.post('/api/forgot-password', {
       email: email.toLowerCase(),
       language,
     });
-
-    console.log('Password reset response:', response.data);
 
     if (!response.data.success) {
       throw new Error('Failed to send reset email');
@@ -178,11 +174,6 @@ export const resetPassword = async (token: string, password: string): Promise<vo
   if (!cleanToken) {
     throw new ApiError('Reset token is missing', 400);
   }
-
-  console.log('Sending reset request:', {
-    tokenLength: cleanToken.length,
-    token: cleanToken,
-  });
 
   try {
     // Check token validity first

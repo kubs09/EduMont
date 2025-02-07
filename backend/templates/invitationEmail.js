@@ -35,6 +35,7 @@ const emailTexts = {
 const getInvitationEmail = (role, inviteUrl, language = 'en') => {
   return {
     subject: emailTexts.emailSubject[language],
+    from: `EduMont <${process.env.SMTP_FROM}>`,
     html: `
       <!DOCTYPE html>
       <html>

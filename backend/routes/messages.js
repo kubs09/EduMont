@@ -329,7 +329,7 @@ router.post('/', auth, async (req, res) => {
           );
 
           await transporter.sendMail({
-            from: process.env.SMTP_FROM,
+            from: process.env.SMTP_FROM || `EduMont <${process.env.SMTP_USER}>`,
             to: recipient.email,
             subject: emailContent.subject,
             html: emailContent.html,

@@ -51,7 +51,6 @@ const initDatabase = async () => {
     await pool.query('SELECT * FROM class_teachers');
     await pool.query('SELECT * FROM class_children');
     await pool.query('SELECT * FROM messages');
-    console.log('Database tables verified successfully');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(

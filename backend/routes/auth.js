@@ -110,16 +110,13 @@ router.post('/forgot-password', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, language } = req.body;
-    console.log('Starting forgot password process:', { email, language });
 
     const userResult = await client.query(
       'SELECT id, firstname, surname, email FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
-    // Always send a success response for security
     if (userResult.rows.length === 0) {
-      console.log('User not found:', email);
       return res.json({ success: true });
     }
 
@@ -141,7 +138,6 @@ router.post('/forgot-password', async (req, res) => {
       from: `EduMont <${process.env.SMTP_FROM}>`,
     });
 
-    console.log('Password reset email sent successfully');
     return res.json({ success: true });
   } catch (error) {
     console.error('Forgot password error:', error);

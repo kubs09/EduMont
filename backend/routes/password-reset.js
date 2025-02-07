@@ -13,24 +13,19 @@ router.post('/forgot-password', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, language } = req.body;
-    console.log('Processing reset request for:', email, 'Language:', language);
 
-    // First check if user exists and get their name
     const userResult = await client.query(
       'SELECT id, firstname, surname, email FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
-    // Always return success for security (prevent email enumeration)
     if (userResult.rows.length === 0) {
-      console.log('User not found, returning generic success');
       return res.json({ success: true });
     }
 
     const user = userResult.rows[0];
     const resetToken = generateResetToken();
 
-    // Save token with explicit timezone
     await client.query(
       `UPDATE users 
        SET reset_token = $1, 
@@ -41,12 +36,10 @@ router.post('/forgot-password', async (req, res) => {
 
     // Build reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    console.log('Reset URL generated:', resetUrl);
 
     // Generate email content
     const emailData = getForgotPasswordEmail(resetUrl, language || 'en');
 
-    // Send email using the exact same format as message notifications
     try {
       await sendEmail({
         to: user.email,
@@ -54,7 +47,6 @@ router.post('/forgot-password', async (req, res) => {
         html: emailData.html,
         from: `EduMont <${process.env.SMTP_FROM}>`,
       });
-      console.log('Reset email sent successfully to:', user.email);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       throw emailError;
