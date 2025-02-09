@@ -79,6 +79,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 router.post('/', authenticateToken, async (req, res) => {
+  const client = await pool.connect();
   try {
     const { firstname, surname, date_of_birth, parent_id, contact, notes } = req.body;
 
@@ -101,17 +102,49 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
     }
 
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    // Insert the child
+    const childResult = await client.query(
       `INSERT INTO children (firstname, surname, date_of_birth, parent_id, contact, notes)
        VALUES ($1, $2, $3::date, $4, $5, $6)
        RETURNING *`,
       [firstname, surname, date_of_birth, actualParentId, contact, notes]
     );
 
-    res.status(201).json(result.rows[0]);
+    // Calculate child's age
+    const childAge = Math.floor(
+      (new Date() - new Date(date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000)
+    );
+
+    // Find suitable class for the child's age
+    const classResult = await client.query(
+      'SELECT id FROM classes WHERE $1 BETWEEN min_age AND max_age LIMIT 1',
+      [childAge]
+    );
+
+    if (classResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({
+        error: 'noSuitableClass',
+        details: null, // Remove the hard-coded English message
+      });
+    }
+
+    // Assign child to the class
+    await client.query(
+      'INSERT INTO class_children (class_id, child_id, confirmed) VALUES ($1, $2, false)',
+      [classResult.rows[0].id, childResult.rows[0].id]
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json(childResult.rows[0]);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error creating child:', err);
     res.status(500).json({ error: 'Failed to create child record' });
+  } finally {
+    client.release();
   }
 });
 

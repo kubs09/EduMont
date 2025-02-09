@@ -252,8 +252,9 @@ export const createChild = async (childData: CreateChildData): Promise<Child> =>
   } catch (error) {
     if (error instanceof AxiosError) {
       const status = error.response?.status;
-      const message = error.response?.data?.error || 'Failed to create child';
-      throw new ApiError(message, status);
+      const message = error.response?.data?.error;
+      const details = error.response?.data?.details;
+      throw new ApiError(details || message || 'Failed to create child', status);
     }
     throw error;
   }

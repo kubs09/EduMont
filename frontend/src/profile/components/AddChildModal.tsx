@@ -12,6 +12,7 @@ import {
   Input,
   Textarea,
   FormErrorMessage,
+  useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { createChild } from '../../services/api';
@@ -35,6 +36,7 @@ interface FormData {
 
 const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
   const { language } = useLanguage();
+  const toast = useToast();
   const [formData, setFormData] = useState<FormData>({
     firstname: '',
     surname: '',
@@ -77,6 +79,21 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           validationErrors[err.path[0]] = err.message;
         });
         setErrors(validationErrors);
+      } else {
+        const isNoSuitableClass =
+          error.message === 'noSuitableClass' || error.message.includes('No suitable class');
+
+        toast({
+          title: isNoSuitableClass
+            ? texts.profile.children.noSuitableClass.title[language]
+            : texts.profile.children.addChild.error[language],
+          description: isNoSuitableClass
+            ? texts.profile.children.noSuitableClass.description[language]
+            : error.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
       }
     } finally {
       setIsSubmitting(false);

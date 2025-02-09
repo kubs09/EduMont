@@ -562,6 +562,10 @@ export const texts = {
           cs: 'Dítě bylo úspěšně přidáno',
           en: 'Child added successfully',
         },
+        error: {
+          cs: 'Chyba při přidávání dítěte',
+          en: 'Error Adding Child',
+        },
       },
       dateOfBirth: {
         cs: 'Datum narození',
@@ -621,6 +625,16 @@ export const texts = {
         notesMaxLength: {
           cs: 'Poznámky nesmí být delší než 1000 znaků',
           en: 'Notes must not exceed 1000 characters',
+        },
+      },
+      noSuitableClass: {
+        title: {
+          cs: 'Nelze přiřadit do třídy',
+          en: 'Cannot Assign to Class',
+        },
+        description: {
+          cs: 'Pro tento věk není k dispozici žádná třída',
+          en: 'No class available for this age',
         },
       },
     },
