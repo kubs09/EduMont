@@ -885,6 +885,22 @@ export const texts = {
         cs: 'Čeká na potvrzení',
         en: 'Pending Confirmation',
       },
+      accepted: {
+        cs: 'Přijato',
+        en: 'Accepted',
+      },
+      denied: {
+        cs: 'Zamítnuto',
+        en: 'Denied',
+      },
+      accept: {
+        cs: 'Přijmout',
+        en: 'Accept',
+      },
+      deny: {
+        cs: 'Zamítnout',
+        en: 'Deny',
+      },
       confirm: {
         cs: 'Potvrdit',
         en: 'Confirm',

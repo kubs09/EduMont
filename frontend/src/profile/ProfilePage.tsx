@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  Badge,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '../texts';
@@ -221,6 +222,19 @@ const ProfilePage = () => {
                       {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
                     </Td>
                     <Td>{child.notes}</Td>
+                    <Td>
+                      <Badge
+                        colorScheme={
+                          child.status === 'accepted'
+                            ? 'green'
+                            : child.status === 'denied'
+                              ? 'red'
+                              : 'yellow'
+                        }
+                      >
+                        {child.status || 'pending'}
+                      </Badge>
+                    </Td>
                     <Td>
                       <IconButton
                         aria-label="Delete child"

@@ -46,9 +46,12 @@ router.get('/', authenticateToken, async (req, res) => {
         u.firstname as parent_firstname,
         u.surname as parent_surname,
         u.email as parent_email,
-        u.phone as parent_contact
+        u.phone as parent_contact,
+        COALESCE(cc.status, 'pending') as status,
+        COALESCE(cc.confirmed, false) as confirmed
       FROM children c
       JOIN users u ON c.parent_id = u.id
+      LEFT JOIN class_children cc ON c.id = cc.child_id
     `;
 
     const params = [];

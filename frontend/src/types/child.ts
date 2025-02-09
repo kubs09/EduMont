@@ -8,5 +8,6 @@ export interface Child {
   parent_surname?: string;
   parent_email?: string;
   parent_contact?: string;
-  confirmed?: boolean; // Add this property
+  confirmed?: boolean;
+  status?: 'accepted' | 'denied' | 'pending'; // Add this property
 }

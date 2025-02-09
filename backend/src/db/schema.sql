@@ -53,6 +53,7 @@ CREATE TABLE class_children (
     child_id INTEGER REFERENCES children(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     confirmed BOOLEAN DEFAULT FALSE,
+    status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'denied')),
     PRIMARY KEY (class_id, child_id)
 );
 

@@ -10,6 +10,7 @@ export interface ClassChild {
   parent_email: string;
   parent_contact: string;
   confirmed: boolean; // Make this required, not optional
+  status: 'accepted' | 'denied' | 'pending'; // Add this line
 }
 
 export interface Class {

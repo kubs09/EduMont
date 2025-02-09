@@ -43,6 +43,7 @@ router.get('/', auth, async (req, res) => {
                 p.phone as parent_contact,
                 ch.parent_id,
                 cc.confirmed,
+                cc.status,
                 EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer as age
               FROM class_children cc
               JOIN children ch ON cc.child_id = ch.id
@@ -52,7 +53,6 @@ router.get('/', auth, async (req, res) => {
             '[]'
           ) as children
         FROM classes c`;
-
       if (req.user.role === 'teacher') {
         query += ` WHERE EXISTS (
           SELECT 1 FROM class_teachers ct 
@@ -60,7 +60,6 @@ router.get('/', auth, async (req, res) => {
         )`;
         params.push(req.user.id);
       }
-
       query += ' ORDER BY c.name';
     } else if (req.user.role === 'parent') {
       query = `
@@ -88,7 +87,9 @@ router.get('/', auth, async (req, res) => {
               json_build_object(
                 'id', ch.id,
                 'firstname', ch.firstname,
-                'surname', ch.surname
+                'surname', ch.surname,
+                'status', cc.status,
+                'confirmed', cc.confirmed
               )
             )
             FROM class_children cc
@@ -102,8 +103,7 @@ router.get('/', auth, async (req, res) => {
           JOIN children ch ON cc.child_id = ch.id
           WHERE cc.class_id = c.id AND ch.parent_id = $1
         )
-        ORDER BY c.name
-      `;
+        ORDER BY c.name`;
       params.push(req.user.id);
     }
     const result = await client.query(query, params);
@@ -142,16 +142,11 @@ router.get('/:id', auth, async (req, res) => {
             'parent_email', p.email,
             'parent_contact', p.phone,
             'confirmed', cc.confirmed,
+            'status', cc.status,
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
-          )) FILTER (WHERE ch.id IS NOT NULL`;
-
-    if (req.user.role === 'parent') {
-      query += ` AND ch.parent_id = $2`;
-    }
-
-    query += `),
-        '[]'::jsonb
-      ) as children
+          )) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'::jsonb
+        ) as children
       FROM classes c
       LEFT JOIN class_teachers ct ON c.id = ct.class_id
       LEFT JOIN users t ON ct.teacher_id = t.id
@@ -160,18 +155,15 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1
       GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
-
     const params = [req.params.id];
     if (req.user.role === 'parent') {
+      query += ` AND ch.parent_id = $2`;
       params.push(req.user.id);
     }
-
     const classDetails = await pool.query(query, params);
-
     if (classDetails.rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
     }
-
     res.json(classDetails.rows[0]);
   } catch (error) {
     console.error('Error fetching class details:', error);
@@ -184,11 +176,9 @@ function calculateAge(birthDate) {
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-
   return age;
 }
 
@@ -197,11 +187,9 @@ router.post('/auto-assign', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can trigger auto-assignment' });
   }
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
     // First, clear all unconfirmed assignments
     await client.query('DELETE FROM class_children WHERE confirmed = FALSE');
 
@@ -223,7 +211,6 @@ router.post('/auto-assign', auth, async (req, res) => {
     // For each child, find the most appropriate class based on age
     for (const child of childrenResult.rows) {
       const age = calculateAge(child.date_of_birth);
-
       // Find the most appropriate class for this age
       const suitableClass = classesResult.rows.find((c) => age >= c.min_age && age <= c.max_age);
 
@@ -256,12 +243,10 @@ router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
   }
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const { name, description, min_age, max_age, teacherIds } = req.body;
-
     const classResult = await client.query(
       'INSERT INTO classes (name, description, min_age, max_age) VALUES ($1, $2, $3, $4) RETURNING id',
       [name, description, min_age, max_age]
@@ -300,13 +285,12 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Update only the specific child's confirmation
     await client.query(
-      'UPDATE class_children SET confirmed = TRUE WHERE class_id = $1 AND child_id = $2',
-      [req.params.classId, req.params.childId]
+      'UPDATE class_children SET confirmed = TRUE, status = $3 WHERE class_id = $1 AND child_id = $2',
+      [req.params.classId, req.params.childId, 'accepted']
     );
 
-    // Fetch updated class data with all children and their confirmation status
+    // Fetch updated class data
     const result = await client.query(
       `
       SELECT 
@@ -317,7 +301,7 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
             'firstname', t.firstname,
             'surname', t.surname
           )) FILTER (WHERE t.id IS NOT NULL),
-          '[]'
+          '[]'::jsonb
         ) as teachers,
         COALESCE(
           jsonb_agg(DISTINCT jsonb_build_object(
@@ -329,10 +313,11 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
             'parent', concat(p.firstname, ' ', p.surname),
             'parent_email', p.email,
             'parent_contact', p.phone,
-            'confirmed', COALESCE(cc.confirmed, false),
+            'confirmed', cc.confirmed,
+            'status', cc.status,
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
-          '[]'
+          '[]'::jsonb
         ) as children
       FROM classes c
       LEFT JOIN class_teachers ct ON c.id = ct.class_id
@@ -355,11 +340,81 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
   }
 });
 
+// Endpoint to deny a child
+router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+    return res
+      .status(403)
+      .json({ error: 'Only administrators and teachers can deny class assignments' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(
+      'UPDATE class_children SET confirmed = FALSE, status = $3 WHERE class_id = $1 AND child_id = $2',
+      [req.params.classId, req.params.childId, 'denied']
+    );
+
+    // Fetch updated class data with all children and their confirmation status
+    const result = await client.query(
+      `
+      SELECT 
+        c.*,
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', t.id,
+            'firstname', t.firstname,
+            'surname', t.surname
+          )) FILTER (WHERE t.id IS NOT NULL),
+          '[]'::jsonb
+        ) as teachers,
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', ch.id,
+            'firstname', ch.firstname,
+            'surname', ch.surname,
+            'date_of_birth', ch.date_of_birth,
+            'parent_id', ch.parent_id,
+            'parent', concat(p.firstname, ' ', p.surname),
+            'parent_email', p.email,
+            'parent_contact', p.phone,
+            'confirmed', COALESCE(cc.confirmed, false),
+            'status', CASE 
+              WHEN cc.status = 'denied' THEN 'denied'
+              WHEN cc.confirmed THEN 'accepted'
+              ELSE 'pending'
+            END,
+            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
+          )) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'::jsonb
+        ) as children
+      FROM classes c
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id
+      LEFT JOIN users t ON ct.teacher_id = t.id
+      LEFT JOIN class_children cc ON c.id = cc.class_id
+      LEFT JOIN children ch ON cc.child_id = ch.id
+      LEFT JOIN users p ON ch.parent_id = p.id
+      WHERE c.id = $1
+      GROUP BY c.id`,
+      [req.params.classId]
+    );
+
+    await client.query('COMMIT');
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: 'Failed to deny class assignment' });
+  } finally {
+    client.release();
+  }
+});
+
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
   }
-
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -402,7 +457,6 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await client.query('COMMIT');
-
     // Return the updated class data
     const updatedClass = await client.query(
       `
@@ -461,25 +515,23 @@ router.delete('/:id', auth, async (req, res) => {
 
 // Get class history
 router.get('/:id/history', auth, async (req, res) => {
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+    return res
+      .status(403)
+      .json({ error: 'Only teachers and administrators can view class history' });
+  }
+
   try {
     const result = await pool.query(
-      `SELECT 
-        ch.id,
-        ch.date,
-        ch.notes,
-        ch.created_at,
-        json_build_object(
-          'id', u.id,
-          'firstname', u.firstname,
-          'surname', u.surname
-        ) as created_by
+      `
+      SELECT ch.*, 
+        json_build_object('id', u.id, 'firstname', u.firstname, 'surname', u.surname) as created_by
       FROM class_history ch
       LEFT JOIN users u ON ch.created_by = u.id
       WHERE ch.class_id = $1
       ORDER BY ch.date DESC`,
       [req.params.id]
     );
-
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch class history' });

@@ -239,6 +239,29 @@ const ClassDetailPage = () => {
     }
   };
 
+  const handleDenyChild = async (childId: number) => {
+    if (!id) return;
+
+    try {
+      const response = await api.put(`/api/classes/${id}/children/${childId}/deny`);
+      setClassData(response.data);
+
+      toast({
+        title: texts.classes.confirmation.success[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.classes.confirmation.error[language],
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   const getVisibleChildren = () => {
     if (!classData) return [];
     if (isAdmin || isTeacher) return classData.children;
@@ -335,9 +358,13 @@ const ClassDetailPage = () => {
                       )}
                       {(isAdmin || isTeacher) && (
                         <Td>
-                          {child.confirmed ? (
+                          {child.status === 'accepted' ? (
                             <Badge colorScheme="green">
-                              {texts.classes.confirmation.status[language]}
+                              {texts.classes.confirmation.accepted[language]}
+                            </Badge>
+                          ) : child.status === 'denied' ? (
+                            <Badge colorScheme="red">
+                              {texts.classes.confirmation.denied[language]}
                             </Badge>
                           ) : (
                             <HStack spacing={2}>
@@ -346,10 +373,17 @@ const ClassDetailPage = () => {
                               </Badge>
                               <Button
                                 size="sm"
-                                colorScheme="blue"
+                                colorScheme="green"
                                 onClick={() => handleConfirmChild(child.id)}
                               >
-                                {texts.classes.confirmation.confirm[language]}
+                                {texts.classes.confirmation.accept[language]}
+                              </Button>
+                              <Button
+                                size="sm"
+                                colorScheme="red"
+                                onClick={() => handleDenyChild(child.id)}
+                              >
+                                {texts.classes.confirmation.deny[language]}
                               </Button>
                             </HStack>
                           )}
