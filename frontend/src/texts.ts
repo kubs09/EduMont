@@ -876,6 +876,28 @@ export const texts = {
       cs: 'Správa učitelů třídy',
       en: 'Manage Class Teachers',
     },
+    confirmation: {
+      status: {
+        cs: 'Potvrzeno',
+        en: 'Confirmed',
+      },
+      pending: {
+        cs: 'Čeká na potvrzení',
+        en: 'Pending Confirmation',
+      },
+      confirm: {
+        cs: 'Potvrdit',
+        en: 'Confirm',
+      },
+      success: {
+        cs: 'Dítě bylo úspěšně potvrzeno do třídy',
+        en: 'Child was successfully confirmed in the class',
+      },
+      error: {
+        cs: 'Nepodařilo se potvrdit dítě do třídy',
+        en: 'Failed to confirm child in class',
+      },
+    },
   },
   messages: {
     title: {

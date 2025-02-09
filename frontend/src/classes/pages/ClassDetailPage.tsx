@@ -29,35 +29,17 @@ import {
   Input,
   Textarea,
   HStack,
+  Badge,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
-import api from '../../services/api';
+import api, { confirmClassChild } from '../../services/api';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
 
-import { Teacher } from 'types/teacher';
-
-interface Class {
-  id: number;
-  name: string;
-  description: string;
-  min_age: number;
-  max_age: number;
-  teachers: Teacher[];
-  children: Array<{
-    id: number;
-    firstname: string;
-    surname: string;
-    age: number;
-    parent: string;
-    parent_id: number;
-    parent_email: string;
-    parent_contact: string;
-  }>;
-}
+import { Class } from '../../types/class';
 
 interface ClassHistory {
   id: number;
@@ -233,6 +215,30 @@ const ClassDetailPage = () => {
     }
   };
 
+  const handleConfirmChild = async (childId: number) => {
+    if (!id) return;
+
+    try {
+      // Use the imported function instead of api.confirmClassChild
+      const updatedClass = await confirmClassChild(parseInt(id), childId);
+      setClassData(updatedClass);
+
+      toast({
+        title: texts.classes.confirmation.success[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.classes.confirmation.error[language],
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   const getVisibleChildren = () => {
     if (!classData) return [];
     if (isAdmin || isTeacher) return classData.children;
@@ -314,6 +320,7 @@ const ClassDetailPage = () => {
                     <Th>{texts.childrenTable.age[language]}</Th>
                     {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
                     {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+                    {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
                   </Tr>
                 </Thead>
                 <Tbody>
@@ -325,6 +332,28 @@ const ClassDetailPage = () => {
                       {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
                       {(isAdmin || isTeacher) && (
                         <Td>{child.parent_contact || child.parent_email}</Td>
+                      )}
+                      {(isAdmin || isTeacher) && (
+                        <Td>
+                          {child.confirmed ? (
+                            <Badge colorScheme="green">
+                              {texts.classes.confirmation.status[language]}
+                            </Badge>
+                          ) : (
+                            <HStack spacing={2}>
+                              <Badge colorScheme="yellow">
+                                {texts.classes.confirmation.pending[language]}
+                              </Badge>
+                              <Button
+                                size="sm"
+                                colorScheme="blue"
+                                onClick={() => handleConfirmChild(child.id)}
+                              >
+                                {texts.classes.confirmation.confirm[language]}
+                              </Button>
+                            </HStack>
+                          )}
+                        </Td>
                       )}
                     </Tr>
                   ))}

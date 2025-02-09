@@ -19,39 +19,39 @@ router.get('/', auth, async (req, res) => {
           c.min_age,
           c.max_age,
           COALESCE(
-            (SELECT json_agg(
-              json_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'surname', u.surname
-              )
-            )
-            FROM class_teachers ct
-            JOIN users u ON ct.teacher_id = u.id
-            WHERE ct.class_id = c.id),
+            (SELECT json_agg(teacher)
+            FROM (
+              SELECT u.id, u.firstname, u.surname
+              FROM class_teachers ct
+              JOIN users u ON ct.teacher_id = u.id
+              WHERE ct.class_id = c.id
+            ) teacher),
             '[]'
           ) as teachers,
           COALESCE(
-            (SELECT json_agg(
-              json_build_object(
-                'id', ch.id,
-                'firstname', ch.firstname,
-                'surname', ch.surname,
-                'date_of_birth', ch.date_of_birth,
-                'parent_firstname', p.firstname,
-                'parent_surname', p.surname,
-                'parent_email', p.email,
-                'confirmed', cc.confirmed
-              )
-            )
-            FROM class_children cc
-            JOIN children ch ON cc.child_id = ch.id
-            JOIN users p ON ch.parent_id = p.id
-            WHERE cc.class_id = c.id),
+            (SELECT json_agg(child)
+            FROM (
+              SELECT 
+                ch.id,
+                ch.firstname,
+                ch.surname,
+                ch.date_of_birth,
+                p.firstname as parent_firstname,
+                p.surname as parent_surname,
+                p.email as parent_email,
+                concat(p.firstname, ' ', p.surname) as parent,
+                p.phone as parent_contact,
+                ch.parent_id,
+                cc.confirmed,
+                EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer as age
+              FROM class_children cc
+              JOIN children ch ON cc.child_id = ch.id
+              JOIN users p ON ch.parent_id = p.id
+              WHERE cc.class_id = c.id
+            ) child),
             '[]'
           ) as children
-        FROM classes c
-      `;
+        FROM classes c`;
 
       if (req.user.role === 'teacher') {
         query += ` WHERE EXISTS (
@@ -122,18 +122,14 @@ router.get('/:id', auth, async (req, res) => {
   try {
     let query = `
       SELECT 
-        c.id,
-        c.name,
-        c.description,
-        c.min_age,
-        c.max_age,
+        c.*,
         COALESCE(
           jsonb_agg(DISTINCT jsonb_build_object(
             'id', t.id,
             'firstname', t.firstname,
             'surname', t.surname
           )) FILTER (WHERE t.id IS NOT NULL),
-          '[]'
+          '[]'::jsonb
         ) as teachers,
         COALESCE(
           jsonb_agg(DISTINCT jsonb_build_object(
@@ -145,15 +141,17 @@ router.get('/:id', auth, async (req, res) => {
             'parent', concat(p.firstname, ' ', p.surname),
             'parent_email', p.email,
             'parent_contact', p.phone,
+            'confirmed', cc.confirmed,
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL`;
 
-    // Add parent filtering condition
     if (req.user.role === 'parent') {
-      query += ` AND ch.parent_id = ${req.user.id}`;
+      query += ` AND ch.parent_id = $2`;
     }
 
-    query += `), '[]') as children
+    query += `),
+        '[]'::jsonb
+      ) as children
       FROM classes c
       LEFT JOIN class_teachers ct ON c.id = ct.class_id
       LEFT JOIN users t ON ct.teacher_id = t.id
@@ -163,7 +161,12 @@ router.get('/:id', auth, async (req, res) => {
       WHERE c.id = $1
       GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
 
-    const classDetails = await pool.query(query, [req.params.id]);
+    const params = [req.params.id];
+    if (req.user.role === 'parent') {
+      params.push(req.user.id);
+    }
+
+    const classDetails = await pool.query(query, params);
 
     if (classDetails.rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
@@ -285,20 +288,70 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Add endpoint to confirm child's class assignment
+// Update the confirmation endpoint to only update one child
 router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Only administrators can confirm class assignments' });
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+    return res
+      .status(403)
+      .json({ error: 'Only administrators and teachers can confirm class assignments' });
   }
 
+  const client = await pool.connect();
   try {
-    await pool.query(
+    await client.query('BEGIN');
+
+    // Update only the specific child's confirmation
+    await client.query(
       'UPDATE class_children SET confirmed = TRUE WHERE class_id = $1 AND child_id = $2',
       [req.params.classId, req.params.childId]
     );
-    res.json({ message: 'Class assignment confirmed' });
+
+    // Fetch updated class data with all children and their confirmation status
+    const result = await client.query(
+      `
+      SELECT 
+        c.*,
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', t.id,
+            'firstname', t.firstname,
+            'surname', t.surname
+          )) FILTER (WHERE t.id IS NOT NULL),
+          '[]'
+        ) as teachers,
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', ch.id,
+            'firstname', ch.firstname,
+            'surname', ch.surname,
+            'date_of_birth', ch.date_of_birth,
+            'parent_id', ch.parent_id,
+            'parent', concat(p.firstname, ' ', p.surname),
+            'parent_email', p.email,
+            'parent_contact', p.phone,
+            'confirmed', COALESCE(cc.confirmed, false),
+            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
+          )) FILTER (WHERE ch.id IS NOT NULL),
+          '[]'
+        ) as children
+      FROM classes c
+      LEFT JOIN class_teachers ct ON c.id = ct.class_id
+      LEFT JOIN users t ON ct.teacher_id = t.id
+      LEFT JOIN class_children cc ON c.id = cc.class_id
+      LEFT JOIN children ch ON cc.child_id = ch.id
+      LEFT JOIN users p ON ch.parent_id = p.id
+      WHERE c.id = $1
+      GROUP BY c.id`,
+      [req.params.classId]
+    );
+
+    await client.query('COMMIT');
+    res.json(result.rows[0]);
   } catch (error) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: 'Failed to confirm class assignment' });
+  } finally {
+    client.release();
   }
 });
 

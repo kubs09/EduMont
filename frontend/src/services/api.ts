@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { Class } from '../types/class';
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
@@ -286,36 +287,6 @@ export const deleteChild = async (childId: number): Promise<void> => {
   }
 };
 
-interface Teacher {
-  id: number;
-  firstname: string;
-  surname: string;
-}
-
-interface ClassChild {
-  id: number;
-  firstname: string;
-  surname: string;
-  date_of_birth: string;
-  age: number;
-  contact: string;
-  parent: string;
-  parent_email: string;
-  parent_firstname?: string;
-  parent_surname?: string;
-  confirmed?: boolean;
-}
-
-interface Class {
-  id: number;
-  name: string;
-  description: string;
-  min_age?: number;
-  max_age?: number;
-  teachers: Teacher[];
-  children: ClassChild[];
-}
-
 interface CreateClassData {
   name: string;
   description: string;
@@ -410,6 +381,22 @@ export const autoAssignClasses = async (): Promise<void> => {
       const status = error.response?.status;
       const message = error.response?.data?.error || 'Failed to auto-assign classes';
       throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
+export const confirmClassChild = async (classId: number, childId: number): Promise<Class> => {
+  try {
+    // Change from PUT to POST to match the backend endpoint
+    const response = await api.post(`/api/classes/${classId}/children/${childId}/confirm`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to confirm child',
+        error.response?.status
+      );
     }
     throw error;
   }
