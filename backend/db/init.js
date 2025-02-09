@@ -43,11 +43,23 @@ const initDatabase = async () => {
     );
   `;
 
+  const createChildrenTable = `
+    CREATE TABLE IF NOT EXISTS children (
+      id SERIAL PRIMARY KEY,
+      firstname VARCHAR(100) NOT NULL,
+      surname VARCHAR(100) NOT NULL,
+      date_of_birth DATE NOT NULL,
+      parent_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      notes TEXT
+    );
+  `;
+
   try {
     await pool.query(createClassesTable);
     await pool.query(createClassTeachersTable);
     await pool.query(createClassChildrenTable);
     await pool.query(createMessagesTable);
+    await pool.query(createChildrenTable);
     await pool.query('SELECT * FROM users');
     await pool.query('SELECT * FROM children');
     await pool.query('SELECT * FROM classes');

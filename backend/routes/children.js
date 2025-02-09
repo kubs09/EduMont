@@ -27,10 +27,6 @@ const validateChild = (data) => {
     }
   }
 
-  if (!data.contact || data.contact.length < 5 || data.contact.length > 50) {
-    errors.push('Contact must be between 5 and 50 characters');
-  }
-
   if (data.notes && data.notes.length > 1000) {
     errors.push('Notes must not exceed 1000 characters');
   }
@@ -46,11 +42,11 @@ router.get('/', authenticateToken, async (req, res) => {
         c.firstname,
         c.surname, 
         c.date_of_birth,
-        c.contact,
         c.notes,
         u.firstname as parent_firstname,
         u.surname as parent_surname,
-        u.email as parent_email
+        u.email as parent_email,
+        u.phone as parent_contact
       FROM children c
       JOIN users u ON c.parent_id = u.id
     `;
@@ -81,7 +77,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { firstname, surname, date_of_birth, parent_id, contact, notes } = req.body;
+    const { firstname, surname, date_of_birth, parent_id, notes } = req.body;
 
     // Validate input
     const validationErrors = validateChild(req.body);
@@ -106,10 +102,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Insert the child
     const childResult = await client.query(
-      `INSERT INTO children (firstname, surname, date_of_birth, parent_id, contact, notes)
-       VALUES ($1, $2, $3::date, $4, $5, $6)
+      `INSERT INTO children (firstname, surname, date_of_birth, parent_id, notes)
+       VALUES ($1, $2, $3::date, $4, $5)
        RETURNING *`,
-      [firstname, surname, date_of_birth, actualParentId, contact, notes]
+      [firstname, surname, date_of_birth, actualParentId, notes]
     );
 
     // Calculate child's age
@@ -151,7 +147,7 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstname, surname, date_of_birth, parent_id, contact, notes } = req.body;
+    const { firstname, surname, date_of_birth, parent_id, notes } = req.body;
 
     // Validate input
     const validationErrors = validateChild(req.body);
@@ -175,10 +171,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE children 
-       SET firstname = $1, surname = $2, date_of_birth = $3::date, parent_id = $4, contact = $5, notes = $6
-       WHERE id = $7
+       SET firstname = $1, surname = $2, date_of_birth = $3::date, parent_id = $4, notes = $5
+       WHERE id = $6
        RETURNING *`,
-      [firstname, surname, date_of_birth, parent_id, contact, notes, id]
+      [firstname, surname, date_of_birth, parent_id, notes, id]
     );
 
     res.json(result.rows[0]);

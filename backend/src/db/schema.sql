@@ -20,7 +20,6 @@ CREATE TABLE children (
     surname VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,
     parent_id INTEGER NOT NULL REFERENCES users(id),
-    contact VARCHAR(50) NOT NULL,
     notes TEXT
 );
 
@@ -103,17 +102,17 @@ INSERT INTO users (email, firstname, surname, password, role) VALUES
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert children with correct parent_id references and proper date casting
-INSERT INTO children (firstname, surname, date_of_birth, parent_id, contact, notes)
+INSERT INTO children (firstname, surname, date_of_birth, parent_id, notes)
 SELECT 
-    'Jakub', 'Novák', DATE '2022-01-01', u.id, 'petr.novak@example.com', 'Alergie na ořechy'
+    'Jakub', 'Novák', DATE '2022-01-01', u.id, 'Alergie na ořechy'
 FROM users u WHERE u.email = 'petr.novak@example.com'
 UNION ALL
 SELECT 
-    'Ema', 'Dvořáková', DATE '2020-01-01', u.id, 'lucie.dvorakova@example.com', 'Bez speciálních požadavků'
+    'Ema', 'Dvořáková', DATE '2020-01-01', u.id, 'Bez speciálních požadavků'
 FROM users u WHERE u.email = 'lucie.dvorakova@example.com'
 UNION ALL
 SELECT 
-    'Tereza', 'Svobodová', DATE '2017-01-01', u.id, 'karel.svoboda@example.com', 'Vegetariánská strava'
+    'Tereza', 'Svobodová', DATE '2017-01-01', u.id, 'Vegetariánská strava'
 FROM users u WHERE u.email = 'karel.svoboda@example.com';
 
 -- Insert sample class

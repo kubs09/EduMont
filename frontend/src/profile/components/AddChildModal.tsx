@@ -30,7 +30,6 @@ interface FormData {
   firstname: string;
   surname: string;
   date_of_birth: string;
-  contact: string;
   notes?: string;
 }
 
@@ -41,7 +40,6 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     firstname: '',
     surname: '',
     date_of_birth: '',
-    contact: '',
     notes: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -126,11 +124,6 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
               onChange={handleChange}
             />
             <FormErrorMessage>{errors.date_of_birth}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.contact} mb={4}>
-            <FormLabel>{texts.childrenTable.contact[language]}</FormLabel>
-            <Input name="contact" value={formData.contact} onChange={handleChange} />
-            <FormErrorMessage>{errors.contact}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.notes} mb={4}>
             <FormLabel>{texts.childrenTable.notes[language]}</FormLabel>

@@ -53,8 +53,9 @@ interface Class {
     surname: string;
     age: number;
     parent: string;
-    contact: string;
     parent_id: number;
+    parent_email: string;
+    parent_contact: string;
   }>;
 }
 
@@ -322,7 +323,9 @@ const ClassDetailPage = () => {
                       <Td>{child.surname}</Td>
                       <Td>{child.age}</Td>
                       {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
-                      {(isAdmin || isTeacher) && <Td>{child.contact}</Td>}
+                      {(isAdmin || isTeacher) && (
+                        <Td>{child.parent_contact || child.parent_email}</Td>
+                      )}
                     </Tr>
                   ))}
                 </Tbody>

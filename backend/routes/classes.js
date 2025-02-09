@@ -38,7 +38,6 @@ router.get('/', auth, async (req, res) => {
                 'firstname', ch.firstname,
                 'surname', ch.surname,
                 'date_of_birth', ch.date_of_birth,
-                'contact', ch.contact,
                 'parent_firstname', p.firstname,
                 'parent_surname', p.surname,
                 'parent_email', p.email,
@@ -128,28 +127,33 @@ router.get('/:id', auth, async (req, res) => {
         c.description,
         c.min_age,
         c.max_age,
-        jsonb_agg(DISTINCT jsonb_build_object(
-          'id', t.id,
-          'firstname', t.firstname,
-          'surname', t.surname
-        )) as teachers,
-        jsonb_agg(DISTINCT jsonb_build_object(
-          'id', ch.id,
-          'firstname', ch.firstname,
-          'surname', ch.surname,
-          'date_of_birth', ch.date_of_birth,
-          'contact', ch.contact,
-          'parent_id', ch.parent_id,
-          'parent', concat(p.firstname, ' ', p.surname),
-          'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
-        )) FILTER (WHERE ch.id IS NOT NULL`;
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', t.id,
+            'firstname', t.firstname,
+            'surname', t.surname
+          )) FILTER (WHERE t.id IS NOT NULL),
+          '[]'
+        ) as teachers,
+        COALESCE(
+          jsonb_agg(DISTINCT jsonb_build_object(
+            'id', ch.id,
+            'firstname', ch.firstname,
+            'surname', ch.surname,
+            'date_of_birth', ch.date_of_birth,
+            'parent_id', ch.parent_id,
+            'parent', concat(p.firstname, ' ', p.surname),
+            'parent_email', p.email,
+            'parent_contact', p.phone,
+            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
+          )) FILTER (WHERE ch.id IS NOT NULL`;
 
     // Add parent filtering condition
     if (req.user.role === 'parent') {
       query += ` AND ch.parent_id = ${req.user.id}`;
     }
 
-    query += `) as children
+    query += `), '[]') as children
       FROM classes c
       LEFT JOIN class_teachers ct ON c.id = ct.class_id
       LEFT JOIN users t ON ct.teacher_id = t.id
