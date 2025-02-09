@@ -30,6 +30,8 @@ import {
   Textarea,
   HStack,
   Badge,
+  TableContainer,
+  Stack,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
@@ -277,16 +279,23 @@ const ClassDetailPage = () => {
   }
 
   return (
-    <Box p={4}>
-      <Button leftIcon={<ChevronLeftIcon />} mb={4} onClick={() => navigate(ROUTES.CLASSES)}>
+    <Box p={{ base: 2, md: 4 }}>
+      <Button
+        leftIcon={<ChevronLeftIcon />}
+        mb={4}
+        onClick={() => navigate(ROUTES.CLASSES)}
+        size="md"
+      >
         {texts.classes.detail.backToList[language]}
       </Button>
 
-      <Grid templateColumns="repeat(12, 1fr)" gap={6}>
-        <GridItem colSpan={{ base: 12, md: 4 }}>
+      <Grid templateColumns="repeat(12, 1fr)" gap={{ base: 4, md: 6 }}>
+        <GridItem colSpan={{ base: 12, lg: 4 }}>
           <Card>
             <CardHeader>
-              <Heading size="md">{texts.classes.detail.info[language]}</Heading>
+              <Heading size={{ base: 'sm', md: 'md' }}>
+                {texts.classes.detail.info[language]}
+              </Heading>
             </CardHeader>
             <CardBody>
               <VStack align="stretch" spacing={4}>
@@ -312,137 +321,153 @@ const ClassDetailPage = () => {
                 </Box>
               </VStack>
               {isAdmin && (
-                <HStack mt={4} spacing={4}>
-                  <Button colorScheme="blue" onClick={() => setIsEditInfoModalOpen(true)}>
+                <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={4} w="full">
+                  <Button
+                    colorScheme="blue"
+                    onClick={() => setIsEditInfoModalOpen(true)}
+                    size="md"
+                    w={{ base: 'full', sm: 'auto' }}
+                  >
                     {texts.classes.editInfo[language]}
                   </Button>
-                  <Button colorScheme="blue" onClick={() => setIsMembersModalOpen(true)}>
+                  <Button
+                    colorScheme="blue"
+                    onClick={() => setIsMembersModalOpen(true)}
+                    size="md"
+                    w={{ base: 'full', sm: 'auto' }}
+                  >
                     {texts.classes.teachers[language]}
                   </Button>
-                </HStack>
+                </Stack>
               )}
             </CardBody>
           </Card>
         </GridItem>
 
-        <GridItem colSpan={{ base: 12, md: 8 }}>
+        <GridItem colSpan={{ base: 12, lg: 8 }}>
           <Card>
             <CardHeader>
-              <Heading size="md">
+              <Heading size={{ base: 'sm', md: 'md' }}>
                 {isParent
                   ? texts.classes.detail.myChildren[language]
                   : texts.classes.detail.students[language]}
               </Heading>
             </CardHeader>
             <CardBody>
-              <Table variant="simple">
-                <Thead>
-                  <Tr>
-                    <Th>{texts.childrenTable.firstname[language]}</Th>
-                    <Th>{texts.childrenTable.surname[language]}</Th>
-                    <Th>{texts.childrenTable.age[language]}</Th>
-                    {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
-                    {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
-                    {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {getVisibleChildren().map((child) => (
-                    <Tr key={child.id}>
-                      <Td>{child.firstname}</Td>
-                      <Td>{child.surname}</Td>
-                      <Td>{child.age}</Td>
-                      {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
-                      {(isAdmin || isTeacher) && (
-                        <Td>{child.parent_contact || child.parent_email}</Td>
-                      )}
-                      {(isAdmin || isTeacher) && (
-                        <Td>
-                          {child.status === 'accepted' ? (
-                            <Badge colorScheme="green">
-                              {texts.classes.confirmation.accepted[language]}
-                            </Badge>
-                          ) : child.status === 'denied' ? (
-                            <Badge colorScheme="red">
-                              {texts.classes.confirmation.denied[language]}
-                            </Badge>
-                          ) : (
-                            <HStack spacing={2}>
-                              <Badge colorScheme="yellow">
-                                {texts.classes.confirmation.pending[language]}
-                              </Badge>
-                              <Button
-                                size="sm"
-                                colorScheme="green"
-                                onClick={() => handleConfirmChild(child.id)}
-                              >
-                                {texts.classes.confirmation.accept[language]}
-                              </Button>
-                              <Button
-                                size="sm"
-                                colorScheme="red"
-                                onClick={() => handleDenyChild(child.id)}
-                              >
-                                {texts.classes.confirmation.deny[language]}
-                              </Button>
-                            </HStack>
-                          )}
-                        </Td>
-                      )}
+              <TableContainer>
+                <Table variant="simple" size="md">
+                  <Thead>
+                    <Tr>
+                      <Th>{texts.childrenTable.firstname[language]}</Th>
+                      <Th>{texts.childrenTable.surname[language]}</Th>
+                      <Th>{texts.childrenTable.age[language]}</Th>
+                      {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
+                      {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+                      {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                  </Thead>
+                  <Tbody>
+                    {getVisibleChildren().map((child) => (
+                      <Tr key={child.id}>
+                        <Td>{child.firstname}</Td>
+                        <Td>{child.surname}</Td>
+                        <Td>{child.age}</Td>
+                        {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
+                        {(isAdmin || isTeacher) && (
+                          <Td>{child.parent_contact || child.parent_email}</Td>
+                        )}
+                        {(isAdmin || isTeacher) && (
+                          <Td>
+                            {child.status === 'accepted' ? (
+                              <Badge colorScheme="green">
+                                {texts.classes.confirmation.accepted[language]}
+                              </Badge>
+                            ) : child.status === 'denied' ? (
+                              <Badge colorScheme="red">
+                                {texts.classes.confirmation.denied[language]}
+                              </Badge>
+                            ) : (
+                              <HStack spacing={2}>
+                                <Badge colorScheme="yellow">
+                                  {texts.classes.confirmation.pending[language]}
+                                </Badge>
+                                <Button
+                                  size="sm"
+                                  colorScheme="green"
+                                  onClick={() => handleConfirmChild(child.id)}
+                                >
+                                  {texts.classes.confirmation.accept[language]}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  colorScheme="red"
+                                  onClick={() => handleDenyChild(child.id)}
+                                >
+                                  {texts.classes.confirmation.deny[language]}
+                                </Button>
+                              </HStack>
+                            )}
+                          </Td>
+                        )}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
             </CardBody>
           </Card>
         </GridItem>
       </Grid>
 
-      <Card mt={6}>
+      <Card my={12}>
         <CardHeader>
-          <Heading size="md">{texts.classes.detail.history[language]}</Heading>
+          <Heading size={{ base: 'sm', md: 'md' }}>
+            {texts.classes.detail.history[language]}
+          </Heading>
         </CardHeader>
         <CardBody>
           {(isAdmin || isTeacher) && (
-            <Button mb={4} colorScheme="blue" onClick={onOpen}>
+            <Button mb={4} colorScheme="blue" onClick={onOpen} size="md">
               {texts.classes.detail.addHistory[language]}
             </Button>
           )}
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>{texts.classes.detail.date[language]}</Th>
-                <Th>{texts.classes.detail.notes[language]}</Th>
-                <Th>{texts.classes.detail.createdBy[language]}</Th>
-                {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
-              </Tr>
-            </Thead>
-            <Tbody>
-              {history.map((entry) => (
-                <Tr key={entry.id}>
-                  <Td>{new Date(entry.date).toLocaleDateString()}</Td>
-                  <Td>{entry.notes}</Td>
-                  <Td>{`${entry.created_by.firstname} ${entry.created_by.surname}`}</Td>
-                  {(isAdmin || isTeacher) && (
-                    <Td>
-                      <Button
-                        size="sm"
-                        colorScheme="red"
-                        onClick={() => handleDeleteHistory(entry.id)}
-                      >
-                        {texts.common.delete[language]}
-                      </Button>
-                    </Td>
-                  )}
+          <TableContainer>
+            <Table variant="simple" size="md">
+              <Thead>
+                <Tr>
+                  <Th>{texts.classes.detail.date[language]}</Th>
+                  <Th>{texts.classes.detail.notes[language]}</Th>
+                  <Th>{texts.classes.detail.createdBy[language]}</Th>
+                  {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {history.map((entry) => (
+                  <Tr key={entry.id}>
+                    <Td>{new Date(entry.date).toLocaleDateString()}</Td>
+                    <Td>{entry.notes}</Td>
+                    <Td>{`${entry.created_by.firstname} ${entry.created_by.surname}`}</Td>
+                    {(isAdmin || isTeacher) && (
+                      <Td>
+                        <Button
+                          size="sm"
+                          colorScheme="red"
+                          onClick={() => handleDeleteHistory(entry.id)}
+                        >
+                          {texts.common.delete[language]}
+                        </Button>
+                      </Td>
+                    )}
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
         </CardBody>
       </Card>
 
       {(isAdmin || isTeacher) && (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'lg' }}>
           <ModalOverlay />
           <ModalContent>
             <ModalHeader>{texts.classes.detail.addHistory[language]}</ModalHeader>
@@ -478,6 +503,7 @@ const ClassDetailPage = () => {
             onClose={() => setIsEditInfoModalOpen(false)}
             classData={classData}
             onSave={handleSaveClassInfo}
+            size={{ base: 'full', md: 'lg' }}
           />
           <ManageClassTeachersModal
             isOpen={isMembersModalOpen}
@@ -493,6 +519,7 @@ const ClassDetailPage = () => {
                 teacherIds,
               })
             }
+            size={{ base: 'full', md: 'lg' }}
           />
         </>
       )}

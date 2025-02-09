@@ -74,51 +74,73 @@ const ClassesPage = () => {
       {classes.length === 0 ? (
         <Text>{texts.classes.noClasses[language]}</Text>
       ) : (
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>{texts.classes.name[language]}</Th>
-              <Th>{texts.classes.description[language]}</Th>
-              <Th>{texts.classes.teachers[language]}</Th>
-              <Th>{texts.classes.children[language]}</Th>
-              <Th width="4"></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {classes.map((cls) => (
-              <Tr
-                key={cls.id}
-                cursor="pointer"
-                _hover={{ bg: 'gray.50' }}
-                onClick={() => handleViewDetail(cls.id)}
-              >
-                <Td>{cls.name}</Td>
-                <Td>{cls.description}</Td>
-                <Td>
-                  <VStack align="start">
-                    {cls.teachers.map((teacher) => (
-                      <Text key={teacher.id}>
-                        {teacher.firstname} {teacher.surname}
-                      </Text>
-                    ))}
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start">
-                    {cls.children.map((child) => (
-                      <Text key={child.id}>
-                        {child.firstname} {child.surname}
-                      </Text>
-                    ))}
-                  </VStack>
-                </Td>
-                <Td>
-                  <ChevronRightIcon boxSize={6} color="gray.500" />
-                </Td>
+        <Box overflowX="auto">
+          <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
+            <Thead display={{ base: 'none', md: 'table-header-group' }}>
+              <Tr>
+                <Th>{texts.classes.name[language]}</Th>
+                <Th display={{ base: 'none', md: 'table-cell' }}>
+                  {texts.classes.description[language]}
+                </Th>
+                <Th display={{ base: 'none', lg: 'table-cell' }}>
+                  {texts.classes.teachers[language]}
+                </Th>
+                <Th display={{ base: 'none', xl: 'table-cell' }}>
+                  {texts.classes.children[language]}
+                </Th>
+                <Th width="4"></Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
+            </Thead>
+            <Tbody>
+              {classes.map((cls, index) => (
+                <Tr
+                  key={cls.id}
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  borderLeftWidth={{ base: '4px', md: '0' }}
+                  borderLeftColor={{
+                    base:
+                      index % 3 === 0 ? 'blue.400' : index % 3 === 1 ? 'purple.400' : 'teal.400',
+                    md: 'transparent',
+                  }}
+                  bg={{
+                    base: index % 2 === 0 ? 'gray.50' : 'white',
+                    md: 'transparent',
+                  }}
+                  _hover={{
+                    bg: { base: 'gray.100', md: 'gray.50' },
+                    transform: { base: 'translateX(2px)', md: 'none' },
+                  }}
+                  onClick={() => handleViewDetail(cls.id)}
+                >
+                  <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{cls.name}</Td>
+                  <Td display={{ base: 'none', md: 'table-cell' }}>{cls.description}</Td>
+                  <Td display={{ base: 'none', lg: 'table-cell' }}>
+                    <VStack align="start" spacing={1}>
+                      {cls.teachers.map((teacher) => (
+                        <Text key={teacher.id} fontSize={{ base: 'sm', md: 'md' }}>
+                          {teacher.firstname} {teacher.surname}
+                        </Text>
+                      ))}
+                    </VStack>
+                  </Td>
+                  <Td display={{ base: 'none', xl: 'table-cell' }}>
+                    <VStack align="start" spacing={1}>
+                      {cls.children.map((child) => (
+                        <Text key={child.id} fontSize={{ base: 'sm', md: 'md' }}>
+                          {child.firstname} {child.surname}
+                        </Text>
+                      ))}
+                    </VStack>
+                  </Td>
+                  <Td>
+                    <ChevronRightIcon boxSize={6} color="gray.500" />
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
       )}
     </Box>
   );

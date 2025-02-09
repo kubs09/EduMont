@@ -153,13 +153,17 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN class_children cc ON c.id = cc.class_id
       LEFT JOIN children ch ON cc.child_id = ch.id
       LEFT JOIN users p ON ch.parent_id = p.id
-      WHERE c.id = $1
-      GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
+      WHERE c.id = $1`;
+
     const params = [req.params.id];
+
     if (req.user.role === 'parent') {
       query += ` AND ch.parent_id = $2`;
       params.push(req.user.id);
     }
+
+    query += ` GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
+
     const classDetails = await pool.query(query, params);
     if (classDetails.rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });

@@ -13,6 +13,7 @@ import {
   Stack,
   Checkbox,
   useToast,
+  ThemingProps,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
@@ -34,6 +35,7 @@ interface ManageClassTeachersModalProps {
   classData: Class;
   availableTeachers: Teacher[];
   onSave: (teacherIds: number[]) => Promise<void>;
+  size?: ThemingProps['size'] | { base: string; md: string };
 }
 
 export const ManageClassTeachersModal = ({
@@ -42,6 +44,7 @@ export const ManageClassTeachersModal = ({
   classData,
   availableTeachers,
   onSave,
+  size = { base: 'full', md: 'lg' },
 }: ManageClassTeachersModalProps) => {
   const { language } = useLanguage();
   const toast = useToast();
@@ -73,7 +76,7 @@ export const ManageClassTeachersModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} size={size}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{texts.classes.manageTeachersTitle[language]}</ModalHeader>

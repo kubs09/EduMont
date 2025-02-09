@@ -12,6 +12,7 @@ import {
   Input,
   Textarea,
   useToast,
+  ThemingProps,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { texts } from '../../texts';
@@ -40,6 +41,7 @@ interface EditClassInfoModalProps {
     min_age: number;
     max_age: number;
   }) => Promise<void>;
+  size?: ThemingProps['size'] | { base: string; md: string };
 }
 
 export const EditClassInfoModal = ({
@@ -47,6 +49,7 @@ export const EditClassInfoModal = ({
   onClose,
   classData,
   onSave,
+  size = { base: 'full', md: 'lg' },
 }: EditClassInfoModalProps) => {
   const { language } = useLanguage();
   const toast = useToast();
@@ -86,7 +89,7 @@ export const EditClassInfoModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={size}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{texts.classes.editClassTitle[language]}</ModalHeader>
