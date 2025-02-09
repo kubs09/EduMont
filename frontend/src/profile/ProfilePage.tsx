@@ -40,6 +40,7 @@ const ProfilePage = () => {
     return true;
   });
   const userId = parseInt(localStorage.getItem('userId') || '0');
+  const userPhone = localStorage.getItem('userPhone') || '';
 
   useEffect(() => {
     if (userRole === 'parent') {
@@ -109,6 +110,10 @@ const ProfilePage = () => {
             <Box>
               <Text fontWeight="bold">{texts.profile.email[language]}</Text>
               <Text>{userEmail}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">{texts.profile.phone[language]}</Text>
+              <Text>{userPhone || '-'}</Text>
             </Box>
             <Box>
               <Text fontWeight="bold">{texts.profile.role[language]}</Text>

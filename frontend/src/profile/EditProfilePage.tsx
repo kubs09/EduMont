@@ -35,6 +35,7 @@ const EditProfilePage = () => {
     firstname: firstName,
     surname: lastName,
     email: userEmail,
+    phone: localStorage.getItem('userPhone') || '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -54,18 +55,21 @@ const EditProfilePage = () => {
       if (!userId) {
         throw new Error('No user ID found');
       }
-      const data = await updateUser(userId, formData);
-      localStorage.setItem('userName', `${data.firstname} ${data.surname}`);
-      localStorage.setItem('userEmail', data.email);
 
+      // Add this: actually call the updateUser function
+      await updateUser(userId, formData);
+
+      // Only show success toast after successful update
       toast({
         title: texts.profile.success[language],
         status: 'success',
         duration: 3000,
+        isClosable: true,
       });
 
       navigate(ROUTES.PROFILE);
     } catch (error) {
+      console.error('Update error:', error);
       if (error.errors) {
         const validationErrors: Record<string, string> = {};
         error.errors.forEach((err: { path: string[]; message: string }) => {
@@ -75,8 +79,10 @@ const EditProfilePage = () => {
       } else {
         toast({
           title: texts.profile.error[language],
+          description: error.message || 'Update failed',
           status: 'error',
           duration: 3000,
+          isClosable: true,
         });
       }
     }
@@ -102,6 +108,11 @@ const EditProfilePage = () => {
               <FormLabel>{texts.profile.email[language]}</FormLabel>
               <Input name="email" type="email" value={formData.email} onChange={handleChange} />
               <FormErrorMessage>{errors.email}</FormErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={!!errors.phone}>
+              <FormLabel>{texts.profile.phone[language]}</FormLabel>
+              <Input name="phone" value={formData.phone || ''} onChange={handleChange} />
+              <FormErrorMessage>{errors.phone}</FormErrorMessage>
             </FormControl>
             <FormControl>
               <FormLabel>{texts.profile.role[language]}</FormLabel>

@@ -26,5 +26,4 @@ export const classSchema = z
     path: ['maxAge'],
   });
 
-// Remove teachers from management schema since it's handled separately
 export const classManagementSchema = z.object({});

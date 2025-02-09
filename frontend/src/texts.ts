@@ -414,6 +414,10 @@ export const texts = {
       cs: 'Role',
       en: 'Role',
     },
+    phone: {
+      cs: 'Telefon',
+      en: 'Phone',
+    },
     edit: {
       cs: 'Upravit profil',
       en: 'Edit Profile',
@@ -530,6 +534,10 @@ export const texts = {
       passwordMatch: {
         cs: 'Hesla se musí shodovat',
         en: 'Passwords must match',
+      },
+      invalidPhone: {
+        cs: 'Zadejte platné telefonní číslo',
+        en: 'Please enter a valid phone number',
       },
     },
     children: {

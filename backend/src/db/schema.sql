@@ -10,7 +10,8 @@ CREATE TABLE users (
     role user_role NOT NULL,
     reset_token VARCHAR(64),
     reset_token_expiry TIMESTAMP,
-    message_notifications BOOLEAN DEFAULT TRUE
+    message_notifications BOOLEAN DEFAULT TRUE,
+    phone VARCHAR(20)
 );
 
 CREATE TABLE children (

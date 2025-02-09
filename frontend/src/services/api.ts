@@ -46,6 +46,7 @@ interface LoginResponse {
   surname: string;
   role: string;
   id: number;
+  phone: string;
   messageNotifications: boolean;
 }
 
@@ -68,6 +69,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
         role: response.data.role,
       })
     );
+    localStorage.setItem('userPhone', response.data.phone || '');
     localStorage.setItem(
       'userSettings',
       JSON.stringify({
@@ -90,11 +92,15 @@ interface UpdateUserData {
   firstname: string;
   surname: string;
   email: string;
+  phone?: string;
 }
 
 export const updateUser = async (userId: number, userData: UpdateUserData) => {
   try {
     const response = await api.put(`/api/users/${userId}`, userData);
+    localStorage.setItem('userName', `${response.data.firstname} ${response.data.surname}`);
+    localStorage.setItem('userEmail', response.data.email);
+    localStorage.setItem('userPhone', response.data.phone || '');
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {

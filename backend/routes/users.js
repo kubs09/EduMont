@@ -33,6 +33,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 router.put('/:id', auth, async (req, res) => {
+  const client = await pool.connect();
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -41,11 +42,16 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ error: 'You can only update your own profile' });
     }
 
-    const { firstname, surname, email } = req.body;
+    const { firstname, surname, email, phone } = req.body;
 
-    const result = await pool.query(
-      'UPDATE users SET firstname = $1, surname = $2, email = $3 WHERE id = $4 RETURNING id, firstname, surname, email, role',
-      [firstname, surname, email, userId]
+    // Validate phone format if provided
+    if (phone && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(phone)) {
+      return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+
+    const result = await client.query(
+      'UPDATE users SET firstname = $1, surname = $2, email = $3, phone = $4 WHERE id = $5 RETURNING id, firstname, surname, email, phone, role',
+      [firstname, surname, email.toLowerCase(), phone || null, userId]
     );
 
     if (result.rows.length === 0) {
@@ -54,7 +60,13 @@ router.put('/:id', auth, async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Update user error:', error);
+    if (error.constraint === 'users_email_key') {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
     res.status(500).json({ error: 'Failed to update user' });
+  } finally {
+    client.release();
   }
 });
 
