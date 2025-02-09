@@ -273,6 +273,19 @@ export const updateChild = async (childData: UpdateChildData): Promise<Child> =>
   }
 };
 
+export const deleteChild = async (childId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/children/${childId}`);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      const message = error.response?.data?.error || 'Failed to delete child';
+      throw new ApiError(message, status);
+    }
+    throw error;
+  }
+};
+
 interface Teacher {
   id: number;
   firstname: string;

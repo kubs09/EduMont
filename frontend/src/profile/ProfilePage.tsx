@@ -14,13 +14,24 @@ import {
   Switch,
   FormControl,
   FormLabel,
+  IconButton,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
 } from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '../texts';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { ROUTES } from '../shared/route';
-import { getChildren, updateNotificationSettings } from '../services/api';
+import { getChildren, updateNotificationSettings, deleteChild } from '../services/api';
 import ProfileChildrenTable from './components/ProfileChildrenTable';
 import { Child } from '../types/child';
+import AddChildModal from './components/AddChildModal';
+import React from 'react';
 
 const ProfilePage = () => {
   const { language } = useLanguage();
@@ -41,6 +52,10 @@ const ProfilePage = () => {
   });
   const userId = parseInt(localStorage.getItem('userId') || '0');
   const userPhone = localStorage.getItem('userPhone') || '';
+  const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
+  const [childToDelete, setChildToDelete] = useState<Child | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (userRole === 'parent') {
@@ -91,6 +106,40 @@ const ProfilePage = () => {
         isClosable: true,
       });
     }
+  };
+
+  const handleAddChildSuccess = async () => {
+    try {
+      const data = await getChildren();
+      setChildren(data);
+      toast({
+        title: texts.profile.children.addChild.success[language],
+        status: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to refresh children:', error);
+    }
+  };
+
+  const handleDeleteChild = async (childId: number) => {
+    try {
+      await deleteChild(childId);
+      const updatedChildren = await getChildren();
+      setChildren(updatedChildren);
+      toast({
+        title: texts.profile.children.deleteSuccess[language],
+        status: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: texts.profile.children.deleteError[language],
+        status: 'error',
+        duration: 3000,
+      });
+    }
+    onClose();
   };
 
   return (
@@ -156,9 +205,12 @@ const ProfilePage = () => {
       {userRole === 'parent' && (
         <Card>
           <CardBody>
-            <Heading size="md" mb={4}>
-              {texts.profile.children.title[language]}
-            </Heading>
+            <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
+              <Heading size="md">{texts.profile.children.title[language]}</Heading>
+              <Button colorScheme="blue" size="sm" onClick={() => setIsAddChildModalOpen(true)}>
+                {texts.profile.children.addChild.title[language]}
+              </Button>
+            </Box>
             {children.length > 0 ? (
               <ProfileChildrenTable>
                 {children.map((child) => (
@@ -169,6 +221,18 @@ const ProfilePage = () => {
                       {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
                     </Td>
                     <Td>{child.notes}</Td>
+                    <Td>
+                      <IconButton
+                        aria-label="Delete child"
+                        icon={<DeleteIcon />}
+                        colorScheme="red"
+                        size="sm"
+                        onClick={() => {
+                          setChildToDelete(child);
+                          onOpen();
+                        }}
+                      />
+                    </Td>
                   </Tr>
                 ))}
               </ProfileChildrenTable>
@@ -178,6 +242,38 @@ const ProfilePage = () => {
           </CardBody>
         </Card>
       )}
+
+      <AddChildModal
+        isOpen={isAddChildModalOpen}
+        onClose={() => setIsAddChildModalOpen(false)}
+        onSuccess={handleAddChildSuccess}
+      />
+
+      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              {texts.profile.children.deleteConfirm.title[language]}
+            </AlertDialogHeader>
+            <AlertDialogBody>
+              {texts.profile.children.deleteConfirm.message[language]}
+              {childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onClose}>
+                {texts.common.cancel[language]}
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={() => childToDelete && handleDeleteChild(childToDelete.id)}
+                ml={3}
+              >
+                {texts.common.delete[language]}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };
