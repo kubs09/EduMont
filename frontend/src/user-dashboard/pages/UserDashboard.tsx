@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react';
 import UserTable from '../components/UserTable';
 import AddUserDialog from '../components/AddUserDialog';
-import api from '../../services/api';
+import api from '@frontend/services/apiConfig';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 

@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
-import api from '../../services/api';
+import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 
