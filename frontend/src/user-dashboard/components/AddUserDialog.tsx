@@ -15,7 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
-import api from '../../services/api';
+import api from '@frontend/services/apiConfig';
 
 interface AddUserDialogProps {
   isOpen: boolean;

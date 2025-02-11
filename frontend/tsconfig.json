@@ -18,12 +18,28 @@
     "noImplicitAny": true,
     "strictNullChecks": true,
     "lib": ["dom", "dom.iterable", "esnext"],
-    "baseUrl": ".",
+    "baseUrl": "src",
     "paths": {
-      "*": ["src/*"]
+      "@/*": ["../*"],
+      "@frontend/*": ["./*"],
+      "@components/*": ["components/*"],
+      "@utils/*": ["utils/*"],
+      "@hooks/*": ["hooks/*"],
+      "@types/*": ["types/*"],
+      "@assets/*": ["assets/*"],
+      "@styles/*": ["styles/*"],
+      "@services/*": ["services/*"],
+      "@core/*": ["../core/*"],
+      "@shared/*": ["../shared/*"]
     },
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "typeRoots": ["./node_modules/@types", "../core/types", "./src/types", "./src/@types"]
   },
-  "include": ["src/**/*", "src/types/*.d.ts"],
+  "include": [
+    "../core/**/*",
+    "../shared/**/*",
+    "src/**/*",
+    "src/types/*.d.ts",
+    "src/@types/**/*.d.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

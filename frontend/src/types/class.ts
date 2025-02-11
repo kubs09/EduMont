@@ -1,16 +1,10 @@
-import { Teacher } from './teacher';
+import { Teacher } from './shared';
+import { Child } from './child';
 
-export interface ClassChild {
-  id: number;
-  firstname: string;
-  surname: string;
-  age: number;
-  parent: string;
-  parent_id: number;
-  parent_email: string;
-  parent_contact: string;
-  confirmed: boolean; // Make this required, not optional
-  status: 'accepted' | 'denied' | 'pending'; // Add this line
+export interface ClassChild extends Child {
+  confirmed: boolean;
+  status: 'accepted' | 'denied' | 'pending';
+  parent?: string; // Changed to optional since it's a computed field
 }
 
 export interface Class {
@@ -20,5 +14,17 @@ export interface Class {
   min_age: number;
   max_age: number;
   teachers: Teacher[];
-  children: ClassChild[]; // Use the ClassChild interface
+  children: ClassChild[];
+}
+
+export interface CreateClassData {
+  name: string;
+  description: string;
+  min_age: number;
+  max_age: number;
+  teacherIds: number[];
+}
+
+export interface UpdateClassData extends CreateClassData {
+  id: number;
 }

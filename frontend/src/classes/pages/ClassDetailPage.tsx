@@ -36,7 +36,8 @@ import {
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
-import api, { confirmClassChild } from '../../services/api';
+import api from '@frontend/services/apiConfig';
+import { confirmClassChild } from '@frontend/services/api';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -61,6 +62,15 @@ interface User {
   surname: string;
   role: string;
 }
+
+const transformClassData = (data: Class): Class => ({
+  ...data,
+  children: data.children.map((child) => ({
+    ...child,
+    // Guaranteed to have parent data now due to proper JOIN in backend
+    parent: `${child.parent_firstname} ${child.parent_surname}`.trim(),
+  })),
+});
 
 const ClassDetailPage = () => {
   const { id } = useParams();
@@ -96,7 +106,7 @@ const ClassDetailPage = () => {
         const fetchClassData = async () => {
           try {
             const response = await api.get(`/api/classes/${id}`);
-            setClassData(response.data);
+            setClassData(transformClassData(response.data));
           } catch (error) {
             toast({
               title: 'Error',
@@ -221,9 +231,8 @@ const ClassDetailPage = () => {
     if (!id) return;
 
     try {
-      // Use the imported function instead of api.confirmClassChild
-      const updatedClass = await confirmClassChild(parseInt(id), childId);
-      setClassData(updatedClass);
+      const response = await confirmClassChild(parseInt(id), childId);
+      setClassData(transformClassData(response));
 
       toast({
         title: texts.classes.confirmation.success[language],
@@ -246,7 +255,7 @@ const ClassDetailPage = () => {
 
     try {
       const response = await api.put(`/api/classes/${id}/children/${childId}/deny`);
-      setClassData(response.data);
+      setClassData(transformClassData(response.data));
 
       toast({
         title: texts.classes.confirmation.success[language],

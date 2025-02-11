@@ -138,11 +138,12 @@ router.get('/:id', auth, async (req, res) => {
             'surname', ch.surname,
             'date_of_birth', ch.date_of_birth,
             'parent_id', ch.parent_id,
-            'parent', concat(p.firstname, ' ', p.surname),
+            'parent_firstname', p.firstname,
+            'parent_surname', p.surname,
             'parent_email', p.email,
             'parent_contact', p.phone,
             'confirmed', cc.confirmed,
-            'status', cc.status,
+            'status', COALESCE(cc.status, 'pending'),
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
           '[]'::jsonb
