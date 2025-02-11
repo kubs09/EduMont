@@ -16,6 +16,8 @@ import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
 import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
+import { AdmissionRequest } from './admission/AdmissionRequest';
+import { AdminAdmissions } from './admin/pages/AdminAdmissions';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -52,6 +54,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
         <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
         <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
         <Route path={ROUTES.REGISTER_INVITE} element={<InviteSignupPage />} />
+        <Route path={ROUTES.ADMISSION_REQUEST} element={<AdmissionRequest />} />
       </Route>
 
       {/* Protected routes */}
@@ -61,7 +64,12 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
           <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
-          {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
+          {isAdmin && (
+            <>
+              <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />
+              <Route path={ROUTES.ADMIN_ADMISSIONS} element={<AdminAdmissions />} />
+            </>
+          )}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
           <Route path={ROUTES.PROFILE_CHANGE_PASSWORD} element={<ChangePasswordPage />} />

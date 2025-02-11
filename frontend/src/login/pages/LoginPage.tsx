@@ -47,10 +47,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const response = await login(data.email.trim(), data.password.trim());
 
       localStorage.setItem('token', response.token);
-      localStorage.setItem('userName', `${response.firstname} ${response.surname}`);
-      localStorage.setItem('userRole', response.role);
-      localStorage.setItem('userEmail', response.email);
-      localStorage.setItem('userId', response.id.toString());
+      localStorage.setItem('userName', `${response.user.firstname} ${response.user.surname}`);
+      localStorage.setItem('userRole', response.user.role);
+      localStorage.setItem('userEmail', response.user.email);
+      localStorage.setItem('userId', response.user.id.toString());
 
       onLoginSuccess(response.token);
     } catch (err) {

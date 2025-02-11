@@ -79,6 +79,10 @@ const Header = () => {
     navigate(ROUTES.MESSAGES);
   };
 
+  const handleDashboard = () => {
+    navigate(ROUTES.ADMIN_ADMISSIONS);
+  };
+
   return (
     <Flex
       as="header"
@@ -178,13 +182,22 @@ const Header = () => {
                 {texts.classes.menuItem[language]}
               </MenuItem>
               {isAdmin && (
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleUserDashboard}
-                >
-                  {texts.userDashboard.menuItem[language]}
-                </MenuItem>
+                <>
+                  <MenuItem
+                    bg="brand.primary.900"
+                    _hover={{ bg: 'brand.primary.800' }}
+                    onClick={handleDashboard}
+                  >
+                    {texts.dashboard.menuItem[language]}
+                  </MenuItem>
+                  <MenuItem
+                    bg="brand.primary.900"
+                    _hover={{ bg: 'brand.primary.800' }}
+                    onClick={handleUserDashboard}
+                  >
+                    {texts.userDashboard.menuItem[language]}
+                  </MenuItem>
+                </>
               )}
               <MenuItem
                 bg="brand.primary.900"

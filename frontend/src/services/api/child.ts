@@ -20,6 +20,11 @@ export const getChildren = async (): Promise<Child[]> => {
 
 export const createChild = async (childData: CreateChildData): Promise<Child> => {
   try {
+    const admissionStatus = localStorage.getItem('admissionStatus');
+    if (admissionStatus !== 'completed' && localStorage.getItem('userRole') === 'parent') {
+      throw new ApiError('Please complete the admission process first', 403);
+    }
+
     const response = await api.post<Child>('/api/children', childData);
     return response.data;
   } catch (error) {

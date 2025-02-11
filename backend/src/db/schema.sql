@@ -1,6 +1,7 @@
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, users, invitations, messages, children, classes, class_teachers, class_children CASCADE;
+DROP TABLE IF EXISTS admission_requests, admission_progress, admission_steps, class_history, users, invitations, messages, children, classes, class_teachers, class_children CASCADE;
+
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -11,7 +12,9 @@ CREATE TABLE users (
     reset_token VARCHAR(64),
     reset_token_expiry TIMESTAMP,
     message_notifications BOOLEAN DEFAULT TRUE,
-    phone VARCHAR(20)
+    phone VARCHAR(20),
+    admission_status VARCHAR(20) DEFAULT 'pending' 
+        CHECK (admission_status IN ('pending', 'in_progress', 'completed', 'rejected'))
 );
 
 CREATE TABLE children (
@@ -89,6 +92,50 @@ CREATE TABLE class_history (
 
 CREATE INDEX idx_class_history_class_id ON class_history(class_id);
 CREATE INDEX idx_class_history_date ON class_history(date);
+
+CREATE TABLE admission_steps (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    required_documents TEXT[],
+    order_index INTEGER NOT NULL
+);
+
+CREATE TABLE admission_progress (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    step_id INTEGER REFERENCES admission_steps(id),
+    status VARCHAR(20) DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'submitted', 'approved', 'rejected')),
+    admin_notes TEXT,
+    submitted_at TIMESTAMP,
+    reviewed_at TIMESTAMP,
+    reviewed_by INTEGER REFERENCES users(id),
+    documents JSONB,
+    UNIQUE(user_id, step_id)
+);
+
+CREATE TABLE admission_requests (
+    id SERIAL PRIMARY KEY,
+    firstname VARCHAR(100) NOT NULL,
+    surname VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    child_firstname VARCHAR(100) NOT NULL,
+    child_surname VARCHAR(100) NOT NULL,
+    date_of_birth DATE NOT NULL,
+    message TEXT,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'denied')),
+    denial_reason TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default admission steps
+INSERT INTO admission_steps (name, description, required_documents, order_index) VALUES
+('Personal Information', 'Complete your personal information and contact details', ARRAY['identification', 'proof_of_address'], 1),
+('Child Details', 'Provide information about your child including medical history', ARRAY['birth_certificate', 'medical_records'], 2),
+('Financial Agreement', 'Review and accept financial terms and conditions', ARRAY['signed_agreement'], 3),
+('Final Review', 'Admin review of all submitted documents', NULL, 4);
 
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES

@@ -192,6 +192,10 @@ export const texts = {
       cs: 'Naši školáci',
       en: 'Our Students',
     },
+    menuItem: {
+      cs: 'Dashboard',
+      en: 'Dashboard',
+    },
     logout: {
       cs: 'Odhlásit se',
       en: 'Logout',
@@ -364,6 +368,10 @@ export const texts = {
       button: {
         cs: 'Registrujte se nyní',
         en: 'Sign Up Now',
+      },
+      requestAdmission: {
+        cs: 'Požádat o přijetí',
+        en: 'Request Admission',
       },
     },
   },
@@ -1041,6 +1049,126 @@ export const texts = {
     cancel: {
       cs: 'Zrušit',
       en: 'Cancel',
+    },
+  },
+  admission: {
+    title: {
+      cs: 'Žádost o přijetí',
+      en: 'Admission Request',
+    },
+    form: {
+      parentFirstName: {
+        cs: 'Jméno rodiče',
+        en: "Parent's First Name",
+      },
+      parentSurname: {
+        cs: 'Příjmení rodiče',
+        en: "Parent's Surname",
+      },
+      parentEmail: {
+        cs: 'Email rodiče',
+        en: "Parent's Email",
+      },
+      parentPhone: {
+        cs: 'Telefon rodiče',
+        en: "Parent's Phone",
+      },
+      childFirstName: {
+        cs: 'Jméno dítěte',
+        en: "Child's First Name",
+      },
+      childSurname: {
+        cs: 'Příjmení dítěte',
+        en: "Child's Surname",
+      },
+      dateOfBirth: {
+        cs: 'Datum narození',
+        en: 'Date of Birth',
+      },
+      message: {
+        cs: 'Dodatečná zpráva',
+        en: 'Additional Message',
+      },
+      submit: {
+        cs: 'Odeslat žádost',
+        en: 'Submit Request',
+      },
+    },
+    success: {
+      title: {
+        cs: 'Žádost úspěšně odeslána',
+        en: 'Request Submitted Successfully',
+      },
+      description: {
+        cs: 'Brzy vás budeme kontaktovat ohledně vaší žádosti o přijetí.',
+        en: 'We will contact you soon regarding your admission request.',
+      },
+    },
+    error: {
+      title: {
+        cs: 'Chyba při odesílání',
+        en: 'Submission Error',
+      },
+      description: {
+        cs: 'Zkuste to prosím později.',
+        en: 'Please try again later.',
+      },
+    },
+  },
+  adminAdmissions: {
+    title: {
+      cs: 'Žádosti o přijetí',
+      en: 'Admission Requests',
+    },
+    approve: {
+      cs: 'Schválit',
+      en: 'Approve',
+    },
+    deny: {
+      cs: 'Zamítnout',
+      en: 'Deny',
+    },
+    denyModal: {
+      title: {
+        cs: 'Zamítnutí žádosti',
+        en: 'Deny Admission',
+      },
+      reasonPrompt: {
+        cs: 'Prosím uveďte důvod zamítnutí žádosti pro',
+        en: 'Please provide a reason for denying the admission request for',
+      },
+      reasonPlaceholder: {
+        cs: 'Zadejte důvod zamítnutí...',
+        en: 'Enter denial reason...',
+      },
+      confirm: {
+        cs: 'Potvrdit zamítnutí',
+        en: 'Confirm Denial',
+      },
+    },
+    success: {
+      approved: {
+        cs: 'Žádost byla schválena a pozvánka odeslána',
+        en: 'Admission approved and invitation sent',
+      },
+      denied: {
+        cs: 'Žádost byla zamítnuta',
+        en: 'Admission denied',
+      },
+    },
+    error: {
+      fetch: {
+        cs: 'Nepodařilo se načíst žádosti o přijetí',
+        en: 'Failed to fetch admission requests',
+      },
+      approve: {
+        cs: 'Nepodařilo se schválit žádost',
+        en: 'Failed to approve admission',
+      },
+      deny: {
+        cs: 'Nepodařilo se zamítnout žádost',
+        en: 'Failed to deny admission',
+      },
     },
   },
 };

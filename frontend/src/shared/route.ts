@@ -18,4 +18,6 @@ export const ROUTES = {
   CLASS_DETAIL: '/classes/:id', // Add this line
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
+  ADMISSION_REQUEST: '/admission-request',
+  ADMIN_ADMISSIONS: '/admin/admissions',
 } as const;

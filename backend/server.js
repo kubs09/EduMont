@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const childrenRoutes = require('./routes/children');
 const usersRoutes = require('./routes/users');
 const passwordResetRoutes = require('./routes/password-reset');
+const admissionRoutes = require('./routes/admission');
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/messages', require('./routes/messages')); // Add messages routes
+app.use('/api/admission', admissionRoutes); // Add admission routes
 
 // Catch-all handler for undefined routes
 app.use((req, res) => {

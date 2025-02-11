@@ -2,12 +2,25 @@ import { AxiosError } from 'axios';
 import api from '../apiConfig';
 import { ApiError, UpdateUserData } from '@frontend/types/shared';
 
-export const updateUser = async (userId: number, userData: UpdateUserData) => {
+export interface User {
+  id: number;
+  firstname: string;
+  surname: string;
+  email: string;
+  role: 'admin' | 'teacher' | 'parent';
+  phone?: string;
+  admission_status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
+}
+
+export const updateUser = async (userId: number, userData: UpdateUserData): Promise<User> => {
   try {
-    const response = await api.put(`/api/users/${userId}`, userData);
+    const response = await api.put<User>(`/api/users/${userId}`, userData);
     localStorage.setItem('userName', `${response.data.firstname} ${response.data.surname}`);
     localStorage.setItem('userEmail', response.data.email);
     localStorage.setItem('userPhone', response.data.phone || '');
+    if (response.data.admission_status) {
+      localStorage.setItem('admissionStatus', response.data.admission_status);
+    }
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {

@@ -1,27 +1,40 @@
 /* eslint-disable */
 const jwt = require('jsonwebtoken');
+const pool = require('../config/database'); // Fixed path to database configuration
 
 const auth = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No authorization header' });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-
+    const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
 
-    req.user = decoded;
+    if (user.rows.length === 0) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    req.user = user.rows[0];
+
+    // Check if user needs to complete admission process
+    const isAdmissionRoute = req.path.startsWith('/api/admission');
+    if (
+      req.user.role === 'parent' &&
+      req.user.admission_status !== 'completed' &&
+      !isAdmissionRoute &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({
+        error: 'admission_required',
+        message: 'Please complete the admission process',
+      });
+    }
+
     next();
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(401).json({ error: 'Authentication failed', details: error.message });
+    res.status(401).json({ error: 'Invalid token' });
   }
 };
 

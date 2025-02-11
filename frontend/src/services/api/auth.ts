@@ -1,28 +1,32 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError, LoginResponse } from '@frontend/types/shared';
+import { ApiError } from '@frontend/types/shared';
 
-export const login = async (email: string, password: string): Promise<LoginResponse> => {
+export interface AuthResponse {
+  token: string;
+  user: {
+    id: number;
+    email: string;
+    firstname: string;
+    surname: string;
+    role: 'admin' | 'teacher' | 'parent';
+    admission_status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
+  };
+}
+
+export const login = async (email: string, password: string): Promise<AuthResponse> => {
   try {
-    const response = await api.post<LoginResponse>('/api/login', { email, password });
+    const response = await api.post<AuthResponse>('/api/auth/login', { email, password });
     localStorage.setItem('token', response.data.token);
+    localStorage.setItem('userId', response.data.user.id.toString());
+    localStorage.setItem('userRole', response.data.user.role);
     localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: response.data.id,
-        email: response.data.email,
-        firstname: response.data.firstname,
-        surname: response.data.surname,
-        role: response.data.role,
-      })
+      'userName',
+      `${response.data.user.firstname} ${response.data.user.surname}`
     );
-    localStorage.setItem('userPhone', response.data.phone || '');
-    localStorage.setItem(
-      'userSettings',
-      JSON.stringify({
-        messageNotifications: response.data.messageNotifications,
-      })
-    );
+    if (response.data.user.admission_status) {
+      localStorage.setItem('admissionStatus', response.data.user.admission_status);
+    }
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -90,6 +94,24 @@ export const resetPassword = async (token: string, password: string): Promise<vo
     if (error instanceof AxiosError) {
       throw new ApiError(
         error.response?.data?.error || 'Failed to reset password',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const getCurrentUser = async (): Promise<AuthResponse['user']> => {
+  try {
+    const response = await api.get<AuthResponse['user']>('/api/auth/me');
+    if (response.data.admission_status) {
+      localStorage.setItem('admissionStatus', response.data.admission_status);
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch current user',
         error.response?.status
       );
     }

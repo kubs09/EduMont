@@ -33,17 +33,16 @@ export const getMessage = async (id: number): Promise<Message> => {
   }
 };
 
-export const sendMessage = async (data: {
-  to_user_ids: number[];
-  subject: string;
-  content: string;
-  language: string;
-}): Promise<Message> => {
+export const sendMessage = async (messageData: Omit<Message, 'id'>): Promise<Message> => {
   try {
-    const response = await api.post<Message>('/api/messages', data);
-    if (!response.data) {
-      throw new Error('No data received from server');
+    const admissionStatus = localStorage.getItem('admissionStatus');
+    const userRole = localStorage.getItem('userRole');
+
+    if (admissionStatus !== 'completed' && userRole === 'parent') {
+      throw new ApiError('Please complete the admission process first', 403);
     }
+
+    const response = await api.post('/api/messages', messageData);
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {

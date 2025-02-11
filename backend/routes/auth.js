@@ -7,44 +7,56 @@ const pool = require('../config/database');
 const { sendEmail } = require('../config/mail');
 const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
 
-router.post('/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
+  const client = await pool.connect();
   try {
     const { email, password } = req.body;
 
-    const result = await pool.query(
-      'SELECT id, email, password as hash, firstname, surname, role, message_notifications, phone FROM users WHERE email = $1',
-      [email]
-    );
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const result = await client.query('SELECT * FROM users WHERE email = $1', [
+      email.toLowerCase(),
+    ]);
 
     if (result.rows.length === 0) {
+      console.log('Login failed: User not found -', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const user = result.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    const validPassword = await bcrypt.compare(password.trim(), user.hash);
-
-    if (!validPassword) {
+    if (!isMatch) {
+      console.log('Login failed: Invalid password -', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '24h',
-    });
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('Login successful:', email);
 
     res.json({
       token,
-      id: user.id,
-      firstname: user.firstname,
-      surname: user.surname,
-      role: user.role,
-      email: user.email,
-      messageNotifications: user.message_notifications,
-      phone: user.phone,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstname: user.firstname,
+        surname: user.surname,
+        role: user.role,
+        admission_status: user.admission_status,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Error during login process' });
+  } finally {
+    client.release();
   }
 });
 

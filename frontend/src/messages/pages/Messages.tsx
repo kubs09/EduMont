@@ -223,7 +223,14 @@ const Messages: React.FC = () => {
         onClose={() => setComposeOpen(false)}
         onSend={async (data) => {
           try {
-            await sendMessage({ ...data, language });
+            const messageData = {
+              ...data,
+              from_user_id: currentUser.id,
+              to_user_id: data.to_user_ids[0], // Assuming single recipient
+              created_at: new Date().toISOString(),
+              read_at: null,
+            };
+            await sendMessage(messageData);
             fetchMessages();
             enqueueSnackbar('Message sent', { variant: 'success' });
           } catch (error) {

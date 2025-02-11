@@ -75,6 +75,14 @@ const HomePage = () => {
           <Text fontSize="lg" mb={8}>
             {texts.home.cta.subtitle[language]}
           </Text>
+          <Button
+            size="lg"
+            bg="brand.primary.900"
+            color="white"
+            onClick={() => navigate(ROUTES.ADMISSION_REQUEST)}
+          >
+            {texts.home.cta.requestAdmission[language]}
+          </Button>
         </Container>
       </Box>
     </Box>
