@@ -1113,6 +1113,14 @@ export const texts = {
         cs: 'Zkuste to prosím později.',
         en: 'Please try again later.',
       },
+      emailExists: {
+        cs: 'Pro tento email již existuje žádost o přijetí',
+        en: 'An admission request already exists for this email',
+      },
+      userExists: {
+        cs: 'Uživatel s tímto emailem již existuje v systému',
+        en: 'User with this email already exists in the system',
+      },
     },
   },
   adminAdmissions: {

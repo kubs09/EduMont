@@ -32,11 +32,11 @@ export interface AdmissionRequest {
   firstname: string;
   surname: string;
   email: string;
-  phone: string;
+  phone: string | null; // Changed from string to string | null
   child_firstname: string;
   child_surname: string;
   date_of_birth: string;
-  message?: string;
+  message?: string | null; // Added null as possible type
 }
 
 export interface AdmissionRequestDetails extends Omit<AdmissionRequest, 'message'> {

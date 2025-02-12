@@ -29,45 +29,55 @@ router.post('/request', async (req, res) => {
       message,
     } = req.body;
 
-    // Validate required fields
-    if (
-      !firstname ||
-      !surname ||
-      !email ||
-      !phone ||
-      !child_firstname ||
-      !child_surname ||
-      !date_of_birth
-    ) {
+    // Validate required fields - remove phone from required fields
+    if (!firstname || !surname || !email || !child_firstname || !child_surname || !date_of_birth) {
       return res.status(400).json({ error: 'All required fields must be provided' });
     }
 
-    // Validate date format
-    const birthDate = new Date(date_of_birth);
-    if (isNaN(birthDate.getTime())) {
-      return res.status(400).json({ error: 'Invalid date format' });
+    // Check if user already exists in users table
+    const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'user_exists' });
     }
 
     // Check if there's already a pending request for this email
     const existingRequest = await client.query(
-      'SELECT id FROM admission_requests WHERE email = $1 AND status = $2',
-      [email, 'pending']
+      'SELECT id FROM admission_requests WHERE email = $1 AND status IN ($2, $3)',
+      [email, 'pending', 'approved']
     );
 
     if (existingRequest.rows.length > 0) {
-      return res.status(400).json({ error: 'A pending request already exists for this email' });
+      return res.status(400).json({ error: 'request_exists' });
     }
 
-    // Insert new admission request
-    const result = await client.query(
-      `INSERT INTO admission_requests 
-       (firstname, surname, email, phone, child_firstname, child_surname, date_of_birth, message)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id`,
-      [firstname, surname, email, phone, child_firstname, child_surname, date_of_birth, message]
-    );
+    await client.query('BEGIN');
 
-    res.status(201).json({ id: result.rows[0].id });
+    try {
+      // Insert new admission request
+      const result = await client.query(
+        `INSERT INTO admission_requests 
+         (firstname, surname, email, phone, child_firstname, child_surname, date_of_birth, message)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING id`,
+        [
+          firstname,
+          surname,
+          email,
+          phone || null,
+          child_firstname,
+          child_surname,
+          date_of_birth,
+          message || null,
+        ]
+      );
+
+      await client.query('COMMIT');
+      res.status(201).json({ id: result.rows[0].id });
+    } catch (insertError) {
+      await client.query('ROLLBACK');
+      throw insertError;
+    }
   } catch (error) {
     console.error('Error creating admission request:', error);
     res.status(500).json({ error: 'Failed to create admission request' });
