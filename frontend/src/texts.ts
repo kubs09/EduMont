@@ -1165,6 +1165,10 @@ export const texts = {
         cs: 'V procesu',
         en: 'Step',
       },
+      viewProgress: {
+        cs: 'Zobrazit pokrok',
+        en: 'View Progress',
+      },
     },
     title: {
       cs: 'Žádosti o přijetí',
@@ -1194,6 +1198,10 @@ export const texts = {
       confirm: {
         cs: 'Potvrdit zamítnutí',
         en: 'Confirm Denial',
+      },
+      cancel: {
+        cs: 'Zrušit',
+        en: 'Cancel',
       },
     },
     success: {

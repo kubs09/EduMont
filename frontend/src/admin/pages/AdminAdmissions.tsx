@@ -3,12 +3,6 @@ import {
   Button,
   Container,
   Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   useToast,
   Modal,
   ModalOverlay,
@@ -35,6 +29,8 @@ import {
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { inviteUser } from '../../services/api/users';
+import { AdminAdmissionRequestsTable } from '../components/AdminAdmissionRequestsTable';
+import { AdminParentsInProgressTable } from '../components/AdminParentsInProgressTable';
 
 interface ApiError {
   response?: {
@@ -177,84 +173,6 @@ export const AdminAdmissions = () => {
     return <Badge colorScheme={colorScheme}>{status.toUpperCase()}</Badge>;
   };
 
-  const renderAdmissionRequestsTable = () => (
-    <Table variant="simple">
-      <Thead>
-        <Tr>
-          <Th>{texts.adminAdmissions.table.name[language]}</Th>
-          <Th>{texts.adminAdmissions.table.parent[language]}</Th>
-          <Th>{texts.adminAdmissions.table.email[language]}</Th>
-          <Th>{texts.adminAdmissions.table.phone[language]}</Th>
-          <Th>{texts.adminAdmissions.table.date[language]}</Th>
-          <Th>{texts.adminAdmissions.table.age[language]}</Th>
-          <Th>{texts.adminAdmissions.table.status[language]}</Th>
-          <Th>{texts.adminAdmissions.table.actions[language]}</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {admissions
-          .filter((admission) => ['pending', 'approved', 'invited'].includes(admission.status))
-          .map((admission) => (
-            <Tr key={admission.id}>
-              <Td>{`${admission.child_firstname} ${admission.child_surname}`}</Td>
-              <Td>{`${admission.firstname} ${admission.surname}`}</Td>
-              <Td>{admission.email}</Td>
-              <Td>{admission.phone}</Td>
-              <Td>{new Date(admission.date_of_birth).toLocaleDateString()}</Td>
-              <Td>{calculateAge(admission.date_of_birth)}</Td>
-              <Td>{getStatusBadge(admission.status)}</Td>
-              <Td>
-                {admission.status === 'pending' && (
-                  <Box>
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      mr={2}
-                      onClick={() => handleApprove(admission)}
-                    >
-                      {texts.adminAdmissions.approve[language]}
-                    </Button>
-                    <Button size="sm" colorScheme="red" onClick={() => handleDeny(admission)}>
-                      {texts.adminAdmissions.deny[language]}
-                    </Button>
-                  </Box>
-                )}
-              </Td>
-            </Tr>
-          ))}
-      </Tbody>
-    </Table>
-  );
-
-  const renderParentsInProgressTable = () => (
-    <Table variant="simple">
-      <Thead>
-        <Tr>
-          <Th>{texts.adminAdmissions.table.parent[language]}</Th>
-          <Th>{texts.adminAdmissions.table.email[language]}</Th>
-          <Th>{texts.adminAdmissions.table.step[language]}</Th>
-          <Th>{texts.adminAdmissions.table.status[language]}</Th>
-          <Th>{texts.adminAdmissions.table.actions[language]}</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {registeredParents.map((parent) => (
-          <Tr key={parent.id}>
-            <Td>{`${parent.firstname} ${parent.surname}`}</Td>
-            <Td>{parent.email}</Td>
-            <Td>{parent.current_step.name}</Td>
-            <Td>{getStatusBadge(parent.current_step.status)}</Td>
-            <Td>
-              <Button size="sm" colorScheme="blue">
-                View Progress
-              </Button>
-            </Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
-  );
-
   return (
     <Container maxW="container.xl" py={8}>
       <Heading mb={6}>{texts.adminAdmissions.name[language]}</Heading>
@@ -265,10 +183,40 @@ export const AdminAdmissions = () => {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <Box overflowX="auto">{renderAdmissionRequestsTable()}</Box>
+            <Box overflowX="auto">
+              <AdminAdmissionRequestsTable
+                admissions={admissions}
+                onApprove={handleApprove}
+                onDeny={handleDeny}
+                calculateAge={calculateAge}
+                getStatusBadge={getStatusBadge}
+                language={language}
+                texts={{
+                  table: texts.adminAdmissions.table,
+                  approve: texts.adminAdmissions.approve,
+                  deny: texts.adminAdmissions.deny,
+                }}
+              />
+            </Box>
           </TabPanel>
           <TabPanel>
-            <Box overflowX="auto">{renderParentsInProgressTable()}</Box>
+            <Box overflowX="auto">
+              <AdminParentsInProgressTable
+                parents={registeredParents}
+                getStatusBadge={getStatusBadge}
+                language={language}
+                texts={{
+                  table: {
+                    parent: texts.adminAdmissions.table.parent,
+                    email: texts.adminAdmissions.table.email,
+                    step: texts.adminAdmissions.table.step,
+                    status: texts.adminAdmissions.table.status,
+                    actions: texts.adminAdmissions.table.actions,
+                    viewProgress: texts.adminAdmissions.table.viewProgress,
+                  },
+                }}
+              />
+            </Box>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -290,10 +238,10 @@ export const AdminAdmissions = () => {
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancel
+              {texts.adminAdmissions.denyModal.cancel[language]}
             </Button>
             <Button colorScheme="red" onClick={submitDenial} isDisabled={!denialReason.trim()}>
-              Confirm Denial
+              {texts.adminAdmissions.denyModal.confirm[language]}
             </Button>
           </ModalFooter>
         </ModalContent>
