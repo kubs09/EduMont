@@ -17,7 +17,7 @@ import ResetPasswordPage from './login/pages/ResetPasswordPage';
 import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import { AdmissionRequest } from './admission/AdmissionRequest';
-import { AdminAdmissions } from './admin/pages/AdminAdmissions';
+import { AdminAdmissions } from './admin-admission/pages/AdminAdmissions';
 import { AdmissionWelcome } from './admission/AdmissionWelcome';
 
 interface RoutesProps {
