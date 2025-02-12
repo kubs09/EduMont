@@ -84,16 +84,17 @@ export const AdminAdmissions = () => {
 
   const handleApprove = async (admission: AdmissionRequestDetails) => {
     try {
+      // First approve the admission
       await admissionService.approveAdmission(admission.id);
 
-      // After approval, send invitation
+      // Then send the invitation
       try {
         await inviteUser({
           email: admission.email,
           role: 'parent',
-          language: 'cs', // You can make this dynamic based on user preference
+          language: 'cs',
+          admissionId: admission.id, // Pass the admission ID
         });
-
         toast({
           title: 'Success',
           description: 'Admission approved and invitation sent',
@@ -101,25 +102,18 @@ export const AdminAdmissions = () => {
           duration: 5000,
         });
       } catch (inviteError) {
-        // If invitation fails, show a specific error but don't revert the approval
-        if ((inviteError as ApiError)?.response?.data?.error === 'user_exists') {
+        const apiError = inviteError as ApiError;
+        if (apiError.response?.data?.error === 'user_exists') {
           toast({
-            title: 'Note',
-            description: 'User already exists in the system',
-            status: 'info',
-            duration: 5000,
-          });
-        } else if ((inviteError as ApiError)?.response?.data?.error === 'invitation_exists') {
-          toast({
-            title: 'Note',
-            description: 'An invitation has already been sent',
-            status: 'info',
+            title: 'Success',
+            description: 'Admission approved (user already exists)',
+            status: 'success',
             duration: 5000,
           });
         } else {
           toast({
-            title: 'Warning',
-            description: 'Admission approved but failed to send invitation',
+            title: 'Partial Success',
+            description: 'Admission approved but invitation failed to send',
             status: 'warning',
             duration: 5000,
           });
@@ -138,44 +132,35 @@ export const AdminAdmissions = () => {
     }
   };
 
-  // Add new function to resend invitation
-  const handleResendInvitation = async (admission: AdmissionRequestDetails) => {
+  const handleSendInvitation = async (admission: AdmissionRequestDetails) => {
     try {
       await inviteUser({
         email: admission.email,
         role: 'parent',
-        language: 'cs', // You can make this dynamic based on user preference
+        language: 'cs',
       });
 
       toast({
         title: 'Success',
-        description: 'Invitation sent successfully',
+        description: 'Invitation resent successfully',
         status: 'success',
         duration: 5000,
       });
     } catch (error) {
-      if ((error as ApiError)?.response?.data?.error === 'user_exists') {
-        toast({
-          title: 'Error',
-          description: 'User already exists in the system',
-          status: 'error',
-          duration: 5000,
-        });
-      } else if ((error as ApiError)?.response?.data?.error === 'invitation_exists') {
-        toast({
-          title: 'Error',
-          description: 'An invitation has already been sent',
-          status: 'error',
-          duration: 5000,
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to send invitation',
-          status: 'error',
-          duration: 5000,
-        });
-      }
+      const apiError = error as ApiError;
+      const errorMessage =
+        apiError.response?.data?.error === 'user_exists'
+          ? 'User already exists in the system'
+          : apiError.response?.data?.error === 'invitation_exists'
+            ? 'Active invitation already exists'
+            : 'Failed to send invitation';
+
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        status: 'error',
+        duration: 5000,
+      });
     }
   };
 
@@ -267,9 +252,9 @@ export const AdminAdmissions = () => {
                     <Button
                       size="sm"
                       colorScheme="blue"
-                      onClick={() => handleResendInvitation(admission)}
+                      onClick={() => handleSendInvitation(admission)}
                     >
-                      Resend Invitation
+                      Send Invitation
                     </Button>
                   )}
                 </Td>

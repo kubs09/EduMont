@@ -21,6 +21,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const generateInvitationToken = () => crypto.randomBytes(32).toString('hex');
+
 router.get('/', auth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -153,7 +155,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(409).json({ error: 'invitation_exists' });
     }
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = generateInvitationToken();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 48);
 
@@ -176,6 +178,7 @@ router.post('/', auth, async (req, res) => {
     res.status(201).json({ message: 'Invitation sent successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error('Invitation error:', error);
     res.status(500).json({ error: 'Failed to create invitation' });
   } finally {
     client.release();

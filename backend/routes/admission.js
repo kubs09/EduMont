@@ -291,7 +291,6 @@ router.get('/admin/admissions', auth, async (req, res) => {
   }
 });
 
-// Approve admission request
 router.post('/admin/admissions/:id/approve', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Unauthorized' });
@@ -301,46 +300,73 @@ router.post('/admin/admissions/:id/approve', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    // Get admission request details
+    // Get admission request details and lock the row
     const {
       rows: [admission],
-    } = await client.query('SELECT * FROM admission_requests WHERE id = $1 FOR UPDATE', [
-      req.params.id,
-    ]);
+    } = await client.query(
+      'SELECT * FROM admission_requests WHERE id = $1 AND status = $2 FOR UPDATE',
+      [req.params.id, 'pending']
+    );
 
     if (!admission) {
       await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'Admission request not found' });
+      return res.status(404).json({ error: 'Admission request not found or already processed' });
     }
 
-    // Update status
+    // Update status to approved
     await client.query('UPDATE admission_requests SET status = $1 WHERE id = $2', [
       'approved',
       req.params.id,
     ]);
 
-    // Send admission result email with language preference
-    const language = req.body.language || 'cs';
+    await client.query('COMMIT');
+
+    // After successful commit, try to send emails
     try {
+      const language = req.body.language || 'cs';
       await sendAdmissionResultEmail(admission, true, null, language);
-      await sendInvitationEmail({
-        email: admission.email,
-        firstname: admission.firstname,
-        surname: admission.surname,
-        role: 'parent',
-        language,
-      });
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      // Continue with the transaction even if email fails
+      console.error('Error sending approval email:', emailError);
     }
 
-    await client.query('COMMIT');
-    res.json({ message: 'Admission approved and invitation sent' });
+    res.json({ message: 'Admission approved successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error approving admission:', error);
     res.status(500).json({ error: 'Failed to approve admission' });
+  } finally {
+    client.release();
+  }
+});
+
+// Add new route to update status to invited
+router.post('/admin/admissions/:id/set-invited', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      'UPDATE admission_requests SET status = $1 WHERE id = $2 AND status = $3 RETURNING *',
+      ['invited', req.params.id, 'approved']
+    );
+
+    if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res
+        .status(404)
+        .json({ error: 'Admission request not found or not in approved state' });
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Status updated to invited' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error updating to invited:', error);
+    res.status(500).json({ error: 'Failed to update status' });
   } finally {
     client.release();
   }

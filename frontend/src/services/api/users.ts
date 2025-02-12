@@ -16,6 +16,7 @@ export interface InviteUserData {
   email: string;
   role: string;
   language?: string;
+  admissionId?: number; // Add this field
 }
 
 export const updateUser = async (userId: number, userData: UpdateUserData): Promise<User> => {
@@ -39,6 +40,10 @@ export const updateUser = async (userId: number, userData: UpdateUserData): Prom
 export const inviteUser = async (data: InviteUserData): Promise<void> => {
   try {
     await api.post('/api/users', data);
+    // Update admission request status to invited after successful invitation
+    if (data.admissionId) {
+      await api.post(`/api/admission/admin/admissions/${data.admissionId}/set-invited`);
+    }
   } catch (error) {
     if (error instanceof AxiosError) {
       throw new ApiError(

@@ -125,7 +125,7 @@ CREATE TABLE admission_requests (
     child_surname VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,
     message TEXT,
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'denied')),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'denied', 'invited')),
     denial_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
