@@ -276,12 +276,12 @@ router.get('/admin/admissions', auth, async (req, res) => {
         date_of_birth,
         message,
         status,
-        denial_reason,
-        created_at
+        denial_reason
        FROM admission_requests 
-       ORDER BY created_at DESC`
+       WHERE email NOT IN (SELECT email FROM users)
+       ORDER BY surname DESC`
     );
-    console.log('Fetched admissions:', result.rows); // Add logging
+    console.log('Fetched admissions:', result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching admissions:', error);
@@ -403,6 +403,93 @@ router.post('/admin/admissions/:id/deny', auth, async (req, res) => {
     res.json({ message: 'Admission request denied' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to deny admission' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin: Get all users with pending admission progress
+router.get('/admin/pending-users', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT 
+         u.id, 
+         u.firstname, 
+         u.surname, 
+         u.email,
+         (
+           SELECT json_build_object(
+                    'step_id', p.step_id,
+                    'name', s.name,
+                    'status', p.status
+                  )
+           FROM admission_progress p
+           JOIN admission_steps s ON p.step_id = s.id
+           WHERE p.user_id = u.id AND p.status = 'pending'
+           ORDER BY s.order_index ASC
+           LIMIT 1
+         ) as current_step
+       FROM users u
+       WHERE u.role = 'parent'
+         AND u.admission_status IN ('pending', 'in_progress')
+       ORDER BY u.surname DESC`
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching pending admission users:', error);
+    res.status(500).json({ error: 'Failed to fetch pending users' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin: Get detailed admission progress for a user
+router.get('/admin/users/:userId/progress', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const { userId } = req.params;
+    const result = await client.query(
+      `SELECT 
+        u.admission_status,
+        json_agg(
+          json_build_object(
+            'step_id', s.id,
+            'name', s.name,
+            'description', s.description,
+            'required_documents', s.required_documents,
+            'order_index', s.order_index,
+            'status', p.status,
+            'submitted_at', p.submitted_at,
+            'reviewed_at', p.reviewed_at,
+            'admin_notes', p.admin_notes
+          ) ORDER BY s.order_index
+        ) as steps
+      FROM users u
+      JOIN admission_progress p ON u.id = p.user_id
+      JOIN admission_steps s ON p.step_id = s.id
+      WHERE u.id = $1
+      GROUP BY u.id, u.admission_status`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching user admission progress:', error);
+    res.status(500).json({ error: 'Failed to fetch user progress' });
   } finally {
     client.release();
   }

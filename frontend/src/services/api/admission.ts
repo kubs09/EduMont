@@ -47,6 +47,19 @@ export interface AdmissionRequestDetails extends Omit<AdmissionRequest, 'message
   denial_reason?: string;
 }
 
+export interface PendingAdmissionUser {
+  id: number;
+  firstname: string;
+  surname: string;
+  email: string;
+  created_at: string;
+  current_step: {
+    step_id: number;
+    name: string;
+    status: string;
+  };
+}
+
 export const admissionService = {
   // Get current admission status and steps
   getStatus: async (): Promise<AdmissionStatus> => {
@@ -99,5 +112,17 @@ export const admissionService = {
   // Admin: Deny admission with reason
   denyAdmission: async (id: number, reason: string): Promise<void> => {
     await api.post(`/api/admission/admin/admissions/${id}/deny`, { reason }); // Fixed path
+  },
+
+  // Admin: Get all users with pending admission progress
+  getPendingAdmissionUsers: async (): Promise<PendingAdmissionUser[]> => {
+    const response = await api.get('/api/admission/admin/pending-users');
+    return response.data;
+  },
+
+  // Admin: Get detailed admission progress for a user
+  getUserAdmissionProgress: async (userId: number): Promise<AdmissionStatus> => {
+    const response = await api.get(`/api/admission/admin/users/${userId}/progress`);
+    return response.data;
   },
 };

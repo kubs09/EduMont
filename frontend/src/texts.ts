@@ -193,8 +193,8 @@ export const texts = {
       en: 'Our Students',
     },
     menuItem: {
-      cs: 'Dashboard',
-      en: 'Dashboard',
+      cs: 'Přijímací řízení',
+      en: 'Admissions',
     },
     logout: {
       cs: 'Odhlásit se',
@@ -1116,6 +1116,56 @@ export const texts = {
     },
   },
   adminAdmissions: {
+    name: {
+      cs: 'Správce přijímacích řízení',
+      en: 'Admissions Manager',
+    },
+    requests: {
+      cs: 'Žádosti o přijetí',
+      en: 'Admission Requests',
+    },
+    process: {
+      cs: 'Přijímací řízení',
+      en: 'Admission Process',
+    },
+    table: {
+      name: {
+        cs: 'Jméno dítěte',
+        en: "Child's Name",
+      },
+      parent: {
+        cs: 'Rodič',
+        en: 'Parent',
+      },
+      email: {
+        cs: 'Email',
+        en: 'Email',
+      },
+      phone: {
+        cs: 'Telefon',
+        en: 'Phone',
+      },
+      age: {
+        cs: 'Věk',
+        en: 'Age',
+      },
+      date: {
+        cs: 'Datum Narození',
+        en: 'Date of birth',
+      },
+      status: {
+        cs: 'Stav',
+        en: 'Status',
+      },
+      actions: {
+        cs: 'Akce',
+        en: 'Actions',
+      },
+      step: {
+        cs: 'V procesu',
+        en: 'Step',
+      },
+    },
     title: {
       cs: 'Žádosti o přijetí',
       en: 'Admission Requests',

@@ -207,10 +207,16 @@ router.post('/register/:token', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create user with pending admission status
     const result = await client.query(
-      'INSERT INTO users (email, firstname, surname, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role',
-      [email, firstname, surname, hashedPassword, role]
+      'INSERT INTO users (email, firstname, surname, password, role, admission_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, email, role',
+      [email, firstname, surname, hashedPassword, role, 'pending']
     );
+
+    // Initialize admission progress for parent users
+    if (role === 'parent') {
+      await client.query('SELECT initialize_admission_progress($1)', [result.rows[0].id]);
+    }
 
     await client.query('DELETE FROM invitations WHERE token = $1', [token]);
 
@@ -218,6 +224,7 @@ router.post('/register/:token', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Failed to register user' });
   } finally {
     client.release();

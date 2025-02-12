@@ -82,7 +82,7 @@ const Header = () => {
     navigate(ROUTES.MESSAGES);
   };
 
-  const handleDashboard = () => {
+  const handleAdmissionDashboard = () => {
     navigate(ROUTES.ADMIN_ADMISSIONS);
   };
 
@@ -194,7 +194,7 @@ const Header = () => {
                     <MenuItem
                       bg="brand.primary.900"
                       _hover={{ bg: 'brand.primary.800' }}
-                      onClick={handleDashboard}
+                      onClick={handleAdmissionDashboard}
                     >
                       {texts.dashboard.menuItem[language]}
                     </MenuItem>

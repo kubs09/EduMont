@@ -205,3 +205,14 @@ AND email IN (
     'lucie.dvorakova@example.com',
     'karel.svoboda@example.com'
 );
+
+-- Add a helper function to initialize admission progress
+CREATE OR REPLACE FUNCTION initialize_admission_progress(user_id_param INTEGER) 
+RETURNS VOID AS $$
+BEGIN
+  INSERT INTO admission_progress (user_id, step_id, status)
+  SELECT user_id_param, id, 'pending'
+  FROM admission_steps
+  ORDER BY order_index;
+END;
+$$ LANGUAGE plpgsql;
