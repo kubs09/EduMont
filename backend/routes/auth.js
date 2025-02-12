@@ -49,7 +49,7 @@ router.post('/auth/login', async (req, res) => {
         firstname: user.firstname,
         surname: user.surname,
         role: user.role,
-        admission_status: user.admission_status,
+        admission_status: user.role === 'parent' ? user.admission_status : null,
       },
     });
   } catch (error) {

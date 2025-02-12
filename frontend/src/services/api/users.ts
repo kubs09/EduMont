@@ -12,6 +12,12 @@ export interface User {
   admission_status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
 }
 
+export interface InviteUserData {
+  email: string;
+  role: string;
+  language?: string;
+}
+
 export const updateUser = async (userId: number, userData: UpdateUserData): Promise<User> => {
   try {
     const response = await api.put<User>(`/api/users/${userId}`, userData);
@@ -25,6 +31,20 @@ export const updateUser = async (userId: number, userData: UpdateUserData): Prom
   } catch (error) {
     if (error instanceof AxiosError) {
       throw new ApiError(error.response?.data?.error || 'Update failed', error.response?.status);
+    }
+    throw error;
+  }
+};
+
+export const inviteUser = async (data: InviteUserData): Promise<void> => {
+  try {
+    await api.post('/api/users', data);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to send invitation',
+        error.response?.status
+      );
     }
     throw error;
   }

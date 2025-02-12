@@ -195,3 +195,13 @@ CROSS JOIN LATERAL (
     WHERE EXTRACT(YEAR FROM AGE(CURRENT_DATE, ch.date_of_birth)) BETWEEN c.min_age AND c.max_age
     LIMIT 1
 ) c;
+
+-- Update existing parent users to have completed admission status
+UPDATE users 
+SET admission_status = 'completed'
+WHERE role = 'parent' 
+AND email IN (
+    'petr.novak@example.com',
+    'lucie.dvorakova@example.com',
+    'karel.svoboda@example.com'
+);

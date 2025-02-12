@@ -30,6 +30,9 @@ const Header = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const isParent = userRole === 'parent';
+  const admissionStatus = isParent ? localStorage.getItem('admissionStatus') : null;
+  const isPendingAdmission = isParent && admissionStatus === 'pending';
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -111,7 +114,7 @@ const Header = () => {
         </Flex>
       </Button>
       <Flex gap={{ base: 2, md: 4 }} align="center">
-        {isAuthenticated && (
+        {isAuthenticated && !isPendingAdmission && (
           <Button
             position="relative"
             leftIcon={<EmailIcon />}
@@ -156,58 +159,64 @@ const Header = () => {
           </Button>
         </ButtonGroup>
         {isAuthenticated ? (
-          <Menu>
-            <MenuButton
-              as={Button}
-              rightIcon={<ChevronDownIcon />}
-              colorScheme="whiteAlpha"
-              size={{ base: 'sm', md: 'md' }}
-            >
-              <Hide below="md">{userName}</Hide>
-              <Show below="md">👤</Show>
-            </MenuButton>
-            <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleProfile}
+          isPendingAdmission ? (
+            <Button colorScheme="whiteAlpha" onClick={handleLogout} size={{ base: 'sm', md: 'md' }}>
+              {texts.auth.logout[language]}
+            </Button>
+          ) : (
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                colorScheme="whiteAlpha"
+                size={{ base: 'sm', md: 'md' }}
               >
-                {texts.profile.menuItem[language]}
-              </MenuItem>
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleClasses}
-              >
-                {texts.classes.menuItem[language]}
-              </MenuItem>
-              {isAdmin && (
-                <>
-                  <MenuItem
-                    bg="brand.primary.900"
-                    _hover={{ bg: 'brand.primary.800' }}
-                    onClick={handleDashboard}
-                  >
-                    {texts.dashboard.menuItem[language]}
-                  </MenuItem>
-                  <MenuItem
-                    bg="brand.primary.900"
-                    _hover={{ bg: 'brand.primary.800' }}
-                    onClick={handleUserDashboard}
-                  >
-                    {texts.userDashboard.menuItem[language]}
-                  </MenuItem>
-                </>
-              )}
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleLogout}
-              >
-                {texts.auth.logout[language]}
-              </MenuItem>
-            </MenuList>
-          </Menu>
+                <Hide below="md">{userName}</Hide>
+                <Show below="md">👤</Show>
+              </MenuButton>
+              <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
+                <MenuItem
+                  bg="brand.primary.900"
+                  _hover={{ bg: 'brand.primary.800' }}
+                  onClick={handleProfile}
+                >
+                  {texts.profile.menuItem[language]}
+                </MenuItem>
+                <MenuItem
+                  bg="brand.primary.900"
+                  _hover={{ bg: 'brand.primary.800' }}
+                  onClick={handleClasses}
+                >
+                  {texts.classes.menuItem[language]}
+                </MenuItem>
+                {isAdmin && (
+                  <>
+                    <MenuItem
+                      bg="brand.primary.900"
+                      _hover={{ bg: 'brand.primary.800' }}
+                      onClick={handleDashboard}
+                    >
+                      {texts.dashboard.menuItem[language]}
+                    </MenuItem>
+                    <MenuItem
+                      bg="brand.primary.900"
+                      _hover={{ bg: 'brand.primary.800' }}
+                      onClick={handleUserDashboard}
+                    >
+                      {texts.userDashboard.menuItem[language]}
+                    </MenuItem>
+                  </>
+                )}
+                <MenuItem
+                  bg="brand.primary.900"
+                  _hover={{ bg: 'brand.primary.800' }}
+                  onClick={handleLogout}
+                >
+                  {texts.auth.logout[language]}
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          )
         ) : (
           <Button colorScheme="whiteAlpha" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
             {texts.auth.login[language]}

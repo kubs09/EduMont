@@ -1171,4 +1171,18 @@ export const texts = {
       },
     },
   },
+  admissionWelcome: {
+    title: {
+      cs: 'Vítejte v přijímacím procesu',
+      en: 'Welcome to the Admission Process',
+    },
+    description: {
+      cs: 'Jsme rádi, že jste se rozhodli připojit k naší Montessori komunitě. Přijímací proces vám pomůže lépe poznat naši školu a my lépe poznáme vás a vaše dítě.',
+      en: 'We are glad you have decided to join our Montessori community. The admission process will help you better understand our school, and help us better understand you and your child.',
+    },
+    startButton: {
+      cs: 'Zahájit přijímací proces',
+      en: 'Start Admission Process',
+    },
+  },
 };

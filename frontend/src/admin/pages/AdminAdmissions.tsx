@@ -23,6 +23,16 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { admissionService, AdmissionRequestDetails } from '../../services/api/admission';
+import { inviteUser } from '../../services/api/users';
+
+interface ApiError {
+  response?: {
+    data?: {
+      error?: string;
+    };
+    status?: number;
+  };
+}
 
 const calculateAge = (dateOfBirth: string): number => {
   const birthDate = new Date(dateOfBirth);
@@ -75,12 +85,47 @@ export const AdminAdmissions = () => {
   const handleApprove = async (admission: AdmissionRequestDetails) => {
     try {
       await admissionService.approveAdmission(admission.id);
-      toast({
-        title: 'Success',
-        description: 'Admission approved and invitation sent',
-        status: 'success',
-        duration: 5000,
-      });
+
+      // After approval, send invitation
+      try {
+        await inviteUser({
+          email: admission.email,
+          role: 'parent',
+          language: 'cs', // You can make this dynamic based on user preference
+        });
+
+        toast({
+          title: 'Success',
+          description: 'Admission approved and invitation sent',
+          status: 'success',
+          duration: 5000,
+        });
+      } catch (inviteError) {
+        // If invitation fails, show a specific error but don't revert the approval
+        if ((inviteError as ApiError)?.response?.data?.error === 'user_exists') {
+          toast({
+            title: 'Note',
+            description: 'User already exists in the system',
+            status: 'info',
+            duration: 5000,
+          });
+        } else if ((inviteError as ApiError)?.response?.data?.error === 'invitation_exists') {
+          toast({
+            title: 'Note',
+            description: 'An invitation has already been sent',
+            status: 'info',
+            duration: 5000,
+          });
+        } else {
+          toast({
+            title: 'Warning',
+            description: 'Admission approved but failed to send invitation',
+            status: 'warning',
+            duration: 5000,
+          });
+        }
+      }
+
       fetchAdmissions();
     } catch (error) {
       console.error('Error approving admission:', error);
@@ -90,6 +135,47 @@ export const AdminAdmissions = () => {
         status: 'error',
         duration: 5000,
       });
+    }
+  };
+
+  // Add new function to resend invitation
+  const handleResendInvitation = async (admission: AdmissionRequestDetails) => {
+    try {
+      await inviteUser({
+        email: admission.email,
+        role: 'parent',
+        language: 'cs', // You can make this dynamic based on user preference
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Invitation sent successfully',
+        status: 'success',
+        duration: 5000,
+      });
+    } catch (error) {
+      if ((error as ApiError)?.response?.data?.error === 'user_exists') {
+        toast({
+          title: 'Error',
+          description: 'User already exists in the system',
+          status: 'error',
+          duration: 5000,
+        });
+      } else if ((error as ApiError)?.response?.data?.error === 'invitation_exists') {
+        toast({
+          title: 'Error',
+          description: 'An invitation has already been sent',
+          status: 'error',
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to send invitation',
+          status: 'error',
+          duration: 5000,
+        });
+      }
     }
   };
 
@@ -177,6 +263,15 @@ export const AdminAdmissions = () => {
                       </Button>
                     </Box>
                   )}
+                  {admission.status === 'approved' && (
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      onClick={() => handleResendInvitation(admission)}
+                    >
+                      Resend Invitation
+                    </Button>
+                  )}
                 </Td>
               </Tr>
             ))}
@@ -212,3 +307,5 @@ export const AdminAdmissions = () => {
     </Container>
   );
 };
+
+export default AdminAdmissions;

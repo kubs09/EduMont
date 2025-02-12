@@ -18,6 +18,7 @@ import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import { AdmissionRequest } from './admission/AdmissionRequest';
 import { AdminAdmissions } from './admin/pages/AdminAdmissions';
+import { AdmissionWelcome } from './admission/AdmissionWelcome';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -34,6 +35,15 @@ const RequireAuth = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
 const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const isParent = userRole === 'parent';
+  const admissionStatus = isParent ? localStorage.getItem('admissionStatus') : null;
+
+  const RequireAdmissionComplete = () => {
+    if (isParent && admissionStatus === 'pending') {
+      return <Navigate to={ROUTES.ADMISSION_WELCOME} replace />;
+    }
+    return <Outlet />;
+  };
 
   return (
     <RouterRoutes>
@@ -60,19 +70,23 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       {/* Protected routes */}
       <Route element={<RequireAuth isAuthenticated={isAuthenticated} />}>
         <Route element={<AuthLayout />}>
-          <Route path={ROUTES.MESSAGES} element={<Messages />} />
-          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-          <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
-          <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
-          {isAdmin && (
-            <>
-              <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />
-              <Route path={ROUTES.ADMIN_ADMISSIONS} element={<AdminAdmissions />} />
-            </>
-          )}
-          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
-          <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
-          <Route path={ROUTES.PROFILE_CHANGE_PASSWORD} element={<ChangePasswordPage />} />
+          <Route path={ROUTES.ADMISSION_WELCOME} element={<AdmissionWelcome />} />
+
+          <Route element={<RequireAdmissionComplete />}>
+            <Route path={ROUTES.MESSAGES} element={<Messages />} />
+            <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+            <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
+            <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
+            {isAdmin && (
+              <>
+                <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />
+                <Route path={ROUTES.ADMIN_ADMISSIONS} element={<AdminAdmissions />} />
+              </>
+            )}
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
+            <Route path={ROUTES.PROFILE_CHANGE_PASSWORD} element={<ChangePasswordPage />} />
+          </Route>
         </Route>
       </Route>
 

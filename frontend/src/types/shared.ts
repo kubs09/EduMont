@@ -1,8 +1,8 @@
 export class ApiError extends Error {
-  status?: number;
-  constructor(message: string, status?: number) {
+  statusCode?: number;
+  constructor(message: string, statusCode?: number) {
     super(message);
-    this.status = status;
+    this.statusCode = statusCode;
   }
 }
 
@@ -38,11 +38,12 @@ export interface LoginResponse {
   messageNotifications: boolean;
 }
 
-export interface UpdateUserData {
-  firstname: string;
-  surname: string;
-  email: string;
+export type UpdateUserData = {
+  firstname?: string;
+  surname?: string;
+  email?: string;
   phone?: string;
-}
+  admission_status?: 'pending' | 'in_progress' | 'completed' | 'rejected';
+};
 
 // ... Add all other interfaces (Child, CreateChildData, UpdateChildData, etc.) ...

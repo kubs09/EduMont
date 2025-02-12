@@ -20,4 +20,5 @@ export const ROUTES = {
   RESET_PASSWORD: '/reset-password',
   ADMISSION_REQUEST: '/admission-request',
   ADMIN_ADMISSIONS: '/admin/admissions',
+  ADMISSION_WELCOME: '/admission/welcome',
 } as const;
