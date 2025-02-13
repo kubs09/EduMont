@@ -1,44 +1,41 @@
-import { Box, Button, Container, Heading, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Container, Heading, Spinner, Text, VStack } from '@chakra-ui/react';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { texts } from '../texts';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../shared/route';
-import { updateUser } from '../services/api/users';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@chakra-ui/react';
+import { admissionService } from '../services/api/admission';
 
 export const AdmissionWelcome = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+
+  useEffect(() => {
+    const checkAdmissionStatus = async () => {
+      try {
+        const status = await admissionService.getStatus();
+        if (status.steps?.length > 0 && status.admission_status === 'in_progress') {
+          navigate(ROUTES.ADMISSION_WIZARD);
+        }
+      } catch (error) {
+        console.error('Error checking admission status:', error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+
+    checkAdmissionStatus();
+  }, [navigate]);
 
   const handleStart = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-
-      if (!token || !userId) {
-        toast({
-          title: 'Error',
-          description: 'Please log in again',
-          status: 'error',
-          duration: 5000,
-        });
-        navigate(ROUTES.LOGIN);
-        return;
-      }
-
-      const response = await updateUser(parseInt(userId), {
-        admission_status: 'in_progress',
-      });
-
-      if (response.admission_status === 'in_progress') {
-        navigate(ROUTES.ADMISSION_WIZARD);
-      } else {
-        throw new Error('Failed to update admission status');
-      }
+      await admissionService.initializeAdmission();
+      navigate(ROUTES.ADMISSION_WIZARD);
     } catch (error: unknown) {
       console.error('Start admission error:', error);
 
@@ -63,6 +60,16 @@ export const AdmissionWelcome = () => {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingStatus) {
+    return (
+      <Container maxW="container.md" py={10}>
+        <VStack spacing={8} align="center">
+          <Spinner size="xl" />
+        </VStack>
+      </Container>
+    );
+  }
 
   return (
     <Container maxW="container.md" py={10}>

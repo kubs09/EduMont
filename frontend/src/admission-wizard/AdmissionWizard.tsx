@@ -3,8 +3,8 @@ import { InfoMeetingStep } from './InfoMeetingStep';
 import { Box, Spinner } from '@chakra-ui/react';
 import { admissionService, AdmissionStep } from '../services/api/admission';
 
-export type StepStatus = 'select' | 'waiting' | 'completed';
-export type ApiStepStatus = 'pending' | 'submitted' | 'approved' | 'rejected';
+export type StepStatus = 'select' | 'waiting' | 'completed' | 'pending_review' | 'rejected';
+export type ApiStepStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'pending_review';
 
 interface StepState {
   currentStatus: StepStatus;
@@ -27,20 +27,23 @@ export const AdmissionWizard = () => {
         // Initialize step states based on API response
         const newStepStates: Record<number, StepState> = {};
         status.steps.forEach((step) => {
-          let currentStatus: StepStatus;
+          let currentStatus: StepStatus = 'select';
 
           // Map API status to frontend status
           switch (step.status) {
-            case 'submitted':
-            case 'approved':
-              currentStatus = 'waiting';
-              break;
-            case 'rejected':
             case 'pending':
               currentStatus = 'select';
               break;
-            default:
-              currentStatus = 'select';
+            case 'submitted':
+              currentStatus = 'pending_review';
+              break;
+            case 'approved':
+              currentStatus = 'completed';
+              break;
+            case 'rejected':
+              currentStatus = 'rejected';
+              break;
+            // Add other status mappings as needed
           }
 
           newStepStates[step.step_id] = {
@@ -49,7 +52,6 @@ export const AdmissionWizard = () => {
           };
         });
 
-        console.log('Setting step states:', newStepStates); // Debug log
         setStepStates(newStepStates);
       } catch (error) {
         console.error('Error fetching admission status:', error);

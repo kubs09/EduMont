@@ -71,7 +71,7 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
     setIsLoading(true);
     try {
       await admissionService.scheduleAppointment(stepState.appointmentId, true);
-      onUpdateState({ currentStatus: 'waiting' });
+      onUpdateState({ currentStatus: 'pending_review' });
     } catch (error) {
       console.error('Meeting scheduling error:', error);
       toast({
@@ -85,6 +85,48 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
       setIsLoading(false);
     }
   };
+
+  if (stepState.currentStatus === 'pending_review') {
+    return (
+      <Box textAlign="center" py={8}>
+        <Alert
+          status="info"
+          variant="subtle"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          height="200px"
+          borderRadius="lg"
+        >
+          <AlertTitle mt={4} mb={1} fontSize="lg">
+            {texts.admissionSteps.infoMeeting.pendingReview[language]}
+          </AlertTitle>
+        </Alert>
+      </Box>
+    );
+  }
+
+  if (stepState.currentStatus === 'rejected') {
+    return (
+      <Box textAlign="center" py={8}>
+        <Alert
+          status="error"
+          variant="subtle"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
+          height="200px"
+          borderRadius="lg"
+        >
+          <AlertTitle mt={4} mb={1} fontSize="lg">
+            {texts.admissionSteps.infoMeeting.rejected[language]}
+          </AlertTitle>
+        </Alert>
+      </Box>
+    );
+  }
 
   if (stepState.currentStatus === 'waiting') {
     return (

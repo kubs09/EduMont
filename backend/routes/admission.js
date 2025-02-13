@@ -664,6 +664,60 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
   }
 });
 
+// Admin: Review appointment
+router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const { userId } = req.params;
+    const { status, adminNotes } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    await client.query('BEGIN');
+
+    // Update appointment status
+    const result = await client.query(
+      `UPDATE admission_progress 
+       SET status = $1,
+           appointment_status = $2,
+           admin_notes = $3,
+           reviewed_at = CURRENT_TIMESTAMP,
+           reviewed_by = $4
+       WHERE user_id = $5 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
+       RETURNING *`,
+      [status === 'approved' ? 'completed' : 'rejected', status, adminNotes, req.user.id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('Appointment not found');
+    }
+
+    // If rejected, update user's admission status
+    if (status === 'rejected') {
+      await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
+        'rejected',
+        userId,
+      ]);
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Appointment review completed' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error reviewing appointment:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
 // Get available terms (from info_appointments)
 router.get('/terms', auth, async (req, res) => {
   const client = await pool.connect();
@@ -686,6 +740,46 @@ router.get('/terms', auth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching terms:', error);
     res.status(500).json({ error: 'Failed to fetch terms' });
+  } finally {
+    client.release();
+  }
+});
+
+// Initialize admission process
+router.post('/initialize', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Get the first step (Information Meeting)
+    const firstStep = await client.query('SELECT id FROM admission_steps WHERE order_index = 1');
+
+    if (firstStep.rows.length === 0) {
+      throw new Error('First step not found');
+    }
+
+    // Initialize admission progress for the first step
+    await client.query(
+      `INSERT INTO admission_progress (user_id, step_id, status)
+       VALUES ($1, $2, 'pending')
+       ON CONFLICT (user_id, step_id) DO NOTHING`,
+      [req.user.id, firstStep.rows[0].id]
+    );
+
+    // Update user's admission status to in_progress if it's still pending
+    await client.query(
+      `UPDATE users 
+       SET admission_status = 'in_progress' 
+       WHERE id = $1 AND admission_status = 'pending'`,
+      [req.user.id]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: 'Admission process initialized' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error initializing admission:', error);
+    res.status(500).json({ error: 'Failed to initialize admission process' });
   } finally {
     client.release();
   }

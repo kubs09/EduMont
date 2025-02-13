@@ -6,7 +6,7 @@ export interface AdmissionStep {
   description: string;
   required_documents: string[];
   order_index: number;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'pending_review';
   submitted_at?: string;
   reviewed_at?: string;
   admin_notes?: string;
@@ -173,5 +173,9 @@ export const admissionService = {
 
   submitTermSelection: async (termId: number): Promise<void> => {
     await api.post('/api/admission/term', { termId });
+  },
+
+  initializeAdmission: async (): Promise<void> => {
+    await api.post('/api/admission/initialize');
   },
 };
