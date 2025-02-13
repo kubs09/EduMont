@@ -1,40 +1,14 @@
 /* eslint-disable */
 const sharedTexts = require('../../shared/texts');
+const emailTexts = require('./emailTexts');
 
-const emailTexts = {
-  emailSubject: {
-    cs: 'Pozvánka do systému EduMont',
-    en: 'Invitation to EduMont',
-  },
-  emailTitle: {
-    cs: 'Vítejte v EduMont',
-    en: 'Welcome to EduMont',
-  },
-  emailMessage: {
-    cs: 'Byli jste pozváni do systému EduMont jako',
-    en: 'You have been invited to join EduMont as a',
-  },
-  emailAction: {
-    cs: 'Pro dokončení registrace klikněte na tento odkaz:',
-    en: 'Please click the link below to complete your registration:',
-  },
-  emailExpiry: {
-    cs: 'Tento odkaz vyprší za 48 hodin.',
-    en: 'This link will expire in 48 hours.',
-  },
-  emailButtonText: {
-    cs: 'Dokončit registraci',
-    en: 'Complete Registration',
-  },
-  emailFooter: {
-    cs: 'Všechna práva vyhrazena.',
-    en: 'All rights reserved.',
-  },
-};
+const getInvitationEmail = (role, inviteUrl, language = 'cs') => {
+  // Ensure language is valid
+  const validLanguage = ['cs', 'en'].includes(language) ? language : 'cs';
+  const translations = emailTexts.invitation;
 
-const getInvitationEmail = (role, inviteUrl, language = 'en') => {
   return {
-    subject: emailTexts.emailSubject[language],
+    subject: translations.subject[validLanguage],
     html: `
       <!DOCTYPE html>
       <html>
@@ -80,24 +54,24 @@ const getInvitationEmail = (role, inviteUrl, language = 'en') => {
         <body>
           <div class="email-container">
             <div class="header">
-              <h1 style="margin: 0;">${emailTexts.emailTitle[language]}</h1>
+              <h1 style="margin: 0;">${translations.title[validLanguage]}</h1>
             </div>
             <div class="content">
-              <p>${emailTexts.emailMessage[language]} ${sharedTexts.roles[role][
-      language
+              <p>${translations.message[validLanguage]} ${sharedTexts.roles[role][
+      validLanguage
     ].toLowerCase()}.</p>
-              <p>${emailTexts.emailAction[language]}</p>
+              <p>${translations.action[validLanguage]}</p>
               <div style="text-align: center;">
                 <a href="${inviteUrl}" class="button">
-                  ${emailTexts.emailButtonText[language]}
+                  ${translations.button[validLanguage]}
                 </a>
               </div>
               <p style="font-size: 0.875rem; color: #4A5568;">
-                ${emailTexts.emailExpiry[language]}
+                ${translations.expiry[validLanguage]}
               </p>
             </div>
             <div class="footer">
-              <p>© ${new Date().getFullYear()} EduMont. ${emailTexts.emailFooter[language]}</p>
+              <p>© ${new Date().getFullYear()} EduMont. ${translations.footer[validLanguage]}</p>
             </div>
           </div>
         </body>

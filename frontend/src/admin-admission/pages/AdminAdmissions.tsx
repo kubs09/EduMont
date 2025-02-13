@@ -87,12 +87,12 @@ export const AdminAdmissions = () => {
 
   const handleApprove = async (admission: AdmissionRequestDetails) => {
     try {
-      await admissionService.approveAdmission(admission.id);
+      await admissionService.approveAdmission(admission.id, language); // Add language parameter
       try {
         await inviteUser({
           email: admission.email,
           role: 'parent',
-          language: 'cs',
+          language: language, // Use the language from context
           admissionId: admission.id,
         });
         toast({
@@ -141,7 +141,7 @@ export const AdminAdmissions = () => {
     if (!selectedAdmission || !denialReason.trim()) return;
 
     try {
-      await admissionService.denyAdmission(selectedAdmission.id, denialReason);
+      await admissionService.denyAdmission(selectedAdmission.id, denialReason, language);
       toast({
         title: 'Success',
         description: 'Admission denied',

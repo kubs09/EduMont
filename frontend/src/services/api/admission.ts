@@ -133,13 +133,13 @@ export const admissionService = {
   },
 
   // Admin: Approve admission and send invitation
-  approveAdmission: async (id: number): Promise<void> => {
-    await api.post(`/api/admission/admin/admissions/${id}/approve`); // Fixed path
+  approveAdmission: async (id: number, language: string): Promise<void> => {
+    await api.post(`/api/admission/admin/admissions/${id}/approve`, { language });
   },
 
   // Admin: Deny admission with reason
-  denyAdmission: async (id: number, reason: string): Promise<void> => {
-    await api.post(`/api/admission/admin/admissions/${id}/deny`, { reason }); // Fixed path
+  denyAdmission: async (id: number, reason: string, language: string): Promise<void> => {
+    await api.post(`/api/admission/admin/admissions/${id}/deny`, { reason, language });
   },
 
   // Admin: Get all users with pending admission progress

@@ -5,7 +5,7 @@ const pool = require('../config/database');
 const auth = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const { sendEmail } = require('../config/mail');
+const { sendEmail, sendInvitationEmail } = require('../config/mail');
 const getInvitationEmail = require('../templates/invitationEmail');
 
 // Remove the nodemailer transporter configuration since we'll use the mail service
@@ -180,7 +180,7 @@ router.post('/', auth, async (req, res) => {
 
   try {
     await client.query('BEGIN');
-    const { email, role, language = 'en' } = req.body;
+    const { email, role, language = 'cs' } = req.body;
 
     const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
@@ -204,13 +204,7 @@ router.post('/', auth, async (req, res) => {
       [email, token, role, expiresAt]
     );
 
-    const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
-    const emailContent = getInvitationEmail(role, inviteUrl, language);
-
-    await sendEmail({
-      to: email,
-      ...emailContent,
-    });
+    await sendInvitationEmail(email, role, token, { language });
 
     await client.query('COMMIT');
     res.status(201).json({ message: 'Invitation sent successfully' });

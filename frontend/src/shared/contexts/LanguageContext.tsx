@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-
-type Language = 'cs' | 'en';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { Language, languageService } from '../../services/languageService';
 
 interface LanguageContextType {
   language: Language;
@@ -10,12 +9,17 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType>({
   language: 'cs',
   setLanguage: () => {
-    throw new Error('setLanguage must be used within LanguageProvider');
+    throw new Error('Language context not initialized');
   },
 });
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('cs');
+  const [language, setLanguageState] = useState<Language>(languageService.getLanguage());
+
+  const setLanguage = useCallback((newLanguage: Language) => {
+    languageService.setLanguage(newLanguage);
+    setLanguageState(newLanguage);
+  }, []);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage }}>

@@ -1,6 +1,10 @@
 /* eslint-disable */
 const nodemailer = require('nodemailer');
+const { validateLanguage } = require('../utils/language');
 const getInvitationEmail = require('../templates/invitationEmail');
+const getMessageNotificationEmail = require('../templates/messageNotificationEmail');
+const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
+const getAdmissionResultEmail = require('../templates/admissionResultEmail');
 const emailTexts = require('../templates/emailTexts');
 
 const EDUMONT_SENDER = `EduMont <${process.env.SMTP_FROM}>`;
@@ -37,10 +41,39 @@ const sendEmail = async ({ to, subject, html }) => {
   }
 };
 
-const sendInvitationEmail = async ({ email, firstname, surname, role }) => {
-  const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${generateToken(email)}`;
-  const emailContent = getInvitationEmail(role, inviteUrl);
-  await sendEmail({
+/**
+ * @typedef {Object} SenderInfo
+ * @property {string} language - The sender's preferred language
+ */
+
+const sendInvitationEmail = async (email, role, token, senderInfo = {}) => {
+  const language = validateLanguage(senderInfo.language);
+  const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
+  const emailContent = getInvitationEmail(role, inviteUrl, language);
+  return sendEmail({
+    to: email,
+    ...emailContent,
+  });
+};
+
+const sendMessageNotification = async (recipientEmail, senderName, messageId, senderInfo = {}) => {
+  const language = validateLanguage(senderInfo.language);
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const emailContent = getMessageNotificationEmail(senderName, messageId, frontendUrl, language);
+  return sendEmail({
+    to: recipientEmail,
+    ...emailContent,
+  });
+};
+
+const sendPasswordResetEmail = async (email, resetToken, senderInfo = {}) => {
+  const language = validateLanguage(senderInfo.language || 'en');
+  console.log('Sending password reset email in language:', language); // Debug log
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const emailContent = getForgotPasswordEmail(resetUrl, language);
+
+  return sendEmail({
     to: email,
     ...emailContent,
   });
@@ -50,18 +83,21 @@ const sendAdmissionResultEmail = async (
   admission,
   isApproved,
   denialReason = null,
-  language = 'cs'
+  senderInfo = {}
 ) => {
-  await sendEmail({
+  const language = validateLanguage(senderInfo.language);
+  const emailContent = getAdmissionResultEmail(isApproved, denialReason, language);
+  return sendEmail({
     to: admission.email,
-    subject,
-    html,
+    ...emailContent,
   });
 };
 
 module.exports = {
   sendEmail,
   sendInvitationEmail,
+  sendMessageNotification,
+  sendPasswordResetEmail,
   sendAdmissionResultEmail,
   EDUMONT_SENDER,
 };

@@ -3,8 +3,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const pool = require('../config/database');
-const { sendEmail } = require('../config/mail');
-const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
+const { sendPasswordResetEmail } = require('../config/mail');
 const bcrypt = require('bcrypt');
 
 const generateResetToken = () => crypto.randomBytes(32).toString('hex');
@@ -13,6 +12,7 @@ router.post('/forgot-password', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, language } = req.body;
+    console.log('Received password reset request with language:', language); // Debug log
 
     const userResult = await client.query(
       'SELECT id, firstname, surname, email FROM users WHERE email = $1',
@@ -34,23 +34,8 @@ router.post('/forgot-password', async (req, res) => {
       [resetToken, user.id]
     );
 
-    // Build reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-
-    // Generate email content
-    const emailData = getForgotPasswordEmail(resetUrl, language || 'en');
-
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: emailData.subject,
-        html: emailData.html,
-        from: `EduMont <${process.env.SMTP_FROM}>`,
-      });
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-      throw emailError;
-    }
+    // Pass language as an object to match the expected format
+    await sendPasswordResetEmail(user.email, resetToken, { language });
 
     return res.json({ success: true });
   } catch (error) {

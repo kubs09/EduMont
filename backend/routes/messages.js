@@ -3,8 +3,9 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 const auth = require('../middleware/auth');
-const { transporter } = require('../config/mail');
+const { sendMessageNotification } = require('../config/mail'); // Update import
 const getMessageNotificationEmail = require('../templates/messageNotificationEmail');
+const { extractLanguage } = require('../utils/language');
 
 // Add checkAdmission middleware to all routes
 
@@ -265,7 +266,7 @@ router.post('/', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
 
-    const { to_user_ids, subject, content, language } = req.body;
+    const { to_user_ids, subject, content } = req.body;
     const from_user_id = req.user.id;
 
     // Validate recipients
@@ -317,25 +318,16 @@ router.post('/', auth, async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
+    const language = extractLanguage(req);
+
     // Only send emails to users who have notifications enabled
     for (const recipient of recipientsResult.rows) {
       if (recipient.message_notifications) {
         try {
-          const emailContent = getMessageNotificationEmail(
-            senderName,
-            messageId,
-            frontendUrl,
-            language // Use language from request
-          );
-
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || `EduMont <${process.env.SMTP_USER}>`,
-            to: recipient.email,
-            subject: emailContent.subject,
-            html: emailContent.html,
-          });
+          await sendMessageNotification(recipient.email, senderName, messageId, { language });
         } catch (emailError) {
-          throw emailError;
+          console.error('Failed to send notification email:', emailError);
+          // Continue with other recipients even if one email fails
         }
       }
     }

@@ -1,36 +1,14 @@
 /* eslint-disable */
-const getMessageNotificationEmail = (senderName, messageId, frontendUrl, language = 'en') => {
-  const translations = {
-    subject: {
-      cs: 'Dostali jste novou zprávu',
-      en: 'You have received a new message',
-    },
-    from: {
-      cs: 'Od',
-      en: 'From',
-    },
-    footer: {
-      cs: 'Všechna práva vyhrazena.',
-      en: 'All rights reserved.',
-    },
-    viewMessage: {
-      cs: 'Zobrazit zprávu',
-      en: 'View Message',
-    },
-    instruction: {
-      cs: 'Pro přístup do aplikace můžete kliknout na tlačítko níže',
-      en: 'You can click the button below to get to the application',
-    },
-    notinterested: {
-      cs: 'Pokud tyto upozornění nechcete dostávat, můžete je vypnout v nastavení ve vašem profilu.',
-      en: 'If you do not want to receive these notifications, you can turn them off in the settings in your profile.',
-    },
-  };
+const emailTexts = require('./emailTexts');
 
+const getMessageNotificationEmail = (senderName, messageId, frontendUrl, language = 'cs') => {
+  // Ensure language is valid
+  const validLanguage = ['cs', 'en'].includes(language) ? language : 'cs';
+  const translations = emailTexts.messageNotification;
   const viewUrl = `${frontendUrl}/messages/${messageId}`;
 
   return {
-    subject: `${translations.subject[language]}`,
+    subject: translations.subject[validLanguage],
     html: `
       <!DOCTYPE html>
       <html>
@@ -69,16 +47,16 @@ const getMessageNotificationEmail = (senderName, messageId, frontendUrl, languag
         <body>
           <div class="email-container">
             <div class="header">
-              <h2>${translations.subject[language]}</h2>
+              <h2>${translations.subject[validLanguage]}</h2>
             </div>
             <div class="content">
-              <p><b>${translations.from[language]}</></p>
+              <p><b>${translations.from[validLanguage]}</></p>
               <h3>${senderName}</h3>
-              <p>${translations.instruction[language]}</p>
+              <p>${translations.instruction[validLanguage]}</p>
               <a href="${viewUrl}" style="color: white" class="button">
-                ${translations.viewMessage[language]}
+                ${translations.viewMessage[validLanguage]}
               </a>
-              <p>${translations.notinterested[language]}</p>
+              <p>${translations.notinterested[validLanguage]}</p>
             </div>
           </div>
         </body>

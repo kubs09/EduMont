@@ -6,6 +6,7 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const { sendInvitationEmail, sendAdmissionResultEmail } = require('../config/mail');
+const { extractLanguage } = require('../utils/language');
 
 const upload = multer({
   dest: path.join(__dirname, '../uploads/'),
@@ -344,8 +345,8 @@ router.post('/admin/admissions/:id/approve', auth, async (req, res) => {
 
     // After successful commit, try to send emails
     try {
-      const language = req.body.language || 'cs';
-      await sendAdmissionResultEmail(admission, true, null, language);
+      const language = extractLanguage(req);
+      await sendAdmissionResultEmail(admission, true, null, { language });
     } catch (emailError) {
       console.error('Error sending approval email:', emailError);
     }
@@ -401,7 +402,8 @@ router.post('/admin/admissions/:id/deny', auth, async (req, res) => {
 
   const client = await pool.connect();
   try {
-    const { reason, language = 'cs' } = req.body;
+    const { reason } = req.body;
+    const language = extractLanguage(req);
     if (!reason) {
       return res.status(400).json({ error: 'Denial reason is required' });
     }
@@ -419,7 +421,7 @@ router.post('/admin/admissions/:id/deny', auth, async (req, res) => {
     }
 
     // Send denial email with language preference
-    await sendAdmissionResultEmail(result.rows[0], false, reason, language);
+    await sendAdmissionResultEmail(result.rows[0], false, reason, { language });
 
     res.json({ message: 'Admission request denied' });
   } catch (error) {

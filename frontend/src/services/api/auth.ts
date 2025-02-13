@@ -38,27 +38,17 @@ export const login = async (email: string, password: string): Promise<AuthRespon
   }
 };
 
-export const requestPasswordReset = async (email: string, language: string): Promise<void> => {
+export const requestPasswordReset = async (email: string, language: string) => {
   try {
-    const response = await api.post('/api/forgot-password', {
-      email: email.toLowerCase(),
-      language,
-    });
-
-    if (!response.data.success) {
-      throw new Error('Failed to send reset email');
-    }
+    return await api.post('/api/password-reset/forgot-password', { email, language });
   } catch (error) {
     if (error instanceof AxiosError) {
-      if (error.code === 'ECONNABORTED') {
-        throw new ApiError('Request timed out', 408);
-      }
       throw new ApiError(
-        error.response?.data?.error || 'Failed to send reset email',
+        error.response?.data?.error || 'Failed to request password reset',
         error.response?.status
       );
     }
-    throw new ApiError('Failed to send reset email', 500);
+    throw error;
   }
 };
 
