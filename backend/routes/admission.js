@@ -280,7 +280,6 @@ router.post('/review/:userId/:stepId', auth, async (req, res) => {
 
 // Get all admission requests (admin only)
 router.get('/admin/admissions', auth, async (req, res) => {
-  console.log('Accessing admin/admissions endpoint'); // Add logging
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Unauthorized' });
   }
@@ -304,7 +303,6 @@ router.get('/admin/admissions', auth, async (req, res) => {
        WHERE email NOT IN (SELECT email FROM users)
        ORDER BY surname DESC`
     );
-    console.log('Fetched admissions:', result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching admissions:', error);
@@ -504,12 +502,22 @@ router.get('/admin/users/:userId/progress', auth, async (req, res) => {
             'status', p.status,
             'submitted_at', p.submitted_at,
             'reviewed_at', p.reviewed_at,
-            'admin_notes', p.admin_notes
+            'admin_notes', p.admin_notes,
+            'preferred_online', p.preferred_online,
+            'appointment', CASE 
+              WHEN a.id IS NOT NULL THEN
+                json_build_object(
+                  'date', a.date,
+                  'online', a.online
+                )
+              ELSE NULL
+            END
           ) ORDER BY s.order_index
         ) as steps
       FROM users u
       JOIN admission_progress p ON u.id = p.user_id
       JOIN admission_steps s ON p.step_id = s.id
+      LEFT JOIN info_appointments a ON p.appointment_id = a.id
       WHERE u.id = $1
       GROUP BY u.id, u.admission_status`,
       [userId]

@@ -15,6 +15,7 @@ export interface AdmissionStep {
   appointment?: {
     date: string;
     online: boolean;
+    preferred_online?: boolean;
   };
 }
 
@@ -181,5 +182,15 @@ export const admissionService = {
 
   initializeAdmission: async (): Promise<void> => {
     await api.post('/api/admission/initialize');
+  },
+
+  reviewAppointment: async (
+    userId: number,
+    data: {
+      status: 'approved' | 'rejected';
+      adminNotes?: string;
+    }
+  ): Promise<void> => {
+    await api.post(`/api/admission/admin/appointments/${userId}/review`, data);
   },
 };

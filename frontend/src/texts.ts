@@ -1236,6 +1236,48 @@ export const texts = {
         en: 'Failed to deny admission',
       },
     },
+    appointmentReview: {
+      title: {
+        cs: 'Kontrola schůzky',
+        en: 'Appointment Review',
+      },
+      appointmentDetails: {
+        cs: 'Detaily schůzky',
+        en: 'Appointment Details',
+      },
+      date: {
+        cs: 'Datum',
+        en: 'Date',
+      },
+      type: {
+        cs: 'Typ schůzky',
+        en: 'Meeting Type',
+      },
+      preferredType: {
+        cs: 'Preferovaný typ',
+        en: 'Preferred Type',
+      },
+      online: {
+        cs: 'Online',
+        en: 'Online',
+      },
+      inPerson: {
+        cs: 'Osobně',
+        en: 'In Person',
+      },
+      notes: {
+        cs: 'Poznámky k rozhodnutí',
+        en: 'Decision Notes',
+      },
+      confirm: {
+        cs: 'Potvrdit schůzku',
+        en: 'Confirm Appointment',
+      },
+      deny: {
+        cs: 'Zamítnout schůzku',
+        en: 'Deny Appointment',
+      },
+    },
   },
   admissionWelcome: {
     title: {

@@ -40,8 +40,6 @@ router.post('/auth/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('Login successful:', email);
-
     res.json({
       token,
       user: {
