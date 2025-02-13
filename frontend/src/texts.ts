@@ -1270,12 +1270,12 @@ export const texts = {
         en: 'Decision Notes',
       },
       confirm: {
-        cs: 'Potvrdit schůzku',
-        en: 'Confirm Appointment',
+        cs: 'Potvrdit do dalšího kroku',
+        en: 'Confirm into next step',
       },
       deny: {
-        cs: 'Zamítnout schůzku',
-        en: 'Deny Appointment',
+        cs: 'Zamítnout řízení',
+        en: 'Deny admission',
       },
     },
   },
