@@ -31,7 +31,6 @@ const getMessageNotificationEmail = (senderName, messageId, frontendUrl, languag
 
   return {
     subject: `${translations.subject[language]}`,
-    from: `EduMont <${process.env.SMTP_FROM}>`,
     html: `
       <!DOCTYPE html>
       <html>

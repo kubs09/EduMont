@@ -5,21 +5,10 @@ const pool = require('../config/database');
 const auth = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('../config/mail');
 const getInvitationEmail = require('../templates/invitationEmail');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+// Remove the nodemailer transporter configuration since we'll use the mail service
 
 const generateInvitationToken = () => crypto.randomBytes(32).toString('hex');
 
@@ -218,11 +207,9 @@ router.post('/', auth, async (req, res) => {
     const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
     const emailContent = getInvitationEmail(role, inviteUrl, language);
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+    await sendEmail({
       to: email,
-      subject: emailContent.subject,
-      html: emailContent.html,
+      ...emailContent,
     });
 
     await client.query('COMMIT');

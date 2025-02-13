@@ -66,12 +66,14 @@ const Messages: React.FC = () => {
       try {
         const data = await getMessages();
         setMessages(data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         setHasError(true);
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
         }
-        enqueueSnackbar(error?.message || 'Failed to fetch messages', { variant: 'error' });
+        enqueueSnackbar(error instanceof Error ? error.message : 'Failed to fetch messages', {
+          variant: 'error',
+        });
       } finally {
         setIsRefreshing(false);
       }

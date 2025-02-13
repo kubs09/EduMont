@@ -5,7 +5,7 @@ const pool = require('../config/database');
 const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
-const { sendInvitationEmail, sendAdmissionResultEmail } = require('../utils/email');
+const { sendInvitationEmail, sendAdmissionResultEmail } = require('../config/mail');
 
 const upload = multer({
   dest: path.join(__dirname, '../uploads/'),
