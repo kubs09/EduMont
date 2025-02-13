@@ -161,7 +161,7 @@ CREATE TABLE admission_requests (
     firstname VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
+    phone VARCHAR(20), 
     child_firstname VARCHAR(100) NOT NULL,
     child_surname VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,

@@ -1278,6 +1278,40 @@ export const texts = {
         en: 'Deny admission',
       },
     },
+    statusBadges: {
+      pending: {
+        cs: 'Čekající',
+        en: 'Pending',
+      },
+      pending_review: {
+        cs: 'Čeká na kontrolu',
+        en: 'Pending Review',
+      },
+      submitted: {
+        cs: 'Odesláno',
+        en: 'Submitted',
+      },
+      approved: {
+        cs: 'Schváleno',
+        en: 'Approved',
+      },
+      rejected: {
+        cs: 'Zamítnuto',
+        en: 'Rejected',
+      },
+      denied: {
+        cs: 'Zamítnuto',
+        en: 'Denied',
+      },
+      invited: {
+        cs: 'Pozvání odesláno',
+        en: 'Invited',
+      },
+      in_progress: {
+        cs: 'Probíhá',
+        en: 'In Progress',
+      },
+    },
   },
   admissionWelcome: {
     title: {

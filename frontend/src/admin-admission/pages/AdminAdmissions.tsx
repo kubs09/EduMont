@@ -166,11 +166,21 @@ export const AdminAdmissions = () => {
   const getStatusBadge = (status: string) => {
     const colorScheme = {
       pending: 'yellow',
+      pending_review: 'purple',
+      submitted: 'blue',
       approved: 'green',
+      rejected: 'red',
       denied: 'red',
+      invited: 'teal',
+      in_progress: 'blue',
     }[status];
 
-    return <Badge colorScheme={colorScheme}>{status.toUpperCase()}</Badge>;
+    const translatedStatus =
+      texts.adminAdmissions.statusBadges[
+        status as keyof typeof texts.adminAdmissions.statusBadges
+      ]?.[language] || status;
+
+    return <Badge colorScheme={colorScheme}>{translatedStatus}</Badge>;
   };
 
   return (
