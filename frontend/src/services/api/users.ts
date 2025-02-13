@@ -21,7 +21,9 @@ export interface InviteUserData {
 
 export const updateUser = async (userId: number, userData: UpdateUserData): Promise<User> => {
   try {
+    console.log('Updating user:', { userId, userData }); // Debug log
     const response = await api.put<User>(`/api/users/${userId}`, userData);
+    console.log('Update response:', response.data); // Debug log
     localStorage.setItem('userName', `${response.data.firstname} ${response.data.surname}`);
     localStorage.setItem('userEmail', response.data.email);
     localStorage.setItem('userPhone', response.data.phone || '');
@@ -30,6 +32,7 @@ export const updateUser = async (userId: number, userData: UpdateUserData): Prom
     }
     return response.data;
   } catch (error) {
+    console.error('Update user error:', error); // Debug log
     if (error instanceof AxiosError) {
       throw new ApiError(error.response?.data?.error || 'Update failed', error.response?.status);
     }

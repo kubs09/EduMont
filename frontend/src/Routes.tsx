@@ -18,7 +18,8 @@ import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import { AdmissionRequest } from './admission/AdmissionRequest';
 import { AdminAdmissions } from './admin-admission/pages/AdminAdmissions';
-import { AdmissionWelcome } from './admission/AdmissionWelcome';
+import { AdmissionWelcome } from './admission-wizard/AdmissionWelcome';
+import { AdmissionWizard } from './admission-wizard/AdmissionWizard';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -71,6 +72,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       <Route element={<RequireAuth isAuthenticated={isAuthenticated} />}>
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.ADMISSION_WELCOME} element={<AdmissionWelcome />} />
+          <Route path={ROUTES.ADMISSION_WIZARD} element={<AdmissionWizard />} />
 
           <Route element={<RequireAdmissionComplete />}>
             <Route path={ROUTES.MESSAGES} element={<Messages />} />

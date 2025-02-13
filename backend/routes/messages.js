@@ -6,6 +6,8 @@ const auth = require('../middleware/auth');
 const { transporter } = require('../config/mail');
 const getMessageNotificationEmail = require('../templates/messageNotificationEmail');
 
+// Add checkAdmission middleware to all routes
+
 // Add after imports
 async function getAllowedRecipients(userId, userRole, client) {
   switch (userRole) {

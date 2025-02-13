@@ -44,24 +44,75 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ error: 'You can only update your own profile' });
     }
 
-    const { firstname, surname, email, phone } = req.body;
+    const { firstname, surname, email, phone, admission_status } = req.body;
 
-    // Validate phone format if provided
-    if (phone && !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(phone)) {
-      return res.status(400).json({ error: 'Invalid phone number format' });
-    }
-
-    const result = await client.query(
-      'UPDATE users SET firstname = $1, surname = $2, email = $3, phone = $4 WHERE id = $5 RETURNING id, firstname, surname, email, phone, role',
-      [firstname, surname, email.toLowerCase(), phone || null, userId]
-    );
-
-    if (result.rows.length === 0) {
+    // Get current user data
+    const currentUser = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (currentUser.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Use current values if not provided in request
+    const updatedData = {
+      firstname: firstname || currentUser.rows[0].firstname,
+      surname: surname || currentUser.rows[0].surname,
+      email: email ? email.toLowerCase() : currentUser.rows[0].email,
+      phone: phone === undefined ? currentUser.rows[0].phone : phone,
+      admission_status: admission_status || currentUser.rows[0].admission_status,
+    };
+
+    // Validate phone format if provided
+    if (
+      updatedData.phone &&
+      !/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(updatedData.phone)
+    ) {
+      return res.status(400).json({ error: 'Invalid phone number format' });
+    }
+
+    // Validate admission_status if provided
+    if (
+      admission_status &&
+      !['pending', 'in_progress', 'completed', 'rejected'].includes(admission_status)
+    ) {
+      return res.status(400).json({ error: 'Invalid admission status' });
+    }
+
+    const result = await client.query(
+      `UPDATE users 
+       SET firstname = $1, 
+           surname = $2, 
+           email = $3, 
+           phone = $4,
+           admission_status = $5
+       WHERE id = $6 
+       RETURNING id, firstname, surname, email, phone, role, admission_status`,
+      [
+        updatedData.firstname,
+        updatedData.surname,
+        updatedData.email,
+        updatedData.phone,
+        updatedData.admission_status,
+        userId,
+      ]
+    );
+
+    // Initialize admission progress if status changed to in_progress
+    if (
+      updatedData.admission_status === 'in_progress' &&
+      currentUser.rows[0].admission_status !== 'in_progress'
+    ) {
+      try {
+        await client.query('SELECT initialize_admission_progress($1)', [userId]);
+      } catch (initError) {
+        console.error('Error initializing admission progress:', initError);
+        // Continue even if initialization fails, as records might already exist
+      }
+    }
+
+    await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Update user error:', error);
     if (error.constraint === 'users_email_key') {
       return res.status(400).json({ error: 'Email already in use' });

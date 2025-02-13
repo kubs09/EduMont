@@ -1251,4 +1251,56 @@ export const texts = {
       en: 'Start Admission Process',
     },
   },
+  admissionSteps: {
+    infoMeeting: {
+      title: {
+        cs: 'Informační schůzka',
+        en: 'Information Meeting',
+      },
+      description: {
+        cs: 'Vyberte si termín informační schůzky, kde se dozvíte více o našem programu',
+        en: 'Choose a time for an information meeting to learn more about our program',
+      },
+      preferenceLabel: {
+        cs: 'Preferujete online nebo osobní setkání?',
+        en: 'Do you prefer online or in-person meeting?',
+      },
+      online: {
+        cs: 'Online',
+        en: 'Online',
+      },
+      inPerson: {
+        cs: 'Osobně',
+        en: 'In Person',
+      },
+      availableSpots: {
+        cs: 'Volná místa:',
+        en: 'Available spots:',
+      },
+      noAppointments: {
+        cs: 'Momentálně nejsou k dispozici žádné termíny',
+        en: 'No appointments available at the moment',
+      },
+      submitButton: {
+        cs: 'Rezervovat termín',
+        en: 'Schedule Appointment',
+      },
+      success: {
+        cs: 'Schůzka byla úspěšně naplánována',
+        en: 'Appointment scheduled successfully',
+      },
+      error: {
+        cs: 'Nepodařilo se naplánovat schůzku',
+        en: 'Failed to schedule appointment',
+      },
+      successTitle: {
+        cs: 'Schůzka byla úspěšně naplánována',
+        en: 'Meeting Successfully Scheduled',
+      },
+      successMessage: {
+        cs: 'Těšíme se na setkání s vámi',
+        en: 'We are excited to meet you',
+      },
+    },
+  },
 };

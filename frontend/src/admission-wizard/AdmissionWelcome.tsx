@@ -16,16 +16,48 @@ export const AdmissionWelcome = () => {
   const handleStart = async () => {
     setIsLoading(true);
     try {
-      const userId = parseInt(localStorage.getItem('userId') || '0');
-      await updateUser(userId, { admission_status: 'in_progress' });
-      navigate(ROUTES.DASHBOARD);
-    } catch (error) {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+
+      if (!token || !userId) {
+        toast({
+          title: 'Error',
+          description: 'Please log in again',
+          status: 'error',
+          duration: 5000,
+        });
+        navigate(ROUTES.LOGIN);
+        return;
+      }
+
+      const response = await updateUser(parseInt(userId), {
+        admission_status: 'in_progress',
+      });
+
+      if (response.admission_status === 'in_progress') {
+        navigate(ROUTES.ADMISSION_WIZARD);
+      } else {
+        throw new Error('Failed to update admission status');
+      }
+    } catch (error: any) {
+      console.error('Start admission error:', error);
+
+      if (error.status === 403) {
+        toast({
+          title: 'Session Expired',
+          description: 'Please log in again',
+          status: 'error',
+          duration: 5000,
+        });
+        navigate(ROUTES.LOGIN);
+        return;
+      }
+
       toast({
         title: 'Error',
-        description: 'Failed to start admission process',
+        description: error.message || 'Failed to start admission process',
         status: 'error',
         duration: 5000,
-        isClosable: true,
       });
     } finally {
       setIsLoading(false);

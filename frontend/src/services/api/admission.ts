@@ -10,6 +10,12 @@ export interface AdmissionStep {
   submitted_at?: string;
   reviewed_at?: string;
   admin_notes?: string;
+  appointment_id?: number;
+  preferred_online?: boolean;
+  appointment?: {
+    date: string;
+    online: boolean;
+  };
 }
 
 export interface AdmissionStatus {
@@ -58,6 +64,13 @@ export interface PendingAdmissionUser {
     name: string;
     status: string;
   };
+}
+
+export interface Appointment {
+  id: number;
+  date: string;
+  online: boolean;
+  available_spots: number;
 }
 
 export const admissionService = {
@@ -124,5 +137,16 @@ export const admissionService = {
   getUserAdmissionProgress: async (userId: number): Promise<AdmissionStatus> => {
     const response = await api.get(`/api/admission/admin/users/${userId}/progress`);
     return response.data;
+  },
+
+  // Get available appointments
+  getAppointments: async (): Promise<Appointment[]> => {
+    const response = await api.get('/api/admission/appointments');
+    return response.data;
+  },
+
+  // Schedule appointment
+  scheduleAppointment: async (appointmentId: number, preferredOnline: boolean): Promise<void> => {
+    await api.post(`/api/admission/appointments/${appointmentId}`, { preferredOnline });
   },
 };

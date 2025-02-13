@@ -21,4 +21,5 @@ export const ROUTES = {
   ADMISSION_REQUEST: '/admission-request',
   ADMIN_ADMISSIONS: '/admin/admissions',
   ADMISSION_WELCOME: '/admission/welcome',
+  ADMISSION_WIZARD: '/admission/steps', // Add this new route
 } as const;

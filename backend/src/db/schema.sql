@@ -98,7 +98,7 @@ CREATE TABLE admission_steps (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     required_documents TEXT[],
-    order_index INTEGER NOT NULL
+    order_index INTEGER NOT NULL UNIQUE
 );
 
 CREATE TABLE admission_progress (
@@ -115,6 +115,18 @@ CREATE TABLE admission_progress (
     UNIQUE(user_id, step_id)
 );
 
+
+CREATE TABLE info_appointments (
+    id SERIAL PRIMARY KEY,
+    date TIMESTAMP NOT NULL,
+    capacity INTEGER NOT NULL,
+    online BOOLEAN NOT NULL
+);
+
+ALTER TABLE admission_progress 
+ADD COLUMN IF NOT EXISTS appointment_id INTEGER REFERENCES info_appointments(id),
+ADD COLUMN IF NOT EXISTS preferred_online BOOLEAN;
+
 CREATE TABLE admission_requests (
     id SERIAL PRIMARY KEY,
     firstname VARCHAR(100) NOT NULL,
@@ -130,12 +142,38 @@ CREATE TABLE admission_requests (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Insert sample appointments
+INSERT INTO info_appointments (date, capacity, online) VALUES
+('2025-02-20 10:00:00', 5, false),
+('2025-02-22 14:00:00', 5, true),
+('2025-02-25 16:00:00', 5, false);
+
 -- Insert default admission steps
 INSERT INTO admission_steps (name, description, required_documents, order_index) VALUES
 ('Personal Information', 'Complete your personal information and contact details', ARRAY['identification', 'proof_of_address'], 1),
 ('Child Details', 'Provide information about your child including medical history', ARRAY['birth_certificate', 'medical_records'], 2),
 ('Financial Agreement', 'Review and accept financial terms and conditions', ARRAY['signed_agreement'], 3),
 ('Final Review', 'Admin review of all submitted documents', NULL, 4);
+
+-- Update first admission step
+UPDATE admission_steps 
+SET name = 'Informational Meeting',
+    description = 'Schedule an informational meeting with our staff to learn more about our program',
+    required_documents = NULL,
+    order_index = 1
+WHERE order_index = 1;
+
+-- Update admission steps with ON CONFLICT handling
+INSERT INTO admission_steps (name, description, required_documents, order_index) VALUES
+('Informational Meeting', 'Schedule an informational meeting with our staff', NULL, 1),
+('Documentation', 'Upload required documents', ARRAY['birth_certificate', 'medical_records'], 2),
+('Agreement', 'Review and sign agreements', ARRAY['signed_agreement'], 3),
+('Final Review', 'Final review of your application', NULL, 4)
+ON CONFLICT (order_index) 
+DO UPDATE SET 
+    name = EXCLUDED.name,
+    description = EXCLUDED.description,
+    required_documents = EXCLUDED.required_documents;
 
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES
@@ -213,6 +251,7 @@ BEGIN
   INSERT INTO admission_progress (user_id, step_id, status)
   SELECT user_id_param, id, 'pending'
   FROM admission_steps
-  ORDER BY order_index;
+  ORDER BY order_index
+  ON CONFLICT (user_id, step_id) DO NOTHING;
 END;
 $$ LANGUAGE plpgsql;

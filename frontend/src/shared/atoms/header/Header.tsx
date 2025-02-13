@@ -18,12 +18,13 @@ import { texts } from '../../../texts';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ROUTES } from '../../route';
 import icon from './icon.png';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getMessages } from '../../../services/api';
+import { AdmissionRequiredError } from '../../../types/errors';
 
 const POLL_INTERVAL = 5000;
 
-const Header = () => {
+const Header: React.FC = () => {
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const isAuthenticated = !!localStorage.getItem('token');
@@ -34,6 +35,8 @@ const Header = () => {
   const admissionStatus = isParent ? localStorage.getItem('admissionStatus') : null;
   const isPendingAdmission = isParent && admissionStatus === 'pending';
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hasError, setHasError] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
@@ -44,16 +47,26 @@ const Header = () => {
         ).length;
         setUnreadCount(unread);
       } catch (error) {
-        console.error('Failed to fetch unread count:', error);
+        if (error instanceof AdmissionRequiredError || error instanceof Error) {
+          setHasError(true);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+        }
       }
     };
 
-    if (isAuthenticated) {
+    if (isAuthenticated && !hasError) {
       fetchUnreadCount(); // Initial fetch
-      const interval = setInterval(fetchUnreadCount, POLL_INTERVAL);
-      return () => clearInterval(interval); // Cleanup on unmount
+      intervalRef.current = setInterval(fetchUnreadCount, POLL_INTERVAL);
     }
-  }, [isAuthenticated]);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isAuthenticated, hasError]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -114,7 +127,7 @@ const Header = () => {
         </Flex>
       </Button>
       <Flex gap={{ base: 2, md: 4 }} align="center">
-        {isAuthenticated && !isPendingAdmission && (
+        {isAuthenticated && !isPendingAdmission && !hasError && (
           <Button
             position="relative"
             leftIcon={<EmailIcon />}

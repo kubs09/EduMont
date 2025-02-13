@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Grid,
@@ -45,20 +45,40 @@ const Messages: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [hasError, setHasError] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout>();
 
-  const fetchMessages = React.useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const data = await getMessages();
-      setMessages(data);
-    } catch (error) {
-      enqueueSnackbar('Failed to fetch messages', { variant: 'error' });
-    } finally {
-      setIsRefreshing(false);
+  const fetchMessages = useCallback(async () => {
+    // Check admission status first
+    const admissionStatus = localStorage.getItem('admissionStatus');
+    const userRole = localStorage.getItem('userRole');
+
+    if (userRole === 'parent' && admissionStatus !== 'completed') {
+      setHasError(true);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      return;
     }
-  }, [enqueueSnackbar]);
 
-  const fetchUsers = React.useCallback(async () => {
+    if (!isRefreshing && !hasError) {
+      setIsRefreshing(true);
+      try {
+        const data = await getMessages();
+        setMessages(data);
+      } catch (error: any) {
+        setHasError(true);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+        enqueueSnackbar(error?.message || 'Failed to fetch messages', { variant: 'error' });
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+  }, [enqueueSnackbar, isRefreshing, hasError]);
+
+  const fetchUsers = useCallback(async () => {
     try {
       const data = await getMessageUsers();
       setUsers(data);
@@ -71,12 +91,24 @@ const Messages: React.FC = () => {
   }, [enqueueSnackbar, language]);
 
   useEffect(() => {
+    // Initial fetch
     fetchMessages();
     fetchUsers();
 
-    const interval = setInterval(fetchMessages, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchMessages, fetchUsers]);
+    // Only start polling if there's no error and admission is completed
+    const admissionStatus = localStorage.getItem('admissionStatus');
+    const userRole = localStorage.getItem('userRole');
+
+    if (!hasError && (userRole !== 'parent' || admissionStatus === 'completed')) {
+      intervalRef.current = setInterval(fetchMessages, POLL_INTERVAL);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [fetchMessages, fetchUsers, hasError]);
 
   const handleMessageClick = async (id: number) => {
     try {

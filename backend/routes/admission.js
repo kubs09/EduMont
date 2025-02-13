@@ -104,7 +104,17 @@ router.get('/status', auth, async (req, res) => {
               'status', COALESCE(p.status, 'pending'),
               'submitted_at', p.submitted_at,
               'reviewed_at', p.reviewed_at,
-              'admin_notes', p.admin_notes
+              'admin_notes', p.admin_notes,
+              'appointment_id', p.appointment_id,
+              'preferred_online', p.preferred_online,
+              'appointment', CASE 
+                WHEN a.id IS NOT NULL THEN
+                  json_build_object(
+                    'date', a.date,
+                    'online', a.online
+                  )
+                ELSE NULL
+              END
             ) ORDER BY s.order_index
           ) FILTER (WHERE s.id IS NOT NULL),
           '[]'
@@ -112,6 +122,7 @@ router.get('/status', auth, async (req, res) => {
       FROM users u
       LEFT JOIN admission_progress p ON u.id = p.user_id
       LEFT JOIN admission_steps s ON p.step_id = s.id
+      LEFT JOIN info_appointments a ON p.appointment_id = a.id
       WHERE u.id = $1
       GROUP BY u.id, u.admission_status`,
       [req.user.id]
@@ -500,6 +511,80 @@ router.get('/admin/users/:userId/progress', auth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching user admission progress:', error);
     res.status(500).json({ error: 'Failed to fetch user progress' });
+  } finally {
+    client.release();
+  }
+});
+
+// Get available appointments
+router.get('/appointments', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(`
+      SELECT 
+        a.id,
+        a.date,
+        a.online,
+        a.capacity - COUNT(p.appointment_id) as available_spots
+      FROM info_appointments a
+      LEFT JOIN admission_progress p ON a.id = p.appointment_id
+      WHERE a.date > CURRENT_TIMESTAMP
+      GROUP BY a.id, a.date, a.capacity, a.online
+      HAVING a.capacity - COUNT(p.appointment_id) > 0
+      ORDER BY a.date ASC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ error: 'Failed to fetch appointments' });
+  } finally {
+    client.release();
+  }
+});
+
+// Schedule appointment
+router.post('/appointments/:appointmentId', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { appointmentId } = req.params;
+    const { preferredOnline } = req.body;
+
+    await client.query('BEGIN');
+
+    // Check if appointment still has capacity
+    const availabilityCheck = await client.query(
+      `SELECT 
+        a.capacity - COUNT(p.appointment_id) as available_spots
+      FROM info_appointments a
+      LEFT JOIN admission_progress p ON a.id = p.appointment_id
+      WHERE a.id = $1
+      GROUP BY a.id, a.capacity`,
+      [appointmentId]
+    );
+
+    if (!availabilityCheck.rows[0] || availabilityCheck.rows[0].available_spots <= 0) {
+      throw new Error('Appointment is full');
+    }
+
+    // Update admission progress for the first step only
+    await client.query(
+      `UPDATE admission_progress 
+       SET appointment_id = $1, 
+           preferred_online = $2,
+           status = 'submitted',
+           submitted_at = CURRENT_TIMESTAMP
+       WHERE user_id = $3 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)`,
+      [appointmentId, preferredOnline, req.user.id]
+    );
+
+    // Do NOT update overall admission status - keep it as in_progress
+    await client.query('COMMIT');
+    res.json({ message: 'Appointment scheduled successfully' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error scheduling appointment:', error);
+    res.status(500).json({ error: error.message });
   } finally {
     client.release();
   }

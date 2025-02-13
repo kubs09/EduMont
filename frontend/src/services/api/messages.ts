@@ -2,12 +2,23 @@ import { AxiosError } from 'axios';
 import api from '../apiConfig';
 import { ApiError, User } from '@frontend/types/shared';
 import { Message } from '@frontend/types/messages';
+import { AdmissionRequiredError } from '../../types/errors';
 
 export const getMessages = async (): Promise<Message[]> => {
+  const admissionStatus = localStorage.getItem('admissionStatus');
+  const userRole = localStorage.getItem('userRole');
+
+  if (userRole === 'parent' && admissionStatus !== 'completed') {
+    throw new AdmissionRequiredError();
+  }
+
   try {
     const response = await api.get<Message[]>('/api/messages');
     return response.data;
   } catch (error) {
+    if (error instanceof AxiosError && error.response?.status === 403) {
+      throw new AdmissionRequiredError();
+    }
     if (error instanceof AxiosError) {
       throw new ApiError(
         error.response?.data?.error || 'Failed to fetch messages',
