@@ -499,6 +499,10 @@ export const texts = {
         cs: 'Nové heslo musí mít alespoň 8 znaků',
         en: 'New password must be at least 8 characters',
       },
+      passwordLength: {
+        cs: 'Heslo musí mít alespoň 8 znaků',
+        en: 'Password must be at least 8 characters',
+      },
       confirmPasswordRequired: {
         cs: 'Potvrďte prosím nové heslo',
         en: 'Please confirm your new password',
@@ -732,6 +736,16 @@ export const texts = {
       submit: {
         cs: 'Dokončit registraci',
         en: 'Complete Registration',
+      },
+    },
+    instructions: {
+      title: {
+        cs: 'Dokončete registraci vyplněním údajů',
+        en: 'Complete the registration by filling in your details',
+      },
+      description: {
+        cs: 'Zadejte své jméno a heslo pro přihlášení. Email je automaticky předvyplněn z pozvánky.',
+        en: 'Please input your name and password for login. Email is automatically filled from the invitation.',
       },
     },
   },
