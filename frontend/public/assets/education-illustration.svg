@@ -1,0 +1,35 @@
+<svg width="400" height="600" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Shapes -->
+    <circle cx="200" cy="300" r="250" fill="#E6EEF8" />
+    <circle cx="350" cy="150" r="100" fill="#BEE3F8" opacity="0.5" />
+    <circle cx="50" cy="450" r="80" fill="#90CDF4" opacity="0.3" />
+    
+    <!-- Books Stack -->
+    <rect x="120" y="280" width="160" height="30" rx="5" fill="#3182CE" />
+    <rect x="130" y="250" width="160" height="30" rx="5" fill="#4299E1" />
+    <rect x="140" y="220" width="160" height="30" rx="5" fill="#63B3ED" />
+    
+    <!-- Pencil -->
+    <rect x="180" y="150" width="8" height="120" rx="4" transform="rotate(-45 180 150)" fill="#2C5282" />
+    <path d="M160 130L180 150L165 165L145 145L160 130Z" fill="#F6AD55" />
+    
+    <!-- Graduation Cap -->
+    <path d="M200 180L300 230L200 280L100 230L200 180Z" fill="#2B6CB0" />
+    <rect x="190" y="230" width="20" height="80" fill="#2B6CB0" />
+    <circle cx="200" cy="310" r="15" fill="#2B6CB0" />
+    
+    <!-- Abstract Decorative Elements -->
+    <circle cx="100" cy="150" r="10" fill="#4299E1" />
+    <circle cx="300" cy="450" r="15" fill="#3182CE" />
+    <circle cx="150" cy="400" r="8" fill="#63B3ED" />
+    <circle cx="250" cy="350" r="12" fill="#90CDF4" />
+    
+    <!-- Mathematical Symbols -->
+    <text x="80" y="200" fill="#2B6CB0" font-size="24" font-family="Arial">+</text>
+    <text x="320" y="280" fill="#2B6CB0" font-size="24" font-family="Arial">÷</text>
+    <text x="150" y="480" fill="#2B6CB0" font-size="24" font-family="Arial">×</text>
+    
+    <!-- Decorative Lines -->
+    <path d="M50 200 Q 100 180 150 200" stroke="#4299E1" stroke-width="3" fill="none" />
+    <path d="M250 400 Q 300 380 350 400" stroke="#4299E1" stroke-width="3" fill="none" />
+</svg>

@@ -41,6 +41,14 @@ export const texts = {
         cs: 'Zapomněli jste heslo?',
         en: 'Forgot your password?',
       },
+      welcomeTitle: {
+        cs: 'Vítejte v EduMont',
+        en: 'Welcome to EduMont',
+      },
+      welcomeSubtitle: {
+        cs: 'Vaše Montessori vzdělávací platforma',
+        en: 'Your Montessori Education Platform',
+      },
     },
     signup: {
       cs: 'Registrace',
