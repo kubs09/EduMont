@@ -1,6 +1,25 @@
-CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
+-- First, drop all existing functions
+DROP FUNCTION IF EXISTS initialize_admission_progress CASCADE;
 
-DROP TABLE IF EXISTS admission_requests, admission_progress, admission_steps, class_history, users, invitations, messages, children, classes, class_teachers, class_children CASCADE;
+-- Drop existing enums
+DROP TYPE IF EXISTS user_role CASCADE;
+
+-- Drop all existing tables in correct order
+DROP TABLE IF EXISTS admission_progress CASCADE;
+DROP TABLE IF EXISTS admission_requests CASCADE;
+DROP TABLE IF EXISTS admission_steps CASCADE;
+DROP TABLE IF EXISTS admission_terms CASCADE;
+DROP TABLE IF EXISTS info_appointments CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS class_history CASCADE;
+DROP TABLE IF EXISTS class_children CASCADE;
+DROP TABLE IF EXISTS class_teachers CASCADE;
+DROP TABLE IF EXISTS classes CASCADE;
+DROP TABLE IF EXISTS children CASCADE;
+DROP TABLE IF EXISTS invitations CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -214,6 +233,22 @@ INSERT INTO users (email, firstname, surname, password, role) VALUES
 ('eva.svobodova@example.com', 'Eva', 'Svobodová', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher')
 ON CONFLICT (email) DO NOTHING;
 
+-- Insert test parent with pending admission process
+INSERT INTO users (email, firstname, surname, password, role, admission_status) VALUES
+('test.parent@example.com', 'Test', 'Parent', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent', 'in_progress')
+ON CONFLICT (email) DO NOTHING;
+
+-- Initialize their admission progress for the first step (Information Meeting)
+INSERT INTO admission_progress (user_id, step_id, status)
+SELECT 
+  u.id,
+  s.id,
+  'pending'
+FROM users u
+CROSS JOIN (SELECT id FROM admission_steps WHERE order_index = 1) s
+WHERE u.email = 'test.parent@example.com'
+ON CONFLICT (user_id, step_id) DO NOTHING;
+
 -- Insert children with correct parent_id references and proper date casting
 INSERT INTO children (firstname, surname, date_of_birth, parent_id, notes)
 SELECT 
@@ -282,3 +317,9 @@ BEGIN
   ON CONFLICT (user_id, step_id) DO NOTHING;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Update the admission_progress table constraint
+ALTER TABLE admission_progress 
+  DROP CONSTRAINT IF EXISTS admission_progress_status_check,
+  ADD CONSTRAINT admission_progress_status_check 
+    CHECK (status IN ('pending', 'submitted', 'approved', 'rejected', 'pending_review'));

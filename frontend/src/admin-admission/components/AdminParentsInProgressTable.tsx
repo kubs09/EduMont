@@ -43,7 +43,7 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
           <Td>{getStatusBadge(parent.current_step.status)}</Td>
           <Td>
             <Button size="sm" colorScheme="blue">
-              {texts.table.viewProgress ? texts.table.viewProgress[language] : 'View Progress'}
+              {texts.table.viewProgress?.[language] || 'View Progress'}
             </Button>
           </Td>
         </Tr>

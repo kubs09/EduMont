@@ -6,7 +6,7 @@ export interface AdmissionStep {
   description: string;
   required_documents: string[];
   order_index: number;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'pending_review';
+  status: 'pending' | 'pending_review' | 'submitted' | 'approved' | 'rejected';
   submitted_at?: string;
   reviewed_at?: string;
   admin_notes?: string;
@@ -160,10 +160,14 @@ export const admissionService = {
   },
 
   // Schedule appointment (simplified)
-  scheduleAppointment: async (appointmentId: number, preferredOnline: boolean): Promise<void> => {
-    await api.post(`/api/admission/appointments/${appointmentId}`, {
+  scheduleAppointment: async (
+    appointmentId: number,
+    preferredOnline: boolean
+  ): Promise<{ status: string }> => {
+    const response = await api.post(`/api/admission/appointments/${appointmentId}`, {
       preferredOnline,
     });
+    return response.data;
   },
 
   getTerms: async (): Promise<InfoMeeting[]> => {

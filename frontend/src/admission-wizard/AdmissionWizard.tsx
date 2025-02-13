@@ -27,9 +27,9 @@ export const AdmissionWizard = () => {
         // Initialize step states based on API response
         const newStepStates: Record<number, StepState> = {};
         status.steps.forEach((step) => {
-          let currentStatus: StepStatus = 'select';
+          let currentStatus: StepStatus;
 
-          // Map API status to frontend status
+          // Updated status mapping
           switch (step.status) {
             case 'pending':
               currentStatus = 'select';
@@ -43,7 +43,11 @@ export const AdmissionWizard = () => {
             case 'rejected':
               currentStatus = 'rejected';
               break;
-            // Add other status mappings as needed
+            case 'pending_review':
+              currentStatus = 'pending_review';
+              break;
+            default:
+              currentStatus = 'select';
           }
 
           newStepStates[step.step_id] = {
@@ -87,9 +91,18 @@ export const AdmissionWizard = () => {
     );
   }
 
-  const currentStep = steps.find(
-    (step) => step.status === 'pending' || step.status === 'rejected' || step.status === 'submitted'
-  );
+  // Update how we find the current step
+  const currentStep =
+    steps.find(
+      (step) =>
+        // First look for pending_review or submitted status
+        step.status === 'pending_review' ||
+        step.status === 'submitted' ||
+        // Then look for rejected status
+        step.status === 'rejected' ||
+        // Finally look for pending status
+        step.status === 'pending'
+    ) ?? steps[0];
 
   if (!currentStep) {
     return null;

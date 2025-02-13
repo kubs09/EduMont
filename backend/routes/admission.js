@@ -242,29 +242,30 @@ router.post('/review/:userId/:stepId', auth, async (req, res) => {
       [status, adminNotes, req.user.id, userId, stepId]
     );
 
+    if (status === 'approved') {
+      // When approving a step, set the next step to pending
+      await client.query(
+        `UPDATE admission_progress 
+         SET status = 'pending'
+         WHERE user_id = $1 
+         AND step_id = (
+           SELECT id FROM admission_steps 
+           WHERE order_index = (
+             SELECT order_index + 1 
+             FROM admission_steps 
+             WHERE id = $2
+           )
+         )`,
+        [userId, stepId]
+      );
+    }
+
     // If rejected, update user's admission status
     if (status === 'rejected') {
       await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
         'rejected',
         userId,
       ]);
-    }
-
-    // If approved and this was the final step, update user's admission status
-    if (status === 'approved') {
-      const isComplete = await client.query(
-        `SELECT COUNT(*) = (SELECT COUNT(*) FROM admission_steps) as complete
-         FROM admission_progress 
-         WHERE user_id = $1 AND status = 'approved'`,
-        [userId]
-      );
-
-      if (isComplete.rows[0].complete) {
-        await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
-          'completed',
-          userId,
-        ]);
-      }
     }
 
     await client.query('COMMIT');
@@ -452,7 +453,7 @@ router.get('/admin/pending-users', auth, async (req, res) => {
                   )
            FROM admission_progress p
            JOIN admission_steps s ON p.step_id = s.id
-           WHERE p.user_id = u.id AND p.status = 'pending'
+           WHERE p.user_id = u.id
            ORDER BY s.order_index ASC
            LIMIT 1
          ) as current_step
@@ -462,7 +463,17 @@ router.get('/admin/pending-users', auth, async (req, res) => {
        ORDER BY u.surname DESC`
     );
 
-    res.json(result.rows);
+    // Ensure current_step is never null in the response
+    const processedResults = result.rows.map((row) => ({
+      ...row,
+      current_step: row.current_step || {
+        step_id: 1,
+        name: 'Information Meeting',
+        status: 'pending',
+      },
+    }));
+
+    res.json(processedResults);
   } catch (error) {
     console.error('Error fetching pending admission users:', error);
     res.status(500).json({ error: 'Failed to fetch pending users' });
@@ -591,16 +602,17 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('Appointment is full');
     }
 
-    // Rest of the code remains the same...
+    // Update both status and appointment status
     const result = await client.query(
       `UPDATE admission_progress 
        SET appointment_id = $1, 
            preferred_online = $2,
-           status = 'submitted',
-           appointment_status = 'pending_review',
-           submitted_at = CURRENT_TIMESTAMP
+           status = 'pending_review'
        WHERE user_id = $3 
-       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
+       AND step_id = (
+         SELECT id FROM admission_steps 
+         WHERE order_index = 1
+       )
        RETURNING *`,
       [appointmentId, preferredOnline, req.user.id]
     );
@@ -609,8 +621,24 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('Failed to update admission progress');
     }
 
+    // Ensure all other steps remain in their current state
+    await client.query(
+      `UPDATE admission_progress 
+       SET status = CASE 
+         WHEN status = 'pending' THEN 'pending'
+         WHEN status = 'approved' THEN 'approved'
+         ELSE status
+       END
+       WHERE user_id = $1 
+       AND step_id != (SELECT id FROM admission_steps WHERE order_index = 1)`,
+      [req.user.id]
+    );
+
     await client.query('COMMIT');
-    res.json({ message: 'Appointment scheduled successfully', status: 'pending_review' });
+    res.json({
+      message: 'Appointment scheduled successfully',
+      status: 'pending_review',
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error scheduling appointment:', error);
@@ -637,9 +665,10 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
 
     await client.query('BEGIN');
 
+    // Update the status but don't automatically set next step
     const result = await client.query(
       `UPDATE admission_progress 
-       SET appointment_status = $1,
+       SET status = $1,
            admin_notes = $2,
            reviewed_at = CURRENT_TIMESTAMP,
            reviewed_by = $3
@@ -647,52 +676,6 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
        AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
        RETURNING *`,
       [status, adminNotes, req.user.id, userId]
-    );
-
-    if (result.rows.length === 0) {
-      throw new Error('Appointment not found');
-    }
-
-    await client.query('COMMIT');
-    res.json({ message: 'Appointment review completed' });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error reviewing appointment:', error);
-    res.status(500).json({ error: error.message });
-  } finally {
-    client.release();
-  }
-});
-
-// Admin: Review appointment
-router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Unauthorized' });
-  }
-
-  const client = await pool.connect();
-  try {
-    const { userId } = req.params;
-    const { status, adminNotes } = req.body;
-
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status' });
-    }
-
-    await client.query('BEGIN');
-
-    // Update appointment status
-    const result = await client.query(
-      `UPDATE admission_progress 
-       SET status = $1,
-           appointment_status = $2,
-           admin_notes = $3,
-           reviewed_at = CURRENT_TIMESTAMP,
-           reviewed_by = $4
-       WHERE user_id = $5 
-       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
-       RETURNING *`,
-      [status === 'approved' ? 'completed' : 'rejected', status, adminNotes, req.user.id, userId]
     );
 
     if (result.rows.length === 0) {
@@ -708,7 +691,7 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
     }
 
     await client.query('COMMIT');
-    res.json({ message: 'Appointment review completed' });
+    res.json({ message: 'Review completed', status });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error reviewing appointment:', error);
