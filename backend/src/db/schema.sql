@@ -115,7 +115,6 @@ CREATE TABLE admission_progress (
     UNIQUE(user_id, step_id)
 );
 
-
 CREATE TABLE info_appointments (
     id SERIAL PRIMARY KEY,
     date TIMESTAMP NOT NULL,
@@ -141,6 +140,23 @@ CREATE TABLE admission_requests (
     denial_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE admission_terms (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    start_date DATE NOT NULL,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert sample terms
+INSERT INTO admission_terms (name, start_date, status) VALUES
+('September 2024', '2024-09-01', 'active'),
+('January 2025', '2025-01-01', 'active');
+
+-- Add term_id to admission_progress
+ALTER TABLE admission_progress
+ADD COLUMN term_id INTEGER REFERENCES admission_terms(id);
 
 -- Insert sample appointments
 INSERT INTO info_appointments (date, capacity, online) VALUES

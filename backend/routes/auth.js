@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const pool = require('../config/database');
 const { sendEmail } = require('../config/mail');
 const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
+const auth = require('../middleware/auth'); // Add this line to import auth middleware
 
 router.post('/auth/login', async (req, res) => {
   const client = await pool.connect();
@@ -157,6 +158,45 @@ router.post('/forgot-password', async (req, res) => {
       success: false,
       error: 'Failed to process password reset request',
     });
+  } finally {
+    client.release();
+  }
+});
+
+router.get('/me', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    // Get user data including admission status and current step
+    const result = await client.query(
+      `
+      SELECT 
+        u.id, 
+        u.email, 
+        u.firstname, 
+        u.surname, 
+        u.role,
+        u.admission_status,
+        CASE WHEN u.role = 'parent' AND u.admission_status IN ('pending', 'in_progress') THEN
+          (SELECT ap.status
+           FROM admission_progress ap
+           JOIN admission_steps asteps ON ap.step_id = asteps.id
+           WHERE ap.user_id = u.id
+           ORDER BY asteps.order_index DESC
+           LIMIT 1)
+        ELSE NULL END as current_step_status
+      FROM users u
+      WHERE u.id = $1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user data' });
   } finally {
     client.release();
   }

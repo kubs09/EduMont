@@ -73,6 +73,20 @@ export interface Appointment {
   available_spots: number;
 }
 
+export interface AdmissionTerm {
+  id: number;
+  name: string;
+  start_date: string;
+}
+
+export interface InfoMeeting {
+  id: number;
+  date: string;
+  capacity: number;
+  online: boolean;
+  available_spots: number;
+}
+
 export const admissionService = {
   // Get current admission status and steps
   getStatus: async (): Promise<AdmissionStatus> => {
@@ -145,8 +159,19 @@ export const admissionService = {
     return response.data;
   },
 
-  // Schedule appointment
+  // Schedule appointment (simplified)
   scheduleAppointment: async (appointmentId: number, preferredOnline: boolean): Promise<void> => {
-    await api.post(`/api/admission/appointments/${appointmentId}`, { preferredOnline });
+    await api.post(`/api/admission/appointments/${appointmentId}`, {
+      preferredOnline,
+    });
+  },
+
+  getTerms: async (): Promise<InfoMeeting[]> => {
+    const response = await api.get('/api/admission/terms');
+    return response.data;
+  },
+
+  submitTermSelection: async (termId: number): Promise<void> => {
+    await api.post('/api/admission/term', { termId });
   },
 };

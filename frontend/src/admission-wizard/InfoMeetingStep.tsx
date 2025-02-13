@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Card,
-  Flex,
   Heading,
   Radio,
   RadioGroup,
@@ -14,80 +12,76 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Spinner,
 } from '@chakra-ui/react';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { texts } from '../texts';
 import { useEffect, useState } from 'react';
+import { admissionService, InfoMeeting } from '@frontend/services/api/admission';
 import { format } from 'date-fns';
 import { cs, enUS } from 'date-fns/locale';
-import { admissionService } from '@frontend/services/api/admission';
-
-interface Appointment {
-  id: number;
-  date: string;
-  online: boolean;
-  available_spots: number;
-}
 
 export const InfoMeetingStep = () => {
   const { language } = useLanguage();
   const toast = useToast();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [selectedAppointment, setSelectedAppointment] = useState<number | null>(null);
-  const [preferredOnline, setPreferredOnline] = useState<boolean | null>(null);
+  const [meetings, setMeetings] = useState<InfoMeeting[]>([]);
+  const [selectedMeeting, setSelectedMeeting] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'select' | 'waiting' | 'completed'>('select');
 
   useEffect(() => {
-    fetchAppointments();
-  }, []);
+    const loadMeetings = async () => {
+      try {
+        const data = await admissionService.getTerms();
+        setMeetings(data);
+      } catch (error) {
+        console.error('Error fetching meetings:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load available meeting times',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
 
-  const fetchAppointments = async () => {
-    try {
-      const response = await fetch('/api/admission/appointments', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await response.json();
-      setAppointments(data);
-    } catch (error) {
-      console.error('Error fetching appointments:', error);
-    }
-  };
+    loadMeetings();
+  }, [toast]);
 
-  const handleSubmit = async () => {
-    if (!selectedAppointment || preferredOnline === null) return;
-
-    setIsLoading(true);
-    try {
-      await admissionService.scheduleAppointment(selectedAppointment, preferredOnline);
-      setIsCompleted(true);
-      // Remove next steps navigation - let admin review first
-    } catch (error) {
-      toast({
-        title: texts.admissionSteps.infoMeeting.error[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
+  const formatMeetingDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return format(date, 'PPPP p', {
+    return format(date, 'PPpp', {
       locale: language === 'cs' ? cs : enUS,
     });
   };
 
-  if (isCompleted) {
+  const handleSubmit = async () => {
+    if (!selectedMeeting) return;
+
+    setIsLoading(true);
+    try {
+      console.log('Submitting meeting selection:', selectedMeeting);
+      await admissionService.scheduleAppointment(selectedMeeting, true); // Assuming all meetings can be online
+      setCurrentStep('waiting');
+    } catch (error) {
+      console.error('Meeting scheduling error:', error);
+      toast({
+        title: texts.admissionSteps.infoMeeting.error[language],
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsLoading(false);
+    }
+  };
+
+  if (currentStep === 'waiting') {
     return (
       <Box maxW="container.md" mx="auto" py={8}>
         <Alert
-          status="success"
+          status="info"
           variant="subtle"
           flexDirection="column"
           alignItems="center"
@@ -96,12 +90,12 @@ export const InfoMeetingStep = () => {
           height="200px"
           borderRadius="lg"
         >
-          <AlertIcon boxSize="40px" mr={0} />
+          <Spinner size="xl" color="brand.primary.500" mb={4} />
           <AlertTitle mt={4} mb={1} fontSize="lg">
-            {texts.admissionSteps.infoMeeting.successTitle[language]}
+            {texts.admissionSteps.infoMeeting.waitingTitle[language]}
           </AlertTitle>
           <AlertDescription maxWidth="sm">
-            {texts.admissionSteps.infoMeeting.successMessage[language]}
+            {texts.admissionSteps.infoMeeting.waitingMessage[language]}
           </AlertDescription>
         </Alert>
       </Box>
@@ -116,52 +110,33 @@ export const InfoMeetingStep = () => {
         </Heading>
         <Text>{texts.admissionSteps.infoMeeting.description[language]}</Text>
 
-        <RadioGroup onChange={(value) => setPreferredOnline(value === 'online')}>
-          <Text mb={4}>{texts.admissionSteps.infoMeeting.preferenceLabel[language]}</Text>
-          <Stack direction="row" spacing={4}>
-            <Radio value="online">{texts.admissionSteps.infoMeeting.online[language]}</Radio>
-            <Radio value="inPerson">{texts.admissionSteps.infoMeeting.inPerson[language]}</Radio>
+        <RadioGroup
+          onChange={(value) => setSelectedMeeting(Number(value))}
+          value={selectedMeeting?.toString() || ''}
+        >
+          <Text mb={4}>{texts.admissionSteps.infoMeeting.termLabel[language]}</Text>
+          <Stack spacing={4}>
+            {meetings.map((meeting) => (
+              <Radio key={meeting.id} value={meeting.id.toString()}>
+                <Stack>
+                  <Text fontWeight="bold">{formatMeetingDate(meeting.date)}</Text>
+                  <Text fontSize="sm">
+                    {meeting.online
+                      ? texts.admissionSteps.infoMeeting.online[language]
+                      : texts.admissionSteps.infoMeeting.inPerson[language]}
+                    {' • '}
+                    {texts.admissionSteps.infoMeeting.availableSpots[language]}{' '}
+                    {meeting.available_spots}
+                  </Text>
+                </Stack>
+              </Radio>
+            ))}
           </Stack>
         </RadioGroup>
 
-        <Stack spacing={4}>
-          {appointments.length === 0 ? (
-            <Text>{texts.admissionSteps.infoMeeting.noAppointments[language]}</Text>
-          ) : (
-            appointments.map((appointment) => (
-              <Card
-                key={appointment.id}
-                p={4}
-                cursor="pointer"
-                onClick={() => setSelectedAppointment(appointment.id)}
-                bg={selectedAppointment === appointment.id ? 'brand.primary.50' : 'white'}
-                borderColor={
-                  selectedAppointment === appointment.id ? 'brand.primary.500' : 'gray.200'
-                }
-                borderWidth={1}
-              >
-                <Flex justify="space-between" align="center">
-                  <Box>
-                    <Text fontWeight="bold">{formatDate(appointment.date)}</Text>
-                    <Text>
-                      {appointment.online
-                        ? texts.admissionSteps.infoMeeting.online[language]
-                        : texts.admissionSteps.infoMeeting.inPerson[language]}
-                    </Text>
-                  </Box>
-                  <Text>
-                    {texts.admissionSteps.infoMeeting.availableSpots[language]}{' '}
-                    {appointment.available_spots}
-                  </Text>
-                </Flex>
-              </Card>
-            ))
-          )}
-        </Stack>
-
         <Button
-          colorScheme="brand"
-          isDisabled={!selectedAppointment || preferredOnline === null}
+          bg="brand"
+          isDisabled={!selectedMeeting}
           onClick={handleSubmit}
           isLoading={isLoading}
         >

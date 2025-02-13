@@ -1301,6 +1301,26 @@ export const texts = {
         cs: 'Těšíme se na setkání s vámi',
         en: 'We are excited to meet you',
       },
+      termLabel: {
+        cs: 'Vyberte preferovaný termín nástupu',
+        en: 'Select preferred enrollment term',
+      },
+      term1: {
+        cs: 'Září 2024',
+        en: 'September 2024',
+      },
+      term2: {
+        cs: 'Leden 2025',
+        en: 'January 2025',
+      },
+      waitingTitle: {
+        cs: 'Vaše registrace se zpracovává',
+        en: 'Your registration is being processed',
+      },
+      waitingMessage: {
+        cs: 'Budeme vás kontaktovat s potvrzením vybraného termínu a schůzky.',
+        en: 'We will contact you with confirmation of your selected term and meeting.',
+      },
     },
   },
 };

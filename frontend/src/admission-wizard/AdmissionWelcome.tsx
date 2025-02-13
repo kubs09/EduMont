@@ -39,10 +39,10 @@ export const AdmissionWelcome = () => {
       } else {
         throw new Error('Failed to update admission status');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Start admission error:', error);
 
-      if (error.status === 403) {
+      if ((error as { status?: number }).status === 403) {
         toast({
           title: 'Session Expired',
           description: 'Please log in again',
@@ -55,7 +55,7 @@ export const AdmissionWelcome = () => {
 
       toast({
         title: 'Error',
-        description: error.message || 'Failed to start admission process',
+        description: (error as Error).message || 'Failed to start admission process',
         status: 'error',
         duration: 5000,
       });

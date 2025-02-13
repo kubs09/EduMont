@@ -549,6 +549,12 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
     const { appointmentId } = req.params;
     const { preferredOnline } = req.body;
 
+    console.log('Scheduling appointment:', {
+      appointmentId,
+      preferredOnline,
+      userId: req.user.id,
+    });
+
     await client.query('BEGIN');
 
     // Check if appointment still has capacity
@@ -566,25 +572,57 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('Appointment is full');
     }
 
-    // Update admission progress for the first step only
-    await client.query(
+    // Update admission progress for the first step
+    const result = await client.query(
       `UPDATE admission_progress 
        SET appointment_id = $1, 
            preferred_online = $2,
            status = 'submitted',
            submitted_at = CURRENT_TIMESTAMP
        WHERE user_id = $3 
-       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)`,
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
+       RETURNING *`,
       [appointmentId, preferredOnline, req.user.id]
     );
 
-    // Do NOT update overall admission status - keep it as in_progress
+    if (result.rows.length === 0) {
+      throw new Error('Failed to update admission progress');
+    }
+
     await client.query('COMMIT');
+    console.log('Appointment scheduled successfully');
     res.json({ message: 'Appointment scheduled successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error scheduling appointment:', error);
     res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Get available terms (from info_appointments)
+router.get('/terms', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT 
+        a.id,
+        a.date,
+        a.capacity,
+        a.online,
+        a.capacity - COUNT(p.appointment_id) as available_spots
+      FROM info_appointments a
+      LEFT JOIN admission_progress p ON a.id = p.appointment_id
+      WHERE a.date > CURRENT_TIMESTAMP
+      GROUP BY a.id, a.date, a.capacity, a.online
+      HAVING a.capacity - COUNT(p.appointment_id) > 0
+      ORDER BY a.date ASC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching terms:', error);
+    res.status(500).json({ error: 'Failed to fetch terms' });
   } finally {
     client.release();
   }

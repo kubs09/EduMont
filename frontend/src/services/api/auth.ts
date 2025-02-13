@@ -24,9 +24,8 @@ export const login = async (email: string, password: string): Promise<AuthRespon
       'userName',
       `${response.data.user.firstname} ${response.data.user.surname}`
     );
-    if (response.data.user.admission_status) {
-      localStorage.setItem('admissionStatus', response.data.user.admission_status);
-    }
+    localStorage.setItem('admissionStatus', response.data.user.admission_status || '');
+
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -104,6 +103,7 @@ export const resetPassword = async (token: string, password: string): Promise<vo
 export const getCurrentUser = async (): Promise<AuthResponse['user']> => {
   try {
     const response = await api.get<AuthResponse['user']>('/api/auth/me');
+    // Update admission status in localStorage on each getCurrentUser call
     if (response.data.admission_status) {
       localStorage.setItem('admissionStatus', response.data.admission_status);
     }
