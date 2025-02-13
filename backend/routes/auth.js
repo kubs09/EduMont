@@ -8,7 +8,7 @@ const { sendEmail } = require('../config/mail');
 const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
 const auth = require('../middleware/auth'); // Add this line to import auth middleware
 
-router.post('/auth/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, password } = req.body;

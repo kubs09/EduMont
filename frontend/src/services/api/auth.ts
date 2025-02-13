@@ -17,6 +17,8 @@ export interface AuthResponse {
 export const login = async (email: string, password: string): Promise<AuthResponse> => {
   try {
     const response = await api.post<AuthResponse>('/api/auth/login', { email, password });
+
+    // Store user data from the correct response structure
     localStorage.setItem('token', response.data.token);
     localStorage.setItem('userId', response.data.user.id.toString());
     localStorage.setItem('userRole', response.data.user.role);
@@ -24,7 +26,10 @@ export const login = async (email: string, password: string): Promise<AuthRespon
       'userName',
       `${response.data.user.firstname} ${response.data.user.surname}`
     );
-    localStorage.setItem('admissionStatus', response.data.user.admission_status || '');
+    localStorage.setItem('userEmail', response.data.user.email);
+    if (response.data.user.admission_status) {
+      localStorage.setItem('admissionStatus', response.data.user.admission_status);
+    }
 
     return response.data;
   } catch (error) {
