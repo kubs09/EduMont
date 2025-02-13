@@ -1,41 +1,106 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { InfoMeetingStep } from './InfoMeetingStep';
-import { Box } from '@chakra-ui/react';
-import { ROUTES } from '../shared/route';
-import { admissionService } from '../services/api/admission';
+import { Box, Spinner } from '@chakra-ui/react';
+import { admissionService, AdmissionStep } from '../services/api/admission';
+
+export type StepStatus = 'select' | 'waiting' | 'completed';
+export type ApiStepStatus = 'pending' | 'submitted' | 'approved' | 'rejected';
+
+interface StepState {
+  currentStatus: StepStatus;
+  appointmentId: number | null;
+}
 
 export const AdmissionWizard = () => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
-  const admissionStatus = localStorage.getItem('admissionStatus');
+  const [steps, setSteps] = useState<AdmissionStep[]>([]);
+  const [stepStates, setStepStates] = useState<Record<number, StepState>>({
+    1: { currentStatus: 'select', appointmentId: null }, // Initialize with default state for step 1
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (admissionStatus !== 'in_progress') {
-      navigate(ROUTES.ADMISSION_WELCOME);
-    }
-
-    // Fetch current admission status to determine current step
     const fetchStatus = async () => {
       try {
         const status = await admissionService.getStatus();
-        const completedSteps = status.steps.filter((step) => step.status === 'approved').length;
-        setCurrentStep(completedSteps + 1);
+        setSteps(status.steps);
+
+        // Initialize step states based on API response
+        const newStepStates: Record<number, StepState> = {};
+        status.steps.forEach((step) => {
+          let currentStatus: StepStatus;
+
+          // Map API status to frontend status
+          switch (step.status) {
+            case 'submitted':
+            case 'approved':
+              currentStatus = 'waiting';
+              break;
+            case 'rejected':
+            case 'pending':
+              currentStatus = 'select';
+              break;
+            default:
+              currentStatus = 'select';
+          }
+
+          newStepStates[step.step_id] = {
+            currentStatus,
+            appointmentId: step.appointment_id || null,
+          };
+        });
+
+        console.log('Setting step states:', newStepStates); // Debug log
+        setStepStates(newStepStates);
       } catch (error) {
         console.error('Error fetching admission status:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchStatus();
-  }, [admissionStatus, navigate]);
+  }, []);
 
-  if (admissionStatus !== 'in_progress') {
+  // Debug log for current state
+  useEffect(() => {
+    console.log('Current stepStates:', stepStates);
+  }, [stepStates]);
+
+  const updateStepState = (stepId: number, newState: Partial<StepState>) => {
+    console.log('Updating step state:', stepId, newState); // Debug log
+    setStepStates((prev) => ({
+      ...prev,
+      [stepId]: {
+        ...prev[stepId],
+        ...newState,
+      },
+    }));
+  };
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <Spinner size="xl" />
+      </Box>
+    );
+  }
+
+  const currentStep = steps.find(
+    (step) => step.status === 'pending' || step.status === 'rejected' || step.status === 'submitted'
+  );
+
+  if (!currentStep) {
     return null;
   }
 
   return (
     <Box maxW="container.md" mx="auto">
-      {currentStep === 1 && <InfoMeetingStep />}
+      {currentStep.step_id === 1 && (
+        <InfoMeetingStep
+          stepState={stepStates[1] || { currentStatus: 'select', appointmentId: null }}
+          onUpdateState={(newState) => updateStepState(1, newState)}
+        />
+      )}
       {/* Add more step components here */}
     </Box>
   );

@@ -9,7 +9,6 @@ import {
   useToast,
   VStack,
   Alert,
-  AlertIcon,
   AlertTitle,
   AlertDescription,
   Spinner,
@@ -20,53 +19,44 @@ import { useEffect, useState } from 'react';
 import { admissionService, InfoMeeting } from '@frontend/services/api/admission';
 import { format } from 'date-fns';
 import { cs, enUS } from 'date-fns/locale';
+import { StepStatus } from './AdmissionWizard';
 
-export const InfoMeetingStep = () => {
+interface StepState {
+  currentStatus: StepStatus;
+  appointmentId: number | null;
+}
+
+interface InfoMeetingStepProps {
+  stepState: StepState;
+  onUpdateState: (newState: Partial<StepState>) => void;
+}
+
+export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepProps) => {
   const { language } = useLanguage();
   const toast = useToast();
   const [meetings, setMeetings] = useState<InfoMeeting[]>([]);
-  const [selectedMeeting, setSelectedMeeting] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'select' | 'waiting' | 'completed'>('select');
 
   useEffect(() => {
-    const checkExistingMeeting = async () => {
+    const loadMeetings = async () => {
+      if (stepState.currentStatus !== 'select') return;
+
       try {
-        // First check admission status from API
-        const status = await admissionService.getStatus();
-        const infoMeetingStep = status.steps.find((step) => step.step_id === 1); // Assuming info meeting is step 1
-
-        if (infoMeetingStep?.status === 'submitted' || infoMeetingStep?.status === 'approved') {
-          setSelectedMeeting(infoMeetingStep.appointment_id || null);
-          setCurrentStep('waiting');
-          return;
-        }
-
-        // If no meeting found in API, check localStorage as fallback
-        const storedMeetingId = localStorage.getItem('selectedMeetingId');
-        if (storedMeetingId) {
-          setSelectedMeeting(Number(storedMeetingId));
-          setCurrentStep('waiting');
-          return;
-        }
-
-        // If no existing meeting, load available meetings
         const data = await admissionService.getTerms();
         setMeetings(data);
       } catch (error) {
-        console.error('Error checking meeting status:', error);
+        console.error('Error fetching meetings:', error);
         toast({
           title: 'Error',
-          description: 'Failed to check meeting status',
+          description: 'Failed to load meeting times',
           status: 'error',
           duration: 5000,
-          isClosable: true,
         });
       }
     };
 
-    checkExistingMeeting();
-  }, [toast]);
+    loadMeetings();
+  }, [stepState.currentStatus, toast]);
 
   const formatMeetingDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -76,13 +66,12 @@ export const InfoMeetingStep = () => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedMeeting) return;
+    if (!stepState.appointmentId) return;
 
     setIsLoading(true);
     try {
-      await admissionService.scheduleAppointment(selectedMeeting, true);
-      localStorage.setItem('selectedMeetingId', selectedMeeting.toString());
-      setCurrentStep('waiting');
+      await admissionService.scheduleAppointment(stepState.appointmentId, true);
+      onUpdateState({ currentStatus: 'waiting' });
     } catch (error) {
       console.error('Meeting scheduling error:', error);
       toast({
@@ -97,8 +86,7 @@ export const InfoMeetingStep = () => {
     }
   };
 
-  // If currentStep is waiting, always show waiting screen
-  if (currentStep === 'waiting') {
+  if (stepState.currentStatus === 'waiting') {
     return (
       <Box maxW="container.md" mx="auto" py={8}>
         <Alert
@@ -132,8 +120,8 @@ export const InfoMeetingStep = () => {
         <Text>{texts.admissionSteps.infoMeeting.description[language]}</Text>
 
         <RadioGroup
-          onChange={(value) => setSelectedMeeting(Number(value))}
-          value={selectedMeeting?.toString() || ''}
+          onChange={(value) => onUpdateState({ appointmentId: Number(value) })}
+          value={stepState.appointmentId?.toString() || ''}
         >
           <Text mb={4}>{texts.admissionSteps.infoMeeting.termLabel[language]}</Text>
           <Stack spacing={4}>
@@ -157,7 +145,7 @@ export const InfoMeetingStep = () => {
 
         <Button
           bg="brand"
-          isDisabled={!selectedMeeting}
+          isDisabled={!stepState.appointmentId}
           onClick={handleSubmit}
           isLoading={isLoading}
         >
