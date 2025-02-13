@@ -107,6 +107,7 @@ router.get('/status', auth, async (req, res) => {
               'admin_notes', p.admin_notes,
               'appointment_id', p.appointment_id,
               'preferred_online', p.preferred_online,
+              'appointment_status', p.appointment_status,
               'appointment', CASE 
                 WHEN a.id IS NOT NULL THEN
                   json_build_object(
@@ -549,35 +550,54 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
     const { appointmentId } = req.params;
     const { preferredOnline } = req.body;
 
-    console.log('Scheduling appointment:', {
-      appointmentId,
-      preferredOnline,
-      userId: req.user.id,
-    });
-
     await client.query('BEGIN');
 
-    // Check if appointment still has capacity
+    // Check if user already has a pending or approved appointment
+    const existingAppointment = await client.query(
+      `SELECT appointment_status, appointment_id 
+       FROM admission_progress 
+       WHERE user_id = $1 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)`,
+      [req.user.id]
+    );
+
+    if (
+      existingAppointment.rows[0]?.appointment_id &&
+      existingAppointment.rows[0]?.appointment_status !== 'rejected'
+    ) {
+      throw new Error('You already have a scheduled appointment');
+    }
+
+    // Modified availability check query
     const availabilityCheck = await client.query(
       `SELECT 
-        a.capacity - COUNT(p.appointment_id) as available_spots
-      FROM info_appointments a
-      LEFT JOIN admission_progress p ON a.id = p.appointment_id
-      WHERE a.id = $1
-      GROUP BY a.id, a.capacity`,
+        a.capacity,
+        COALESCE(COUNT(p.appointment_id) FILTER (WHERE p.appointment_status != 'rejected'), 0) as booked_spots
+       FROM info_appointments a
+       LEFT JOIN admission_progress p ON a.id = p.appointment_id
+       WHERE a.id = $1
+       GROUP BY a.id, a.capacity`,
       [appointmentId]
     );
 
-    if (!availabilityCheck.rows[0] || availabilityCheck.rows[0].available_spots <= 0) {
+    if (availabilityCheck.rows.length === 0) {
+      throw new Error('Appointment not found');
+    }
+
+    const { capacity, booked_spots } = availabilityCheck.rows[0];
+    console.log('Appointment capacity check:', { capacity, booked_spots }); // Debug log
+
+    if (booked_spots >= capacity) {
       throw new Error('Appointment is full');
     }
 
-    // Update admission progress for the first step
+    // Rest of the code remains the same...
     const result = await client.query(
       `UPDATE admission_progress 
        SET appointment_id = $1, 
            preferred_online = $2,
            status = 'submitted',
+           appointment_status = 'pending_review',
            submitted_at = CURRENT_TIMESTAMP
        WHERE user_id = $3 
        AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
@@ -590,11 +610,54 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
     }
 
     await client.query('COMMIT');
-    console.log('Appointment scheduled successfully');
-    res.json({ message: 'Appointment scheduled successfully' });
+    res.json({ message: 'Appointment scheduled successfully', status: 'pending_review' });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error scheduling appointment:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Add new endpoint for reviewing appointments (admin only)
+router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const { userId } = req.params;
+    const { status, adminNotes } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `UPDATE admission_progress 
+       SET appointment_status = $1,
+           admin_notes = $2,
+           reviewed_at = CURRENT_TIMESTAMP,
+           reviewed_by = $3
+       WHERE user_id = $4 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
+       RETURNING *`,
+      [status, adminNotes, req.user.id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('Appointment not found');
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Appointment review completed' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error reviewing appointment:', error);
     res.status(500).json({ error: error.message });
   } finally {
     client.release();

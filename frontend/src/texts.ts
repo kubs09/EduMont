@@ -1321,6 +1321,18 @@ export const texts = {
         cs: 'Budeme vás kontaktovat s potvrzením vybraného termínu a schůzky.',
         en: 'We will contact you with confirmation of your selected term and meeting.',
       },
+      pendingReview: {
+        cs: 'Vaše registrace čeká na schválení administrátorem',
+        en: 'Your registration is pending admin review',
+      },
+      approved: {
+        cs: 'Vaše registrace byla schválena',
+        en: 'Your registration has been approved',
+      },
+      rejected: {
+        cs: 'Vaše registrace byla zamítnuta',
+        en: 'Your registration has been rejected',
+      },
     },
   },
 };

@@ -126,6 +126,17 @@ ALTER TABLE admission_progress
 ADD COLUMN IF NOT EXISTS appointment_id INTEGER REFERENCES info_appointments(id),
 ADD COLUMN IF NOT EXISTS preferred_online BOOLEAN;
 
+ALTER TABLE admission_progress
+ADD COLUMN IF NOT EXISTS appointment_status VARCHAR(20) 
+  DEFAULT 'pending_review' 
+  CHECK (appointment_status IN ('pending_review', 'approved', 'rejected'));
+
+-- Update existing progress entries
+UPDATE admission_progress 
+SET appointment_status = 'approved'
+WHERE appointment_id IS NOT NULL 
+AND appointment_status IS NULL;
+
 CREATE TABLE admission_requests (
     id SERIAL PRIMARY KEY,
     firstname VARCHAR(100) NOT NULL,

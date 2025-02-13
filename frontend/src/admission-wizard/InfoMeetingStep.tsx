@@ -30,15 +30,34 @@ export const InfoMeetingStep = () => {
   const [currentStep, setCurrentStep] = useState<'select' | 'waiting' | 'completed'>('select');
 
   useEffect(() => {
-    const loadMeetings = async () => {
+    const checkExistingMeeting = async () => {
       try {
+        // First check admission status from API
+        const status = await admissionService.getStatus();
+        const infoMeetingStep = status.steps.find((step) => step.step_id === 1); // Assuming info meeting is step 1
+
+        if (infoMeetingStep?.status === 'submitted' || infoMeetingStep?.status === 'approved') {
+          setSelectedMeeting(infoMeetingStep.appointment_id || null);
+          setCurrentStep('waiting');
+          return;
+        }
+
+        // If no meeting found in API, check localStorage as fallback
+        const storedMeetingId = localStorage.getItem('selectedMeetingId');
+        if (storedMeetingId) {
+          setSelectedMeeting(Number(storedMeetingId));
+          setCurrentStep('waiting');
+          return;
+        }
+
+        // If no existing meeting, load available meetings
         const data = await admissionService.getTerms();
         setMeetings(data);
       } catch (error) {
-        console.error('Error fetching meetings:', error);
+        console.error('Error checking meeting status:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load available meeting times',
+          description: 'Failed to check meeting status',
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -46,7 +65,7 @@ export const InfoMeetingStep = () => {
       }
     };
 
-    loadMeetings();
+    checkExistingMeeting();
   }, [toast]);
 
   const formatMeetingDate = (dateStr: string) => {
@@ -61,8 +80,8 @@ export const InfoMeetingStep = () => {
 
     setIsLoading(true);
     try {
-      console.log('Submitting meeting selection:', selectedMeeting);
-      await admissionService.scheduleAppointment(selectedMeeting, true); // Assuming all meetings can be online
+      await admissionService.scheduleAppointment(selectedMeeting, true);
+      localStorage.setItem('selectedMeetingId', selectedMeeting.toString());
       setCurrentStep('waiting');
     } catch (error) {
       console.error('Meeting scheduling error:', error);
@@ -73,10 +92,12 @@ export const InfoMeetingStep = () => {
         duration: 5000,
         isClosable: true,
       });
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // If currentStep is waiting, always show waiting screen
   if (currentStep === 'waiting') {
     return (
       <Box maxW="container.md" mx="auto" py={8}>
