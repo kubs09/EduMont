@@ -16,6 +16,12 @@ export interface Message {
     surname: string;
     email: string;
   };
+  recipients?: Array<{
+    id: number;
+    firstname: string;
+    surname: string;
+    email: string;
+  }>;
 }
 
 export interface SendMessageData {

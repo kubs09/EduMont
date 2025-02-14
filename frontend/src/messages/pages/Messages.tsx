@@ -20,12 +20,12 @@ import {
   sendMessage,
   deleteMessage,
   getMessageUsers,
-} from '../../services/api';
+} from '@frontend/services/api';
 import { useSnackbar } from 'notistack';
 import ComposeMessageModal from '../components/ComposeMessageModal';
 import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
-import { Message } from '../types/message';
+import { Message } from '@frontend/types/message';
 
 const POLL_INTERVAL = 5000;
 
