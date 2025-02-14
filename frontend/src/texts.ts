@@ -1094,6 +1094,10 @@ export const texts = {
       cs: 'Zrušit',
       en: 'Cancel',
     },
+    error: {
+      cs: 'Chyba',
+      en: 'Error',
+    },
   },
   admission: {
     title: {

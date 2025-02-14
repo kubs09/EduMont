@@ -59,6 +59,8 @@ export const AdminAdmissions = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const { language } = useLanguage();
+  const [loadingApproval, setLoadingApproval] = useState<number | undefined>(undefined);
+  const [loadingDenial, setLoadingDenial] = useState<number | undefined>(undefined);
 
   const fetchData = useCallback(async () => {
     try {
@@ -71,12 +73,12 @@ export const AdminAdmissions = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch admission data',
+        title: texts.adminAdmissions.error.fetch[language],
+        description: texts.adminAdmissions.error.fetch[language],
         status: 'error',
       });
     }
-  }, [toast]);
+  }, [toast, language]);
 
   useEffect(() => {
     fetchData();
@@ -84,6 +86,7 @@ export const AdminAdmissions = () => {
 
   const handleApprove = async (admission: AdmissionRequestDetails) => {
     try {
+      setLoadingApproval(admission.id);
       await admissionService.approveAdmission(admission.id, language); // Add language parameter
       try {
         await inviteUser({
@@ -93,8 +96,8 @@ export const AdminAdmissions = () => {
           admissionId: admission.id,
         });
         toast({
-          title: 'Success',
-          description: 'Admission approved and invitation sent',
+          title: texts.adminAdmissions.success.approved[language],
+          description: texts.adminAdmissions.success.approved[language],
           status: 'success',
           duration: 5000,
         });
@@ -102,15 +105,15 @@ export const AdminAdmissions = () => {
         const apiError = inviteError as ApiError;
         if (apiError.response?.data?.error === 'user_exists') {
           toast({
-            title: 'Success',
-            description: 'Admission approved (user already exists)',
+            title: texts.adminAdmissions.success.approved[language],
+            description: texts.adminAdmissions.success.approved[language],
             status: 'success',
             duration: 5000,
           });
         } else {
           toast({
-            title: 'Partial Success',
-            description: 'Admission approved but invitation failed to send',
+            title: texts.common.error[language],
+            description: texts.adminAdmissions.error.approve[language],
             status: 'warning',
             duration: 5000,
           });
@@ -121,11 +124,13 @@ export const AdminAdmissions = () => {
     } catch (error) {
       console.error('Error approving admission:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to approve admission. Please try again.',
+        title: texts.common.error[language],
+        description: texts.adminAdmissions.error.approve[language],
         status: 'error',
         duration: 5000,
       });
+    } finally {
+      setLoadingApproval(undefined);
     }
   };
 
@@ -138,10 +143,11 @@ export const AdminAdmissions = () => {
     if (!selectedAdmission || !denialReason.trim()) return;
 
     try {
+      setLoadingDenial(selectedAdmission.id);
       await admissionService.denyAdmission(selectedAdmission.id, denialReason, language);
       toast({
-        title: 'Success',
-        description: 'Admission denied',
+        title: texts.adminAdmissions.success.denied[language],
+        description: texts.adminAdmissions.success.denied[language],
         status: 'success',
         duration: 5000,
       });
@@ -152,11 +158,13 @@ export const AdminAdmissions = () => {
     } catch (error) {
       console.error('Error denying admission:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to deny admission. Please try again.',
+        title: texts.common.error[language],
+        description: texts.adminAdmissions.error.deny[language],
         status: 'error',
         duration: 5000,
       });
+    } finally {
+      setLoadingDenial(undefined);
     }
   };
 
@@ -198,6 +206,8 @@ export const AdminAdmissions = () => {
                 calculateAge={calculateAge}
                 getStatusBadge={getStatusBadge}
                 language={language}
+                loadingApproval={loadingApproval}
+                loadingDenial={loadingDenial}
                 texts={{
                   table: texts.adminAdmissions.table,
                   approve: texts.adminAdmissions.approve,

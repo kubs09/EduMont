@@ -108,7 +108,7 @@ export interface AdmissionRequestProps {
   calculateAge: (dob: string) => number;
   getStatusBadge: (status: string) => React.ReactElement;
   language: string;
-  loadingApproval?: number;
-  loadingDenial?: number;
+  loadingApproval: number | undefined;
+  loadingDenial: number | undefined;
   texts: AdminTableTexts;
 }

@@ -323,3 +323,26 @@ ALTER TABLE admission_progress
   DROP CONSTRAINT IF EXISTS admission_progress_status_check,
   ADD CONSTRAINT admission_progress_status_check 
     CHECK (status IN ('pending', 'submitted', 'approved', 'rejected', 'pending_review'));
+
+-- Insert sample admission request
+INSERT INTO admission_requests (
+    firstname,
+    surname,
+    email,
+    phone,
+    child_firstname,
+    child_surname,
+    date_of_birth,
+    message,
+    status
+) VALUES (
+    'Marie',
+    'Procházková',
+    'marie.prochazkova@example.com',
+    '+420777888999',
+    'Adam',
+    'Procházka',
+    '2020-03-15',
+    'We are interested in enrolling our son in the morning program. He is very social and loves to play with other children.',
+    'pending'
+);
