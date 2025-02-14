@@ -1094,6 +1094,14 @@ export const texts = {
       cs: 'Zrušit',
       en: 'Cancel',
     },
+    next: {
+      cs: 'Další',
+      en: 'Next',
+    },
+    back: {
+      cs: 'Zpět',
+      en: 'Back',
+    },
     error: {
       cs: 'Chyba',
       en: 'Error',
@@ -1105,6 +1113,14 @@ export const texts = {
       en: 'Admission Request',
     },
     form: {
+      parentInfo: {
+        cs: 'Informace o vás',
+        en: 'Information About You',
+      },
+      child: {
+        cs: 'Vaše dítě',
+        en: 'Your child',
+      },
       parentFirstName: {
         cs: 'Jméno rodiče',
         en: "Parent's First Name",

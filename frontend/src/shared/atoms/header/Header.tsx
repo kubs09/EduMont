@@ -11,6 +11,7 @@ import {
   Show,
   Hide,
   Circle,
+  Box,
 } from '@chakra-ui/react';
 import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -100,143 +101,196 @@ const Header: React.FC = () => {
   };
 
   return (
-    <Flex
-      as="header"
-      p={{ base: 2, md: 4 }}
-      bg="brand.primary.900"
-      color="white"
-      borderBottomWidth={1}
-      justify="space-between"
-      align="center"
-      position="sticky"
-      top={0}
-      zIndex={1000}
-    >
-      <Button
-        variant="unstyled"
-        onClick={() => navigate(ROUTES.HOME)}
-        _hover={{ opacity: 0.8 }}
-        display="flex"
-        alignItems="center"
+    <Box position="relative">
+      <Flex
+        as="header"
+        p={{ base: 2, md: 4 }}
+        bgGradient="linear(to-r, blue.500, purple.600)"
+        justify="space-between"
+        align="center"
+        position="sticky"
+        top={0}
+        zIndex={1000}
+        boxShadow="lg"
       >
-        <Flex align="center" gap={{ base: 2, md: 4 }}>
-          <Image src={icon} alt="EduMont logo" height={{ base: '40px', md: '50px' }} />
-          <Hide below="md">
-            <Heading size={{ base: 'lg', md: 'xl' }}>EduMont</Heading>
-          </Hide>
-        </Flex>
-      </Button>
-      <Flex gap={{ base: 2, md: 4 }} align="center">
-        {isAuthenticated && !isPendingAdmission && !hasError && (
-          <Button
-            position="relative"
-            leftIcon={<EmailIcon />}
-            colorScheme="whiteAlpha"
-            onClick={handleMessages}
-            size={{ base: 'sm', md: 'md' }}
-            px={{ base: 2, md: 4 }}
-          >
-            <Hide below="md">{texts.messages.title[language]}</Hide>
-            {unreadCount > 0 && (
-              <Circle
-                size="20px"
-                bg="red.500"
+        {/* Logo and Title Section */}
+        <Button
+          variant="unstyled"
+          onClick={() => navigate(ROUTES.HOME)}
+          _hover={{ opacity: 0.8 }}
+          display="flex"
+          alignItems="center"
+        >
+          <Flex align="center" gap={{ base: 2, md: 4 }}>
+            <Image src={icon} alt="EduMont logo" height={{ base: '40px', md: '50px' }} />
+            <Hide below="md">
+              <Heading
+                size={{ base: 'lg', md: 'xl' }}
                 color="white"
-                position="absolute"
-                top="-8px"
-                right="-8px"
-                fontSize="xs"
+                letterSpacing="tight"
                 fontWeight="bold"
               >
-                {unreadCount}
-              </Circle>
-            )}
-          </Button>
-        )}
-        <ButtonGroup spacing={{ base: 1, md: 2 }}>
-          <Button
-            colorScheme="whiteAlpha"
-            variant={language === 'cs' ? 'solid' : 'outline'}
-            onClick={() => setLanguage('cs')}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            CZ
-          </Button>
-          <Button
-            colorScheme="whiteAlpha"
-            variant={language === 'en' ? 'solid' : 'outline'}
-            onClick={() => setLanguage('en')}
-            size={{ base: 'sm', md: 'md' }}
-          >
-            EN
-          </Button>
-        </ButtonGroup>
-        {isAuthenticated ? (
-          isPendingAdmission ? (
-            <Button colorScheme="whiteAlpha" onClick={handleLogout} size={{ base: 'sm', md: 'md' }}>
-              {texts.auth.logout[language]}
+                EduMont
+              </Heading>
+            </Hide>
+          </Flex>
+        </Button>
+
+        {/* Right Section */}
+        <Flex gap={{ base: 2, md: 4 }} align="center">
+          {isAuthenticated && !isPendingAdmission && !hasError && (
+            <Button
+              position="relative"
+              leftIcon={<EmailIcon />}
+              variant="ghost"
+              color="white"
+              onClick={handleMessages}
+              size={{ base: 'sm', md: 'md' }}
+              px={{ base: 2, md: 4 }}
+              _hover={{
+                bg: 'whiteAlpha.200',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              <Hide below="md">{texts.messages.title[language]}</Hide>
+              {unreadCount > 0 && (
+                <Circle
+                  size="20px"
+                  bg="red.500"
+                  color="white"
+                  position="absolute"
+                  top="-8px"
+                  right="-8px"
+                  fontSize="xs"
+                  fontWeight="bold"
+                >
+                  {unreadCount}
+                </Circle>
+              )}
             </Button>
-          ) : (
-            <Menu>
-              <MenuButton
-                as={Button}
-                rightIcon={<ChevronDownIcon />}
-                colorScheme="whiteAlpha"
+          )}
+          <ButtonGroup spacing={{ base: 1, md: 2 }}>
+            <Button
+              bg={language === 'cs' ? 'whiteAlpha.200' : 'transparent'}
+              color="white"
+              border="2px"
+              borderColor={language === 'cs' ? 'transparent' : 'whiteAlpha.400'}
+              onClick={() => setLanguage('cs')}
+              size={{ base: 'sm', md: 'md' }}
+              fontWeight="bold"
+              _hover={{
+                bg: 'whiteAlpha.300',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              CZ
+            </Button>
+            <Button
+              bg={language === 'en' ? 'whiteAlpha.200' : 'transparent'}
+              color="white"
+              border="2px"
+              borderColor={language === 'en' ? 'transparent' : 'whiteAlpha.400'}
+              onClick={() => setLanguage('en')}
+              size={{ base: 'sm', md: 'md' }}
+              fontWeight="bold"
+              _hover={{
+                bg: 'whiteAlpha.300',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              EN
+            </Button>
+          </ButtonGroup>
+          {isAuthenticated ? (
+            isPendingAdmission ? (
+              <Button
+                variant="ghost"
+                color="white"
+                onClick={handleLogout}
                 size={{ base: 'sm', md: 'md' }}
+                _hover={{ bg: 'whiteAlpha.200' }}
               >
-                <Hide below="md">{userName}</Hide>
-                <Show below="md">👤</Show>
-              </MenuButton>
-              <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleProfile}
+                {texts.auth.logout[language]}
+              </Button>
+            ) : (
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  variant="ghost"
+                  color="white"
+                  size={{ base: 'sm', md: 'md' }}
+                  _hover={{ bg: 'whiteAlpha.200' }}
                 >
-                  {texts.profile.menuItem[language]}
-                </MenuItem>
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleClasses}
-                >
-                  {texts.classes.menuItem[language]}
-                </MenuItem>
-                {isAdmin && (
-                  <>
-                    <MenuItem
-                      bg="brand.primary.900"
-                      _hover={{ bg: 'brand.primary.800' }}
-                      onClick={handleAdmissionDashboard}
-                    >
-                      {texts.dashboard.menuItem[language]}
-                    </MenuItem>
-                    <MenuItem
-                      bg="brand.primary.900"
-                      _hover={{ bg: 'brand.primary.800' }}
-                      onClick={handleUserDashboard}
-                    >
-                      {texts.userDashboard.menuItem[language]}
-                    </MenuItem>
-                  </>
-                )}
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleLogout}
-                >
-                  {texts.auth.logout[language]}
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          )
-        ) : (
-          <Button colorScheme="whiteAlpha" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
-            {texts.auth.login[language]}
-          </Button>
-        )}
+                  <Hide below="md">{userName}</Hide>
+                  <Show below="md">👤</Show>
+                </MenuButton>
+                <MenuList bg="blue.500" borderColor="whiteAlpha.200">
+                  <MenuItem
+                    bg="transparent"
+                    color="white"
+                    _hover={{ bg: 'whiteAlpha.200' }}
+                    onClick={handleProfile}
+                  >
+                    {texts.profile.menuItem[language]}
+                  </MenuItem>
+                  <MenuItem
+                    bg="transparent"
+                    color="white"
+                    _hover={{ bg: 'whiteAlpha.200' }}
+                    onClick={handleClasses}
+                  >
+                    {texts.classes.menuItem[language]}
+                  </MenuItem>
+                  {isAdmin && (
+                    <>
+                      <MenuItem
+                        bg="transparent"
+                        color="white"
+                        _hover={{ bg: 'whiteAlpha.200' }}
+                        onClick={handleAdmissionDashboard}
+                      >
+                        {texts.dashboard.menuItem[language]}
+                      </MenuItem>
+                      <MenuItem
+                        bg="transparent"
+                        color="white"
+                        _hover={{ bg: 'whiteAlpha.200' }}
+                        onClick={handleUserDashboard}
+                      >
+                        {texts.userDashboard.menuItem[language]}
+                      </MenuItem>
+                    </>
+                  )}
+                  <MenuItem
+                    bg="transparent"
+                    color="white"
+                    _hover={{ bg: 'whiteAlpha.200' }}
+                    onClick={handleLogout}
+                  >
+                    {texts.auth.logout[language]}
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            )
+          ) : (
+            <Button
+              variant="outline"
+              color="white"
+              borderColor="white"
+              onClick={handleLogin}
+              size={{ base: 'sm', md: 'md' }}
+              _hover={{
+                bg: 'whiteAlpha.200',
+                transform: 'translateY(-1px)',
+              }}
+            >
+              {texts.auth.login[language]}
+            </Button>
+          )}
+        </Flex>
       </Flex>
-    </Flex>
+    </Box>
   );
 };
 
