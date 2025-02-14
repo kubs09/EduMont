@@ -16,7 +16,8 @@ import {
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { texts } from '../texts';
 import { useEffect, useState } from 'react';
-import { admissionService, InfoMeeting } from '@frontend/services/api/admission';
+import { admissionService } from '@frontend/services/api/admission';
+import { InfoMeeting } from '@frontend/types/admission';
 import { format } from 'date-fns';
 import { cs, enUS } from 'date-fns/locale';
 import { StepStatus } from './AdmissionWizard';
@@ -70,7 +71,6 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
 
     setIsLoading(true);
     try {
-      const response = await admissionService.scheduleAppointment(stepState.appointmentId, true);
       // Check the response status and update state accordingly
       onUpdateState({ currentStatus: 'pending_review' });
     } catch (error) {

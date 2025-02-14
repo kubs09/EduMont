@@ -14,7 +14,6 @@ api.interceptors.request.use((config) => {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
 
-  // Use language service to get language configuration
   const langConfig = languageService.getRequestConfig();
   config.headers = Object.assign(config.headers, langConfig.headers);
 

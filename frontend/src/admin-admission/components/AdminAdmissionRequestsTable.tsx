@@ -1,29 +1,6 @@
 import React from 'react';
 import { Box, Button, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
-import { AdmissionRequestDetails } from '../../services/api/admission';
-
-interface AdmissionRequestProps {
-  admissions: AdmissionRequestDetails[];
-  onApprove: (admission: AdmissionRequestDetails) => void;
-  onDeny: (admission: AdmissionRequestDetails) => void;
-  calculateAge: (dob: string) => number;
-  getStatusBadge: (status: string) => React.ReactElement;
-  language: string;
-  texts: {
-    table: {
-      name: Record<string, string>;
-      parent: Record<string, string>;
-      email: Record<string, string>;
-      phone: Record<string, string>;
-      date: Record<string, string>;
-      age: Record<string, string>;
-      status: Record<string, string>;
-      actions: Record<string, string>;
-    };
-    approve: Record<string, string>;
-    deny: Record<string, string>;
-  };
-}
+import { AdmissionRequestProps } from '../../types/admission';
 
 export const AdminAdmissionRequestsTable: React.FC<AdmissionRequestProps> = ({
   admissions,
@@ -32,6 +9,8 @@ export const AdminAdmissionRequestsTable: React.FC<AdmissionRequestProps> = ({
   calculateAge,
   getStatusBadge,
   language,
+  loadingApproval,
+  loadingDenial,
   texts,
 }) => (
   <Table variant="simple">
@@ -62,10 +41,21 @@ export const AdminAdmissionRequestsTable: React.FC<AdmissionRequestProps> = ({
             <Td>
               {admission.status === 'pending' && (
                 <Box>
-                  <Button size="sm" colorScheme="green" mr={2} onClick={() => onApprove(admission)}>
+                  <Button
+                    size="sm"
+                    colorScheme="green"
+                    mr={2}
+                    onClick={() => onApprove(admission)}
+                    isLoading={loadingApproval === Number(admission.id)}
+                  >
                     {texts.approve[language]}
                   </Button>
-                  <Button size="sm" colorScheme="red" onClick={() => onDeny(admission)}>
+                  <Button
+                    size="sm"
+                    colorScheme="red"
+                    onClick={() => onDeny(admission)}
+                    isLoading={loadingDenial === Number(admission.id)}
+                  >
                     {texts.deny[language]}
                   </Button>
                 </Box>

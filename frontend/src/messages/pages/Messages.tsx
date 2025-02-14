@@ -11,7 +11,7 @@ import {
   TabPanels,
   TabPanel,
 } from '@chakra-ui/react';
-import { EmailIcon, RepeatIcon } from '@chakra-ui/icons';
+import { EmailIcon } from '@chakra-ui/icons';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import {
@@ -49,7 +49,6 @@ const Messages: React.FC = () => {
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const fetchMessages = useCallback(async () => {
-    // Check admission status first
     const admissionStatus = localStorage.getItem('admissionStatus');
     const userRole = localStorage.getItem('userRole');
 
@@ -93,11 +92,9 @@ const Messages: React.FC = () => {
   }, [enqueueSnackbar, language]);
 
   useEffect(() => {
-    // Initial fetch
     fetchMessages();
     fetchUsers();
 
-    // Only start polling if there's no error and admission is completed
     const admissionStatus = localStorage.getItem('admissionStatus');
     const userRole = localStorage.getItem('userRole');
 
@@ -118,7 +115,7 @@ const Messages: React.FC = () => {
       setSelectedMessage(message);
       fetchMessages();
     } catch (error) {
-      enqueueSnackbar('Failed to fetch message details', { variant: 'error' });
+      enqueueSnackbar(t.notifications.fetchDetailError[language], { variant: 'error' });
     }
   };
 
@@ -127,9 +124,9 @@ const Messages: React.FC = () => {
       await deleteMessage(id);
       fetchMessages();
       setSelectedMessage(null);
-      enqueueSnackbar('Message deleted', { variant: 'success' });
+      enqueueSnackbar(t.notifications.messageDeleted[language], { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar('Failed to delete message', { variant: 'error' });
+      enqueueSnackbar(t.notifications.deleteError[language], { variant: 'error' });
     }
   };
 
@@ -173,9 +170,6 @@ const Messages: React.FC = () => {
             mr={2}
           >
             {t.compose[language]}
-          </Button>
-          <Button leftIcon={<RepeatIcon />} onClick={fetchMessages} isLoading={isRefreshing} mb={2}>
-            {t.refresh?.[language] || 'Refresh'}
           </Button>
         </GridItem>
 
@@ -260,15 +254,15 @@ const Messages: React.FC = () => {
             const messageData = {
               ...data,
               from_user_id: currentUser.id,
-              to_user_id: data.to_user_ids[0], // Assuming single recipient
+              to_user_id: data.to_user_ids[0],
               created_at: new Date().toISOString(),
               read_at: null,
             };
             await sendMessage(messageData);
             fetchMessages();
-            enqueueSnackbar('Message sent', { variant: 'success' });
+            enqueueSnackbar(t.notifications.messageSent[language], { variant: 'success' });
           } catch (error) {
-            enqueueSnackbar('Failed to send message', { variant: 'error' });
+            enqueueSnackbar(t.notifications.sendError[language], { variant: 'error' });
           }
         }}
         users={users}

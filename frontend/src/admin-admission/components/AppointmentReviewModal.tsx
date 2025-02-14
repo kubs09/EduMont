@@ -15,7 +15,8 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { texts } from '../../texts';
-import { admissionService, PendingAdmissionUser } from '../../services/api/admission';
+import { admissionService } from '../../services/api/admission';
+import { PendingAdmissionUser } from '../../types/admission';
 
 // Add interface for appointment details
 interface AppointmentDetails {

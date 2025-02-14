@@ -1,12 +1,12 @@
 import React from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, Button, useDisclosure } from '@chakra-ui/react';
-import { PendingAdmissionUser } from '../../services/api/admission';
+import { PendingAdmissionUser } from '../../types/admission';
 import { AppointmentReviewModal } from './AppointmentReviewModal';
 
 interface ParentsInProgressProps {
   parents: PendingAdmissionUser[];
   getStatusBadge: (status: string) => React.ReactElement;
-  language: 'cs' | 'en'; // Update this to be more specific
+  language: 'cs' | 'en';
   texts: {
     table: {
       parent: Record<'cs' | 'en', string>;

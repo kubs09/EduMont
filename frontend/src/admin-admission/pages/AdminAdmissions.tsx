@@ -21,11 +21,8 @@ import {
   Tab,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  admissionService,
-  AdmissionRequestDetails,
-  PendingAdmissionUser,
-} from '../../services/api/admission';
+import { admissionService } from '../../services/api/admission';
+import { AdmissionRequestDetails, PendingAdmissionUser } from '../../types/admission';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { inviteUser } from '../../services/api/users';

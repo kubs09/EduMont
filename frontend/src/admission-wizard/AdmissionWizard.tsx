@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { InfoMeetingStep } from './InfoMeetingStep';
 import { Box, Spinner } from '@chakra-ui/react';
-import { admissionService, AdmissionStep } from '../services/api/admission';
+import { admissionService } from '../services/api/admission';
+import { AdmissionStep } from '../types/admission';
 
 export type StepStatus = 'select' | 'waiting' | 'completed' | 'pending_review' | 'rejected';
 export type ApiStepStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'pending_review';

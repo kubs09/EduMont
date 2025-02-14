@@ -1054,6 +1054,28 @@ export const texts = {
       cs: 'Třída:',
       en: 'Class:',
     },
+    notifications: {
+      messageSent: {
+        cs: 'Zpráva byla odeslána',
+        en: 'Message sent',
+      },
+      messageDeleted: {
+        cs: 'Zpráva byla smazána',
+        en: 'Message deleted',
+      },
+      sendError: {
+        cs: 'Nepodařilo se odeslat zprávu',
+        en: 'Failed to send message',
+      },
+      deleteError: {
+        cs: 'Nepodařilo se smazat zprávu',
+        en: 'Failed to delete message',
+      },
+      fetchDetailError: {
+        cs: 'Nepodařilo se načíst detail zprávy',
+        en: 'Failed to fetch message details',
+      },
+    },
   },
   common: {
     actions: {
