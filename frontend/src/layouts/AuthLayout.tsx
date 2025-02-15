@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
+import { Box, Flex } from '@chakra-ui/react';
 import { useEffect } from 'react';
 
 const AuthLayout = () => {
@@ -19,9 +19,11 @@ const AuthLayout = () => {
   }
 
   return (
-    <Box p={4}>
-      <Outlet />
-    </Box>
+    <Flex minHeight="100vh" direction="column">
+      <Box flex="1">
+        <Outlet />
+      </Box>
+    </Flex>
   );
 };
 

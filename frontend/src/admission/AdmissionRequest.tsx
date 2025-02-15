@@ -36,13 +36,7 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 const GradientHeading = ({ children }: { children: React.ReactNode }) => (
-  <Heading
-    size="lg"
-    bgGradient="linear(to-r, blue.600, purple.700)"
-    bgClip="text"
-    letterSpacing="tight"
-    fontWeight="bold"
-  >
+  <Heading size="lg" bg="gradient.title" bgClip="text" letterSpacing="tight" fontWeight="bold">
     {children}
   </Heading>
 );
@@ -53,6 +47,7 @@ const SectionCard = ({ children, title }: { children: React.ReactNode; title: st
     w="100%"
     p={{ base: 2, md: 4 }}
     bg="white"
+    _dark={{ bg: 'gray.800' }}
     borderWidth="1px"
     borderRadius="lg"
     boxShadow="lg"
@@ -61,7 +56,7 @@ const SectionCard = ({ children, title }: { children: React.ReactNode; title: st
     <VStack align="stretch" spacing={{ base: 3, md: 6 }}>
       <Heading
         size={{ base: 'xs', md: 'sm' }}
-        bgGradient="linear(to-r, teal.400, blue.500)"
+        bg="gradient.primary"
         bgClip="text"
         letterSpacing="wide"
       >
@@ -78,7 +73,7 @@ const StepIndicator = ({ currentStep, language }: { currentStep: number; languag
       <VStack key={step} spacing={1}>
         <Circle
           size={{ base: '30px', md: '40px' }}
-          bg={step <= currentStep ? 'blue.600' : 'gray.300'}
+          bg={step <= currentStep ? 'gradient.primary' : 'gray.300'}
           color="white"
           fontWeight="bold"
           transition="all 0.2s"
@@ -86,7 +81,7 @@ const StepIndicator = ({ currentStep, language }: { currentStep: number; languag
           {step}
         </Circle>
         <Text
-          color={step <= currentStep ? 'blue.700' : 'gray.600'}
+          color={step <= currentStep ? 'gradient.primary' : 'gray.600'}
           fontSize={{ base: 'xs', md: 'sm' }}
           fontWeight={step === currentStep ? 'bold' : 'normal'}
           textAlign="center"
@@ -329,6 +324,7 @@ export const AdmissionRequest = () => {
         variant="outline"
         shadow="xl"
         bg="white"
+        _dark={{ bg: 'gray.800' }}
         borderRadius={{ base: 'md', md: 'xl' }}
         overflow="hidden"
         position="relative"
@@ -340,18 +336,17 @@ export const AdmissionRequest = () => {
           left={0}
           right={0}
           h={{ base: '4px', md: '8px' }}
-          bgImage="var(--chakra-gradients-decorative)"
+          bgGradient="gradient.decorative"
         />
         <CardHeader pb={0} pt={{ base: 4, md: 4 }}>
           <VStack spacing={{ base: 2, md: 4 }} align="center">
             <GradientHeading>{texts.admission.title[language]}</GradientHeading>
             <Text
               color="gray.600"
+              _dark={{ color: 'gray.400' }}
               textAlign="center"
               fontSize={'md'}
               maxW="600px"
-              bgGradient="linear(to-r, gray.600, gray.500)"
-              bgClip="text"
               px={2}
             >
               {texts.admissionWelcome.description[language]}
@@ -379,7 +374,7 @@ export const AdmissionRequest = () => {
                     size={{ base: 'md', md: 'lg' }}
                     variant="outline"
                     w={{ base: '140px', md: '200px' }}
-                    colorScheme="blue"
+                    colorScheme="brand.primary"
                   >
                     {texts.common.back[language]}
                   </Button>
@@ -389,14 +384,16 @@ export const AdmissionRequest = () => {
                     onClick={(e) => handleNext(e)}
                     size={{ base: 'md', md: 'lg' }}
                     w={{ base: '140px', md: '200px' }}
-                    bgImage="var(--chakra-gradients-primary)"
+                    bg="gradient.primary"
                     color="white"
                     _hover={{
-                      bgImage: 'var(--chakra-gradients-primary)',
+                      bg: 'gradient.primary',
                       transform: 'translateY(-2px)',
+                      opacity: 0.9,
                     }}
                     _active={{
-                      bgImage: 'var(--chakra-gradients-primary)',
+                      bg: 'gradient.primary',
+                      opacity: 0.8,
                     }}
                   >
                     {texts.common.next[language]}
@@ -407,14 +404,16 @@ export const AdmissionRequest = () => {
                     size={{ base: 'md', md: 'lg' }}
                     w={{ base: '140px', md: '200px' }}
                     isLoading={isSubmitting}
-                    bgImage="var(--chakra-gradients-primary)"
+                    bgGradient="gradient.primary"
                     color="white"
                     _hover={{
-                      bgImage: 'var(--chakra-gradients-primary)',
+                      bg: 'gradient.primary',
                       transform: 'translateY(-2px)',
+                      opacity: 0.9,
                     }}
                     _active={{
-                      bgImage: 'var(--chakra-gradients-primary)',
+                      bg: 'gradient.primary',
+                      opacity: 0.8,
                     }}
                   >
                     {texts.admission.form.submit[language]}

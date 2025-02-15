@@ -61,22 +61,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <Container maxW="4xl">
+    <Container maxW="4xl" height="100vh" display="flex" alignItems="center">
       <Box
-        mt={10}
         borderRadius="xl"
         overflow="hidden"
         boxShadow="lg"
         display={{ base: 'block', md: 'flex' }}
-        maxH={{ base: 'auto', md: '500px' }}
+        width="100%"
       >
         <Box
           display={{ base: 'none', md: 'block' }}
-          width={{ md: '45%' }}
+          width={{ md: '50%' }}
           position="relative"
-          bg="white"
+          bg="bg.app"
           borderRightWidth="1px"
-          borderColor="brand.primary.200"
+          borderColor="brand.primary.700"
         >
           <Image
             src="/assets/education-illustration.svg"
@@ -105,10 +104,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             bottom={0}
             left={0}
             right={0}
-            bg="linear-gradient(to top, rgba(255,255,255,0.95), transparent)"
+            bg="gradient.primary"
             p={4}
             textAlign="center"
-            color="brand.primary.900"
+            color="white"
           >
             <Text fontSize="lg" fontWeight="bold">
               {texts.auth.signIn.welcomeTitle[language]}
@@ -118,16 +117,17 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         </Box>
 
         <Box
-          p={6}
-          bg="white"
-          width={{ base: '100%', md: '55%' }}
+          p={8}
+          bg="bg.app"
+          width={{ base: '100%', md: '50%' }}
           display="flex"
           alignItems="center"
+          justifyContent="center"
         >
-          <VStack spacing={6} width="100%">
+          <VStack spacing={5} width="90%" maxW="400px">
             <Circle
               size="50px"
-              bg="brand.primary.900"
+              bg="gradient.header"
               color="white"
               boxShadow="md"
               _hover={{ transform: 'scale(1.05)', transition: '0.2s' }}
@@ -135,7 +135,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <Icon as={LockIcon} w={5} h={5} />
             </Circle>
 
-            <Heading as="h1" size="md" color="brand.primary.900">
+            <Heading as="h1" size="md" bg="gradient.title" bgClip="text">
               {texts.auth.signIn.title[language]}
             </Heading>
 
@@ -153,41 +153,52 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             )}
 
             <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-              <VStack spacing={3}>
-                <FormControl isInvalid={!!errors.email}>
+              <VStack spacing={4} width="100%">
+                <FormControl isInvalid={!!errors.email} width="100%">
                   <Input
                     type="email"
                     placeholder={texts.auth.signIn.emailPlaceholder[language]}
                     {...register('email')}
                     size="lg"
-                    borderColor="brand.primary.200"
-                    _hover={{ borderColor: 'brand.primary.300' }}
-                    _focus={{ borderColor: 'brand.primary.500', boxShadow: '0 0 0 1px #3182ce' }}
+                    borderColor="brand.primary.700"
+                    _hover={{ borderColor: 'brand.primary.800' }}
+                    _focus={{ borderColor: 'brand.primary.900', boxShadow: '0 0 0 1px #557A95' }}
+                    width="100%"
+                    height="50px"
                   />
                   <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
                 </FormControl>
 
-                <FormControl isInvalid={!!errors.password}>
+                <FormControl isInvalid={!!errors.password} width="100%">
                   <Input
                     type="password"
                     placeholder={texts.auth.signIn.passwordPlaceholder[language]}
                     {...register('password')}
                     size="lg"
-                    borderColor="brand.primary.200"
-                    _hover={{ borderColor: 'brand.primary.300' }}
-                    _focus={{ borderColor: 'brand.primary.500', boxShadow: '0 0 0 1px #3182ce' }}
+                    borderColor="brand.primary.700"
+                    _hover={{ borderColor: 'brand.primary.800' }}
+                    _focus={{ borderColor: 'brand.primary.900', boxShadow: '0 0 0 1px #557A95' }}
+                    width="100%"
+                    height="50px"
                   />
                   <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
                 </FormControl>
 
                 <Button
                   type="submit"
-                  variant="brand"
                   width="100%"
+                  height="50px"
+                  fontSize="md"
                   mt={4}
                   size="lg"
                   isLoading={loading}
-                  _hover={{ transform: 'translateY(-1px)', boxShadow: 'lg' }}
+                  bg="gradient.primary"
+                  color="white"
+                  _hover={{
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'lg',
+                    bg: 'gradient.decorative',
+                  }}
                   transition="all 0.2s"
                 >
                   {texts.auth.signIn.submitButton[language]}
@@ -195,9 +206,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
                 <Button
                   variant="link"
-                  color="brand.primary.500"
+                  color="brand.primary.900"
                   onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
-                  _hover={{ color: 'brand.primary.600', textDecoration: 'underline' }}
+                  _hover={{ color: 'brand.secondary.900', textDecoration: 'underline' }}
+                  width="100%"
+                  mt={2}
                 >
                   {texts.auth.signIn.forgotPassword[language]}
                 </Button>
