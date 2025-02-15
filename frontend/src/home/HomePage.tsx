@@ -10,7 +10,7 @@ const FeatureIcon = ({ icon: Icon }: { icon: IconType }) => (
   <Box
     p={5}
     borderRadius="full"
-    bg="white"
+    bg="bg.decorative"
     boxShadow="lg"
     border="2px solid"
     borderColor="purple.100"
@@ -36,59 +36,45 @@ const HomePage = () => {
 
   return (
     <Box pb={{ base: 16, md: 20 }}>
-      <svg width="0" height="0">
-        <linearGradient id="gradient-filter" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#3182CE" /> {/* blue.500 */}
-          <stop offset="100%" stopColor="#805AD5" /> {/* purple.500 */}
-        </linearGradient>
-      </svg>
-
-      <Box position="relative" bg="white" py={{ base: 12, md: 14 }} overflow="hidden">
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          h="8px"
-          bgGradient="linear(to-r, blue.500, purple.600, pink.600)"
-        />
+      <Box position="relative" bg="bg.app" py={{ base: 12, md: 14 }} overflow="hidden">
+        <Box position="absolute" top={0} left={0} right={0} h="8px" bg="gradient.decorative" />
         <Container maxW="container.xl" textAlign="center">
           <Heading
             size="2xl"
             mb={6}
-            bgGradient="linear(to-r, blue.600, purple.700)"
+            bg="gradient.title"
             bgClip="text"
             letterSpacing="tight"
             fontWeight="bold"
           >
             {texts.home.hero.title[language]}
           </Heading>
-          <Text fontSize="xl" mb={8} color="gray.700" fontWeight="medium">
+          <Text fontSize="xl" mb={8} color="gradient.decorative" fontWeight="medium">
             {texts.home.hero.subtitle[language]}
           </Text>
         </Container>
       </Box>
 
       {/* Features Section with CTA Button */}
-      <Box bg="gray.50" py={{ base: 12, md: 20 }}>
+      <Box bg="bg.app" py={{ base: 12, md: 20 }}>
         <Container maxW="container.xl">
           {/* CTA Button */}
           <Box textAlign="center" mb={16}>
             <Button
               size="lg"
-              bgGradient="linear(to-r, blue.500, purple.600)"
+              bg="gradient.primary"
               color="white"
               onClick={() => navigate(ROUTES.ADMISSION_REQUEST)}
               px={12}
               py={7}
               fontSize="lg"
               _hover={{
-                bgGradient: 'linear(to-r, blue.600, purple.700)',
+                bg: 'gradient.primary',
                 transform: 'translateY(-2px)',
                 boxShadow: 'lg',
               }}
               _active={{
-                bgGradient: 'linear(to-r, blue.700, purple.800)',
+                bg: 'gradient.primary',
               }}
               transition="all 0.2s"
             >
@@ -124,7 +110,7 @@ const FeatureCard = ({ icon, title, text }: { icon: IconType; title: string; tex
   return (
     <VStack
       p={8}
-      bg="white"
+      bg="bg.app"
       borderRadius="lg"
       boxShadow="lg"
       align="center"
@@ -134,24 +120,12 @@ const FeatureCard = ({ icon, title, text }: { icon: IconType; title: string; tex
       position="relative"
       overflow="hidden"
     >
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        h="4px"
-        bgGradient="linear(to-r, blue.500, purple.600)"
-      />
+      <Box position="absolute" top={0} left={0} right={0} h="4px" bg="gradient.primary" />
       <FeatureIcon icon={icon} />
-      <Heading
-        size="md"
-        bgGradient="linear(to-r, blue.600, purple.700)"
-        bgClip="text"
-        fontWeight="bold"
-      >
+      <Heading size="md" bg="gradient.title" bgClip="text" fontWeight="bold">
         {title}
       </Heading>
-      <Text textAlign="center" color="gray.700" fontSize="md">
+      <Text textAlign="center" color="gradient.decorative" fontSize="md">
         {text}
       </Text>
     </VStack>

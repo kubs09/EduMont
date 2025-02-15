@@ -105,7 +105,7 @@ const Header: React.FC = () => {
       <Flex
         as="header"
         p={{ base: 2, md: 4 }}
-        bgGradient="linear(to-r, blue.500, purple.600)"
+        bg="gradient.header"
         justify="space-between"
         align="center"
         position="sticky"
@@ -171,31 +171,35 @@ const Header: React.FC = () => {
           )}
           <ButtonGroup spacing={{ base: 1, md: 2 }}>
             <Button
-              bg={language === 'cs' ? 'whiteAlpha.200' : 'transparent'}
+              bg={language === 'cs' ? 'gradient.primary' : 'transparent'}
               color="white"
               border="2px"
               borderColor={language === 'cs' ? 'transparent' : 'whiteAlpha.400'}
               onClick={() => setLanguage('cs')}
               size={{ base: 'sm', md: 'md' }}
               fontWeight="bold"
+              transition="all 0.2s"
               _hover={{
-                bg: 'whiteAlpha.300',
-                transform: 'translateY(-1px)',
+                bg: language === 'cs' ? 'gradient.primary' : 'whiteAlpha.200',
+                transform: 'translateY(-2px)',
+                boxShadow: 'md',
               }}
             >
               CZ
             </Button>
             <Button
-              bg={language === 'en' ? 'whiteAlpha.200' : 'transparent'}
+              bg={language === 'en' ? 'gradient.primary' : 'transparent'}
               color="white"
               border="2px"
               borderColor={language === 'en' ? 'transparent' : 'whiteAlpha.400'}
               onClick={() => setLanguage('en')}
               size={{ base: 'sm', md: 'md' }}
               fontWeight="bold"
+              transition="all 0.2s"
               _hover={{
-                bg: 'whiteAlpha.300',
-                transform: 'translateY(-1px)',
+                bg: language === 'en' ? 'gradient.primary' : 'whiteAlpha.200',
+                transform: 'translateY(-2px)',
+                boxShadow: 'md',
               }}
             >
               EN

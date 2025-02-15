@@ -340,7 +340,7 @@ export const AdmissionRequest = () => {
           left={0}
           right={0}
           h={{ base: '4px', md: '8px' }}
-          bgGradient="linear(to-r, blue.400, purple.500, pink.500)"
+          bgImage="var(--chakra-gradients-decorative)"
         />
         <CardHeader pb={0} pt={{ base: 4, md: 4 }}>
           <VStack spacing={{ base: 2, md: 4 }} align="center">
@@ -389,14 +389,14 @@ export const AdmissionRequest = () => {
                     onClick={(e) => handleNext(e)}
                     size={{ base: 'md', md: 'lg' }}
                     w={{ base: '140px', md: '200px' }}
-                    bgGradient="linear(to-r, blue.500, purple.600)"
+                    bgImage="var(--chakra-gradients-primary)"
                     color="white"
                     _hover={{
-                      bgGradient: 'linear(to-r, blue.600, purple.700)',
+                      bgImage: 'var(--chakra-gradients-primary)',
                       transform: 'translateY(-2px)',
                     }}
                     _active={{
-                      bgGradient: 'linear(to-r, blue.700, purple.800)',
+                      bgImage: 'var(--chakra-gradients-primary)',
                     }}
                   >
                     {texts.common.next[language]}
@@ -407,14 +407,14 @@ export const AdmissionRequest = () => {
                     size={{ base: 'md', md: 'lg' }}
                     w={{ base: '140px', md: '200px' }}
                     isLoading={isSubmitting}
-                    bgGradient="linear(to-r, blue.500, purple.600)"
+                    bgImage="var(--chakra-gradients-primary)"
                     color="white"
                     _hover={{
-                      bgGradient: 'linear(to-r, blue.600, purple.700)',
+                      bgImage: 'var(--chakra-gradients-primary)',
                       transform: 'translateY(-2px)',
                     }}
                     _active={{
-                      bgGradient: 'linear(to-r, blue.700, purple.800)',
+                      bgImage: 'var(--chakra-gradients-primary)',
                     }}
                   >
                     {texts.admission.form.submit[language]}
