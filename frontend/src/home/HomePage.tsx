@@ -56,7 +56,7 @@ const HomePage = () => {
       </Box>
 
       {/* Features Section with CTA Button */}
-      <Box bg="bg.app" py={{ base: 12, md: 20 }}>
+      <Box bg="bg.app">
         <Container maxW="container.xl">
           {/* CTA Button */}
           <Box textAlign="center" mb={16}>

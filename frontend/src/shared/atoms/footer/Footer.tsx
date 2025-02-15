@@ -7,7 +7,6 @@ const Footer = () => {
   return (
     <Box
       as="footer"
-      position="fixed"
       bottom={0}
       width="100%"
       bg="gradient.header"
