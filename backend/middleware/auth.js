@@ -1,6 +1,6 @@
 /* eslint-disable */
 const jwt = require('jsonwebtoken');
-const pool = require('../config/database'); // Fixed path to database configuration
+const pool = require('../config/database');
 
 module.exports = async (req, res, next) => {
   try {
@@ -12,7 +12,6 @@ module.exports = async (req, res, next) => {
     const token = authHeader.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Verify user exists and get role
     const result = await pool.query('SELECT id, role, admission_status FROM users WHERE id = $1', [
       decoded.id,
     ]);

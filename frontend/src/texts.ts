@@ -91,6 +91,10 @@ export const texts = {
         cs: 'Zapomenuté heslo',
         en: 'Forgot Password',
       },
+      backButton: {
+        cs: 'Zpět na přihlášení',
+        en: 'Back to Sign In',
+      },
       description: {
         cs: 'Zadejte svůj email a my vám pošleme odkaz pro obnovení hesla.',
         en: 'Enter your email and we will send you a password reset link.',

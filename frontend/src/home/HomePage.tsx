@@ -10,7 +10,7 @@ const FeatureIcon = ({ icon: Icon }: { icon: IconType }) => (
   <Box
     p={5}
     borderRadius="full"
-    bg="bg.decorative"
+    bg="gradient.decorative"
     boxShadow="lg"
     border="2px solid"
     borderColor="purple.100"
@@ -37,7 +37,6 @@ const HomePage = () => {
   return (
     <Box pb={{ base: 16, md: 20 }}>
       <Box position="relative" bg="bg.app" py={{ base: 12, md: 14 }} overflow="hidden">
-        <Box position="absolute" top={0} left={0} right={0} h="8px" bg="gradient.decorative" />
         <Container maxW="container.xl" textAlign="center">
           <Heading
             size="2xl"

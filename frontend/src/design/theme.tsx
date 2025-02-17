@@ -18,9 +18,28 @@ const colors = {
       700: '#B4BD98',
     },
   },
+  navy: {
+    900: '#1B2B4B',
+    800: '#243660',
+    700: '#2C4175',
+    600: '#354C8A',
+    500: '#3E57A0',
+  },
   background: {
-    light: '#F7F9FC', // Soft blue-tinted white
+    light: '#FFFFFF',
     dark: '#1A1F2C', // Deep navy blue-gray
+  },
+  elements: {
+    light: {
+      bg: '#FFFFFF',
+      border: '#E2E8F0',
+      hover: '#F7FAFC',
+    },
+    dark: {
+      bg: '#1B2B4B',
+      border: '#2D3748',
+      hover: '#243660',
+    },
   },
 };
 
@@ -66,6 +85,18 @@ const theme = extendTheme({
       'bg.app': {
         default: colors.background.light,
         _dark: colors.background.dark,
+      },
+      'element.bg': {
+        default: colors.elements.light.bg,
+        _dark: colors.elements.dark.bg,
+      },
+      'element.border': {
+        default: colors.elements.light.border,
+        _dark: colors.elements.dark.border,
+      },
+      'element.hover': {
+        default: colors.elements.light.hover,
+        _dark: colors.elements.dark.hover,
       },
     },
   },

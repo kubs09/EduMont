@@ -11,6 +11,8 @@ const childrenRoutes = require('./routes/children');
 const usersRoutes = require('./routes/users');
 const passwordResetRoutes = require('./routes/password-reset');
 const admissionRoutes = require('./routes/admission');
+const messagesRoutes = require('./routes/messages');
+const classesRoutes = require('./routes/classes');
 
 const app = express();
 
@@ -33,17 +35,14 @@ pool
     process.exit(1);
   });
 
-// Add before routes
 app.use((req, res, next) => {
   next();
 });
 
-// Add debug logging
 app.use((req, res, next) => {
   next();
 });
 
-// Error handler for JSON parsing
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: 'Invalid JSON payload' });
@@ -53,19 +52,17 @@ app.use((err, req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/password-reset', passwordResetRoutes); // Changed to be more specific
+app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/classes', require('./routes/classes'));
-app.use('/api/messages', require('./routes/messages')); // Add messages routes
-app.use('/api/admission', admissionRoutes); // Add admission routes
+app.use('/api/classes', classesRoutes);
+app.use('/api/messages', messagesRoutes);
+app.use('/api/admission', admissionRoutes);
 
-// Catch-all handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({

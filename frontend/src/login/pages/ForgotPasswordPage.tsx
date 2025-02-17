@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -12,6 +13,7 @@ import {
   Heading,
   Text,
   useToast,
+  Flex,
 } from '@chakra-ui/react';
 import { requestPasswordReset } from '../../services/api';
 import { texts } from '../../texts';
@@ -20,9 +22,11 @@ import {
   createForgotPasswordSchema,
   ForgotPasswordFormData,
 } from '../schemas/ForgotPasswordSchema';
+import { ChevronLeftIcon } from '@chakra-ui/icons';
 
 const ForgotPasswordPage = () => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const toast = useToast();
@@ -37,7 +41,7 @@ const ForgotPasswordPage = () => {
   });
 
   const onSubmit = async (data: { email: string }) => {
-    if (loading) return; // Prevent multiple submissions
+    if (loading) return;
     setLoading(true);
     setSubmitted(false);
 
@@ -67,45 +71,76 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <Container maxW="md">
-      <VStack spacing={8} mt={20}>
-        <Heading as="h1" size="lg">
-          {texts.auth.forgotPassword.title[language]}
-        </Heading>
+    <Flex width="100%" minHeight="100vh" justifyContent="center" alignItems="center">
+      <Container maxW="md" px={8}>
+        <Button
+          leftIcon={<ChevronLeftIcon />}
+          m={4}
+          variant="ghost"
+          alignSelf="flex-start"
+          color="brand.primary.900"
+          _dark={{ color: 'brand.primary.700' }}
+          onClick={() => navigate(-1)}
+          size="sm"
+        >
+          {texts.auth.forgotPassword.backButton[language]}
+        </Button>
+        <Box
+          bg="bg.app"
+          backdropFilter="blur(10px)"
+          borderRadius="xl"
+          p={8}
+          boxShadow="xl"
+          border="1px solid"
+          borderColor="whiteAlpha.300"
+        >
+          <VStack spacing={8}>
+            <Heading as="h1" size="lg" bg="gradient.title" bgClip="text">
+              {texts.auth.forgotPassword.title[language]}
+            </Heading>
 
-        <Text textAlign="center">{texts.auth.forgotPassword.description[language]}</Text>
+            <Text textAlign="center">{texts.auth.forgotPassword.description[language]}</Text>
 
-        <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={4}>
-            <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
-              <Input
-                type="email"
-                placeholder={texts.auth.forgotPassword.emailPlaceholder[language]}
-                {...register('email')}
-              />
-              <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
-            </FormControl>
+            <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
+              <VStack spacing={4}>
+                <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
+                  <Input
+                    type="email"
+                    placeholder={texts.auth.forgotPassword.emailPlaceholder[language]}
+                    bg="whiteAlpha.900"
+                    _dark={{ bg: 'whiteAlpha.100' }}
+                    {...register('email')}
+                  />
+                  <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
+                </FormControl>
 
-            <Button
-              type="submit"
-              variant="brand"
-              width="100%"
-              mt={4}
-              isLoading={loading}
-              disabled={submitted}
-            >
-              {texts.auth.forgotPassword.submitButton[language]}
-            </Button>
+                <Button
+                  type="submit"
+                  width="100%"
+                  mt={4}
+                  isLoading={loading}
+                  disabled={submitted}
+                  bg="gradient.primary"
+                  color="white"
+                  _hover={{
+                    bg: 'gradient.primary',
+                    opacity: 0.9,
+                  }}
+                >
+                  {texts.auth.forgotPassword.submitButton[language]}
+                </Button>
 
-            {submitted && (
-              <Text color="green.500" fontSize="sm">
-                {texts.auth.forgotPassword.checkEmail[language]}
-              </Text>
-            )}
+                {submitted && (
+                  <Text color="green.500" fontSize="sm">
+                    {texts.auth.forgotPassword.checkEmail[language]}
+                  </Text>
+                )}
+              </VStack>
+            </Box>
           </VStack>
         </Box>
-      </VStack>
-    </Container>
+      </Container>
+    </Flex>
   );
 };
 
