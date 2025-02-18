@@ -322,7 +322,13 @@ $$ LANGUAGE plpgsql;
 ALTER TABLE admission_progress 
   DROP CONSTRAINT IF EXISTS admission_progress_status_check,
   ADD CONSTRAINT admission_progress_status_check 
-    CHECK (status IN ('pending', 'submitted', 'approved', 'rejected', 'pending_review'));
+    CHECK (status IN ('pending', 'submitted', 'approved', 'rejected', 'pending_review', 'cancelled'));
+
+-- Update appointment_status check constraint
+ALTER TABLE admission_progress
+  DROP CONSTRAINT IF EXISTS admission_progress_appointment_status_check,
+  ADD CONSTRAINT admission_progress_appointment_status_check
+    CHECK (appointment_status IN ('pending_review', 'approved', 'rejected', 'cancelled'));
 
 -- Insert sample admission request
 INSERT INTO admission_requests (

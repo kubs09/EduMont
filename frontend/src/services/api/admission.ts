@@ -91,6 +91,11 @@ export const admissionService = {
     return response.data;
   },
 
+  // Cancel appointment
+  cancelAppointment: async (): Promise<void> => {
+    await api.post('/api/admission/appointments/cancel');
+  },
+
   getTerms: async (): Promise<InfoMeeting[]> => {
     const response = await api.get('/api/admission/terms');
     return response.data;

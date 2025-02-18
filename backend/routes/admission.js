@@ -638,6 +638,34 @@ router.get('/appointments', auth, async (req, res) => {
   }
 });
 
+// Cancel appointment
+router.post('/appointments/cancel', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Reset the appointment and status
+    await client.query(
+      `UPDATE admission_progress 
+       SET appointment_id = NULL,
+           status = 'pending',
+           appointment_status = NULL
+       WHERE user_id = $1 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)`,
+      [req.user.id]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: 'Appointment cancelled successfully' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error cancelling appointment:', error);
+    res.status(500).json({ error: 'Failed to cancel appointment' });
+  } finally {
+    client.release();
+  }
+});
+
 // Schedule appointment
 router.post('/appointments/:appointmentId', auth, async (req, res) => {
   const client = await pool.connect();
@@ -646,7 +674,7 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Check for existing appointment
+    // Check for existing appointment, but allow if previous was cancelled
     const existingAppointment = await client.query(
       `SELECT appointment_status, appointment_id 
        FROM admission_progress 
@@ -657,7 +685,7 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
 
     if (
       existingAppointment.rows[0]?.appointment_id &&
-      existingAppointment.rows[0]?.appointment_status !== 'rejected'
+      !['rejected', 'cancelled'].includes(existingAppointment.rows[0]?.appointment_status)
     ) {
       throw new Error('You already have a scheduled appointment');
     }

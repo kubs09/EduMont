@@ -9,6 +9,7 @@ export type StepStatus =
   | 'select'
   | 'waiting'
   | 'completed'
+  | 'pending' // Add this
   | 'pending_review'
   | 'rejected'
   | 'submitted';

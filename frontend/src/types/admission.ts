@@ -26,7 +26,7 @@ export interface AdmissionStep {
   description: string;
   required_documents: DocumentConfig[];
   order_index: number;
-  status: 'pending' | 'pending_review' | 'submitted' | 'approved' | 'rejected';
+  status: 'pending' | 'pending_review' | 'submitted' | 'approved' | 'rejected' | 'cancelled';
   submitted_at?: string;
   reviewed_at?: string;
   admin_notes?: string;

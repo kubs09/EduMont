@@ -89,6 +89,27 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
     }
   };
 
+  const handleCancel = async () => {
+    setIsLoading(true);
+    try {
+      await admissionService.cancelAppointment();
+      onUpdateState({ currentStatus: 'pending', appointmentId: null }); // Changed from 'select' to 'pending'
+      // Reload meetings after cancellation
+      const data = await admissionService.getTerms();
+      setMeetings(data);
+    } catch (error) {
+      console.error('Cancellation error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel appointment',
+        status: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (stepState.currentStatus === 'pending_review') {
     return (
       <Box textAlign="center" py={8}>
@@ -105,6 +126,15 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
           <AlertTitle mt={4} mb={1} fontSize="lg">
             {texts.admissionSteps.infoMeeting.pendingReview[language]}
           </AlertTitle>
+          <Button
+            mt={4}
+            onClick={handleCancel}
+            isLoading={isLoading}
+            variant="outline"
+            colorScheme="blue"
+          >
+            {texts.common.back[language]}
+          </Button>
         </Alert>
       </Box>
     );
