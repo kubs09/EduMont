@@ -3,8 +3,15 @@ import { InfoMeetingStep } from './InfoMeetingStep';
 import { Box, Spinner } from '@chakra-ui/react';
 import { admissionService } from '../services/api/admission';
 import { AdmissionStep } from '../types/admission';
+import { DocumentStep } from './DocumentStep';
 
-export type StepStatus = 'select' | 'waiting' | 'completed' | 'pending_review' | 'rejected';
+export type StepStatus =
+  | 'select'
+  | 'waiting'
+  | 'completed'
+  | 'pending_review'
+  | 'rejected'
+  | 'submitted';
 export type ApiStepStatus = 'pending' | 'submitted' | 'approved' | 'rejected' | 'pending_review';
 
 interface StepState {
@@ -96,7 +103,10 @@ export const AdmissionWizard = () => {
   const currentStep =
     steps.find(
       (step) =>
-        // First look for pending_review or submitted status
+        // First check if we have an approved step and the next step is pending
+        (step.status === 'pending' &&
+          steps.some((s) => s.order_index === step.order_index - 1 && s.status === 'approved')) ||
+        // Then look for pending_review or submitted status
         step.status === 'pending_review' ||
         step.status === 'submitted' ||
         // Then look for rejected status
@@ -115,6 +125,12 @@ export const AdmissionWizard = () => {
         <InfoMeetingStep
           stepState={stepStates[1] || { currentStatus: 'select', appointmentId: null }}
           onUpdateState={(newState) => updateStepState(1, newState)}
+        />
+      )}
+      {currentStep.step_id === 2 && (
+        <DocumentStep
+          stepId={2}
+          onComplete={() => updateStepState(2, { currentStatus: 'pending_review' })} // Changed to pending_review
         />
       )}
       {/* Add more step components here */}

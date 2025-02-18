@@ -18,11 +18,15 @@ export const admissionService = {
 
   // Submit documents and data for a step
   submitStep: async (stepId: number, formData: FormData): Promise<void> => {
-    await api.post(`/api/admission/submit/${stepId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    try {
+      await api.post(`/api/admission/submit/${stepId}`, formData);
+    } catch (error) {
+      console.error('Upload error:', {
+        error,
+        formData: Array.from(formData.entries()),
+      });
+      throw error;
+    }
   },
 
   // Admin: Get all pending submissions

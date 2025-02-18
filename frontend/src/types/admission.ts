@@ -1,8 +1,30 @@
+export type DocumentType =
+  | 'id_front'
+  | 'id_back'
+  | 'birth_certificate'
+  | 'medical_approval'
+  | 'other';
+
+export type DocumentRecord = Record<DocumentType, DocumentSubmission | null>;
+
+export interface DocumentConfig {
+  type: DocumentType;
+  required: boolean;
+  allowedTypes: string[];
+  maxSize: number; // in bytes
+}
+
+export interface DocumentSubmission {
+  type: DocumentType;
+  file: File;
+  description?: string;
+}
+
 export interface AdmissionStep {
   step_id: number;
   name: string;
   description: string;
-  required_documents: string[];
+  required_documents: DocumentConfig[];
   order_index: number;
   status: 'pending' | 'pending_review' | 'submitted' | 'approved' | 'rejected';
   submitted_at?: string;
@@ -15,6 +37,7 @@ export interface AdmissionStep {
     online: boolean;
     preferred_online?: boolean;
   };
+  documents?: DocumentSubmission[];
 }
 
 export interface AdmissionStatus {

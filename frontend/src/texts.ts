@@ -1190,6 +1190,68 @@ export const texts = {
         en: 'User with this email already exists in the system',
       },
     },
+    documents: {
+      title: {
+        cs: 'Nahrání dokumentů',
+        en: 'Document Upload',
+      },
+      id_front: {
+        cs: 'Občanský průkaz - přední strana',
+        en: 'ID Card - Front',
+      },
+      id_back: {
+        cs: 'Občanský průkaz - zadní strana',
+        en: 'ID Card - Back',
+      },
+      birth_certificate: {
+        cs: 'Rodný list dítěte',
+        en: "Child's Birth Certificate",
+      },
+      medical_approval: {
+        cs: 'Lékařské potvrzení',
+        en: 'Medical Approval',
+      },
+      otherDocuments: {
+        cs: 'Další dokumenty',
+        en: 'Other Documents',
+      },
+      submit: {
+        cs: 'Odeslat dokumenty',
+        en: 'Submit Documents',
+      },
+      submitting: {
+        cs: 'Odesílání...',
+        en: 'Submitting...',
+      },
+      fileSelected: {
+        cs: 'Vybraný soubor',
+        en: 'Selected file',
+      },
+      remove: {
+        cs: 'Odstranit',
+        en: 'Remove',
+      },
+      invalidType: {
+        cs: 'Nepodporovaný typ souboru',
+        en: 'Unsupported file type',
+      },
+      fileTooLarge: {
+        cs: 'Soubor je příliš velký',
+        en: 'File is too large',
+      },
+      missingRequired: {
+        cs: 'Prosím nahrajte všechny povinné dokumenty',
+        en: 'Please upload all required documents',
+      },
+      submitSuccess: {
+        cs: 'Dokumenty byly úspěšně nahrány',
+        en: 'Documents uploaded successfully',
+      },
+      submitError: {
+        cs: 'Nepodařilo se nahrát dokumenty',
+        en: 'Failed to upload documents',
+      },
+    },
   },
   adminAdmissions: {
     name: {

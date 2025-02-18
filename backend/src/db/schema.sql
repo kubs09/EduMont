@@ -346,3 +346,22 @@ INSERT INTO admission_requests (
     'We are interested in enrolling our son in the morning program. He is very social and loves to play with other children.',
     'pending'
 );
+
+-- Document storage table
+CREATE TABLE IF NOT EXISTS documents (
+    id SERIAL PRIMARY KEY,
+    original_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER REFERENCES users(id),
+    document_type VARCHAR(50) NOT NULL,
+    admission_step_id INTEGER REFERENCES admission_steps(id),
+    description TEXT,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected'))
+);
+
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_admission_step ON documents(admission_step_id);

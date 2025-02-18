@@ -5,15 +5,50 @@ const pool = require('../config/database');
 const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { sendInvitationEmail, sendAdmissionResultEmail } = require('../config/mail');
 const { extractLanguage } = require('../utils/language');
+const documentsService = require('../services/documents');
 
-const upload = multer({
-  dest: path.join(__dirname, '../uploads/'),
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../uploads');
+    // Ensure directory exists
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const safeFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${uniqueSuffix}-${safeFilename}`);
   },
 });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const dir = path.join(__dirname, '../uploads');
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const safeFilename = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, `${uniqueSuffix}-${safeFilename}`);
+    },
+  }),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    fieldSize: 10 * 1024 * 1024,
+  },
+}).single('document');
+
+// Debug middleware to log request body and files
+const debugMiddleware = (req, res, next) => {
+  console.log('Request body:', req.body);
+  console.log('Request files:', req.files);
+  next();
+};
 
 // Request admission
 router.post('/request', async (req, res) => {
@@ -139,59 +174,94 @@ router.get('/status', auth, async (req, res) => {
 });
 
 // Submit step documents and data
-router.post('/submit/:stepId', auth, upload.array('documents'), async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const { stepId } = req.params;
-    const { formData } = req.body;
-    const files = req.files;
+router.post('/submit/:stepId', auth, (req, res) => {
+  console.log('Request headers:', req.headers);
 
-    // Validate step exists and is next in sequence
-    const stepCheck = await client.query(
-      `SELECT s.* FROM admission_steps s
-       LEFT JOIN admission_progress p ON p.step_id = s.id AND p.user_id = $1
-       WHERE s.id = $2`,
-      [req.user.id, stepId]
-    );
-
-    if (stepCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Step not found' });
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
+      return res.status(400).json({
+        error: 'Upload failed',
+        details: err.message,
+        code: err.code,
+      });
+    } else if (err) {
+      console.error('Unknown upload error:', err);
+      return res.status(500).json({
+        error: 'Upload failed',
+        details: err.message,
+      });
     }
 
-    // Store documents info and form data
-    const documents = files.map((file) => ({
-      filename: file.filename,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      path: file.path,
-    }));
+    if (!req.file) {
+      console.error('No file in request:', {
+        headers: req.headers,
+        contentType: req.headers['content-type'],
+        body: req.body,
+      });
+      return res.status(400).json({
+        error: 'No file uploaded',
+        details: 'No file found in request',
+      });
+    }
 
-    await client.query(
-      `INSERT INTO admission_progress 
-       (user_id, step_id, status, documents, submitted_at) 
-       VALUES ($1, $2, 'submitted', $3, CURRENT_TIMESTAMP)
-       ON CONFLICT (user_id, step_id) 
-       DO UPDATE SET 
-         status = 'submitted',
-         documents = $3,
-         submitted_at = CURRENT_TIMESTAMP,
-         reviewed_at = NULL,
-         reviewed_by = NULL`,
-      [req.user.id, stepId, JSON.stringify({ documents, formData })]
-    );
+    const client = await pool.connect();
+    try {
+      const { stepId } = req.params;
+      const documentType = req.body.documentType; // Changed from 'type' to 'documentType'
+      const description = req.body.description;
 
-    // Update user's admission status if it's still pending
-    await client.query(
-      `UPDATE users SET admission_status = 'in_progress' 
-       WHERE id = $1 AND admission_status = 'pending'`,
-      [req.user.id]
-    );
+      console.log('Processing file:', {
+        originalname: req.file.originalname,
+        type: documentType,
+        description: description,
+      });
 
-    res.json({ message: 'Step submitted successfully' });
+      await client.query('BEGIN');
+
+      // Save document
+      await documentsService.saveDocument(req.file, req.user.id, stepId, documentType, description);
+
+      // Update progress status to pending_review
+      await client.query(
+        `UPDATE admission_progress 
+         SET status = 'pending_review',
+             submitted_at = CURRENT_TIMESTAMP
+         WHERE user_id = $1 AND step_id = $2`,
+        [req.user.id, stepId]
+      );
+
+      await client.query('COMMIT');
+      res.json({ message: 'Document uploaded successfully' });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Database error:', error);
+      res.status(500).json({ error: 'Failed to save document' });
+    } finally {
+      client.release();
+    }
+  });
+});
+
+// Add document retrieval endpoint
+router.get('/documents/:stepId', auth, async (req, res) => {
+  try {
+    const documents = await documentsService.getDocuments(req.user.id, req.params.stepId);
+    res.json(documents);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to submit step' });
-  } finally {
-    client.release();
+    console.error('Error fetching documents:', error);
+    res.status(500).json({ error: 'Failed to fetch documents' });
+  }
+});
+
+// Add document deletion endpoint
+router.delete('/documents/:documentId', auth, async (req, res) => {
+  try {
+    await documentsService.deleteDocument(req.params.documentId, req.user.id);
+    res.json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    res.status(500).json({ error: 'Failed to delete document' });
   }
 });
 
@@ -672,8 +742,8 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Update the status but don't automatically set next step
-    const result = await client.query(
+    // Update the current step status
+    await client.query(
       `UPDATE admission_progress 
        SET status = $1,
            admin_notes = $2,
@@ -685,12 +755,18 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
       [status, adminNotes, req.user.id, userId]
     );
 
-    if (result.rows.length === 0) {
-      throw new Error('Appointment not found');
-    }
-
-    // If rejected, update user's admission status
-    if (status === 'rejected') {
+    if (status === 'approved') {
+      // Initialize the next step (documents step)
+      await client.query(
+        `INSERT INTO admission_progress (user_id, step_id, status)
+         SELECT $1, id, 'pending'
+         FROM admission_steps
+         WHERE order_index = 2
+         ON CONFLICT (user_id, step_id) 
+         DO UPDATE SET status = 'pending', admin_notes = NULL`,
+        [userId]
+      );
+    } else if (status === 'rejected') {
       await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
         'rejected',
         userId,
