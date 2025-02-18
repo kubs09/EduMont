@@ -22,7 +22,6 @@ import { PendingAdmissionUser } from '../../types/admission';
 interface AppointmentDetails {
   date: string;
   online: boolean;
-  preferredOnline: boolean;
   notes?: string;
 }
 
@@ -59,7 +58,6 @@ export const AppointmentReviewModal: React.FC<AppointmentReviewModalProps> = ({
           setAppointmentDetails({
             date: firstStep.appointment.date,
             online: firstStep.appointment.online,
-            preferredOnline: firstStep.preferred_online ?? false,
             notes: firstStep.admin_notes || '',
           });
 
@@ -73,7 +71,7 @@ export const AppointmentReviewModal: React.FC<AppointmentReviewModalProps> = ({
         console.error('Error fetching appointment details:', error);
         toast({
           title: 'Error',
-          description: 'Failed to fetch appointment details',
+          description: texts.adminAdmissions.appointmentReview.toast.error.fetchFailed[language],
           status: 'error',
         });
       } finally {
@@ -84,13 +82,13 @@ export const AppointmentReviewModal: React.FC<AppointmentReviewModalProps> = ({
     if (isOpen) {
       fetchDetails();
     }
-  }, [isOpen, parent.id, toast]);
+  }, [isOpen, parent.id, toast, language]);
 
   const handleReview = async (approved: boolean) => {
     if (!notes.trim()) {
       toast({
         title: 'Error',
-        description: 'Please provide decision notes',
+        description: texts.adminAdmissions.appointmentReview.toast.notesRequired[language],
         status: 'error',
       });
       return;
@@ -105,14 +103,18 @@ export const AppointmentReviewModal: React.FC<AppointmentReviewModalProps> = ({
 
       toast({
         title: 'Success',
-        description: `Appointment ${approved ? 'approved' : 'denied'} successfully`,
+        description: approved
+          ? texts.adminAdmissions.appointmentReview.toast.approveSuccess[language]
+          : texts.adminAdmissions.appointmentReview.toast.denySuccess[language],
         status: 'success',
       });
       onReviewComplete();
     } catch (error) {
       toast({
         title: 'Error',
-        description: `Failed to ${approved ? 'approve' : 'deny'} appointment`,
+        description: approved
+          ? texts.adminAdmissions.appointmentReview.toast.error.approveFailed[language]
+          : texts.adminAdmissions.appointmentReview.toast.error.denyFailed[language],
         status: 'error',
       });
     } finally {
@@ -139,12 +141,6 @@ export const AppointmentReviewModal: React.FC<AppointmentReviewModalProps> = ({
               <Text>
                 <strong>{texts.adminAdmissions.appointmentReview.type[language]}:</strong>{' '}
                 {appointmentDetails.online
-                  ? texts.adminAdmissions.appointmentReview.online[language]
-                  : texts.adminAdmissions.appointmentReview.inPerson[language]}
-              </Text>
-              <Text>
-                <strong>{texts.adminAdmissions.appointmentReview.preferredType[language]}:</strong>{' '}
-                {appointmentDetails.preferredOnline
                   ? texts.adminAdmissions.appointmentReview.online[language]
                   : texts.adminAdmissions.appointmentReview.inPerson[language]}
               </Text>

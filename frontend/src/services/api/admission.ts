@@ -82,13 +82,8 @@ export const admissionService = {
   },
 
   // Schedule appointment (simplified)
-  scheduleAppointment: async (
-    appointmentId: number,
-    preferredOnline: boolean
-  ): Promise<{ status: string }> => {
-    const response = await api.post(`/api/admission/appointments/${appointmentId}`, {
-      preferredOnline,
-    });
+  scheduleAppointment: async (appointmentId: number): Promise<{ status: string }> => {
+    const response = await api.post(`/api/admission/appointments/${appointmentId}`);
     return response.data;
   },
 

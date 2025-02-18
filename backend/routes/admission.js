@@ -573,11 +573,10 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     const { appointmentId } = req.params;
-    const { preferredOnline } = req.body;
 
     await client.query('BEGIN');
 
-    // Check if user already has a pending or approved appointment
+    // Check for existing appointment
     const existingAppointment = await client.query(
       `SELECT appointment_status, appointment_id 
        FROM admission_progress 
@@ -593,7 +592,7 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('You already have a scheduled appointment');
     }
 
-    // Modified availability check query
+    // Check availability
     const availabilityCheck = await client.query(
       `SELECT 
         a.capacity,
@@ -610,41 +609,35 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
     }
 
     const { capacity, booked_spots } = availabilityCheck.rows[0];
-    console.log('Appointment capacity check:', { capacity, booked_spots }); // Debug log
-
     if (booked_spots >= capacity) {
       throw new Error('Appointment is full');
     }
 
-    // Update both status and appointment status
+    // Update admission progress with appointment
     const result = await client.query(
       `UPDATE admission_progress 
-       SET appointment_id = $1, 
-           preferred_online = $2,
-           status = 'pending_review'
-       WHERE user_id = $3 
-       AND step_id = (
-         SELECT id FROM admission_steps 
-         WHERE order_index = 1
-       )
+       SET appointment_id = $1,
+           status = 'pending_review',
+           submitted_at = CURRENT_TIMESTAMP,
+           appointment_status = 'pending_review'
+       WHERE user_id = $2 
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
        RETURNING *`,
-      [appointmentId, preferredOnline, req.user.id]
+      [appointmentId, req.user.id]
     );
 
     if (result.rows.length === 0) {
       throw new Error('Failed to update admission progress');
     }
 
-    // Ensure all other steps remain in their current state
+    // Update user's admission status if needed
     await client.query(
-      `UPDATE admission_progress 
-       SET status = CASE 
-         WHEN status = 'pending' THEN 'pending'
-         WHEN status = 'approved' THEN 'approved'
-         ELSE status
+      `UPDATE users 
+       SET admission_status = CASE 
+         WHEN admission_status = 'pending' THEN 'in_progress'
+         ELSE admission_status
        END
-       WHERE user_id = $1 
-       AND step_id != (SELECT id FROM admission_steps WHERE order_index = 1)`,
+       WHERE id = $1`,
       [req.user.id]
     );
 

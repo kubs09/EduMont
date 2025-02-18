@@ -1353,6 +1353,34 @@ export const texts = {
         cs: 'Zamítnout řízení',
         en: 'Deny admission',
       },
+      toast: {
+        notesRequired: {
+          cs: 'Prosím vyplňte poznámky k rozhodnutí',
+          en: 'Please provide decision notes',
+        },
+        approveSuccess: {
+          cs: 'Schůzka byla úspěšně schválena',
+          en: 'Appointment approved successfully',
+        },
+        denySuccess: {
+          cs: 'Schůzka byla úspěšně zamítnuta',
+          en: 'Appointment denied successfully',
+        },
+        error: {
+          fetchFailed: {
+            cs: 'Nepodařilo se načíst detaily schůzky',
+            en: 'Failed to fetch appointment details',
+          },
+          approveFailed: {
+            cs: 'Nepodařilo se schválit schůzku',
+            en: 'Failed to approve appointment',
+          },
+          denyFailed: {
+            cs: 'Nepodařilo se zamítnout schůzku',
+            en: 'Failed to deny appointment',
+          },
+        },
+      },
     },
     statusBadges: {
       pending: {

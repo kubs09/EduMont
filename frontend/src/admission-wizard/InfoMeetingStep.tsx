@@ -71,8 +71,10 @@ export const InfoMeetingStep = ({ stepState, onUpdateState }: InfoMeetingStepPro
 
     setIsLoading(true);
     try {
-      // Check the response status and update state accordingly
-      onUpdateState({ currentStatus: 'pending_review' });
+      const response = await admissionService.scheduleAppointment(stepState.appointmentId);
+      if (response.status === 'pending_review') {
+        onUpdateState({ currentStatus: 'pending_review' });
+      }
     } catch (error) {
       console.error('Meeting scheduling error:', error);
       toast({
