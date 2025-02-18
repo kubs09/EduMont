@@ -2,37 +2,40 @@ import React from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, Button, useDisclosure } from '@chakra-ui/react';
 import { PendingAdmissionUser } from '../../types/admission';
 import { AppointmentReviewModal } from './AppointmentReviewModal';
+import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 
 interface ParentsInProgressProps {
   parents: PendingAdmissionUser[];
   getStatusBadge: (status: string) => React.ReactElement;
-  language: 'cs' | 'en';
-  texts: {
-    table: {
-      parent: Record<'cs' | 'en', string>;
-      email: Record<'cs' | 'en', string>;
-      step: Record<'cs' | 'en', string>;
-      status: Record<'cs' | 'en', string>;
-      actions: Record<'cs' | 'en', string>;
-      viewProgress?: Record<'cs' | 'en', string>;
-    };
-  };
   onReviewComplete?: () => void;
 }
 
 export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
   parents,
   getStatusBadge,
-  language,
-  texts,
   onReviewComplete,
 }) => {
+  const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedParent, setSelectedParent] = React.useState<PendingAdmissionUser | null>(null);
+
+  const tableTexts = texts.adminAdmissions.table;
 
   const handleViewProgress = (parent: PendingAdmissionUser) => {
     setSelectedParent(parent);
     onOpen();
+  };
+
+  const calculateAge = (dateOfBirth: string) => {
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   return (
@@ -40,16 +43,20 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
       <Table variant="simple">
         <Thead>
           <Tr>
-            <Th>{texts.table.parent[language]}</Th>
-            <Th>{texts.table.email[language]}</Th>
-            <Th>{texts.table.step[language]}</Th>
-            <Th>{texts.table.status[language]}</Th>
-            <Th>{texts.table.actions[language]}</Th>
+            <Th>{tableTexts.childName[language]}</Th>
+            <Th>{tableTexts.childAge[language]}</Th>
+            <Th>{tableTexts.parent[language]}</Th>
+            <Th>{tableTexts.email[language]}</Th>
+            <Th>{tableTexts.step[language]}</Th>
+            <Th>{tableTexts.status[language]}</Th>
+            <Th>{tableTexts.actions[language]}</Th>
           </Tr>
         </Thead>
         <Tbody>
           {parents.map((parent) => (
             <Tr key={parent.id}>
+              <Td>{`${parent.child_firstname} ${parent.child_surname}`}</Td>
+              <Td>{calculateAge(parent.child_date_of_birth)}</Td>
               <Td>{`${parent.firstname} ${parent.surname}`}</Td>
               <Td>{parent.email}</Td>
               <Td>{parent.current_step.name}</Td>
@@ -61,7 +68,7 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
                   onClick={() => handleViewProgress(parent)}
                   isDisabled={parent.current_step.status !== 'pending_review'}
                 >
-                  {texts.table.viewProgress?.[language] || 'View Progress'}
+                  {tableTexts.reviewProgress[language]}
                 </Button>
               </Td>
             </Tr>

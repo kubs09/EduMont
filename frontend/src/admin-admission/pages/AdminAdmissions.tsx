@@ -205,14 +205,8 @@ export const AdminAdmissions = () => {
                 onDeny={handleDeny}
                 calculateAge={calculateAge}
                 getStatusBadge={getStatusBadge}
-                language={language}
                 loadingApproval={loadingApproval}
                 loadingDenial={loadingDenial}
-                texts={{
-                  table: texts.adminAdmissions.table,
-                  approve: texts.adminAdmissions.approve,
-                  deny: texts.adminAdmissions.deny,
-                }}
               />
             </Box>
           </TabPanel>
@@ -221,17 +215,7 @@ export const AdminAdmissions = () => {
               <AdminParentsInProgressTable
                 parents={registeredParents}
                 getStatusBadge={getStatusBadge}
-                language={language}
-                texts={{
-                  table: {
-                    parent: texts.adminAdmissions.table.parent,
-                    email: texts.adminAdmissions.table.email,
-                    step: texts.adminAdmissions.table.step,
-                    status: texts.adminAdmissions.table.status,
-                    actions: texts.adminAdmissions.table.actions,
-                    viewProgress: texts.adminAdmissions.table.viewProgress,
-                  },
-                }}
+                onReviewComplete={fetchData}
               />
             </Box>
           </TabPanel>

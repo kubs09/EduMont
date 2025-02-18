@@ -1241,9 +1241,17 @@ export const texts = {
         cs: 'V procesu',
         en: 'Step',
       },
-      viewProgress: {
-        cs: 'Zobrazit pokrok',
-        en: 'View Progress',
+      reviewProgress: {
+        cs: 'Vyhodnocení kroku',
+        en: 'Review Progress',
+      },
+      childName: {
+        cs: 'Dítě',
+        en: "Child's Name",
+      },
+      childAge: {
+        cs: 'Věk dítěte',
+        en: "Child's Age",
       },
     },
     title: {

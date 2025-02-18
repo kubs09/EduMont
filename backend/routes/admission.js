@@ -445,6 +445,9 @@ router.get('/admin/pending-users', auth, async (req, res) => {
          u.firstname, 
          u.surname, 
          u.email,
+         c.firstname as child_firstname,
+         c.surname as child_surname,
+         c.date_of_birth as child_date_of_birth,
          (
            SELECT json_build_object(
                     'step_id', p.step_id,
@@ -458,6 +461,7 @@ router.get('/admin/pending-users', auth, async (req, res) => {
            LIMIT 1
          ) as current_step
        FROM users u
+       LEFT JOIN children c ON c.parent_id = u.id
        WHERE u.role = 'parent'
          AND u.admission_status IN ('pending', 'in_progress')
        ORDER BY u.surname DESC`

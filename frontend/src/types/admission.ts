@@ -58,6 +58,9 @@ export interface PendingAdmissionUser {
   surname: string;
   email: string;
   created_at: string;
+  child_firstname: string;
+  child_surname: string;
+  child_date_of_birth: string;
   current_step: {
     step_id: number;
     name: string;
@@ -99,6 +102,38 @@ export interface AdminTableTexts {
   };
   approve: Record<string, string>;
   deny: Record<string, string>;
+}
+
+export interface ParentInProgress {
+  parent: Record<'cs' | 'en', string>;
+  email: Record<'cs' | 'en', string>;
+  step: Record<'cs' | 'en', string>;
+  status: Record<'cs' | 'en', string>;
+  actions: Record<'cs' | 'en', string>;
+  childName: Record<'cs' | 'en', string>;
+  childAge: Record<'cs' | 'en', string>;
+  viewProgress: Record<'cs' | 'en', string>;
+}
+
+export interface AdminRequestTable {
+  name: Record<'cs' | 'en', string>;
+  parent: Record<'cs' | 'en', string>;
+  email: Record<'cs' | 'en', string>;
+  phone: Record<'cs' | 'en', string>;
+  date: Record<'cs' | 'en', string>;
+  age: Record<'cs' | 'en', string>;
+  status: Record<'cs' | 'en', string>;
+  actions: Record<'cs' | 'en', string>;
+}
+
+export interface AdminRequestsProps {
+  admissions: AdmissionRequestDetails[];
+  onApprove: (admission: AdmissionRequestDetails) => void;
+  onDeny: (admission: AdmissionRequestDetails) => void;
+  calculateAge: (dob: string) => number;
+  getStatusBadge: (status: string) => React.ReactElement;
+  loadingApproval: number | undefined;
+  loadingDenial: number | undefined;
 }
 
 export interface AdmissionRequestProps {
