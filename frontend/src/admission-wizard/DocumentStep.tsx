@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -12,6 +12,7 @@ import {
   Progress,
   useToast,
   AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { DocumentConfig, DocumentSubmission, DocumentRecord } from '../types/admission';
 import { admissionService } from '../services/api/admission';
@@ -84,6 +85,26 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
   const [otherDocs, setOtherDocs] = useState<DocumentSubmission[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<'pending' | 'pending_review' | null>(
+    null
+  );
+
+  useEffect(() => {
+    // Fetch current status
+    const fetchStatus = async () => {
+      try {
+        const status = await admissionService.getStatus();
+        const currentStep = status.steps.find((step) => step.step_id === stepId);
+        if (currentStep) {
+          setSubmissionStatus(currentStep.status as 'pending' | 'pending_review');
+          setIsResubmitting(currentStep.status === 'pending_review');
+        }
+      } catch (error) {
+        console.error('Error fetching status:', error);
+      }
+    };
+    fetchStatus();
+  }, [stepId]);
 
   const handleFileChange = (type: DocumentType, file: File) => {
     const config = defaultDocumentConfigs.find((c) => c.type === type);
@@ -154,6 +175,11 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
 
     setIsSubmitting(true);
     try {
+      // If resubmitting, first delete old documents
+      if (isResubmitting) {
+        await admissionService.deleteStepDocuments(stepId);
+      }
+
       // Process one file at a time
       let success = 0;
 
@@ -175,9 +201,10 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
           status: 'success',
           duration: 3000,
         });
+        setSubmissionStatus('pending_review');
         onComplete();
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error('Upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const apiError = (error as { response?: { data?: { error?: string } } })?.response?.data
@@ -205,6 +232,21 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
     });
     setOtherDocs([]);
   };
+
+  if (submissionStatus === 'pending_review') {
+    return (
+      <VStack spacing={6} align="stretch">
+        <Alert status="info">
+          <AlertIcon />
+          <Box flex="1">
+            <AlertTitle>{t.pendingReview[language]}</AlertTitle>
+            <AlertDescription>{t.pendingReviewDescription[language]}</AlertDescription>
+          </Box>
+          <Button onClick={() => setSubmissionStatus('pending')}>{t.resubmit[language]}</Button>
+        </Alert>
+      </VStack>
+    );
+  }
 
   if (isSubmitting && !isResubmitting) {
     return (

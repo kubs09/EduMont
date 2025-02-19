@@ -52,11 +52,10 @@ export const AppointmentReviewModal: React.FC<Props> = ({
         adminNotes: notes,
       });
 
-      // Update parent's current_step with the response data
       if (response.steps) {
         parent.current_step = {
           ...parent.current_step,
-          status: response.steps[1].status, // Get the second step's status (Documentation)
+          status: response.steps[1].status,
         };
       }
 

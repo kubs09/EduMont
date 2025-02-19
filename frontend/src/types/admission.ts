@@ -172,3 +172,13 @@ export interface AdmissionRequestProps {
   loadingDenial: number | undefined;
   texts: AdminTableTexts;
 }
+
+export interface AdminDocument {
+  id: number;
+  document_type: DocumentType;
+  original_name: string;
+  mime_type: string;
+  file_size: number;
+  upload_date: string;
+  description?: string;
+}

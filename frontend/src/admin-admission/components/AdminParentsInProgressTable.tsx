@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, Button, useDisclosure } from '@chakra-ui/react';
 import { PendingAdmissionUser } from '../../types/admission';
-import { AppointmentReviewModal } from './AppointmentReviewModal';
 import { texts } from '../../texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { StepReviewModalRouter } from './StepReviewModalRouter';
 
 interface ParentsInProgressProps {
   parents: PendingAdmissionUser[];
@@ -45,6 +45,18 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
     onClose();
   }, [onReviewComplete, onClose]);
 
+  const getReviewButtonText = (parent: PendingAdmissionUser) => {
+    const stepId = parent.current_step.step_id;
+    switch (stepId) {
+      case 1:
+        return texts.adminAdmissions.appointmentReview.title[language];
+      case 2:
+        return texts.adminAdmissions.documentReview.title[language];
+      default:
+        return texts.adminAdmissions.table.reviewProgress[language];
+    }
+  };
+
   return (
     <>
       <Table variant="simple">
@@ -75,9 +87,7 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
                   onClick={() => handleViewProgress(parent)}
                   isDisabled={parent.current_step.status !== 'pending_review'}
                 >
-                  {texts.adminAdmissions.statusBadges[
-                    parent.current_step.status as keyof typeof texts.adminAdmissions.statusBadges
-                  ][language] || tableTexts.reviewProgress[language]}
+                  {getReviewButtonText(parent)}
                 </Button>
               </Td>
             </Tr>
@@ -86,7 +96,7 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
       </Table>
 
       {selectedParent && (
-        <AppointmentReviewModal
+        <StepReviewModalRouter
           isOpen={isOpen}
           onClose={onClose}
           parent={selectedParent}

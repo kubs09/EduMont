@@ -232,7 +232,10 @@ router.post('/submit/:stepId', auth, (req, res) => {
       );
 
       await client.query('COMMIT');
-      res.json({ message: 'Document uploaded successfully' });
+      res.json({
+        message: 'Document uploaded successfully',
+        status: 'pending_review',
+      });
     } catch (error) {
       await client.query('ROLLBACK');
       console.error('Database error:', error);
@@ -262,6 +265,45 @@ router.delete('/documents/:documentId', auth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting document:', error);
     res.status(500).json({ error: 'Failed to delete document' });
+  }
+});
+
+// Delete all documents for a step
+router.delete('/documents/step/:stepId', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { stepId } = req.params;
+
+    await client.query('BEGIN');
+
+    // Get all documents for this step
+    const { rows } = await client.query(
+      'SELECT id, file_path FROM documents WHERE user_id = $1 AND admission_step_id = $2',
+      [req.user.id, stepId]
+    );
+
+    // Delete files and records
+    for (const doc of rows) {
+      await fs.unlink(doc.file_path).catch(console.error);
+      await client.query('DELETE FROM documents WHERE id = $1', [doc.id]);
+    }
+
+    // Update progress status back to pending
+    await client.query(
+      `UPDATE admission_progress 
+       SET status = 'pending'
+       WHERE user_id = $1 AND step_id = $2`,
+      [req.user.id, stepId]
+    );
+
+    await client.query('COMMIT');
+    res.json({ message: 'Documents deleted successfully' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error deleting documents:', error);
+    res.status(500).json({ error: 'Failed to delete documents' });
+  } finally {
+    client.release();
   }
 });
 
@@ -920,6 +962,70 @@ router.post('/initialize', auth, async (req, res) => {
     await client.query('ROLLBACK');
     console.error('Error initializing admission:', error);
     res.status(500).json({ error: 'Failed to initialize admission process' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin: Download a document
+router.get('/admin/documents/:documentId/download', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const { documentId } = req.params;
+    const { rows } = await client.query(
+      'SELECT file_path, original_name, mime_type FROM documents WHERE id = $1',
+      [documentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const { file_path, original_name, mime_type } = rows[0];
+    res.setHeader('Content-Type', mime_type);
+    res.setHeader('Content-Disposition', `attachment; filename="${original_name}"`);
+
+    const fileStream = fs.createReadStream(file_path);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading document:', error);
+    res.status(500).json({ error: 'Failed to download document' });
+  } finally {
+    client.release();
+  }
+});
+
+// Admin: Get documents for a user's step
+router.get('/admin/documents/:userId/:stepId', auth, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const { userId, stepId } = req.params;
+    const result = await client.query(
+      `SELECT 
+        id,
+        document_type,
+        original_name,
+        mime_type,
+        file_size,
+        upload_date,
+        description
+       FROM documents
+       WHERE user_id = $1 AND admission_step_id = $2
+       ORDER BY upload_date DESC`,
+      [userId, stepId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    res.status(500).json({ error: 'Failed to fetch documents' });
   } finally {
     client.release();
   }

@@ -7,6 +7,7 @@ import {
   PendingAdmissionUser,
   Appointment,
   InfoMeeting,
+  AdminDocument,
 } from '../../types/admission';
 
 export const admissionService = {
@@ -27,6 +28,11 @@ export const admissionService = {
       });
       throw error;
     }
+  },
+
+  // Delete all documents for a step
+  deleteStepDocuments: async (stepId: number): Promise<void> => {
+    await api.delete(`/api/admission/documents/step/${stepId}`);
   },
 
   // Admin: Get all pending submissions
@@ -117,6 +123,20 @@ export const admissionService = {
     }
   ): Promise<{ status: string; steps: { step_id: number; name: string; status: string }[] }> => {
     const response = await api.post(`/api/admission/admin/appointments/${userId}/review`, data);
+    return response.data;
+  },
+
+  // Admin: Get documents for a user's step
+  getAdminDocuments: async (userId: number, stepId: number): Promise<AdminDocument[]> => {
+    const response = await api.get(`/api/admission/admin/documents/${userId}/${stepId}`);
+    return response.data;
+  },
+
+  // Admin: Download a document
+  downloadDocument: async (documentId: number): Promise<Blob> => {
+    const response = await api.get(`/api/admission/admin/documents/${documentId}/download`, {
+      responseType: 'blob',
+    });
     return response.data;
   },
 };

@@ -1267,6 +1267,14 @@ export const texts = {
         cs: 'Vaše dokumenty se nahrávají. Prosím počkejte.',
         en: 'Your documents are being uploaded. Please wait.',
       },
+      pendingReview: {
+        cs: 'Vaše dokumenty jsou v procesu kontroly',
+        en: 'Your documents are being reviewed',
+      },
+      pendingReviewDescription: {
+        cs: 'Administrátor zkontroluje vaše dokumenty a buď je schválí, nebo vás požádá o opravu. Můžete také znovu nahrát dokumenty, pokud chcete provést změny.',
+        en: 'An administrator will review your documents and either approve them or request changes. You can also resubmit documents if you want to make changes.',
+      },
     },
   },
   adminAdmissions: {
@@ -1496,6 +1504,38 @@ export const texts = {
       in_progress: {
         cs: 'Probíhá',
         en: 'In Progress',
+      },
+    },
+    documentReview: {
+      title: {
+        cs: 'Kontrola dokumentů',
+        en: 'Document Review',
+      },
+      download: {
+        cs: 'Stáhnout dokument',
+        en: 'Download Document',
+      },
+      noDocuments: {
+        cs: 'Žádné dokumenty k dispozici',
+        en: 'No documents available',
+      },
+      close: {
+        cs: 'Zavřít',
+        en: 'Close',
+      },
+      error: {
+        fetch: {
+          cs: 'Nepodařilo se načíst dokumenty',
+          en: 'Failed to fetch documents',
+        },
+        download: {
+          cs: 'Nepodařilo se stáhnout dokument',
+          en: 'Failed to download document',
+        },
+        review: {
+          cs: 'Nepodařilo se dokončit kontrolu dokumentů',
+          en: 'Failed to complete document review',
+        },
       },
     },
   },
