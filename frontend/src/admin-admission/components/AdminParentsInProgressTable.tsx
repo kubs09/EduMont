@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Table, Thead, Tbody, Tr, Th, Td, Button, useDisclosure } from '@chakra-ui/react';
 import { PendingAdmissionUser } from '../../types/admission';
 import { AppointmentReviewModal } from './AppointmentReviewModal';
@@ -38,6 +38,13 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
     return age;
   };
 
+  const handleReviewComplete = useCallback(() => {
+    // Force refresh of parent data
+    onReviewComplete?.();
+    setSelectedParent(null);
+    onClose();
+  }, [onReviewComplete, onClose]);
+
   return (
     <>
       <Table variant="simple">
@@ -68,7 +75,9 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
                   onClick={() => handleViewProgress(parent)}
                   isDisabled={parent.current_step.status !== 'pending_review'}
                 >
-                  {tableTexts.reviewProgress[language]}
+                  {texts.adminAdmissions.statusBadges[
+                    parent.current_step.status as keyof typeof texts.adminAdmissions.statusBadges
+                  ][language] || tableTexts.reviewProgress[language]}
                 </Button>
               </Td>
             </Tr>
@@ -79,17 +88,10 @@ export const AdminParentsInProgressTable: React.FC<ParentsInProgressProps> = ({
       {selectedParent && (
         <AppointmentReviewModal
           isOpen={isOpen}
-          onClose={() => {
-            onClose();
-            setSelectedParent(null);
-          }}
+          onClose={onClose}
           parent={selectedParent}
           language={language}
-          onReviewComplete={() => {
-            onReviewComplete?.();
-            onClose();
-            setSelectedParent(null);
-          }}
+          onReviewComplete={handleReviewComplete}
         />
       )}
     </>

@@ -1251,6 +1251,22 @@ export const texts = {
         cs: 'Nepodařilo se nahrát dokumenty',
         en: 'Failed to upload documents',
       },
+      resubmit: {
+        cs: 'Znovu odeslat',
+        en: 'Resubmit',
+      },
+      resubmitMessage: {
+        cs: 'Upravujete již odeslané dokumenty. Nové dokumenty nahradí ty původní.',
+        en: 'You are modifying previously submitted documents. New documents will replace the old ones.',
+      },
+      cancel: {
+        cs: 'Zrušit',
+        en: 'Cancel',
+      },
+      submittingDescription: {
+        cs: 'Vaše dokumenty se nahrávají. Prosím počkejte.',
+        en: 'Your documents are being uploaded. Please wait.',
+      },
     },
   },
   adminAdmissions: {
@@ -1314,6 +1330,10 @@ export const texts = {
       childAge: {
         cs: 'Věk dítěte',
         en: "Child's Age",
+      },
+      pending: {
+        cs: 'Čeká na zpracování',
+        en: 'Pending',
       },
     },
     title: {

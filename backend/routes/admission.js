@@ -509,6 +509,7 @@ router.get('/admin/pending-users', auth, async (req, res) => {
 
   const client = await pool.connect();
   try {
+    // Modified query to get the current active step
     const result = await client.query(
       `SELECT 
          u.id, 
@@ -527,7 +528,23 @@ router.get('/admin/pending-users', auth, async (req, res) => {
            FROM admission_progress p
            JOIN admission_steps s ON p.step_id = s.id
            WHERE p.user_id = u.id
-           ORDER BY s.order_index ASC
+           AND (
+             -- Get either pending_review steps first
+             p.status = 'pending_review'
+             OR 
+             -- Or get the first non-approved step
+             (p.status = 'pending' AND NOT EXISTS (
+               SELECT 1 FROM admission_progress p2 
+               WHERE p2.user_id = u.id 
+               AND p2.status = 'pending_review'
+             ))
+           )
+           ORDER BY 
+             CASE 
+               WHEN p.status = 'pending_review' THEN 0 
+               ELSE 1 
+             END,
+             s.order_index ASC
            LIMIT 1
          ) as current_step
        FROM users u
@@ -690,7 +707,6 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('You already have a scheduled appointment');
     }
 
-    // Check availability
     const availabilityCheck = await client.query(
       `SELECT 
         a.capacity,
@@ -711,7 +727,6 @@ router.post('/appointments/:appointmentId', auth, async (req, res) => {
       throw new Error('Appointment is full');
     }
 
-    // Update admission progress with appointment
     const result = await client.query(
       `UPDATE admission_progress 
        SET appointment_id = $1,
@@ -770,39 +785,70 @@ router.post('/admin/appointments/:userId/review', auth, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Update the current step status
+    // Update the current step (Information Meeting) status
     await client.query(
       `UPDATE admission_progress 
        SET status = $1,
            admin_notes = $2,
            reviewed_at = CURRENT_TIMESTAMP,
-           reviewed_by = $3
+           reviewed_by = $3,
+           appointment_status = $1
        WHERE user_id = $4 
-       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)
-       RETURNING *`,
+       AND step_id = (SELECT id FROM admission_steps WHERE order_index = 1)`,
       [status, adminNotes, req.user.id, userId]
     );
 
     if (status === 'approved') {
-      // Initialize the next step (documents step)
+      // Initialize the Documentation step immediately as pending
       await client.query(
         `INSERT INTO admission_progress (user_id, step_id, status)
          SELECT $1, id, 'pending'
          FROM admission_steps
          WHERE order_index = 2
          ON CONFLICT (user_id, step_id) 
-         DO UPDATE SET status = 'pending', admin_notes = NULL`,
+         DO UPDATE SET status = 'pending'`,
+        [userId]
+      );
+
+      // Update user's admission status
+      await client.query(
+        `UPDATE users 
+         SET admission_status = 'in_progress' 
+         WHERE id = $1`,
         [userId]
       );
     } else if (status === 'rejected') {
-      await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
-        'rejected',
-        userId,
-      ]);
+      await client.query(
+        `UPDATE users 
+         SET admission_status = 'rejected' 
+         WHERE id = $1`,
+        [userId]
+      );
     }
 
+    // Get updated admission progress to return to client
+    const updatedProgress = await client.query(
+      `SELECT 
+         json_agg(
+           json_build_object(
+             'step_id', s.id,
+             'name', s.name,
+             'status', p.status,
+             'order_index', s.order_index
+           ) ORDER BY s.order_index
+         ) as steps
+       FROM admission_steps s
+       LEFT JOIN admission_progress p ON p.step_id = s.id AND p.user_id = $1
+       WHERE s.order_index IN (1, 2)`,
+      [userId]
+    );
+
     await client.query('COMMIT');
-    res.json({ message: 'Review completed', status });
+    res.json({
+      message: 'Review completed',
+      status,
+      steps: updatedProgress.rows[0].steps,
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error reviewing appointment:', error);

@@ -18,6 +18,7 @@ export interface DocumentSubmission {
   type: DocumentType;
   file: File;
   description?: string;
+  submitted?: boolean; // Add this field
 }
 
 export interface AdmissionStep {
@@ -38,6 +39,7 @@ export interface AdmissionStep {
     preferred_online?: boolean;
   };
   documents?: DocumentSubmission[];
+  canResubmit?: boolean; // Add this field
 }
 
 export interface AdmissionStatus {

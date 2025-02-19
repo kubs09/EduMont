@@ -11,6 +11,7 @@ import {
   AlertIcon,
   Progress,
   useToast,
+  AlertTitle,
 } from '@chakra-ui/react';
 import { DocumentConfig, DocumentSubmission, DocumentRecord } from '../types/admission';
 import { admissionService } from '../services/api/admission';
@@ -82,6 +83,7 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
   });
   const [otherDocs, setOtherDocs] = useState<DocumentSubmission[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
   const handleFileChange = (type: DocumentType, file: File) => {
     const config = defaultDocumentConfigs.find((c) => c.type === type);
@@ -191,8 +193,43 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
     }
   };
 
+  const handleCancel = () => {
+    setIsSubmitting(false);
+    setIsResubmitting(true);
+    setDocuments({
+      id_front: null,
+      id_back: null,
+      birth_certificate: null,
+      medical_approval: null,
+      other: null,
+    });
+    setOtherDocs([]);
+  };
+
+  if (isSubmitting && !isResubmitting) {
+    return (
+      <VStack spacing={6} align="stretch">
+        <Alert status="info">
+          <AlertIcon />
+          <Box flex="1">
+            <AlertTitle>{t.submitting[language]}</AlertTitle>
+          </Box>
+          <Button onClick={handleCancel}>{t.cancel[language]}</Button>
+        </Alert>
+        <Progress size="xs" isIndeterminate />
+      </VStack>
+    );
+  }
+
   return (
     <VStack spacing={6} align="stretch">
+      {isResubmitting && (
+        <Alert status="info">
+          <AlertIcon />
+          {t.resubmitMessage[language]}
+        </Alert>
+      )}
+
       <Text fontSize="xl" fontWeight="bold">
         {t.title[language]}
       </Text>
@@ -243,7 +280,7 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
         isLoading={isSubmitting}
         loadingText={t.submitting[language]}
       >
-        {t.submit[language]}
+        {isResubmitting ? t.resubmit[language] : t.submit[language]}
       </Button>
 
       {isSubmitting && <Progress size="xs" isIndeterminate />}

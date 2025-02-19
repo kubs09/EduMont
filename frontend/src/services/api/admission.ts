@@ -115,7 +115,8 @@ export const admissionService = {
       status: 'approved' | 'rejected';
       adminNotes?: string;
     }
-  ): Promise<void> => {
-    await api.post(`/api/admission/admin/appointments/${userId}/review`, data);
+  ): Promise<{ status: string; steps: { step_id: number; name: string; status: string }[] }> => {
+    const response = await api.post(`/api/admission/admin/appointments/${userId}/review`, data);
+    return response.data;
   },
 };
