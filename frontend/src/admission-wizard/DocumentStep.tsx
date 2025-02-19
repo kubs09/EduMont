@@ -71,18 +71,31 @@ interface Props {
   stepId: number;
 }
 
+interface BaseDocumentState {
+  file: File | null;
+  submitted: boolean;
+  description?: string;
+}
+
+interface RequiredDocuments {
+  id_front: BaseDocumentState;
+  id_back: BaseDocumentState;
+  birth_certificate: BaseDocumentState;
+  medical_approval: BaseDocumentState;
+  other: BaseDocumentState[];
+}
+
 export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
   const { language } = useLanguage();
   const t = texts.admission.documents;
   const toast = useToast();
-  const [documents, setDocuments] = useState<DocumentRecord>({
-    id_front: null,
-    id_back: null,
-    birth_certificate: null,
-    medical_approval: null,
-    other: null,
+  const [documents, setDocuments] = useState<RequiredDocuments>({
+    id_front: { file: null, submitted: false },
+    id_back: { file: null, submitted: false },
+    birth_certificate: { file: null, submitted: false },
+    medical_approval: { file: null, submitted: false },
+    other: [],
   });
-  const [otherDocs, setOtherDocs] = useState<DocumentSubmission[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] = useState<'pending' | 'pending_review' | null>(
@@ -130,12 +143,15 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
 
     setDocuments((prev) => ({
       ...prev,
-      [type]: { type, file },
+      [type]: { file, submitted: false },
     }));
   };
 
   const handleOtherFileAdd = (file: File, description: string) => {
-    setOtherDocs((prev) => [...prev, { type: 'other', file, description }]);
+    setDocuments((prev) => ({
+      ...prev,
+      other: [...prev.other, { file, submitted: false, description }],
+    }));
   };
 
   const uploadFile = async (file: File, type: string, description?: string) => {
@@ -161,7 +177,9 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
 
     // Validate required documents
     const missingRequired = defaultDocumentConfigs.filter(
-      (config) => config.required && !documents[config.type]
+      (config) =>
+        config.required &&
+        !(documents[config.type as keyof RequiredDocuments] as BaseDocumentState).file
     );
 
     if (missingRequired.length > 0) {
@@ -178,21 +196,49 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
       // If resubmitting, first delete old documents
       if (isResubmitting) {
         await admissionService.deleteStepDocuments(stepId);
+        // Clear the documents state after deletion
+        setDocuments({
+          id_front: { file: null, submitted: false },
+          id_back: { file: null, submitted: false },
+          birth_certificate: { file: null, submitted: false },
+          medical_approval: { file: null, submitted: false },
+          other: [],
+        });
       }
 
       // Process one file at a time
       let success = 0;
 
-      for (const [type, submission] of Object.entries(documents)) {
-        if (submission?.file) {
-          await uploadFile(submission.file, type);
+      for (const [type, doc] of Object.entries(documents)) {
+        if (
+          type !== 'other' &&
+          (doc as BaseDocumentState).file &&
+          !(doc as BaseDocumentState).submitted
+        ) {
+          const formData = new FormData();
+          formData.append('document', (doc as BaseDocumentState).file!);
+          formData.append('documentType', type);
+          await admissionService.submitStep(stepId, formData);
+          // Mark as submitted
+          setDocuments((prev) => ({
+            ...prev,
+            [type]: { ...(doc as BaseDocumentState), submitted: true },
+          }));
           success++;
         }
       }
 
-      for (const doc of otherDocs) {
-        await uploadFile(doc.file, 'other', doc.description);
-        success++;
+      for (const doc of documents.other) {
+        if (doc.file && !doc.submitted) {
+          const formData = new FormData();
+          formData.append('document', doc.file);
+          formData.append('documentType', 'other');
+          if (doc.description) {
+            formData.append('description', doc.description);
+          }
+          await admissionService.submitStep(stepId, formData);
+          success++;
+        }
       }
 
       if (success > 0) {
@@ -220,17 +266,29 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
     }
   };
 
+  // Add this useEffect to reset documents when switching back to pending
+  useEffect(() => {
+    if (submissionStatus === 'pending') {
+      setDocuments({
+        id_front: { file: null, submitted: false },
+        id_back: { file: null, submitted: false },
+        birth_certificate: { file: null, submitted: false },
+        medical_approval: { file: null, submitted: false },
+        other: [],
+      });
+    }
+  }, [submissionStatus]);
+
   const handleCancel = () => {
     setIsSubmitting(false);
     setIsResubmitting(true);
     setDocuments({
-      id_front: null,
-      id_back: null,
-      birth_certificate: null,
-      medical_approval: null,
-      other: null,
+      id_front: { file: null, submitted: false },
+      id_back: { file: null, submitted: false },
+      birth_certificate: { file: null, submitted: false },
+      medical_approval: { file: null, submitted: false },
+      other: [],
     });
-    setOtherDocs([]);
   };
 
   if (submissionStatus === 'pending_review') {
@@ -284,9 +342,10 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
             accept={config.allowedTypes.join(',')}
             onChange={(e) => e.target.files && handleFileChange(config.type, e.target.files[0])}
           />
-          {documents[config.type] && (
+          {(documents[config.type as keyof RequiredDocuments] as BaseDocumentState).file && (
             <Text fontSize="sm" color="green.500">
-              {t.fileSelected[language]}: {documents[config.type]?.file.name}
+              {t.fileSelected[language]}:{' '}
+              {(documents[config.type as keyof RequiredDocuments] as BaseDocumentState).file?.name}
             </Text>
           )}
         </FormControl>
@@ -302,14 +361,19 @@ export const DocumentStep: React.FC<Props> = ({ onComplete, stepId }) => {
         />
       </Box>
 
-      {otherDocs.map((doc, index) => (
+      {documents.other.map((doc, index) => (
         <Alert key={index} status="info">
           <AlertIcon />
-          <Text>{doc.file.name}</Text>
+          <Text>{doc.file?.name}</Text>
           <Button
             size="sm"
             ml="auto"
-            onClick={() => setOtherDocs((prev) => prev.filter((_, i) => i !== index))}
+            onClick={() =>
+              setDocuments((prev) => ({
+                ...prev,
+                other: prev.other.filter((_, i) => i !== index),
+              }))
+            }
           >
             {t.remove[language]}
           </Button>

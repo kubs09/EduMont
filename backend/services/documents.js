@@ -52,7 +52,7 @@ const documentsService = {
       await client.query('BEGIN');
 
       const { rows } = await client.query(
-        'SELECT file_path FROM documents WHERE id = $1 AND user_id = $2',
+        'SELECT file_path FROM documents WHERE id = $1 AND user_id = $2 FOR UPDATE',
         [documentId, userId]
       );
 
@@ -60,8 +60,62 @@ const documentsService = {
         throw new Error('Document not found or unauthorized');
       }
 
-      await fs.unlink(rows[0].file_path);
+      if (rows[0].file_path) {
+        try {
+          // Use stat to check if file exists instead of existsSync
+          await fs.stat(rows[0].file_path);
+          await fs.unlink(rows[0].file_path);
+        } catch (err) {
+          // Ignore errors if file doesn't exist
+          if (err.code !== 'ENOENT') {
+            throw err;
+          }
+        }
+      }
+
       await client.query('DELETE FROM documents WHERE id = $1', [documentId]);
+
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
+  async deleteAllDocumentsForStep(userId, stepId) {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Get all documents for this step
+      const { rows } = await client.query(
+        'SELECT file_path FROM documents WHERE user_id = $1 AND admission_step_id = $2 FOR UPDATE',
+        [userId, stepId]
+      );
+
+      // Delete physical files
+      for (const doc of rows) {
+        if (doc.file_path) {
+          try {
+            // Use stat to check if file exists instead of existsSync
+            await fs.stat(doc.file_path);
+            await fs.unlink(doc.file_path);
+          } catch (err) {
+            // Ignore errors if file doesn't exist
+            if (err.code !== 'ENOENT') {
+              throw err;
+            }
+          }
+        }
+      }
+
+      // Delete all document records
+      await client.query('DELETE FROM documents WHERE user_id = $1 AND admission_step_id = $2', [
+        userId,
+        stepId,
+      ]);
 
       await client.query('COMMIT');
     } catch (error) {

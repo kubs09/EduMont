@@ -273,6 +273,7 @@ router.delete('/documents/step/:stepId', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     const { stepId } = req.params;
+    const fs = require('fs').promises; // Change to use fs.promises
 
     await client.query('BEGIN');
 
@@ -284,7 +285,16 @@ router.delete('/documents/step/:stepId', auth, async (req, res) => {
 
     // Delete files and records
     for (const doc of rows) {
-      await fs.unlink(doc.file_path).catch(console.error);
+      if (doc.file_path) {
+        try {
+          await fs.unlink(doc.file_path); // Use Promise-based unlink
+        } catch (err) {
+          // Ignore if file doesn't exist
+          if (err.code !== 'ENOENT') {
+            console.error('Error deleting file:', err);
+          }
+        }
+      }
       await client.query('DELETE FROM documents WHERE id = $1', [doc.id]);
     }
 
@@ -342,7 +352,27 @@ router.post('/review/:userId/:stepId', auth, async (req, res) => {
     const { userId, stepId } = req.params;
     const { status, adminNotes } = req.body;
 
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
     await client.query('BEGIN');
+
+    // First check if the admission progress exists
+    const progressCheck = await client.query(
+      'SELECT id FROM admission_progress WHERE user_id = $1 AND step_id = $2',
+      [userId, stepId]
+    );
+
+    if (progressCheck.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Admission progress not found' });
+    }
+
+    // Delete documents if rejected
+    if (status === 'rejected') {
+      await documentsService.deleteAllDocumentsForStep(userId, stepId);
+    }
 
     // Update step status
     await client.query(
@@ -352,29 +382,25 @@ router.post('/review/:userId/:stepId', auth, async (req, res) => {
            reviewed_at = CURRENT_TIMESTAMP,
            reviewed_by = $3
        WHERE user_id = $4 AND step_id = $5`,
-      [status, adminNotes, req.user.id, userId, stepId]
+      [status, adminNotes || '', req.user.id, userId, stepId]
     );
 
     if (status === 'approved') {
-      // When approving a step, set the next step to pending
+      // Set next step to pending
       await client.query(
-        `UPDATE admission_progress 
-         SET status = 'pending'
-         WHERE user_id = $1 
-         AND step_id = (
-           SELECT id FROM admission_steps 
-           WHERE order_index = (
-             SELECT order_index + 1 
-             FROM admission_steps 
-             WHERE id = $2
-           )
-         )`,
+        `INSERT INTO admission_progress (user_id, step_id, status)
+         SELECT $1, id, 'pending'
+         FROM admission_steps
+         WHERE order_index = (
+           SELECT order_index + 1
+           FROM admission_steps
+           WHERE id = $2
+         )
+         ON CONFLICT (user_id, step_id) 
+         DO UPDATE SET status = 'pending'`,
         [userId, stepId]
       );
-    }
-
-    // If rejected, update user's admission status
-    if (status === 'rejected') {
+    } else if (status === 'rejected') {
       await client.query('UPDATE users SET admission_status = $1 WHERE id = $2', [
         'rejected',
         userId,
@@ -385,7 +411,8 @@ router.post('/review/:userId/:stepId', auth, async (req, res) => {
     res.json({ message: 'Review submitted successfully' });
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Failed to submit review' });
+    console.error('Error in review submission:', error);
+    res.status(500).json({ error: 'Failed to submit review: ' + error.message });
   } finally {
     client.release();
   }

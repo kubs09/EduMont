@@ -50,7 +50,12 @@ export const admissionService = {
       adminNotes?: string;
     }
   ): Promise<void> => {
-    await api.post(`/api/admission/${userId}/review/${stepId}`, data);
+    try {
+      await api.post(`/api/admission/review/${userId}/${stepId}`, data);
+    } catch (error) {
+      console.error('Review submission error:', error);
+      throw error;
+    }
   },
 
   requestAdmission: async (data: AdmissionRequest): Promise<void> => {
