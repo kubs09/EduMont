@@ -59,6 +59,7 @@ app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/classes', require('./routes/classes'));
 app.use('/api/messages', require('./routes/messages')); // Add messages routes
+app.use('/api/schedules', require('./routes/schedules')); // Add schedule routes
 
 // Catch-all handler for undefined routes
 app.use((req, res) => {

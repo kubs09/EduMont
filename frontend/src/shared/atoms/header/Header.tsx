@@ -76,6 +76,10 @@ const Header = () => {
     navigate(ROUTES.CLASSES);
   };
 
+  const handleSchedule = () => {
+    navigate(ROUTES.SCHEDULE);
+  };
+
   const handleMessages = () => {
     navigate(ROUTES.MESSAGES);
   };
@@ -183,6 +187,13 @@ const Header = () => {
                 onClick={handleClasses}
               >
                 {texts.classes.menuItem[language]}
+              </MenuItem>
+              <MenuItem
+                bg="brand.primary.900"
+                _hover={{ bg: 'brand.primary.800' }}
+                onClick={handleSchedule}
+              >
+                {texts.schedule.menuItem[language]}
               </MenuItem>
               {isAdmin && (
                 <MenuItem

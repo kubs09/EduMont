@@ -16,6 +16,7 @@ export const ROUTES = {
   REGISTER_INVITE: '/register/invite/:token',
   CLASSES: '/classes',
   CLASS_DETAIL: '/classes/:id', // Add this line
+  SCHEDULE: '/schedule',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
 } as const;

@@ -90,6 +90,27 @@ CREATE TABLE class_history (
 CREATE INDEX idx_class_history_class_id ON class_history(class_id);
 CREATE INDEX idx_class_history_date ON class_history(date);
 
+-- Schedule table for children's schedules
+CREATE TABLE schedules (
+    id SERIAL PRIMARY KEY,
+    child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    activity VARCHAR(200),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER REFERENCES users(id),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER REFERENCES users(id),
+    UNIQUE(child_id, date, start_time)
+);
+
+CREATE INDEX idx_schedules_child_id ON schedules(child_id);
+CREATE INDEX idx_schedules_class_id ON schedules(class_id);
+CREATE INDEX idx_schedules_date ON schedules(date);
+
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES
 ('admin@example.com', 'Admin', 'Admin', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'admin'),

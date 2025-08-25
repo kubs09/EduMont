@@ -16,6 +16,7 @@ import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
 import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
+import SchedulePage from './schedule/pages/SchedulePage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -61,6 +62,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
           <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
+          <Route path={ROUTES.SCHEDULE} element={<SchedulePage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
