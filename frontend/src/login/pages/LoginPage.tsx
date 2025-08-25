@@ -14,6 +14,7 @@ import {
   Icon,
   Circle,
   Text,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
 import { login } from '../../services/api';
@@ -30,6 +31,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const iconBg = useColorModeValue('brand.primary.900', 'brand.primary.700');
+  const linkColor = useColorModeValue('brand.primary.500', 'brand.primary.300');
 
   const {
     register,
@@ -69,11 +73,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   return (
     <Container maxW="md">
       <VStack spacing={8} mt={20}>
-        <Circle size="40px" bg="brand.primary.900" color="white">
+        <Circle size="40px" bg={iconBg} color="white">
           <Icon as={LockIcon} />
         </Circle>
 
-        <Heading as="h1" size="lg">
+        <Heading as="h1" size="lg" color="text-primary">
           {texts.auth.signIn.title[language]}
         </Heading>
 
@@ -85,6 +89,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <Input
                 type="email"
                 placeholder={texts.auth.signIn.emailPlaceholder[language]}
+                variant="outline"
                 {...register('email')}
               />
               <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
@@ -94,6 +99,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               <Input
                 type="password"
                 placeholder={texts.auth.signIn.passwordPlaceholder[language]}
+                variant="outline"
                 {...register('password')}
               />
               <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
@@ -105,7 +111,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
             <Button
               variant="link"
-              color="brand.primary.500"
+              color={linkColor}
               onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
             >
               {texts.auth.signIn.forgotPassword[language]}

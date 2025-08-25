@@ -20,6 +20,7 @@ import { ROUTES } from '../../route';
 import icon from './icon.png';
 import { useState, useEffect } from 'react';
 import { getMessages } from '../../../services/api';
+import ColorModeToggle from '../color-mode-toggle';
 
 const POLL_INTERVAL = 5000;
 
@@ -133,6 +134,12 @@ const Header = () => {
             )}
           </Button>
         )}
+        <Show above="md">
+          <ColorModeToggle size="md" />
+        </Show>
+        <Hide above="md">
+          <ColorModeToggle size="sm" />
+        </Hide>
         <ButtonGroup spacing={{ base: 1, md: 2 }}>
           <Button
             colorScheme="whiteAlpha"

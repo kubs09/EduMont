@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import React from 'react';
 import theme from './design/theme';
 import Routes from './Routes';
@@ -19,6 +19,7 @@ function App(): React.ReactElement {
 
   return (
     <React.StrictMode>
+      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <ChakraProvider theme={theme}>
         <LanguageProvider>
           <SnackbarProvider maxSnack={3}>
