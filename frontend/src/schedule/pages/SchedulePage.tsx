@@ -18,7 +18,7 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import {
@@ -130,6 +130,33 @@ const SchedulePage: React.FC = () => {
     }
   }, [isParent, language, toast]);
 
+  // Function to refresh children list (for when new children are added)
+  const refreshChildrenList = useCallback(async () => {
+    try {
+      const childrenData = await getChildren();
+      setChildrenList(childrenData);
+
+      // If current selected child is no longer available, reset selection
+      if (selectedChild && !childrenData.find((c) => c.id.toString() === selectedChild)) {
+        setSelectedChild('');
+      }
+
+      toast({
+        title: 'Children list updated',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: 'Failed to refresh children list',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [selectedChild, toast]);
+
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
@@ -197,11 +224,6 @@ const SchedulePage: React.FC = () => {
     return undefined;
   };
 
-  const getDefaultClassId = (): number | undefined => {
-    if (selectedClass) return parseInt(selectedClass);
-    return undefined;
-  };
-
   if (loading && schedules.length === 0) {
     return (
       <Center p={8}>
@@ -215,16 +237,26 @@ const SchedulePage: React.FC = () => {
       <VStack spacing={6} align="stretch">
         <HStack justify="space-between" wrap="wrap" spacing={4}>
           <Heading size={{ base: 'md', md: 'lg' }}>{texts.schedule.title[language]}</Heading>
-          {canEdit && (
+          <HStack spacing={2}>
             <Button
-              leftIcon={<AddIcon />}
-              colorScheme="blue"
-              onClick={handleAddSchedule}
+              leftIcon={<RepeatIcon />}
+              variant="outline"
+              onClick={refreshChildrenList}
               size={{ base: 'sm', md: 'md' }}
             >
-              {texts.schedule.addEntry[language]}
+              Refresh
             </Button>
-          )}
+            {canEdit && (
+              <Button
+                leftIcon={<AddIcon />}
+                colorScheme="blue"
+                onClick={handleAddSchedule}
+                size={{ base: 'sm', md: 'md' }}
+              >
+                {texts.schedule.addEntry[language]}
+              </Button>
+            )}
+          </HStack>
         </HStack>
 
         <Card>
@@ -335,9 +367,7 @@ const SchedulePage: React.FC = () => {
         onSave={handleSaveSchedule}
         schedule={editingSchedule}
         childrenData={childrenList}
-        classes={classes}
         defaultChildId={getDefaultChildId()}
-        defaultClassId={getDefaultClassId()}
         defaultDate={selectedDate}
       />
     </Box>

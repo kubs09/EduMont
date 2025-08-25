@@ -21,7 +21,6 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule, CreateScheduleData, UpdateScheduleData } from '../../types/schedule';
 import { Child } from '../../types/child';
-import { Class } from '../../types/class';
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -29,15 +28,12 @@ interface ScheduleModalProps {
   onSave: (scheduleData: CreateScheduleData | UpdateScheduleData) => Promise<void>;
   schedule?: Schedule | null;
   childrenData: Child[];
-  classes: Class[];
   defaultChildId?: number;
-  defaultClassId?: number;
   defaultDate?: string;
 }
 
 interface FormData {
   child_id: string;
-  class_id: string;
   date: string;
   start_time: string;
   end_time: string;
@@ -47,7 +43,6 @@ interface FormData {
 
 interface FormErrors {
   child_id?: string;
-  class_id?: string;
   date?: string;
   start_time?: string;
   end_time?: string;
@@ -61,9 +56,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   onSave,
   schedule,
   childrenData,
-  classes,
   defaultChildId,
-  defaultClassId,
   defaultDate,
 }) => {
   const { language } = useLanguage();
@@ -71,7 +64,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     child_id: '',
-    class_id: '',
     date: '',
     start_time: '',
     end_time: '',
@@ -86,7 +78,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
         // Edit mode
         setFormData({
           child_id: schedule.child_id.toString(),
-          class_id: schedule.class_id.toString(),
           date: schedule.date,
           start_time: schedule.start_time,
           end_time: schedule.end_time,
@@ -97,7 +88,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
         // Create mode
         setFormData({
           child_id: defaultChildId?.toString() || '',
-          class_id: defaultClassId?.toString() || '',
           date: defaultDate || new Date().toISOString().split('T')[0],
           start_time: '',
           end_time: '',
@@ -107,17 +97,13 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       }
       setErrors({});
     }
-  }, [isOpen, schedule, defaultChildId, defaultClassId, defaultDate]);
+  }, [isOpen, schedule, defaultChildId, defaultDate]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.child_id) {
       newErrors.child_id = texts.schedule.validation.childRequired[language];
-    }
-
-    if (!formData.class_id) {
-      newErrors.class_id = texts.schedule.validation.classRequired[language];
     }
 
     if (!formData.date) {
@@ -145,9 +131,22 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Find the selected child to get their class_id
+      const selectedChild = childrenData.find((child) => child.id === parseInt(formData.child_id));
+      if (!selectedChild) {
+        toast({
+          title: 'Child not found',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const scheduleData = {
         child_id: parseInt(formData.child_id),
-        class_id: parseInt(formData.class_id),
+        class_id: selectedChild.class_id,
         date: formData.date,
         start_time: formData.start_time,
         end_time: formData.end_time,
@@ -227,22 +226,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
                 ))}
               </Select>
               <FormErrorMessage>{errors.child_id}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.class_id}>
-              <FormLabel>{texts.schedule.class[language]}</FormLabel>
-              <Select
-                value={formData.class_id}
-                onChange={(e) => handleChange('class_id', e.target.value)}
-                placeholder={`Select ${texts.schedule.class[language].toLowerCase()}`}
-              >
-                {classes.map((cls) => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.name}
-                  </option>
-                ))}
-              </Select>
-              <FormErrorMessage>{errors.class_id}</FormErrorMessage>
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.date}>

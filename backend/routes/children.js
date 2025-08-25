@@ -48,15 +48,26 @@ router.get('/', authenticateToken, async (req, res) => {
         u.email as parent_email,
         u.phone as parent_contact,
         COALESCE(cc.status, 'pending') as status,
-        COALESCE(cc.confirmed, false) as confirmed
+        COALESCE(cc.confirmed, false) as confirmed,
+        cl.id as class_id,
+        cl.name as class_name
       FROM children c
       JOIN users u ON c.parent_id = u.id
       LEFT JOIN class_children cc ON c.id = cc.child_id
+      LEFT JOIN classes cl ON cc.class_id = cl.id
     `;
 
     const params = [];
     if (req.user.role === 'parent') {
       query += ' WHERE c.parent_id = $1';
+      params.push(req.user.id);
+    } else if (req.user.role === 'teacher') {
+      // Teachers can only see children from their assigned classes
+      query += ` WHERE cl.id IN (
+        SELECT ct.class_id 
+        FROM class_teachers ct 
+        WHERE ct.teacher_id = $1
+      )`;
       params.push(req.user.id);
     }
 

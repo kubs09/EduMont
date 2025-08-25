@@ -13,6 +13,8 @@ export interface Child {
   parent?: string; // computed field
   confirmed?: boolean;
   status?: 'accepted' | 'denied' | 'pending';
+  class_id?: number;
+  class_name?: string;
 }
 
 export interface CreateChildData {
