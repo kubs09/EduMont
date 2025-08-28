@@ -109,3 +109,29 @@ export const confirmClassChild = async (classId: number, childId: number): Promi
     throw error;
   }
 };
+
+export interface NextActivity {
+  child_id: number;
+  date: string;
+  start_time: string;
+  end_time: string;
+  activity: string;
+  notes?: string;
+  firstname: string;
+  surname: string;
+}
+
+export const getClassNextActivities = async (classId: number): Promise<NextActivity[]> => {
+  try {
+    const response = await api.get<NextActivity[]>(`/api/classes/${classId}/next-activities`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch next activities',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};

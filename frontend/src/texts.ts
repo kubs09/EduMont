@@ -847,6 +847,26 @@ export const texts = {
         cs: 'Moje děti',
         en: 'My Children',
       },
+      nextActivities: {
+        cs: 'Následující aktivity',
+        en: 'Next Activities',
+      },
+      noNextActivities: {
+        cs: 'Žádné naplánované aktivity',
+        en: 'No scheduled activities',
+      },
+      nextActivity: {
+        cs: 'Další aktivita',
+        en: 'Next Activity',
+      },
+      time: {
+        cs: 'Čas',
+        en: 'Time',
+      },
+      activity: {
+        cs: 'Aktivita',
+        en: 'Activity',
+      },
     },
     editInfo: {
       cs: 'Upravit informace',

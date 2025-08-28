@@ -37,7 +37,7 @@ import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { confirmClassChild } from '@frontend/services/api';
+import { confirmClassChild, getClassNextActivities, NextActivity } from '../../services/api/class';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -79,6 +79,7 @@ const ClassDetailPage = () => {
   const toast = useToast();
   const [classData, setClassData] = useState<Class | null>(null);
   const [history, setHistory] = useState<ClassHistory[]>([]);
+  const [nextActivities, setNextActivities] = useState<NextActivity[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [newHistoryDate, setNewHistoryDate] = useState('');
   const [newHistoryNotes, setNewHistoryNotes] = useState('');
@@ -133,9 +134,26 @@ const ClassDetailPage = () => {
           }
         };
 
+        const fetchNextActivities = async () => {
+          try {
+            if (!id) return;
+            const activities = await getClassNextActivities(parseInt(id));
+            setNextActivities(activities);
+          } catch (error) {
+            toast({
+              title: 'Error',
+              description: 'Failed to load next activities',
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+          }
+        };
+
         fetchClassData();
         if (id) {
           fetchHistory();
+          fetchNextActivities();
         }
 
         if (isUserAdmin) {
@@ -427,6 +445,49 @@ const ClassDetailPage = () => {
           </Card>
         </GridItem>
       </Grid>
+
+      {/* Next Activities Section */}
+      <Card my={6}>
+        <CardHeader>
+          <Heading size={{ base: 'sm', md: 'md' }}>
+            {texts.classes.detail.nextActivities[language]}
+          </Heading>
+        </CardHeader>
+        <CardBody>
+          {nextActivities.length === 0 ? (
+            <Text color="gray.500" fontStyle="italic">
+              {texts.classes.detail.noNextActivities[language]}
+            </Text>
+          ) : (
+            <TableContainer>
+              <Table variant="simple" size="md">
+                <Thead>
+                  <Tr>
+                    <Th>{texts.childrenTable.firstname[language]}</Th>
+                    <Th>{texts.childrenTable.surname[language]}</Th>
+                    <Th>{texts.classes.detail.date[language]}</Th>
+                    <Th>{texts.classes.detail.time[language]}</Th>
+                    <Th>{texts.classes.detail.activity[language]}</Th>
+                    {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {nextActivities.map((activity) => (
+                    <Tr key={`${activity.child_id}-${activity.date}-${activity.start_time}`}>
+                      <Td>{activity.firstname}</Td>
+                      <Td>{activity.surname}</Td>
+                      <Td>{new Date(activity.date).toLocaleDateString()}</Td>
+                      <Td>{`${activity.start_time} - ${activity.end_time}`}</Td>
+                      <Td>{activity.activity || '-'}</Td>
+                      {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          )}
+        </CardBody>
+      </Card>
 
       <Card my={12}>
         <CardHeader>
