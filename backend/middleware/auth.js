@@ -20,8 +20,29 @@ const auth = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(401).json({ error: 'Authentication failed', details: error.message });
+    // Handle different types of JWT errors specifically
+    if (error.name === 'TokenExpiredError') {
+      console.log('Token expired:', error.expiredAt);
+      return res.status(401).json({
+        error: 'Token expired',
+        code: 'TOKEN_EXPIRED',
+        expiredAt: error.expiredAt,
+      });
+    } else if (error.name === 'JsonWebTokenError') {
+      console.log('Invalid token:', error.message);
+      return res.status(401).json({
+        error: 'Invalid token',
+        code: 'INVALID_TOKEN',
+        details: error.message,
+      });
+    } else {
+      console.error('Auth error:', error);
+      return res.status(401).json({
+        error: 'Authentication failed',
+        code: 'AUTH_FAILED',
+        details: error.message,
+      });
+    }
   }
 };
 
