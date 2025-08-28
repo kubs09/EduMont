@@ -4,7 +4,7 @@ export interface Schedule {
   class_id: number;
   date: string;
   start_time: string;
-  end_time: string;
+  duration_hours: number;
   activity?: string;
   notes?: string;
   created_at: string;
@@ -23,7 +23,7 @@ export interface CreateScheduleData {
   class_id: number;
   date: string;
   start_time: string;
-  end_time: string;
+  duration_hours: number;
   activity?: string;
   notes?: string;
 }

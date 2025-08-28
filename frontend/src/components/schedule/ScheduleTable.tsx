@@ -18,6 +18,13 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule } from '../../types/schedule';
 
+// Helper function to calculate end time from start time and duration
+const calculateEndTime = (startTime: string, durationHours: number): string => {
+  const [hours, minutes] = startTime.split(':').map(Number);
+  const endHours = hours + durationHours;
+  return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
 interface ScheduleTableProps {
   schedules: Schedule[];
   onEdit?: (schedule: Schedule) => void;
@@ -75,7 +82,8 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
               </Td>
               <Td>
                 <Badge colorScheme="blue" variant="subtle" px={2} py={1} borderRadius="md">
-                  {formatTime(schedule.start_time)} - {formatTime(schedule.end_time)}
+                  {formatTime(schedule.start_time)} -{' '}
+                  {formatTime(calculateEndTime(schedule.start_time, schedule.duration_hours))}
                 </Badge>
               </Td>
               {showChild && (

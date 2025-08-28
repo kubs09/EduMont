@@ -44,6 +44,13 @@ import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal
 
 import { Class } from '../../types/class';
 
+// Helper function to calculate end time from start time and duration
+const calculateEndTime = (startTime: string, durationHours: number): string => {
+  const [hours, minutes] = startTime.split(':').map(Number);
+  const endHours = hours + durationHours;
+  return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
 interface ClassHistory {
   id: number;
   date: string;
@@ -477,7 +484,7 @@ const ClassDetailPage = () => {
                       <Td>{activity.firstname}</Td>
                       <Td>{activity.surname}</Td>
                       <Td>{new Date(activity.date).toLocaleDateString()}</Td>
-                      <Td>{`${activity.start_time} - ${activity.end_time}`}</Td>
+                      <Td>{`${activity.start_time} - ${calculateEndTime(activity.start_time, activity.duration_hours)}`}</Td>
                       <Td>{activity.activity || '-'}</Td>
                       {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
                     </Tr>

@@ -1082,9 +1082,17 @@ export const texts = {
       cs: 'Začátek',
       en: 'Start Time',
     },
-    endTime: {
-      cs: 'Konec',
-      en: 'End Time',
+    duration: {
+      cs: 'Délka trvání',
+      en: 'Duration',
+    },
+    hour: {
+      cs: 'hodina',
+      en: 'hour',
+    },
+    hours: {
+      cs: 'hodiny',
+      en: 'hours',
     },
     activity: {
       cs: 'Aktivita',
@@ -1153,13 +1161,13 @@ export const texts = {
         cs: 'Zadejte čas začátku',
         en: 'Please enter start time',
       },
-      endTimeRequired: {
-        cs: 'Zadejte čas konce',
-        en: 'Please enter end time',
+      durationRequired: {
+        cs: 'Zadejte délku trvání',
+        en: 'Please enter duration',
       },
-      timeOrderError: {
-        cs: 'Čas konce musí být po času začátku',
-        en: 'End time must be after start time',
+      durationRange: {
+        cs: 'Délka trvání musí být mezi 1 a 3 hodinami',
+        en: 'Duration must be between 1 and 3 hours',
       },
       timeConflict: {
         cs: 'Konflikt s existující položkou rozvrhu',

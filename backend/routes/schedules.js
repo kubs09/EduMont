@@ -24,12 +24,12 @@ const validateSchedule = (data) => {
     errors.push('Start time is required and must be in HH:MM format');
   }
 
-  if (!data.end_time || !/^\d{2}:\d{2}$/.test(data.end_time)) {
-    errors.push('End time is required and must be in HH:MM format');
+  if (!data.duration_hours || !Number.isInteger(data.duration_hours)) {
+    errors.push('Duration is required and must be a valid number');
   }
 
-  if (data.start_time && data.end_time && data.start_time >= data.end_time) {
-    errors.push('End time must be after start time');
+  if (data.duration_hours && (data.duration_hours < 1 || data.duration_hours > 3)) {
+    errors.push('Duration must be between 1 and 3 hours');
   }
 
   if (data.activity && data.activity.length > 200) {
@@ -107,7 +107,7 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
         s.class_id,
         s.date,
         s.start_time,
-        s.end_time,
+        s.duration_hours,
         s.activity,
         s.notes,
         s.created_at,
@@ -190,7 +190,7 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
         s.class_id,
         s.date,
         s.start_time,
-        s.end_time,
+        s.duration_hours,
         s.activity,
         s.notes,
         s.created_at,
@@ -246,7 +246,7 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { child_id, class_id, date, start_time, end_time, activity, notes } = req.body;
+    const { child_id, class_id, date, start_time, duration_hours, activity, notes } = req.body;
 
     // Validate input
     const validationErrors = validateSchedule(req.body);
@@ -281,12 +281,12 @@ router.post('/', authenticateToken, async (req, res) => {
       SELECT id FROM schedules 
       WHERE child_id = $1 AND date = $2 
       AND (
-        (start_time <= $3 AND end_time > $3) OR
-        (start_time < $4 AND end_time >= $4) OR
-        (start_time >= $3 AND end_time <= $4)
+        (start_time <= $3 AND start_time + (duration_hours || ' hours')::interval > $3) OR
+        (start_time < ($3 + ($4 || ' hours')::interval) AND start_time + (duration_hours || ' hours')::interval >= ($3 + ($4 || ' hours')::interval)) OR
+        (start_time >= $3 AND start_time + (duration_hours || ' hours')::interval <= ($3 + ($4 || ' hours')::interval))
       )
     `,
-      [child_id, date, start_time, end_time]
+      [child_id, date, start_time, duration_hours]
     );
 
     if (conflictResult.rows.length > 0) {
@@ -297,11 +297,11 @@ router.post('/', authenticateToken, async (req, res) => {
     // Insert the schedule
     const result = await client.query(
       `
-      INSERT INTO schedules (child_id, class_id, date, start_time, end_time, activity, notes, created_by, updated_by)
+      INSERT INTO schedules (child_id, class_id, date, start_time, duration_hours, activity, notes, created_by, updated_by)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
       RETURNING *
     `,
-      [child_id, class_id, date, start_time, end_time, activity, notes, req.user.id]
+      [child_id, class_id, date, start_time, duration_hours, activity, notes, req.user.id]
     );
 
     await client.query('COMMIT');
@@ -320,7 +320,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const { child_id, class_id, date, start_time, end_time, activity, notes } = req.body;
+    const { child_id, class_id, date, start_time, duration_hours, activity, notes } = req.body;
 
     // Validate input
     const validationErrors = validateSchedule(req.body);
@@ -363,12 +363,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
       SELECT id FROM schedules 
       WHERE child_id = $1 AND date = $2 AND id != $5
       AND (
-        (start_time <= $3 AND end_time > $3) OR
-        (start_time < $4 AND end_time >= $4) OR
-        (start_time >= $3 AND end_time <= $4)
+        (start_time <= $3 AND start_time + (duration_hours || ' hours')::interval > $3) OR
+        (start_time < ($3 + ($4 || ' hours')::interval) AND start_time + (duration_hours || ' hours')::interval >= ($3 + ($4 || ' hours')::interval)) OR
+        (start_time >= $3 AND start_time + (duration_hours || ' hours')::interval <= ($3 + ($4 || ' hours')::interval))
       )
     `,
-      [child_id, date, start_time, end_time, id]
+      [child_id, date, start_time, duration_hours, id]
     );
 
     if (conflictResult.rows.length > 0) {
@@ -380,12 +380,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const result = await client.query(
       `
       UPDATE schedules 
-      SET child_id = $1, class_id = $2, date = $3, start_time = $4, end_time = $5, 
+      SET child_id = $1, class_id = $2, date = $3, start_time = $4, duration_hours = $5, 
           activity = $6, notes = $7, updated_at = CURRENT_TIMESTAMP, updated_by = $8
       WHERE id = $9
       RETURNING *
     `,
-      [child_id, class_id, date, start_time, end_time, activity, notes, req.user.id, id]
+      [child_id, class_id, date, start_time, duration_hours, activity, notes, req.user.id, id]
     );
 
     await client.query('COMMIT');

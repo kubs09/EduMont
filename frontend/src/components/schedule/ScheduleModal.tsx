@@ -36,7 +36,7 @@ interface FormData {
   child_id: string;
   date: string;
   start_time: string;
-  end_time: string;
+  duration_hours: string;
   activity: string;
   notes: string;
 }
@@ -45,7 +45,7 @@ interface FormErrors {
   child_id?: string;
   date?: string;
   start_time?: string;
-  end_time?: string;
+  duration_hours?: string;
   activity?: string;
   notes?: string;
 }
@@ -66,7 +66,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
     child_id: '',
     date: '',
     start_time: '',
-    end_time: '',
+    duration_hours: '1',
     activity: '',
     notes: '',
   });
@@ -80,7 +80,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           child_id: schedule.child_id.toString(),
           date: schedule.date,
           start_time: schedule.start_time,
-          end_time: schedule.end_time,
+          duration_hours: schedule.duration_hours.toString(),
           activity: schedule.activity || '',
           notes: schedule.notes || '',
         });
@@ -90,7 +90,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           child_id: defaultChildId?.toString() || '',
           date: defaultDate || new Date().toISOString().split('T')[0],
           start_time: '',
-          end_time: '',
+          duration_hours: '1',
           activity: '',
           notes: '',
         });
@@ -114,12 +114,13 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       newErrors.start_time = texts.schedule.validation.startTimeRequired[language];
     }
 
-    if (!formData.end_time) {
-      newErrors.end_time = texts.schedule.validation.endTimeRequired[language];
-    }
-
-    if (formData.start_time && formData.end_time && formData.start_time >= formData.end_time) {
-      newErrors.end_time = texts.schedule.validation.timeOrderError[language];
+    if (!formData.duration_hours) {
+      newErrors.duration_hours = texts.schedule.validation.durationRequired[language];
+    } else {
+      const duration = parseInt(formData.duration_hours);
+      if (isNaN(duration) || duration < 1 || duration > 3) {
+        newErrors.duration_hours = texts.schedule.validation.durationRange[language];
+      }
     }
 
     setErrors(newErrors);
@@ -149,7 +150,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
         class_id: selectedChild.class_id,
         date: formData.date,
         start_time: formData.start_time,
-        end_time: formData.end_time,
+        duration_hours: parseInt(formData.duration_hours),
         activity: formData.activity || undefined,
         notes: formData.notes || undefined,
         ...(schedule && { id: schedule.id }),
@@ -248,14 +249,17 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
               <FormErrorMessage>{errors.start_time}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isRequired isInvalid={!!errors.end_time}>
-              <FormLabel>{texts.schedule.endTime[language]}</FormLabel>
-              <Input
-                type="time"
-                value={formData.end_time}
-                onChange={(e) => handleChange('end_time', e.target.value)}
-              />
-              <FormErrorMessage>{errors.end_time}</FormErrorMessage>
+            <FormControl isRequired isInvalid={!!errors.duration_hours}>
+              <FormLabel>{texts.schedule.duration[language]}</FormLabel>
+              <Select
+                value={formData.duration_hours}
+                onChange={(e) => handleChange('duration_hours', e.target.value)}
+              >
+                <option value="1">1 {texts.schedule.hour[language]}</option>
+                <option value="2">2 {texts.schedule.hours[language]}</option>
+                <option value="3">3 {texts.schedule.hours[language]}</option>
+              </Select>
+              <FormErrorMessage>{errors.duration_hours}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!!errors.activity}>

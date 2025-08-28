@@ -21,7 +21,7 @@ async function createScheduleTable() {
         class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
         date DATE NOT NULL,
         start_time TIME NOT NULL,
-        end_time TIME NOT NULL,
+        duration_hours INTEGER NOT NULL CHECK (duration_hours >= 1 AND duration_hours <= 3),
         activity VARCHAR(200),
         notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

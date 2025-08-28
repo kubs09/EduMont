@@ -114,7 +114,7 @@ export interface NextActivity {
   child_id: number;
   date: string;
   start_time: string;
-  end_time: string;
+  duration_hours: number;
   activity: string;
   notes?: string;
   firstname: string;
