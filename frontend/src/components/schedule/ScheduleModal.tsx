@@ -16,6 +16,8 @@ import {
   VStack,
   useToast,
   FormErrorMessage,
+  HStack,
+  Text,
 } from '@chakra-ui/react';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
@@ -241,11 +243,44 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
             <FormControl isRequired isInvalid={!!errors.start_time}>
               <FormLabel>{texts.schedule.startTime[language]}</FormLabel>
-              <Input
-                type="time"
-                value={formData.start_time}
-                onChange={(e) => handleChange('start_time', e.target.value)}
-              />
+              <HStack spacing={2}>
+                <Select
+                  value={formData.start_time.split(':')[0] || ''}
+                  onChange={(e) => {
+                    const hours = e.target.value;
+                    const minutes = formData.start_time.split(':')[1] || '00';
+                    handleChange('start_time', `${hours}:${minutes}`);
+                  }}
+                  placeholder="Hour"
+                  maxW="120px"
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </Select>
+                <Text>:</Text>
+                <Select
+                  value={formData.start_time.split(':')[1] || ''}
+                  onChange={(e) => {
+                    const hours = formData.start_time.split(':')[0] || '00';
+                    const minutes = e.target.value;
+                    handleChange('start_time', `${hours}:${minutes}`);
+                  }}
+                  placeholder="Minutes"
+                  maxW="120px"
+                >
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const minutes = (i * 5).toString().padStart(2, '0');
+                    return (
+                      <option key={minutes} value={minutes}>
+                        {minutes}
+                      </option>
+                    );
+                  })}
+                </Select>
+              </HStack>
               <FormErrorMessage>{errors.start_time}</FormErrorMessage>
             </FormControl>
 
