@@ -56,7 +56,6 @@ const SchedulePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
 
-  // Get user role from localStorage (existing auth pattern)
   const userRole = localStorage.getItem('userRole') || '';
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
@@ -69,12 +68,11 @@ const SchedulePage: React.FC = () => {
       case 'day':
         return { date: selectedDate };
       case 'week':
-        // Get Monday of the week
         const monday = new Date(date);
         monday.setDate(date.getDate() - date.getDay() + 1);
         return { week: monday.toISOString().split('T')[0] };
       case 'month':
-        return { month: selectedDate.substring(0, 7) }; // YYYY-MM format
+        return { month: selectedDate.substring(0, 7) };
       default:
         return {};
     }
@@ -114,7 +112,6 @@ const SchedulePage: React.FC = () => {
       setChildrenList(childrenData);
       setClasses(classesData);
 
-      // Auto-select first child for parents
       if (isParent && childrenData.length > 0) {
         setSelectedChild(childrenData[0].id.toString());
       }
@@ -130,13 +127,11 @@ const SchedulePage: React.FC = () => {
     }
   }, [isParent, language, toast]);
 
-  // Function to refresh children list (for when new children are added)
   const refreshChildrenList = useCallback(async () => {
     try {
       const childrenData = await getChildren();
       setChildrenList(childrenData);
 
-      // If current selected child is no longer available, reset selection
       if (selectedChild && !childrenData.find((c) => c.id.toString() === selectedChild)) {
         setSelectedChild('');
       }

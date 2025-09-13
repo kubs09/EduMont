@@ -614,6 +614,7 @@ router.get('/:id/next-activities', auth, async (req, res) => {
           s.child_id,
           s.date,
           s.start_time,
+          s.duration_hours,
           (s.start_time + INTERVAL '1 hour' * s.duration_hours) AS end_time,
           s.activity,
           s.notes,

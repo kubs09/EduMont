@@ -134,7 +134,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Find the selected child to get their class_id
       const selectedChild = childrenData.find((child) => child.id === parseInt(formData.child_id));
       if (!selectedChild) {
         toast({

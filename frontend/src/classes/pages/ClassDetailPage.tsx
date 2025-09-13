@@ -44,11 +44,28 @@ import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal
 
 import { Class } from '../../types/class';
 
-// Helper function to calculate end time from start time and duration
-const calculateEndTime = (startTime: string, durationHours: number): string => {
+const calculateEndTime = (startTime: string, durationHours: number | string): string => {
   const [hours, minutes] = startTime.split(':').map(Number);
-  const endHours = hours + durationHours;
+
+  let duration: number;
+  if (typeof durationHours === 'string') {
+    const match = durationHours.match(/^(\d+(?:\.\d+)?)/);
+    duration = match ? parseFloat(match[1]) : 0;
+  } else {
+    duration = durationHours;
+  }
+
+  if (isNaN(duration) || duration < 0) {
+    return formatTime(startTime);
+  }
+
+  const endHours = hours + duration;
   return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
+const formatTime = (timeString: string): string => {
+  const [hours, minutes] = timeString.split(':');
+  return `${hours}:${minutes}`;
 };
 
 interface ClassHistory {
@@ -74,7 +91,6 @@ const transformClassData = (data: Class): Class => ({
   ...data,
   children: data.children.map((child) => ({
     ...child,
-    // Guaranteed to have parent data now due to proper JOIN in backend
     parent: `${child.parent_firstname} ${child.parent_surname}`.trim(),
   })),
 });
@@ -228,10 +244,8 @@ const ClassDetailPage = () => {
     if (!classData || !id) return;
 
     try {
-      // Don't mix class teachers from state, use the ones from the update
       await api.put(`/api/classes/${id}`, updatedInfo);
 
-      // Fetch updated data
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
 
@@ -302,7 +316,6 @@ const ClassDetailPage = () => {
     if (!classData) return [];
     if (isAdmin || isTeacher) return classData.children;
     if (isParent) {
-      // For parents, only show their own children
       return classData.children.filter((child) => child.parent_id === currentUserId);
     }
     return [];
@@ -484,7 +497,7 @@ const ClassDetailPage = () => {
                       <Td>{activity.firstname}</Td>
                       <Td>{activity.surname}</Td>
                       <Td>{new Date(activity.date).toLocaleDateString()}</Td>
-                      <Td>{`${activity.start_time} - ${calculateEndTime(activity.start_time, activity.duration_hours)}`}</Td>
+                      <Td>{`${formatTime(activity.start_time)} - ${calculateEndTime(activity.start_time, activity.duration_hours)}`}</Td>
                       <Td>{activity.activity || '-'}</Td>
                       {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
                     </Tr>

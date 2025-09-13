@@ -18,10 +18,22 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule } from '../../types/schedule';
 
-// Helper function to calculate end time from start time and duration
-const calculateEndTime = (startTime: string, durationHours: number): string => {
+const calculateEndTime = (startTime: string, durationHours: number | string): string => {
   const [hours, minutes] = startTime.split(':').map(Number);
-  const endHours = hours + durationHours;
+
+  let duration: number;
+  if (typeof durationHours === 'string') {
+    const match = durationHours.match(/^(\d+(?:\.\d+)?)/);
+    duration = match ? parseFloat(match[1]) : 0;
+  } else {
+    duration = durationHours;
+  }
+
+  if (isNaN(duration) || duration < 0) {
+    return startTime.substring(0, 5); // Return formatted start time if duration is invalid
+  }
+
+  const endHours = hours + duration;
   return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
@@ -45,7 +57,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   const { language } = useLanguage();
 
   const formatTime = (time: string): string => {
-    return time.substring(0, 5); // Remove seconds if present
+    return time.substring(0, 5);
   };
 
   const formatDate = (date: string): string => {
