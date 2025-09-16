@@ -30,7 +30,7 @@ const calculateEndTime = (startTime: string, durationHours: number | string): st
   }
 
   if (isNaN(duration) || duration < 0) {
-    return startTime.substring(0, 5); // Return formatted start time if duration is invalid
+    return startTime.substring(0, 5);
   }
 
   const endHours = hours + duration;

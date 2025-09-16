@@ -77,7 +77,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (schedule) {
-        // Edit mode
         setFormData({
           child_id: schedule.child_id.toString(),
           date: schedule.date,
@@ -87,7 +86,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           notes: schedule.notes || '',
         });
       } else {
-        // Create mode
         setFormData({
           child_id: defaultChildId?.toString() || '',
           date: defaultDate || new Date().toISOString().split('T')[0],

@@ -1046,6 +1046,18 @@ export const texts = {
     },
   },
   schedule: {
+    confirmDelete: {
+      cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
+      en: 'Are you sure you want to delete this schedule entry?',
+    },
+    select: {
+      cs: 'Prosím vyberte dítě nebo třídu pro zobrazení rozvrhu.',
+      en: 'Please select a child or class to view the schedule.',
+    },
+    refresh: {
+      cs: 'Obnovit',
+      en: 'Refresh',
+    },
     menuItem: {
       cs: 'Rozvrh',
       en: 'Schedule',

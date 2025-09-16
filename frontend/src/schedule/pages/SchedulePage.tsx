@@ -38,8 +38,8 @@ import {
 } from '../../types/schedule';
 import { Child } from '../../types/child';
 import { Class } from '../../types/class';
-import ScheduleModal from '../../components/schedule/ScheduleModal';
-import ScheduleTable from '../../components/schedule/ScheduleTable';
+import ScheduleModal from '../components/ScheduleModal';
+import ScheduleTable from '../components/ScheduleTable';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
@@ -187,7 +187,7 @@ const SchedulePage: React.FC = () => {
   };
 
   const handleDeleteSchedule = async (schedule: Schedule) => {
-    if (window.confirm(`Are you sure you want to delete this schedule entry?`)) {
+    if (window.confirm(texts.schedule.confirmDelete[language])) {
       try {
         await deleteSchedule(schedule.id);
         await loadSchedules();
@@ -239,7 +239,7 @@ const SchedulePage: React.FC = () => {
               onClick={refreshChildrenList}
               size={{ base: 'sm', md: 'md' }}
             >
-              Refresh
+              {texts.schedule.refresh[language]}
             </Button>
             {canEdit && (
               <Button
@@ -338,7 +338,7 @@ const SchedulePage: React.FC = () => {
             {!selectedChild && !selectedClass && !isParent && (
               <Alert status="info">
                 <AlertIcon />
-                Please select a child or class to view the schedule.
+                {texts.schedule.select[language]}
               </Alert>
             )}
 
