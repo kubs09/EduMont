@@ -1,5 +1,3 @@
-import { RefreshSharp } from '@mui/icons-material';
-
 export const texts = {
   auth: {
     signIn: {
@@ -1052,7 +1050,7 @@ export const texts = {
       cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
       en: 'Are you sure you want to delete this schedule entry?',
     },
-    select: {
+    selectClassOrChild: {
       cs: 'Prosím vyberte dítě nebo třídu pro zobrazení rozvrhu.',
       en: 'Please select a child or class to view the schedule.',
     },
@@ -1060,7 +1058,10 @@ export const texts = {
       cs: 'Obnovit',
       en: 'Refresh',
     },
-
+    select: {
+      cs: 'Vyberte',
+      en: 'Select',
+    },
     menuItem: {
       cs: 'Rozvrh',
       en: 'Schedule',
@@ -1122,7 +1123,7 @@ export const texts = {
       en: 'Child',
     },
     class: {
-      cs: 'Třída',
+      cs: 'Třídu',
       en: 'Class',
     },
     timeSlot: {
@@ -1236,6 +1237,36 @@ export const texts = {
         cs: 'Volitelné poznámky k této aktivitě...',
         en: 'Optional notes for this activity...',
       },
+    },
+    months: {
+      cs: [
+        'Leden',
+        'Únor',
+        'Březen',
+        'Duben',
+        'Květen',
+        'Červen',
+        'Červenec',
+        'Srpen',
+        'Září',
+        'Říjen',
+        'Listopad',
+        'Prosinec',
+      ],
+      en: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ],
     },
   },
   common: {

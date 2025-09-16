@@ -17,6 +17,7 @@ import {
   ButtonGroup,
   Alert,
   AlertIcon,
+  Text,
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
@@ -261,7 +262,7 @@ const SchedulePage: React.FC = () => {
                 {!isParent && (
                   <Box>
                     <Select
-                      placeholder={`Select ${texts.schedule.child[language].toLowerCase()}`}
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
                       value={selectedChild}
                       onChange={(e) => {
                         setSelectedChild(e.target.value);
@@ -281,7 +282,7 @@ const SchedulePage: React.FC = () => {
                 {!selectedChild && (
                   <Box>
                     <Select
-                      placeholder={`Select ${texts.schedule.class[language].toLowerCase()}`}
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.class[language].toLowerCase()}`}
                       value={selectedClass}
                       onChange={(e) => setSelectedClass(e.target.value)}
                       maxW="200px"
@@ -318,18 +319,45 @@ const SchedulePage: React.FC = () => {
                   </Button>
                 </ButtonGroup>
 
-                <Input
-                  type={viewType === 'month' ? 'month' : 'date'}
-                  value={viewType === 'month' ? selectedDate.substring(0, 7) : selectedDate}
-                  onChange={(e) => {
-                    if (viewType === 'month') {
-                      setSelectedDate(e.target.value + '-01');
-                    } else {
-                      setSelectedDate(e.target.value);
-                    }
-                  }}
-                  maxW="200px"
-                />
+                <Box position="relative" maxW="200px">
+                  <Input
+                    type={viewType === 'month' ? 'month' : 'date'}
+                    value={viewType === 'month' ? selectedDate.substring(0, 7) : selectedDate}
+                    onChange={(e) => {
+                      if (viewType === 'month') {
+                        setSelectedDate(e.target.value + '-01');
+                      } else {
+                        setSelectedDate(e.target.value);
+                      }
+                    }}
+                    color={language === 'cs' && viewType === 'month' ? 'transparent' : 'inherit'}
+                    _focus={{
+                      color: 'inherit',
+                    }}
+                  />
+                  {language === 'cs' && viewType === 'month' && (
+                    <Box
+                      position="absolute"
+                      top="0"
+                      left="0"
+                      right="0"
+                      bottom="0"
+                      display="flex"
+                      alignItems="center"
+                      paddingLeft="12px"
+                      paddingRight="12px"
+                      pointerEvents="none"
+                    >
+                      <Text fontSize="md" color="inherit">
+                        {(() => {
+                          const [year, month] = selectedDate.substring(0, 7).split('-');
+                          const monthIndex = parseInt(month) - 1;
+                          return `${texts.schedule.months.cs[monthIndex]} ${year}`;
+                        })()}
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
               </HStack>
             </VStack>
           </CardHeader>
@@ -338,7 +366,7 @@ const SchedulePage: React.FC = () => {
             {!selectedChild && !selectedClass && !isParent && (
               <Alert status="info">
                 <AlertIcon />
-                {texts.schedule.select[language]}
+                {texts.schedule.selectClassOrChild[language]}
               </Alert>
             )}
 
