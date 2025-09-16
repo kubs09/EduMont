@@ -6,7 +6,6 @@ import {
   Select,
   HStack,
   VStack,
-  Input,
   useDisclosure,
   useToast,
   Spinner,
@@ -17,7 +16,6 @@ import {
   ButtonGroup,
   Alert,
   AlertIcon,
-  Text,
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
@@ -41,6 +39,7 @@ import { Child } from '../../types/child';
 import { Class } from '../../types/class';
 import ScheduleModal from '../components/ScheduleModal';
 import ScheduleTable from '../components/ScheduleTable';
+import { DatePicker } from '../../shared/components/DatePicker';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
@@ -319,45 +318,14 @@ const SchedulePage: React.FC = () => {
                   </Button>
                 </ButtonGroup>
 
-                <Box position="relative" maxW="200px">
-                  <Input
-                    type={viewType === 'month' ? 'month' : 'date'}
-                    value={viewType === 'month' ? selectedDate.substring(0, 7) : selectedDate}
-                    onChange={(e) => {
-                      if (viewType === 'month') {
-                        setSelectedDate(e.target.value + '-01');
-                      } else {
-                        setSelectedDate(e.target.value);
-                      }
-                    }}
-                    color={language === 'cs' && viewType === 'month' ? 'transparent' : 'inherit'}
-                    _focus={{
-                      color: 'inherit',
-                    }}
-                  />
-                  {language === 'cs' && viewType === 'month' && (
-                    <Box
-                      position="absolute"
-                      top="0"
-                      left="0"
-                      right="0"
-                      bottom="0"
-                      display="flex"
-                      alignItems="center"
-                      paddingLeft="12px"
-                      paddingRight="12px"
-                      pointerEvents="none"
-                    >
-                      <Text fontSize="md" color="inherit">
-                        {(() => {
-                          const [year, month] = selectedDate.substring(0, 7).split('-');
-                          const monthIndex = parseInt(month) - 1;
-                          return `${texts.schedule.months.cs[monthIndex]} ${year}`;
-                        })()}
-                      </Text>
-                    </Box>
-                  )}
-                </Box>
+                <DatePicker
+                  viewType={viewType}
+                  value={selectedDate}
+                  onChange={(value) => {
+                    setSelectedDate(value);
+                  }}
+                  language={language}
+                />
               </HStack>
             </VStack>
           </CardHeader>

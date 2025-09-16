@@ -1268,6 +1268,20 @@ export const texts = {
         'December',
       ],
     },
+    datePicker: {
+      clear: {
+        cs: 'Vymazat',
+        en: 'Clear',
+      },
+      thisMonth: {
+        cs: 'Tento měsíc',
+        en: 'This Month',
+      },
+      today: {
+        cs: 'Dnes',
+        en: 'Today',
+      },
+    },
   },
   common: {
     actions: {

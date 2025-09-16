@@ -466,7 +466,6 @@ const ClassDetailPage = () => {
         </GridItem>
       </Grid>
 
-      {/* Next Activities Section */}
       <Card my={6}>
         <CardHeader>
           <Heading size={{ base: 'sm', md: 'md' }}>
@@ -496,7 +495,11 @@ const ClassDetailPage = () => {
                     <Tr key={`${activity.child_id}-${activity.date}-${activity.start_time}`}>
                       <Td>{activity.firstname}</Td>
                       <Td>{activity.surname}</Td>
-                      <Td>{new Date(activity.date).toLocaleDateString()}</Td>
+                      <Td>
+                        {new Date(activity.date).toLocaleDateString(
+                          language === 'cs' ? 'cs-CZ' : 'en-US'
+                        )}
+                      </Td>
                       <Td>{`${formatTime(activity.start_time)} - ${calculateEndTime(activity.start_time, activity.duration_hours)}`}</Td>
                       <Td>{activity.activity || '-'}</Td>
                       {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
@@ -534,7 +537,11 @@ const ClassDetailPage = () => {
               <Tbody>
                 {history.map((entry) => (
                   <Tr key={entry.id}>
-                    <Td>{new Date(entry.date).toLocaleDateString()}</Td>
+                    <Td>
+                      {new Date(entry.date).toLocaleDateString(
+                        language === 'cs' ? 'cs-CZ' : 'en-US'
+                      )}
+                    </Td>
                     <Td>{entry.notes}</Td>
                     <Td>{`${entry.created_by.firstname} ${entry.created_by.surname}`}</Td>
                     {(isAdmin || isTeacher) && (
