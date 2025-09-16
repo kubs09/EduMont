@@ -1,3 +1,5 @@
+import { RefreshSharp } from '@mui/icons-material';
+
 export const texts = {
   auth: {
     signIn: {
@@ -1058,6 +1060,7 @@ export const texts = {
       cs: 'Obnovit',
       en: 'Refresh',
     },
+
     menuItem: {
       cs: 'Rozvrh',
       en: 'Schedule',
@@ -1187,6 +1190,14 @@ export const texts = {
       },
     },
     messages: {
+      refreshSuccess: {
+        cs: 'Rozvrh byl aktualizován',
+        en: 'Schedule updated',
+      },
+      refreshError: {
+        cs: 'Nepodařilo se aktualizovat rozvrh',
+        en: 'Failed to update schedule',
+      },
       createSuccess: {
         cs: 'Položka rozvrhu byla úspěšně vytvořena',
         en: 'Schedule entry created successfully',

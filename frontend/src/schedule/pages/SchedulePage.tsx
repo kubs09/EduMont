@@ -137,20 +137,20 @@ const SchedulePage: React.FC = () => {
       }
 
       toast({
-        title: 'Children list updated',
+        title: texts.schedule.messages.refreshSuccess[language],
         status: 'success',
         duration: 2000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: 'Failed to refresh children list',
+        title: texts.schedule.messages.refreshError[language],
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [selectedChild, toast]);
+  }, [selectedChild, toast, language]);
 
   useEffect(() => {
     loadInitialData();
