@@ -1,8 +1,8 @@
 /* eslint-disable */
 const express = require('express');
 const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+const pool = require('@config/database');
+const auth = require('@middleware/auth');
 const { validateUserProfile } = require('./services/validation');
 const { hashPassword, comparePassword } = require('./services/password');
 

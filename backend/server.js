@@ -1,15 +1,19 @@
 /* eslint-disable */
+require('module-alias/register');
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const pool = require('./config/database');
-const initDatabase = require('./db/init');
-const authRoutes = require('./routes/auth');
-const childrenRoutes = require('./routes/children');
-const usersRoutes = require('./routes/users');
-const passwordResetRoutes = require('./routes/password-reset');
+const pool = require('@config/database');
+const initDatabase = require('@db/init');
+const authRoutes = require('@routes/auth');
+const childrenRoutes = require('@routes/children');
+const usersRoutes = require('@routes/users');
+const classesRoutes = require('@routes/classes');
+const schedulesRoutes = require('@routes/schedules');
+const passwordResetRoutes = require('@routes/password-reset');
+const messageRoutes = require('@routes/messages');
 
 const app = express();
 
@@ -51,9 +55,9 @@ app.use('/api', passwordResetRoutes);
 app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/classes', require('./routes/classes'));
-app.use('/api/messages', require('./routes/messages'));
-app.use('/api/schedules', require('./routes/schedules'));
+app.use('/api/classes', classesRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });

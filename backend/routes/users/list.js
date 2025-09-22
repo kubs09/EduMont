@@ -1,8 +1,8 @@
 /* eslint-disable */
 const express = require('express');
 const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+const pool = require('@config/database');
+const auth = require('@middleware/auth');
 
 router.get('/', auth, async (req, res) => {
   try {
