@@ -209,13 +209,13 @@ const Header = () => {
                 _hover={{ bg: 'brand.primary.800' }}
                 onClick={handleLogout}
               >
-                {texts.auth.logout[language]}
+                {texts.auth.signIn.logout[language]}
               </MenuItem>
             </MenuList>
           </Menu>
         ) : (
           <Button colorScheme="whiteAlpha" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
-            {texts.auth.login[language]}
+            {texts.auth.signIn.loginButton[language]}
           </Button>
         )}
       </Flex>

@@ -6,7 +6,7 @@ export interface Schedule {
   class_id: number;
   date: string;
   start_time: string;
-  duration_hours: number;
+  duration_hours: number | string;
   activity?: string;
   notes?: string;
   created_at: string;
@@ -25,7 +25,7 @@ export interface CreateScheduleData {
   class_id: number;
   date: string;
   start_time: string;
-  duration_hours: number;
+  duration_hours: number | string;
   activity?: string;
   notes?: string;
 }
@@ -33,6 +33,24 @@ export interface CreateScheduleData {
 export interface UpdateScheduleData extends CreateScheduleData {
   id: number;
 }
+
+// Get all schedules (admin and teacher only)
+export const getAllSchedules = async (filters?: {
+  date?: string;
+  week?: string;
+  month?: string;
+}): Promise<Schedule[]> => {
+  const params = new URLSearchParams();
+  if (filters?.date) params.append('date', filters.date);
+  if (filters?.week) params.append('week', filters.week);
+  if (filters?.month) params.append('month', filters.month);
+
+  const queryString = params.toString();
+  const url = `/api/schedules${queryString ? `?${queryString}` : ''}`;
+
+  const response = await api.get(url);
+  return response.data;
+};
 
 // Get schedule for a specific child
 export const getChildSchedule = async (

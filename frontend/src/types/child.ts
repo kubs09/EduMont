@@ -10,7 +10,7 @@ export interface Child {
   parent_surname: string;
   parent_email: string;
   parent_contact?: string;
-  parent?: string; // computed field
+  parent?: string;
   confirmed?: boolean;
   status?: 'accepted' | 'denied' | 'pending';
   class_id?: number;

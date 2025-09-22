@@ -12,6 +12,7 @@
     "@mui/material": "^5.x",
     "antd": "^5.23.3",
     "axios": "^1.7.9",
+    "craco": "^0.0.3",
     "date-fns": "^4.1.0",
     "framer-motion": "^10.16.4",
     "notistack": "^3.0.2",

@@ -26,17 +26,28 @@ app.use(
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-pool
-  .connect()
-  .then(() => {
-    return initDatabase();
-  })
-  .catch((err) => {
-    process.exit(1);
-  });
+// Initialize database connection once
+let dbInitialized = false;
+const initDB = async () => {
+  if (!dbInitialized) {
+    try {
+      await pool.connect();
+      await initDatabase();
+      dbInitialized = true;
+    } catch (err) {
+      console.error('Database initialization failed:', err);
+      throw err;
+    }
+  }
+};
 
-app.use((req, res, next) => {
-  next();
+app.use(async (req, res, next) => {
+  try {
+    await initDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ error: 'Database connection failed' });
+  }
 });
 
 app.use((req, res, next) => {
@@ -51,7 +62,6 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/api', passwordResetRoutes);
-
 app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
@@ -72,9 +82,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || 'localhost';
-
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on ${HOST}:${PORT}`);
-});
+// Export the Express app as a serverless function
+module.exports = app;

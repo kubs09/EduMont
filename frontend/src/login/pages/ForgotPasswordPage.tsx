@@ -37,7 +37,7 @@ const ForgotPasswordPage = () => {
   });
 
   const onSubmit = async (data: { email: string }) => {
-    if (loading) return; // Prevent multiple submissions
+    if (loading) return;
     setLoading(true);
     setSubmitted(false);
 
@@ -45,7 +45,7 @@ const ForgotPasswordPage = () => {
       await requestPasswordReset(data.email, language);
       setSubmitted(true);
       toast({
-        title: texts.auth.forgotPassword.success[language],
+        title: texts.auth.forgotPassword.success.title[language],
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -56,7 +56,10 @@ const ForgotPasswordPage = () => {
       setSubmitted(false);
       toast({
         title: texts.auth.forgotPassword.error[language],
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description:
+          error instanceof Error
+            ? error.message
+            : texts.auth.forgotPassword.error.unknown[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
