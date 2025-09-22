@@ -23,6 +23,7 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule, CreateScheduleData, UpdateScheduleData } from '../../types/schedule';
 import { Child } from '../../types/child';
+import { DatePicker } from '../../shared/components/DatePicker';
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -230,10 +231,11 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
             <FormControl isRequired isInvalid={!!errors.date}>
               <FormLabel>{texts.schedule.date[language]}</FormLabel>
-              <Input
-                type="date"
+              <DatePicker
+                viewType="day"
                 value={formData.date}
-                onChange={(e) => handleChange('date', e.target.value)}
+                onChange={(value) => handleChange('date', value)}
+                language={language}
               />
               <FormErrorMessage>{errors.date}</FormErrorMessage>
             </FormControl>
@@ -248,7 +250,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
                     const minutes = formData.start_time.split(':')[1] || '00';
                     handleChange('start_time', `${hours}:${minutes}`);
                   }}
-                  placeholder="Hour"
+                  placeholder={texts.schedule.viewOptions.hour[language]}
                   maxW="120px"
                 >
                   {Array.from({ length: 24 }, (_, i) => (
@@ -265,7 +267,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
                     const minutes = e.target.value;
                     handleChange('start_time', `${hours}:${minutes}`);
                   }}
-                  placeholder="Minutes"
+                  placeholder={texts.schedule.viewOptions.minutes[language]}
                   maxW="120px"
                 >
                   {Array.from({ length: 12 }, (_, i) => {

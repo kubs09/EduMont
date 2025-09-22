@@ -1147,6 +1147,14 @@ export const texts = {
       en: 'Monthly Schedule',
     },
     viewOptions: {
+      hour: {
+        cs: 'Hodina',
+        en: 'Hour',
+      },
+      minutes: {
+        cs: 'Minuta',
+        en: 'Minute',
+      },
       day: {
         cs: 'Den',
         en: 'Day',
