@@ -23,6 +23,7 @@ import { texts } from '../../texts';
 import {
   getChildSchedule,
   getClassSchedule,
+  getAllSchedules,
   createSchedule,
   updateSchedule,
   deleteSchedule,
@@ -89,6 +90,18 @@ const SchedulePage: React.FC = () => {
         scheduleData = await getChildSchedule(parseInt(selectedChild), filters);
       } else if (selectedClass) {
         scheduleData = await getClassSchedule(parseInt(selectedClass), filters);
+      } else if (canEdit) {
+        scheduleData = await getAllSchedules(filters);
+      } else if (isParent && !selectedChild) {
+        const childSchedulePromises = childrenList.map((child) =>
+          getChildSchedule(child.id, filters)
+        );
+        const allChildSchedules = await Promise.all(childSchedulePromises);
+        scheduleData = allChildSchedules.flat().sort((a, b) => {
+          const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
+          if (dateCompare !== 0) return dateCompare;
+          return a.start_time.localeCompare(b.start_time);
+        });
       }
 
       setSchedules(scheduleData);
@@ -102,19 +115,23 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedChild, selectedClass, getDateFilters, language, toast]);
+  }, [
+    selectedChild,
+    selectedClass,
+    getDateFilters,
+    language,
+    toast,
+    canEdit,
+    isParent,
+    childrenList,
+  ]);
 
   const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       const [childrenData, classesData] = await Promise.all([getChildren(), getClasses()]);
-
       setChildrenList(childrenData);
       setClasses(classesData);
-
-      if (isParent && childrenData.length > 0) {
-        setSelectedChild(childrenData[0].id.toString());
-      }
     } catch (error) {
       toast({
         title: texts.schedule.messages.fetchError[language],
@@ -125,7 +142,7 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [isParent, language, toast]);
+  }, [language, toast]);
 
   const refreshChildrenList = useCallback(async () => {
     try {
@@ -258,6 +275,26 @@ const SchedulePage: React.FC = () => {
           <CardHeader>
             <VStack spacing={4} align="stretch">
               <HStack wrap="wrap" spacing={4}>
+                {isParent && childrenList.length > 1 && (
+                  <Box>
+                    <Select
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
+                      value={selectedChild}
+                      onChange={(e) => {
+                        setSelectedChild(e.target.value);
+                        setSelectedClass('');
+                      }}
+                      maxW="200px"
+                    >
+                      {childrenList.map((child) => (
+                        <option key={child.id} value={child.id}>
+                          {child.firstname} {child.surname}
+                        </option>
+                      ))}
+                    </Select>
+                  </Box>
+                )}
+
                 {!isParent && (
                   <Box>
                     <Select
@@ -278,7 +315,7 @@ const SchedulePage: React.FC = () => {
                   </Box>
                 )}
 
-                {!selectedChild && (
+                {!selectedChild && !isParent && (
                   <Box>
                     <Select
                       placeholder={`${texts.schedule.select[language]} ${texts.schedule.class[language].toLowerCase()}`}
@@ -331,20 +368,23 @@ const SchedulePage: React.FC = () => {
           </CardHeader>
 
           <CardBody>
-            {!selectedChild && !selectedClass && !isParent && (
+            {!selectedChild && !selectedClass && isParent && childrenList.length === 0 && (
               <Alert status="info">
                 <AlertIcon />
                 {texts.schedule.selectClassOrChild[language]}
               </Alert>
             )}
 
-            {(selectedChild || selectedClass || isParent) && (
+            {(selectedChild ||
+              selectedClass ||
+              (isParent && childrenList.length > 0) ||
+              canEdit) && (
               <ScheduleTable
                 schedules={schedules}
                 onEdit={canEdit ? handleEditSchedule : undefined}
                 onDelete={canEdit ? handleDeleteSchedule : undefined}
                 canEdit={canEdit}
-                showChild={!selectedChild}
+                showChild={isParent ? true : !selectedChild}
                 showClass={!selectedClass}
               />
             )}
