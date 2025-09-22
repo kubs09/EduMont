@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@config/*": ["config/*"],
+      "@routes/*": ["routes/*"],
+      "@middleware/*": ["middleware/*"],
+      "@db/*": ["db/*"],
+      "@src/*": ["src/*"],
+      "@templates/*": ["templates/*"],
+      "@scripts/*": ["scripts/*"],
+      "@uploads/*": ["uploads/*"]
+    },
+    "target": "es6",
+    "module": "commonjs",
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "uploads"]
+}
