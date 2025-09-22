@@ -4,13 +4,13 @@ export const getDaysInMonth = (year: number, month: number): number => {
 
 export const getFirstDayOfMonth = (year: number, month: number): number => {
   const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // Convert Sunday=0 to Monday=0
+  return day === 0 ? 6 : day - 1;
 };
 
 export const getMondayOfWeek = (date: Date): Date => {
   const monday = new Date(date);
   const dayOfWeek = date.getDay();
-  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days, else go to Monday
+  const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   monday.setDate(date.getDate() + daysToMonday);
   return monday;
 };

@@ -13,7 +13,7 @@ import {
   GridItem,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
-import { texts } from '../../../../texts';
+import { texts } from '@frontend/texts';
 
 interface DatePickerHeaderProps {
   displayYear: number;
@@ -84,7 +84,11 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
     <div onClick={(e) => e.stopPropagation()}>
       <HStack justify="space-between" width="100%" spacing={2}>
         <IconButton
-          aria-label={showMonth ? 'Previous month' : 'Previous year'}
+          aria-label={
+            showMonth
+              ? texts.datePicker.previousMonth[language]
+              : texts.datePicker.previousYear[language]
+          }
           icon={<ChevronLeftIcon />}
           size="sm"
           onClick={(e) => {
@@ -116,13 +120,13 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                   fontWeight="bold"
                   _hover={{ bg: 'gray.100' }}
                 >
-                  {texts.schedule.months[language][displayMonth]}
+                  {texts.datePicker.months[language][displayMonth]}
                 </Button>
               </PopoverTrigger>
               <PopoverContent width="200px">
                 <PopoverBody p={2}>
                   <Grid templateColumns="repeat(1, 1fr)" gap={1}>
-                    {texts.schedule.months[language].map((month, index) => (
+                    {texts.datePicker.months[language].map((month, index) => (
                       <GridItem key={index}>
                         <Button
                           size="sm"
@@ -197,7 +201,9 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
         </HStack>
 
         <IconButton
-          aria-label={showMonth ? 'Next month' : 'Next year'}
+          aria-label={
+            showMonth ? texts.datePicker.nextMonth[language] : texts.datePicker.nextYear[language]
+          }
           icon={<ChevronRightIcon />}
           size="sm"
           onClick={(e) => {

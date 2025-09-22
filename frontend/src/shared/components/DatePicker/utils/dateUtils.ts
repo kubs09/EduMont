@@ -1,11 +1,11 @@
-import { texts } from '../../../../texts';
+import { texts } from '@frontend/texts';
 
 export const formatMonthYear = (dateString: string, language: 'cs' | 'en'): string => {
   const date = new Date(dateString + '-01');
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
 
-  const monthName = texts.schedule.months[language][monthIndex];
+  const monthName = texts.datePicker.months[language][monthIndex];
 
   return `${monthName} ${year}`;
 };

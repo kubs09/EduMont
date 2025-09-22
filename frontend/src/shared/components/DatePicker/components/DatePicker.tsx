@@ -12,9 +12,9 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { CalendarIcon } from '@chakra-ui/icons';
-import { texts } from '../../../../texts';
-import { CustomDatePickerProps } from '../utils/types';
-import { formatWeekRange, formatDate } from '../utils/utils';
+import { texts } from '@frontend/texts';
+import { CustomDatePickerProps } from '@frontend/shared/components/DatePicker/utils/types';
+import { formatWeekRange, formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 import DayPicker from './DayPicker';
 import WeekPicker from './WeekPicker';
 import MonthPicker from './MonthPicker';
@@ -30,7 +30,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
     if (viewType === 'month') {
       const [year, month] = value.substring(0, 7).split('-');
       const monthIndex = parseInt(month) - 1;
-      return `${texts.schedule.months[language][monthIndex]} ${year}`;
+      return `${texts.datePicker.months[language][monthIndex]} ${year}`;
     } else if (viewType === 'week') {
       const date = new Date(value);
       return formatWeekRange(date, language);
@@ -110,12 +110,16 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
         <Input
           value={getDisplayValue()}
           readOnly
-          placeholder={viewType === 'month' ? 'Select month' : 'Select date'}
+          placeholder={
+            viewType === 'month'
+              ? texts.datePicker.selectMonth[language]
+              : texts.datePicker.selectDate[language]
+          }
         />
         <InputRightElement>
           <PopoverTrigger>
             <IconButton
-              aria-label="Open date picker"
+              aria-label={texts.datePicker.openPicker[language]}
               icon={<CalendarIcon />}
               size="sm"
               variant="ghost"
@@ -131,15 +135,12 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
 
           <HStack spacing={2} width="100%" mt={4}>
             <Button size="sm" variant="outline" onClick={handleClear} flex={1}>
-              {texts.schedule.datePicker.clear[language]}
+              {texts.datePicker.clear[language]}
             </Button>
             <Button size="sm" variant="outline" onClick={handleToday} flex={1}>
               {viewType === 'month'
-                ? texts.schedule.datePicker.thisMonth[language]
-                : texts.schedule.datePicker.today[language]}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setIsOpen(false)} flex={1}>
-              {language === 'cs' ? 'Zavřít' : 'Close'}
+                ? texts.datePicker.thisMonth[language]
+                : texts.datePicker.today[language]}
             </Button>
           </HStack>
         </PopoverBody>

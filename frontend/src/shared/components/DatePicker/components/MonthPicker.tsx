@@ -1,7 +1,7 @@
 import React from 'react';
 import { VStack, Grid, GridItem, Button } from '@chakra-ui/react';
-import { texts } from '../../../../texts';
-import { BaseDatePickerProps } from '../utils/types';
+import { texts } from '@frontend/texts';
+import { BaseDatePickerProps } from '@frontend/shared/components/DatePicker/utils/types';
 import DatePickerHeader from './DatePickerHeader';
 
 interface MonthPickerProps extends BaseDatePickerProps {
@@ -25,7 +25,6 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
 
   return (
     <VStack spacing={4}>
-      {/* Year navigation for month picker */}
       <DatePickerHeader
         displayYear={displayYear}
         onYearChange={onYearChange}
@@ -33,9 +32,8 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
         showMonth={false}
       />
 
-      {/* Month grid */}
       <Grid templateColumns="repeat(3, 1fr)" gap={2} width="100%">
-        {texts.schedule.months[language].map((month, index) => (
+        {texts.datePicker.months[language].map((month, index) => (
           <GridItem key={index}>
             <Button
               size="sm"

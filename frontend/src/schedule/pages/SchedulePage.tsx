@@ -18,8 +18,8 @@ import {
   AlertIcon,
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import {
   getChildSchedule,
   getClassSchedule,
@@ -27,20 +27,20 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
-} from '../../services/api/schedule';
-import { getChildren } from '../../services/api/child';
-import { getClasses } from '../../services/api/class';
+} from '@frontend/services/api/schedule';
+import { getChildren } from '@frontend/services/api/child';
+import { getClasses } from '@frontend/services/api/class';
 import {
   Schedule,
   CreateScheduleData,
   UpdateScheduleData,
   ScheduleViewType,
-} from '../../types/schedule';
-import { Child } from '../../types/child';
-import { Class } from '../../types/class';
-import ScheduleModal from '../components/ScheduleModal';
-import ScheduleTable from '../components/ScheduleTable';
-import { DatePicker } from '../../shared/components/DatePicker';
+} from '@frontend/types/schedule';
+import { Child } from '@frontend/types/child';
+import { Class } from '@frontend/types/class';
+import ScheduleModal from '@frontend/schedule/components/ScheduleModal';
+import ScheduleTable from '@frontend/schedule/components/ScheduleTable';
+import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();

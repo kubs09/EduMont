@@ -17,9 +17,9 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
-import { login } from '../../services/api';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { login } from '@frontend/services/api/auth';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createLoginSchema, LoginFormData } from '../schemas/LoginSchema';
 import { ROUTES } from '../../shared/route';
 
@@ -61,7 +61,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       const error = err as { status?: number; message?: string };
 
       if (error.status === 401) {
-        setError(texts.auth.signIn.invalidCredentials[language]);
+        setError(texts.auth.signIn.validation.invalidCredentials[language]);
       } else {
         setError(texts.auth.signIn.serverError[language]);
       }
@@ -106,7 +106,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </FormControl>
 
             <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
-              {texts.auth.signIn.submitButton[language]}
+              {texts.auth.signIn.loginButton[language]}
             </Button>
 
             <Button

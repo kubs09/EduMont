@@ -1,4 +1,5 @@
-import { Heading, Text, Button, Center, VStack } from '@chakra-ui/react';
+import { Heading, Text, Button, Center, VStack, Icon } from '@chakra-ui/react';
+import { WarningIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../shared/route';
 import { texts } from '../texts';
@@ -11,7 +12,7 @@ const UnauthorizedPage = () => {
   return (
     <Center h="100vh">
       <VStack spacing={6}>
-        <Heading size="2xl">{texts.unauthorized.subtitle[language]}</Heading>
+        <Icon as={WarningIcon} color="red.500" boxSize={16} />
         <Heading size="xl">{texts.unauthorized.title[language]}</Heading>
         <Text>{texts.unauthorized.message[language]}</Text>
         <Button colorScheme="blue" onClick={() => navigate(ROUTES.LOGIN)}>

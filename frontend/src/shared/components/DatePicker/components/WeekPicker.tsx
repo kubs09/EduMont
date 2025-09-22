@@ -1,8 +1,13 @@
 import React from 'react';
 import { VStack, Grid, GridItem, Button, Box, Text } from '@chakra-ui/react';
-import { BaseDatePickerProps } from '../utils/types';
-import { getDaysInMonth, getFirstDayOfMonth, getMondayOfWeek } from '../utils/utils';
+import { BaseDatePickerProps } from '@frontend/shared/components/DatePicker/utils/types';
+import {
+  getDaysInMonth,
+  getFirstDayOfMonth,
+  getMondayOfWeek,
+} from '@frontend/shared/components/DatePicker/utils/utils';
 import DatePickerHeader from './DatePickerHeader';
+import { texts } from '@frontend/texts';
 
 interface WeekPickerProps extends BaseDatePickerProps {
   displayYear: number;
@@ -112,9 +117,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
       />
 
       <Text fontSize="sm" color="gray.600" textAlign="center">
-        {language === 'cs'
-          ? 'Klikněte na libovolný den pro výběr týdne'
-          : 'Click any day to select that week'}
+        {texts.datePicker.selectWeek[language]}
       </Text>
 
       <Grid templateColumns="repeat(7, 1fr)" gap={1} width="100%" maxW="280px">

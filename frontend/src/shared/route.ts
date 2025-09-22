@@ -1,6 +1,6 @@
 export const ROUTES = {
   LOGIN: '/login',
-  DASHBOARD: '/messages', // Changed from '/dashboard'
+  DASHBOARD: '/messages',
   ROOT: '/',
   UNAUTHORIZED: '/unauthorized',
   USER_DASHBOARD: '/users',
@@ -15,7 +15,7 @@ export const ROUTES = {
   PROFILE_CHANGE_PASSWORD: '/profile/change-password',
   REGISTER_INVITE: '/register/invite/:token',
   CLASSES: '/classes',
-  CLASS_DETAIL: '/classes/:id', // Add this line
+  CLASS_DETAIL: '/classes/:id',
   SCHEDULE: '/schedule',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
