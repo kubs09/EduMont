@@ -1,14 +1,14 @@
 import React from 'react';
-import { VStack, HStack, Text, Grid, GridItem, IconButton, Button, Box } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { texts } from '../../../../texts';
+import { VStack, Grid, GridItem, Button, Box, Text } from '@chakra-ui/react';
 import { BaseDatePickerProps } from '../utils/types';
 import { getDaysInMonth, getFirstDayOfMonth } from '../utils/utils';
+import DatePickerHeader from './DatePickerHeader';
 
 interface DayPickerProps extends BaseDatePickerProps {
   displayYear: number;
   displayMonth: number;
-  onMonthChange: (direction: 'prev' | 'next') => void;
+  onYearChange: (year: number) => void;
+  onMonthChange: (month: number) => void;
 }
 
 const DayPicker: React.FC<DayPickerProps> = ({
@@ -18,6 +18,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
   onClose,
   displayYear,
   displayMonth,
+  onYearChange,
   onMonthChange,
 }) => {
   const handleDaySelect = (day: number) => {
@@ -72,23 +73,14 @@ const DayPicker: React.FC<DayPickerProps> = ({
   return (
     <VStack spacing={4}>
       {/* Month navigation for day picker */}
-      <HStack justify="space-between" width="100%">
-        <IconButton
-          aria-label="Previous month"
-          icon={<ChevronLeftIcon />}
-          size="sm"
-          onClick={() => onMonthChange('prev')}
-        />
-        <Text fontSize="lg" fontWeight="bold">
-          {texts.schedule.months[language][displayMonth]} {displayYear}
-        </Text>
-        <IconButton
-          aria-label="Next month"
-          icon={<ChevronRightIcon />}
-          size="sm"
-          onClick={() => onMonthChange('next')}
-        />
-      </HStack>
+      <DatePickerHeader
+        displayYear={displayYear}
+        displayMonth={displayMonth}
+        onYearChange={onYearChange}
+        onMonthChange={onMonthChange}
+        language={language}
+        showMonth={true}
+      />
 
       {/* Day grid */}
       <Grid templateColumns="repeat(7, 1fr)" gap={1} width="100%" maxW="280px">

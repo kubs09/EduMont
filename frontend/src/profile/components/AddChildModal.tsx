@@ -19,6 +19,7 @@ import { createChild } from '../../services/api';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { createChildSchema } from '../schemas/childSchema';
+import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 
 interface AddChildModalProps {
   isOpen: boolean;
@@ -117,11 +118,16 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.date_of_birth} mb={4}>
             <FormLabel>{texts.profile.children.dateOfBirth[language]}</FormLabel>
-            <Input
-              name="date_of_birth"
-              type="date"
+            <DatePicker
+              viewType="day"
               value={formData.date_of_birth}
-              onChange={handleChange}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date_of_birth: date,
+                }))
+              }
+              language={language}
             />
             <FormErrorMessage>{errors.date_of_birth}</FormErrorMessage>
           </FormControl>

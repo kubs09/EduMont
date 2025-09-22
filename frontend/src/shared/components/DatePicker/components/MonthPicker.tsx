@@ -1,12 +1,12 @@
 import React from 'react';
-import { VStack, HStack, Text, Grid, GridItem, IconButton, Button } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { VStack, Grid, GridItem, Button } from '@chakra-ui/react';
 import { texts } from '../../../../texts';
 import { BaseDatePickerProps } from '../utils/types';
+import DatePickerHeader from './DatePickerHeader';
 
 interface MonthPickerProps extends BaseDatePickerProps {
   displayYear: number;
-  onYearChange: (direction: 'prev' | 'next') => void;
+  onYearChange: (year: number) => void;
 }
 
 const MonthPicker: React.FC<MonthPickerProps> = ({
@@ -26,23 +26,12 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
   return (
     <VStack spacing={4}>
       {/* Year navigation for month picker */}
-      <HStack justify="space-between" width="100%">
-        <IconButton
-          aria-label="Previous year"
-          icon={<ChevronLeftIcon />}
-          size="sm"
-          onClick={() => onYearChange('prev')}
-        />
-        <Text fontSize="lg" fontWeight="bold">
-          {displayYear}
-        </Text>
-        <IconButton
-          aria-label="Next year"
-          icon={<ChevronRightIcon />}
-          size="sm"
-          onClick={() => onYearChange('next')}
-        />
-      </HStack>
+      <DatePickerHeader
+        displayYear={displayYear}
+        onYearChange={onYearChange}
+        language={language}
+        showMonth={false}
+      />
 
       {/* Month grid */}
       <Grid templateColumns="repeat(3, 1fr)" gap={2} width="100%">

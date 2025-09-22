@@ -55,26 +55,12 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
     setIsOpen(false);
   };
 
-  const handleYearChange = (direction: 'prev' | 'next') => {
-    setDisplayYear((prev) => (direction === 'prev' ? prev - 1 : prev + 1));
+  const handleYearChange = (year: number) => {
+    setDisplayYear(year);
   };
 
-  const handleMonthChange = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      if (displayMonth === 0) {
-        setDisplayMonth(11);
-        setDisplayYear((prev) => prev - 1);
-      } else {
-        setDisplayMonth((prev) => prev - 1);
-      }
-    } else {
-      if (displayMonth === 11) {
-        setDisplayMonth(0);
-        setDisplayYear((prev) => prev + 1);
-      } else {
-        setDisplayMonth((prev) => prev + 1);
-      }
-    }
+  const handleMonthChange = (month: number) => {
+    setDisplayMonth(month);
   };
 
   const onClose = () => setIsOpen(false);
@@ -95,6 +81,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
             {...baseProps}
             displayYear={displayYear}
             displayMonth={displayMonth}
+            onYearChange={handleYearChange}
             onMonthChange={handleMonthChange}
           />
         );
@@ -104,6 +91,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
             {...baseProps}
             displayYear={displayYear}
             displayMonth={displayMonth}
+            onYearChange={handleYearChange}
             onMonthChange={handleMonthChange}
           />
         );
@@ -117,7 +105,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
   };
 
   return (
-    <Popover isOpen={isOpen} onClose={onClose}>
+    <Popover isOpen={isOpen} onClose={onClose} closeOnBlur={false}>
       <InputGroup maxW="200px">
         <Input
           value={getDisplayValue()}
@@ -149,6 +137,9 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
               {viewType === 'month'
                 ? texts.schedule.datePicker.thisMonth[language]
                 : texts.schedule.datePicker.today[language]}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setIsOpen(false)} flex={1}>
+              {language === 'cs' ? 'Zavřít' : 'Close'}
             </Button>
           </HStack>
         </PopoverBody>
