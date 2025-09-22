@@ -22,7 +22,6 @@ app.use(
 app.use(bodyParser.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connect to database
 pool
   .connect()
   .then(() => {
@@ -32,17 +31,14 @@ pool
     process.exit(1);
   });
 
-// Add before routes
 app.use((req, res, next) => {
   next();
 });
 
-// Add debug logging
 app.use((req, res, next) => {
   next();
 });
 
-// Error handler for JSON parsing
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: 'Invalid JSON payload' });
@@ -50,23 +46,19 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Add password reset routes before any other routes
 app.use('/api', passwordResetRoutes);
 
-// Routes
 app.use('/api', authRoutes);
 app.use('/api/children', childrenRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/classes', require('./routes/classes'));
-app.use('/api/messages', require('./routes/messages')); // Add messages routes
-app.use('/api/schedules', require('./routes/schedules')); // Add schedule routes
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/schedules', require('./routes/schedules'));
 
-// Catch-all handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({
