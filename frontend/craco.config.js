@@ -19,61 +19,63 @@ module.exports = {
     configure: (webpackConfig) => {
       webpackConfig.resolve.modules = [path.resolve(__dirname, 'src'), 'node_modules'];
 
-      const sanitizeBabelPlugins = (plugins, isProd) => {
+      const isProd = process.env.NODE_ENV === 'production';
+
+      const sanitizeBabelPlugins = (plugins) => {
         if (!Array.isArray(plugins)) return plugins;
         return plugins
           .map((plugin) => {
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
             if (!name) return plugin;
             const id = name.toString();
-            if (id.includes('react-refresh')) {
-              if (isProd) {
-                return null; // drop in production
-              }
-              // development -> ensure options with skipEnvCheck
-              if (Array.isArray(plugin)) {
-                return [
-                  plugin[0],
-                  {
-                    skipEnvCheck: true,
-                    ...(typeof plugin[1] === 'object' ? plugin[1] : {}),
-                  },
-                ];
-              }
-              return [name, { skipEnvCheck: true }];
+            if (id.includes('react-refresh') || id.includes('ReactRefresh')) {
+              return isProd ? null : plugin;
             }
             return plugin;
           })
           .filter(Boolean);
       };
 
-      const processRule = (rule, isProd) => {
+      const processRule = (rule) => {
         if (!rule) return;
+
         if (rule.oneOf && Array.isArray(rule.oneOf)) {
-            rule.oneOf.forEach(r => processRule(r, isProd));
-        } else {
-          const uses = rule.use;
-          if (Array.isArray(uses)) {
-            uses.forEach((u) => {
-              if (u && u.loader && u.loader.includes('babel-loader') && u.options) {
-                u.options.plugins = sanitizeBabelPlugins(u.options.plugins, isProd);
+          rule.oneOf.forEach((r) => processRule(r));
+        }
+
+        if (rule.use && Array.isArray(rule.use)) {
+          rule.use.forEach((use) => {
+            if (
+              use &&
+              typeof use === 'object' &&
+              use.loader &&
+              use.loader.includes('babel-loader')
+            ) {
+              if (use.options && use.options.plugins) {
+                use.options.plugins = sanitizeBabelPlugins(use.options.plugins);
               }
-            });
-          } else if (rule.loader && rule.loader.includes('babel-loader') && rule.options) {
-            rule.options.plugins = sanitizeBabelPlugins(rule.options.plugins, isProd);
-          }
+            }
+          });
+        } else if (
+          rule.loader &&
+          rule.loader.includes('babel-loader') &&
+          rule.options &&
+          rule.options.plugins
+        ) {
+          rule.options.plugins = sanitizeBabelPlugins(rule.options.plugins);
         }
       };
 
-      const isProd = process.env.NODE_ENV === 'production';
+      if (webpackConfig.module && webpackConfig.module.rules) {
+        webpackConfig.module.rules.forEach((rule) => processRule(rule));
+      }
 
-      processRule(webpackConfig.module, isProd);
-
-      if (isProd) {
-        // Remove React Refresh plugin instances at webpack plugin level as safety
-        webpackConfig.plugins = webpackConfig.plugins.filter(
-          (p) => !p.constructor?.name?.includes('ReactRefreshPlugin')
-        );
+      // Remove React Refresh plugins in production
+      if (isProd && webpackConfig.plugins) {
+        webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
+          const name = plugin.constructor?.name || '';
+          return !name.includes('ReactRefreshPlugin') && !name.includes('ReactRefresh');
+        });
       }
 
       return webpackConfig;
@@ -82,26 +84,19 @@ module.exports = {
   babel: {
     loaderOptions: (options, { env }) => {
       const isProd = env === 'production';
-      const sanitize = (plugins) => {
-        if (!Array.isArray(plugins)) return plugins;
-        return plugins
-          .map((p) => {
-            const name = Array.isArray(p) ? p[0] : p;
+
+      if (options.plugins && Array.isArray(options.plugins)) {
+        options.plugins = options.plugins
+          .map((plugin) => {
+            const name = Array.isArray(plugin) ? plugin[0] : plugin;
             if (name && name.toString().includes('react-refresh')) {
-              if (isProd) return null;
-              if (Array.isArray(p)) {
-                return [
-                  p[0],
-                  { skipEnvCheck: true, ...(typeof p[1] === 'object' ? p[1] : {}) },
-                ];
-              }
-              return [name, { skipEnvCheck: true }];
+              return isProd ? null : plugin;
             }
-            return p;
+            return plugin;
           })
           .filter(Boolean);
-      };
-      options.plugins = sanitize(options.plugins);
+      }
+
       return options;
     },
   },
