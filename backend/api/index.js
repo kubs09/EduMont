@@ -5,31 +5,51 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const pool = require('@config/database');
-const initDatabase = require('@db/init');
-const authRoutes = require('@routes/auth');
-const childrenRoutes = require('@routes/children');
-const usersRoutes = require('@routes/users');
-const classesRoutes = require('@routes/classes');
-const schedulesRoutes = require('@routes/schedules');
-const passwordResetRoutes = require('@routes/password-reset');
-const messageRoutes = require('@routes/messages');
+
+// Import your modules with error handling
+let pool,
+  initDatabase,
+  authRoutes,
+  childrenRoutes,
+  usersRoutes,
+  classesRoutes,
+  schedulesRoutes,
+  passwordResetRoutes,
+  messageRoutes;
+
+try {
+  pool = require('@config/database');
+  initDatabase = require('@db/init');
+  authRoutes = require('@routes/auth');
+  childrenRoutes = require('@routes/children');
+  usersRoutes = require('@routes/users');
+  classesRoutes = require('@routes/classes');
+  schedulesRoutes = require('@routes/schedules');
+  passwordResetRoutes = require('@routes/password-reset');
+  messageRoutes = require('@routes/messages');
+} catch (error) {
+  console.error('Module import error:', error);
+}
 
 const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://10.0.1.37:3000', process.env.FRONTEND_URL],
+    origin: [
+      'http://localhost:3000',
+      'http://10.0.1.37:3000',
+      process.env.FRONTEND_URL,
+      /\.vercel\.app$/,
+    ],
     credentials: true,
   })
 );
 app.use(bodyParser.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Initialize database connection once
 let dbInitialized = false;
 const initDB = async () => {
-  if (!dbInitialized) {
+  if (!dbInitialized && pool && initDatabase) {
     try {
       await pool.connect();
       await initDatabase();
@@ -46,6 +66,7 @@ app.use(async (req, res, next) => {
     await initDB();
     next();
   } catch (err) {
+    console.error('DB init error:', err);
     res.status(500).json({ error: 'Database connection failed' });
   }
 });
@@ -61,13 +82,14 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.use('/api', passwordResetRoutes);
-app.use('/api', authRoutes);
-app.use('/api/children', childrenRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/classes', classesRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/schedules', schedulesRoutes);
+// Routes with error handling
+if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
+if (authRoutes) app.use('/api', authRoutes);
+if (childrenRoutes) app.use('/api/children', childrenRoutes);
+if (usersRoutes) app.use('/api/users', usersRoutes);
+if (classesRoutes) app.use('/api/classes', classesRoutes);
+if (messageRoutes) app.use('/api/messages', messageRoutes);
+if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
