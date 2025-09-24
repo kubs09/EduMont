@@ -2,6 +2,11 @@
 const path = require('path');
 
 module.exports = {
+  babel: {
+    plugins: [
+      process.env.NODE_ENV === 'development' && require.resolve('react-refresh/babel'),
+    ].filter(Boolean),
+  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, '../'),
@@ -23,6 +28,30 @@ module.exports = {
         webpackConfig.plugins = webpackConfig.plugins.filter(
           (plugin) => !plugin.constructor.name.includes('ReactRefreshPlugin')
         );
+
+        // Remove React Refresh from babel-loader options
+        webpackConfig.module.rules.forEach((rule) => {
+          if (rule.oneOf) {
+            rule.oneOf.forEach((oneOfRule) => {
+              if (oneOfRule.test && oneOfRule.test.toString().includes('tsx?')) {
+                if (oneOfRule.use && Array.isArray(oneOfRule.use)) {
+                  oneOfRule.use.forEach((use) => {
+                    if (
+                      use.loader &&
+                      use.loader.includes('babel-loader') &&
+                      use.options &&
+                      use.options.plugins
+                    ) {
+                      use.options.plugins = use.options.plugins.filter(
+                        (plugin) => !plugin.toString().includes('react-refresh')
+                      );
+                    }
+                  });
+                }
+              }
+            });
+          }
+        });
       }
 
       return webpackConfig;
