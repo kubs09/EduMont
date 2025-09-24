@@ -2,6 +2,14 @@
 const path = require('path');
 
 module.exports = {
+  babel: {
+    plugins: [
+      process.env.NODE_ENV === 'development' && [
+        require.resolve('react-refresh/babel'),
+        { skipEnvCheck: false },
+      ],
+    ].filter(Boolean),
+  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, '../'),
@@ -26,7 +34,7 @@ module.exports = {
           (plugin) => !plugin.constructor.name.includes('ReactRefreshPlugin')
         );
 
-        // Remove React Refresh from babel-loader
+        // Remove React Refresh from babel-loader completely
         const oneOfRule = webpackConfig.module.rules.find((rule) => rule.oneOf);
         if (oneOfRule) {
           oneOfRule.oneOf.forEach((rule) => {
@@ -37,16 +45,22 @@ module.exports = {
                   ? rule.use
                   : null;
 
-              if (babelLoader && babelLoader.options && babelLoader.options.plugins) {
-                babelLoader.options.plugins = babelLoader.options.plugins.filter((plugin) => {
-                  if (typeof plugin === 'string') {
-                    return !plugin.includes('react-refresh');
-                  }
-                  if (Array.isArray(plugin)) {
-                    return !plugin[0].includes('react-refresh');
-                  }
-                  return true;
-                });
+              if (babelLoader && babelLoader.options) {
+                // Completely remove plugins array if it exists to avoid conflicts
+                if (babelLoader.options.plugins) {
+                  babelLoader.options.plugins = [];
+                }
+                // Also check presets for react-refresh
+                if (babelLoader.options.presets) {
+                  babelLoader.options.presets = babelLoader.options.presets.map((preset) => {
+                    if (Array.isArray(preset) && preset[1] && preset[1].plugins) {
+                      preset[1].plugins = preset[1].plugins.filter(
+                        (plugin) => !plugin.toString().includes('react-refresh')
+                      );
+                    }
+                    return preset;
+                  });
+                }
               }
             }
           });
