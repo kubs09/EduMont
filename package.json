@@ -27,6 +27,7 @@
     "typescript": "^4.9.5"
   },
   "scripts": {
+    "build": "cd frontend && npm install && npm run build",
     "server": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

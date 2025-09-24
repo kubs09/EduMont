@@ -2,6 +2,7 @@
   "name": "edumont-frontend",
   "version": "1.0.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.8.1",
@@ -42,7 +43,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "craco build",
+    "build": "craco build && cp -r build/* ../public/",
     "test": "craco test",
     "eject": "react-scripts eject"
   },
