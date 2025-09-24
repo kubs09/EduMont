@@ -31,6 +31,18 @@ try {
   console.error('Module import error:', error);
 }
 
+console.log('Module loading status:', {
+  pool: !!pool,
+  initDatabase: !!initDatabase,
+  authRoutes: !!authRoutes,
+  childrenRoutes: !!childrenRoutes,
+  usersRoutes: !!usersRoutes,
+  classesRoutes: !!classesRoutes,
+  schedulesRoutes: !!schedulesRoutes,
+  passwordResetRoutes: !!passwordResetRoutes,
+  messageRoutes: !!messageRoutes,
+});
+
 const app = express();
 
 app.use(
@@ -61,6 +73,17 @@ app.get('/debug', (req, res) => {
     message: 'Debug info',
     availableRoutes: ['POST /login', 'GET /test', 'GET /debug'],
     authRoutesLoaded: !!authRoutes,
+    allModulesStatus: {
+      pool: !!pool,
+      initDatabase: !!initDatabase,
+      authRoutes: !!authRoutes,
+      childrenRoutes: !!childrenRoutes,
+      usersRoutes: !!usersRoutes,
+      classesRoutes: !!classesRoutes,
+      schedulesRoutes: !!schedulesRoutes,
+      passwordResetRoutes: !!passwordResetRoutes,
+      messageRoutes: !!messageRoutes,
+    },
     timestamp: new Date().toISOString(),
   });
 });

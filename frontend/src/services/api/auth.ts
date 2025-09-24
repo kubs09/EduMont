@@ -4,6 +4,7 @@ import { ApiError, LoginResponse } from '@frontend/types/shared';
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {
+    console.log('Making login request to:', '/api/login');
     const response = await api.post<LoginResponse>('/api/login', { email, password });
     localStorage.setItem('token', response.data.token);
     localStorage.setItem(
@@ -25,6 +26,12 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     );
     return response.data;
   } catch (error) {
+    console.error('Login error details:', {
+      error,
+      isAxiosError: error instanceof AxiosError,
+      response: error instanceof AxiosError ? error.response : null,
+      config: error instanceof AxiosError ? error.config : null,
+    });
     if (error instanceof AxiosError) {
       throw new ApiError(
         error.response?.data?.error || 'Authentication failed',
