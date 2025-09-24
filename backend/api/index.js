@@ -71,7 +71,7 @@ app.get('/test', (req, res) => {
 app.get('/debug', (req, res) => {
   res.json({
     message: 'Debug info',
-    availableRoutes: ['POST /login', 'GET /test', 'GET /debug'],
+    availableRoutes: ['POST /login', 'GET /test', 'GET /debug', 'GET /auth-test'],
     authRoutesLoaded: !!authRoutes,
     allModulesStatus: {
       pool: !!pool,
@@ -85,6 +85,16 @@ app.get('/debug', (req, res) => {
       messageRoutes: !!messageRoutes,
     },
     timestamp: new Date().toISOString(),
+  });
+});
+
+// Add a direct login route for testing
+app.post('/login', (req, res) => {
+  console.log('Direct login route hit:', req.body);
+  res.json({
+    error: 'Direct login route - auth module not working properly',
+    body: req.body,
+    authRoutesLoaded: !!authRoutes,
   });
 });
 
@@ -126,7 +136,12 @@ app.use((err, req, res, next) => {
 
 // Routes with error handling - remove /api prefix since Vercel routing adds it
 // Mount auth routes BEFORE other middleware to ensure they're processed first
-if (authRoutes) app.use('/', authRoutes);
+if (authRoutes) {
+  console.log('Mounting auth routes...');
+  app.use('/', authRoutes);
+} else {
+  console.log('Auth routes not loaded!');
+}
 if (passwordResetRoutes) app.use('/', passwordResetRoutes);
 if (childrenRoutes) app.use('/children', childrenRoutes);
 if (usersRoutes) app.use('/users', usersRoutes);
