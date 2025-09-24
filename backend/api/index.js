@@ -82,14 +82,14 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Routes with error handling
-if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
-if (authRoutes) app.use('/api', authRoutes);
-if (childrenRoutes) app.use('/api/children', childrenRoutes);
-if (usersRoutes) app.use('/api/users', usersRoutes);
-if (classesRoutes) app.use('/api/classes', classesRoutes);
-if (messageRoutes) app.use('/api/messages', messageRoutes);
-if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+// Routes with error handling - remove /api prefix since Vercel routes handle it
+if (passwordResetRoutes) app.use('/', passwordResetRoutes);
+if (authRoutes) app.use('/', authRoutes);
+if (childrenRoutes) app.use('/children', childrenRoutes);
+if (usersRoutes) app.use('/users', usersRoutes);
+if (classesRoutes) app.use('/classes', classesRoutes);
+if (messageRoutes) app.use('/messages', messageRoutes);
+if (schedulesRoutes) app.use('/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
