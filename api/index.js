@@ -54,6 +54,25 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Add debug route to check what routes are available
+app.get('/api/debug', (req, res) => {
+  res.json({
+    message: 'Debug info',
+    availableRoutes: ['POST /api/login', 'GET /api/test', 'GET /api/debug'],
+    authRoutesLoaded: !!authRoutes,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Add a direct login route as fallback if auth routes fail
+app.post('/api/login', (req, res) => {
+  res.json({
+    error: 'Login endpoint reached but auth module not properly loaded',
+    authRoutesLoaded: !!authRoutes,
+    requestBody: req.body,
+  });
+});
+
 // Initialize database connection once
 let dbInitialized = false;
 const initDB = async () => {
