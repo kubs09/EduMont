@@ -87,3 +87,74 @@ app.get('/debug', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Add a direct login route for testing
+app.post('/login', (req, res) => {
+  console.log('Direct login route hit:', req.body);
+  res.json({
+    error: 'Direct login route - auth module not working properly',
+    body: req.body,
+    authRoutesLoaded: !!authRoutes,
+  });
+});
+
+// Initialize database connection once
+let dbInitialized = false;
+const initDB = async () => {
+  if (!dbInitialized && pool && initDatabase) {
+    try {
+      await pool.connect();
+      await initDatabase();
+      dbInitialized = true;
+    } catch (err) {
+      console.error('Database initialization failed:', err);
+      throw err;
+    }
+  }
+};
+
+app.use(async (req, res, next) => {
+  try {
+    await initDB();
+    next();
+  } catch (err) {
+    console.error('DB init error:', err);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+  next(err);
+});
+
+// Routes - remove /api prefix since Vercel routing adds it
+if (authRoutes) {
+  console.log('Mounting auth routes...');
+  app.use('/', authRoutes);
+} else {
+  console.log('Auth routes not loaded!');
+}
+if (passwordResetRoutes) app.use('/', passwordResetRoutes);
+if (childrenRoutes) app.use('/children', childrenRoutes);
+if (usersRoutes) app.use('/users', usersRoutes);
+if (classesRoutes) app.use('/classes', classesRoutes);
+if (messageRoutes) app.use('/messages', messageRoutes);
+if (schedulesRoutes) app.use('/schedules', schedulesRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  });
+});
+
+module.exports = app;
