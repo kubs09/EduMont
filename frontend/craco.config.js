@@ -18,7 +18,19 @@ module.exports = {
     },
     configure: (webpackConfig) => {
       webpackConfig.resolve.modules = [path.resolve(__dirname, 'src'), 'node_modules'];
+
+      if (process.env.NODE_ENV === 'production') {
+        webpackConfig.plugins = webpackConfig.plugins.filter(
+          (plugin) => !plugin.constructor.name.includes('ReactRefreshPlugin')
+        );
+      }
+
       return webpackConfig;
     },
+  },
+  babel: {
+    plugins: [
+      process.env.NODE_ENV === 'development' && require.resolve('react-refresh/babel'),
+    ].filter(Boolean),
   },
 };
