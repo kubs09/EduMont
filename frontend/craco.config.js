@@ -62,8 +62,14 @@ module.exports = {
     },
   },
   babel: {
-    plugins: [
-      process.env.NODE_ENV === 'development' && require.resolve('react-refresh/babel')
-    ].filter(Boolean)
-  }
+    loaderOptions: (options, { env }) => {
+      if (env === 'production') {
+        options.plugins = (options.plugins || []).filter((p) => {
+          if (Array.isArray(p)) return p[0] !== require.resolve('react-refresh/babel');
+          return p !== require.resolve('react-refresh/babel');
+        });
+      }
+      return options;
+    },
+  },
 };
