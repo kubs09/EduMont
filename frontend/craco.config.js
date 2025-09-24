@@ -16,31 +16,60 @@ module.exports = {
       '@core': path.resolve(__dirname, '../core'),
       '@shared': path.resolve(__dirname, '../shared'),
     },
-    configure: (webpackConfig) => {
+    configure: (webpackConfig, { env = process.env.NODE_ENV } = {}) => {
       webpackConfig.resolve.modules = [path.resolve(__dirname, 'src'), 'node_modules'];
 
-      const isProd = process.env.NODE_ENV === 'production';
+      const isProd = env === 'production';
+
+      // Force disable fast refresh in production
+      if (isProd) {
+        process.env.FAST_REFRESH = 'false';
+
+        // Remove the ReactRefreshWebpackPlugin
+        webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
+          const name = plugin.constructor?.name || '';
+          return (
+            !name.includes('ReactRefreshWebpackPlugin') &&
+            !name.includes('ReactRefreshPlugin') &&
+            !name.includes('ReactRefresh')
+          );
+        });
+
+        // Set FAST_REFRESH to false
+        webpackConfig.plugins.forEach((plugin) => {
+          if (plugin.constructor?.name === 'DefinePlugin') {
+            plugin.definitions = plugin.definitions || {};
+            plugin.definitions['process.env.FAST_REFRESH'] = 'false';
+          }
+        });
+      }
 
       const sanitizeBabelPlugins = (plugins) => {
         if (!Array.isArray(plugins)) return plugins;
         return plugins
-          .map((plugin) => {
+          .filter((plugin) => {
+            if (!plugin) return false;
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
-            if (!name) return plugin;
-            const id = name.toString();
-            if (id.includes('react-refresh') || id.includes('ReactRefresh')) {
-              if (isProd) {
-                return null; // Completely remove in production
+            const nameStr = name ? name.toString() : '';
+            // In production, completely remove react-refresh plugins
+            if (isProd && (nameStr.includes('react-refresh') || nameStr.includes('ReactRefresh'))) {
+              return false;
+            }
+            return true;
+          })
+          .map((plugin) => {
+            if (!isProd) {
+              const name = Array.isArray(plugin) ? plugin[0] : plugin;
+              const nameStr = name ? name.toString() : '';
+              if (nameStr.includes('react-refresh')) {
+                if (Array.isArray(plugin)) {
+                  return [plugin[0], { skipEnvCheck: true, ...(plugin[1] || {}) }];
+                }
+                return [name, { skipEnvCheck: true }];
               }
-              // In development, ensure skipEnvCheck is set
-              if (Array.isArray(plugin)) {
-                return [plugin[0], { skipEnvCheck: true, ...(plugin[1] || {}) }];
-              }
-              return [name, { skipEnvCheck: true }];
             }
             return plugin;
-          })
-          .filter(Boolean);
+          });
       };
 
       const processRule = (rule) => {
@@ -77,47 +106,25 @@ module.exports = {
         webpackConfig.module.rules.forEach((rule) => processRule(rule));
       }
 
-      // Remove React Refresh plugins in production
-      if (isProd && webpackConfig.plugins) {
-        webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
-          const name = plugin.constructor?.name || '';
-          return !name.includes('ReactRefreshPlugin') && !name.includes('ReactRefresh');
-        });
-      }
-
       return webpackConfig;
     },
   },
-  // Add this to ensure React Refresh is disabled in production
   babel: {
-    presets: [
-      [
-        '@babel/preset-react',
-        {
-          development: process.env.NODE_ENV === 'development',
-          runtime: 'automatic',
-        },
-      ],
-    ],
-    plugins: process.env.NODE_ENV === 'production' ? [] : undefined,
-    loaderOptions: (options, { env }) => {
+    loaderOptions: (babelLoaderOptions, { env = process.env.NODE_ENV } = {}) => {
       const isProd = env === 'production';
 
-      if (options.plugins && Array.isArray(options.plugins)) {
-        options.plugins = options.plugins
-          .map((plugin) => {
+      if (isProd) {
+        // In production, completely remove react-refresh plugins
+        if (babelLoaderOptions.plugins && Array.isArray(babelLoaderOptions.plugins)) {
+          babelLoaderOptions.plugins = babelLoaderOptions.plugins.filter((plugin) => {
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
             const nameStr = name ? name.toString() : '';
-
-            if (nameStr.includes('react-refresh') || nameStr.includes('ReactRefresh')) {
-              return isProd ? null : plugin;
-            }
-            return plugin;
-          })
-          .filter(Boolean);
+            return !nameStr.includes('react-refresh') && !nameStr.includes('ReactRefresh');
+          });
+        }
       }
 
-      return options;
+      return babelLoaderOptions;
     },
   },
 };
