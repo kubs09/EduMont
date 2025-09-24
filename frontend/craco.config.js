@@ -2,14 +2,6 @@
 const path = require('path');
 
 module.exports = {
-  babel: {
-    plugins: [
-      process.env.NODE_ENV === 'development' && [
-        require.resolve('react-refresh/babel'),
-        { skipEnvCheck: false },
-      ],
-    ].filter(Boolean),
-  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, '../'),
@@ -34,37 +26,36 @@ module.exports = {
           (plugin) => !plugin.constructor.name.includes('ReactRefreshPlugin')
         );
 
-        // Remove React Refresh from babel-loader completely
-        const oneOfRule = webpackConfig.module.rules.find((rule) => rule.oneOf);
-        if (oneOfRule) {
-          oneOfRule.oneOf.forEach((rule) => {
-            if (rule.test && rule.test.toString().includes('tsx?') && rule.use) {
-              const babelLoader = Array.isArray(rule.use)
-                ? rule.use.find((use) => use.loader && use.loader.includes('babel-loader'))
-                : rule.use.loader && rule.use.loader.includes('babel-loader')
-                  ? rule.use
-                  : null;
-
-              if (babelLoader && babelLoader.options) {
-                // Completely remove plugins array if it exists to avoid conflicts
-                if (babelLoader.options.plugins) {
-                  babelLoader.options.plugins = [];
-                }
-                // Also check presets for react-refresh
-                if (babelLoader.options.presets) {
-                  babelLoader.options.presets = babelLoader.options.presets.map((preset) => {
-                    if (Array.isArray(preset) && preset[1] && preset[1].plugins) {
-                      preset[1].plugins = preset[1].plugins.filter(
-                        (plugin) => !plugin.toString().includes('react-refresh')
-                      );
+        // Remove React Refresh from all babel-loader configurations
+        webpackConfig.module.rules.forEach((rule) => {
+          if (rule.oneOf) {
+            rule.oneOf.forEach((oneOfRule) => {
+              if (oneOfRule.use && Array.isArray(oneOfRule.use)) {
+                oneOfRule.use.forEach((use) => {
+                  if (use.loader && use.loader.includes('babel-loader') && use.options) {
+                    if (use.options.plugins) {
+                      use.options.plugins = use.options.plugins.filter((plugin) => {
+                        const pluginName = Array.isArray(plugin) ? plugin[0] : plugin;
+                        return !pluginName.toString().includes('react-refresh');
+                      });
                     }
-                    return preset;
+                  }
+                });
+              } else if (
+                oneOfRule.loader &&
+                oneOfRule.loader.includes('babel-loader') &&
+                oneOfRule.options
+              ) {
+                if (oneOfRule.options.plugins) {
+                  oneOfRule.options.plugins = oneOfRule.options.plugins.filter((plugin) => {
+                    const pluginName = Array.isArray(plugin) ? plugin[0] : plugin;
+                    return !pluginName.toString().includes('react-refresh');
                   });
                 }
               }
-            }
-          });
-        }
+            });
+          }
+        });
       }
 
       return webpackConfig;
