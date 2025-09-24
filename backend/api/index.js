@@ -47,7 +47,7 @@ app.use(
 app.use(bodyParser.json({ limit: '1mb' }));
 
 // Add a simple test endpoint
-app.get('/api/test', (req, res) => {
+app.get('/test', (req, res) => {
   res.json({
     success: true,
     message: 'API is working!',
@@ -56,10 +56,10 @@ app.get('/api/test', (req, res) => {
 });
 
 // Add debug route to check what routes are available
-app.get('/api/debug', (req, res) => {
+app.get('/debug', (req, res) => {
   res.json({
     message: 'Debug info',
-    availableRoutes: ['POST /api/login', 'GET /api/test', 'GET /api/debug'],
+    availableRoutes: ['POST /login', 'GET /test', 'GET /debug'],
     authRoutesLoaded: !!authRoutes,
     timestamp: new Date().toISOString(),
   });
@@ -101,15 +101,15 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Routes with error handling - add /api prefix since frontend expects it
+// Routes with error handling - remove /api prefix since Vercel routing adds it
 // Mount auth routes BEFORE other middleware to ensure they're processed first
-if (authRoutes) app.use('/api', authRoutes);
-if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
-if (childrenRoutes) app.use('/api/children', childrenRoutes);
-if (usersRoutes) app.use('/api/users', usersRoutes);
-if (classesRoutes) app.use('/api/classes', classesRoutes);
-if (messageRoutes) app.use('/api/messages', messageRoutes);
-if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+if (authRoutes) app.use('/', authRoutes);
+if (passwordResetRoutes) app.use('/', passwordResetRoutes);
+if (childrenRoutes) app.use('/children', childrenRoutes);
+if (usersRoutes) app.use('/users', usersRoutes);
+if (classesRoutes) app.use('/classes', classesRoutes);
+if (messageRoutes) app.use('/messages', messageRoutes);
+if (schedulesRoutes) app.use('/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
