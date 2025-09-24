@@ -29,7 +29,14 @@ module.exports = {
             if (!name) return plugin;
             const id = name.toString();
             if (id.includes('react-refresh') || id.includes('ReactRefresh')) {
-              return isProd ? null : plugin;
+              if (isProd) {
+                return null; // Completely remove in production
+              }
+              // In development, ensure skipEnvCheck is set
+              if (Array.isArray(plugin)) {
+                return [plugin[0], { skipEnvCheck: true, ...(plugin[1] || {}) }];
+              }
+              return [name, { skipEnvCheck: true }];
             }
             return plugin;
           })
@@ -81,7 +88,18 @@ module.exports = {
       return webpackConfig;
     },
   },
+  // Add this to ensure React Refresh is disabled in production
   babel: {
+    presets: [
+      [
+        '@babel/preset-react',
+        {
+          development: process.env.NODE_ENV === 'development',
+          runtime: 'automatic',
+        },
+      ],
+    ],
+    plugins: process.env.NODE_ENV === 'production' ? [] : undefined,
     loaderOptions: (options, { env }) => {
       const isProd = env === 'production';
 
@@ -89,7 +107,9 @@ module.exports = {
         options.plugins = options.plugins
           .map((plugin) => {
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
-            if (name && name.toString().includes('react-refresh')) {
+            const nameStr = name ? name.toString() : '';
+
+            if (nameStr.includes('react-refresh') || nameStr.includes('ReactRefresh')) {
               return isProd ? null : plugin;
             }
             return plugin;
