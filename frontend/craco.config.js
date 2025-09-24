@@ -28,9 +28,4 @@ module.exports = {
       return webpackConfig;
     },
   },
-  babel: {
-    plugins: [
-      process.env.NODE_ENV === 'development' && require.resolve('react-refresh/babel'),
-    ].filter(Boolean),
-  },
 };
