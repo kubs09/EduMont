@@ -7,9 +7,9 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production (Vercel), use relative URLs to hit the same domain
+  // In production (Vercel), use the current domain
   if (process.env.NODE_ENV === 'production') {
-    return '';
+    return window.location.origin;
   }
 
   // Development fallback

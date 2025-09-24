@@ -65,15 +65,6 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
-// Add a direct login route as fallback if auth routes fail
-app.post('/api/login', (req, res) => {
-  res.json({
-    error: 'Login endpoint reached but auth module not properly loaded',
-    authRoutesLoaded: !!authRoutes,
-    requestBody: req.body,
-  });
-});
-
 // Initialize database connection once
 let dbInitialized = false;
 const initDB = async () => {
@@ -111,8 +102,9 @@ app.use((err, req, res, next) => {
 });
 
 // Routes with error handling - add /api prefix since frontend expects it
-if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
+// Mount auth routes BEFORE other middleware to ensure they're processed first
 if (authRoutes) app.use('/api', authRoutes);
+if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
 if (childrenRoutes) app.use('/api/children', childrenRoutes);
 if (usersRoutes) app.use('/api/users', usersRoutes);
 if (classesRoutes) app.use('/api/classes', classesRoutes);
