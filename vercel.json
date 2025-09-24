@@ -2,15 +2,14 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/build",
-  "functions": {
-    "backend/api/index.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/api/index.js"
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     },
     {
       "source": "/((?!api).*)",
