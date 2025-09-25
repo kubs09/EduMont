@@ -20,7 +20,7 @@ app.use(
 );
 app.use(bodyParser.json({ limit: '1mb' }));
 
-// Add a simple test endpoint
+// Add a simple test endpoint that doesn't require modules
 app.get('/api/test', (req, res) => {
   res.json({
     success: true,
@@ -59,7 +59,7 @@ try {
   moduleError = error.message;
 }
 
-// Add debug route
+// Add debug route that doesn't require database
 app.get('/api/debug', (req, res) => {
   res.json({
     message: 'Debug info',
@@ -87,8 +87,13 @@ const initDB = async () => {
   }
 };
 
-// Database middleware with better error handling
+// Database middleware with better error handling - but skip for test/debug routes
 app.use(async (req, res, next) => {
+  // Skip database init for test and debug routes
+  if (req.path === '/api/test' || req.path === '/api/debug') {
+    return next();
+  }
+
   if (!modulesLoaded) {
     return res.status(500).json({
       error: 'Server modules not loaded',
@@ -115,35 +120,6 @@ if (modulesLoaded) {
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
 }
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
-});
-
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message,
-    details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-  });
-});
-
-module.exports = app;
-// Routes - mount with /api prefix to match local server structure
-app.use('/api', passwordResetRoutes);
-
-if (authRoutes) {
-  console.log('Mounting auth routes...');
-  app.use('/api', authRoutes);
-} else {
-  console.log('Auth routes not loaded!');
-}
-if (childrenRoutes) app.use('/api/children', childrenRoutes);
-if (usersRoutes) app.use('/api/users', usersRoutes);
-if (classesRoutes) app.use('/api/classes', classesRoutes);
-if (messageRoutes) app.use('/api/messages', messageRoutes);
-if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
