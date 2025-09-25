@@ -4,44 +4,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
-
-// Import your modules with error handling
-let pool,
-  initDatabase,
-  authRoutes,
-  childrenRoutes,
-  usersRoutes,
-  classesRoutes,
-  schedulesRoutes,
-  passwordResetRoutes,
-  messageRoutes;
-
-try {
-  pool = require('@config/database');
-  initDatabase = require('@db/init');
-  authRoutes = require('@routes/auth');
-  childrenRoutes = require('@routes/children');
-  usersRoutes = require('@routes/users');
-  classesRoutes = require('@routes/classes');
-  schedulesRoutes = require('@routes/schedules');
-  passwordResetRoutes = require('@routes/password-reset');
-  messageRoutes = require('@routes/messages');
-} catch (error) {
-  console.error('Module import error:', error);
-}
-
-console.log('Module loading status:', {
-  pool: !!pool,
-  initDatabase: !!initDatabase,
-  authRoutes: !!authRoutes,
-  childrenRoutes: !!childrenRoutes,
-  usersRoutes: !!usersRoutes,
-  classesRoutes: !!classesRoutes,
-  schedulesRoutes: !!schedulesRoutes,
-  passwordResetRoutes: !!passwordResetRoutes,
-  messageRoutes: !!messageRoutes,
-});
 
 const app = express();
 
@@ -59,7 +21,7 @@ app.use(
 app.use(bodyParser.json({ limit: '1mb' }));
 
 // Add a simple test endpoint
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.json({
     success: true,
     message: 'API is working!',
@@ -67,40 +29,52 @@ app.get('/test', (req, res) => {
   });
 });
 
-// Add debug route to check what routes are available
-app.get('/debug', (req, res) => {
+// Import modules with better error handling
+let pool,
+  initDatabase,
+  authRoutes,
+  childrenRoutes,
+  usersRoutes,
+  classesRoutes,
+  schedulesRoutes,
+  passwordResetRoutes,
+  messageRoutes;
+
+let modulesLoaded = false;
+let moduleError = null;
+
+try {
+  pool = require('@config/database');
+  initDatabase = require('@db/init');
+  authRoutes = require('@routes/auth');
+  childrenRoutes = require('@routes/children');
+  usersRoutes = require('@routes/users');
+  classesRoutes = require('@routes/classes');
+  schedulesRoutes = require('@routes/schedules');
+  passwordResetRoutes = require('@routes/password-reset');
+  messageRoutes = require('@routes/messages');
+  modulesLoaded = true;
+} catch (error) {
+  console.error('Module import error:', error);
+  moduleError = error.message;
+}
+
+// Add debug route
+app.get('/api/debug', (req, res) => {
   res.json({
     message: 'Debug info',
-    availableRoutes: ['POST /login', 'GET /test', 'GET /debug', 'GET /auth-test'],
-    authRoutesLoaded: !!authRoutes,
-    allModulesStatus: {
-      pool: !!pool,
-      initDatabase: !!initDatabase,
-      authRoutes: !!authRoutes,
-      childrenRoutes: !!childrenRoutes,
-      usersRoutes: !!usersRoutes,
-      classesRoutes: !!classesRoutes,
-      schedulesRoutes: !!schedulesRoutes,
-      passwordResetRoutes: !!passwordResetRoutes,
-      messageRoutes: !!messageRoutes,
-    },
+    modulesLoaded,
+    moduleError,
     timestamp: new Date().toISOString(),
   });
 });
 
-// Add a direct login route for testing
-app.post('/login', (req, res) => {
-  console.log('Direct login route hit:', req.body);
-  res.json({
-    error: 'Direct login route - auth module not working properly',
-    body: req.body,
-    authRoutesLoaded: !!authRoutes,
-  });
-});
-
-// Initialize database connection once
+// Initialize database only if modules loaded successfully
 let dbInitialized = false;
 const initDB = async () => {
+  if (!modulesLoaded) {
+    throw new Error('Modules not loaded');
+  }
   if (!dbInitialized && pool && initDatabase) {
     try {
       await pool.connect();
@@ -113,23 +87,49 @@ const initDB = async () => {
   }
 };
 
+// Database middleware with better error handling
 app.use(async (req, res, next) => {
+  if (!modulesLoaded) {
+    return res.status(500).json({
+      error: 'Server modules not loaded',
+      details: moduleError,
+    });
+  }
+
   try {
     await initDB();
     next();
   } catch (err) {
     console.error('DB init error:', err);
-    res.status(500).json({ error: 'Database connection failed' });
+    res.status(500).json({ error: 'Database connection failed', details: err.message });
   }
+});
+
+// Routes - only mount if modules loaded successfully
+if (modulesLoaded) {
+  if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
+  if (authRoutes) app.use('/api', authRoutes);
+  if (childrenRoutes) app.use('/api/children', childrenRoutes);
+  if (usersRoutes) app.use('/api/users', usersRoutes);
+  if (classesRoutes) app.use('/api/classes', classesRoutes);
+  if (messageRoutes) app.use('/api/messages', messageRoutes);
+  if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+}
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
 });
 
 app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Invalid JSON payload' });
-  }
-  next(err);
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message,
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  });
 });
 
+module.exports = app;
 // Routes - mount with /api prefix to match local server structure
 app.use('/api', passwordResetRoutes);
 
