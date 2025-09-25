@@ -45,14 +45,33 @@ let modulesLoaded = false;
 let moduleError = null;
 
 const requireWithFallback = (aliasPath, relativePath) => {
+  const fallbackPaths = [
+    relativePath,
+    `./${relativePath}`,
+    `../${relativePath}`,
+    path.join(__dirname, relativePath),
+    path.join(__dirname, '..', relativePath),
+    path.join(process.cwd(), relativePath),
+    path.join(process.cwd(), 'backend', relativePath),
+  ];
+
   try {
     return require(aliasPath);
   } catch (error) {
-    try {
-      return require(path.join(__dirname, '..', relativePath));
-    } catch (fallbackError) {
-      throw new Error(`Failed to load module: ${aliasPath} (${error.message}) and fallback ${relativePath} (${fallbackError.message})`);
+    let lastError = error;
+    for (const fallbackPath of fallbackPaths) {
+      try {
+        return require(fallbackPath);
+      } catch (fallbackError) {
+        lastError = fallbackError;
+        continue;
+      }
     }
+    throw new Error(
+      `Failed to load module: ${aliasPath} (${
+        error.message
+      }). Tried fallbacks: ${fallbackPaths.join(', ')}. Last error: ${lastError.message}`
+    );
   }
 };
 
@@ -74,10 +93,28 @@ try {
 
 // Add debug route that doesn't require database
 app.get('/api/debug', (req, res) => {
+  const fs = require('fs');
+  let fileStructure = {};
+
+  // Try to read directory structure for debugging
+  const dirsToCheck = [__dirname, path.join(__dirname, '..'), process.cwd()];
+
+  dirsToCheck.forEach((dir, index) => {
+    try {
+      const files = fs.readdirSync(dir);
+      fileStructure[`dir${index}_${dir}`] = files;
+    } catch (err) {
+      fileStructure[`dir${index}_${dir}`] = `Error: ${err.message}`;
+    }
+  });
+
   res.json({
     message: 'Debug info',
     modulesLoaded,
     moduleError,
+    __dirname,
+    'process.cwd()': process.cwd(),
+    fileStructure,
     timestamp: new Date().toISOString(),
   });
 });
