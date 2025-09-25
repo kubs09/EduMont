@@ -46,11 +46,16 @@ let moduleError = null;
 
 const requireWithFallback = (aliasPath, relativePath) => {
   const fallbackPaths = [
+    // Try relative to current file
+    path.join(__dirname, '..', relativePath),
+    // Try in the task root
+    path.join('/var/task', relativePath),
+    path.join('/var/task/backend', relativePath),
+    // Try relative paths
     relativePath,
     `./${relativePath}`,
     `../${relativePath}`,
     path.join(__dirname, relativePath),
-    path.join(__dirname, '..', relativePath),
     path.join(process.cwd(), relativePath),
     path.join(process.cwd(), 'backend', relativePath),
   ];
@@ -67,10 +72,24 @@ const requireWithFallback = (aliasPath, relativePath) => {
         continue;
       }
     }
+
+    // Enhanced error message showing what directories exist
+    const fs = require('fs');
+    let dirInfo = '';
+    try {
+      const taskContents = fs.readdirSync('/var/task');
+      const backendContents = fs.readdirSync('/var/task/backend');
+      dirInfo = ` Task dir: [${taskContents.join(', ')}]. Backend dir: [${backendContents.join(
+        ', '
+      )}]`;
+    } catch (fsError) {
+      dirInfo = ` FS Error: ${fsError.message}`;
+    }
+
     throw new Error(
       `Failed to load module: ${aliasPath} (${
         error.message
-      }). Tried fallbacks: ${fallbackPaths.join(', ')}. Last error: ${lastError.message}`
+      }). Tried fallbacks: ${fallbackPaths.join(', ')}. Last error: ${lastError.message}.${dirInfo}`
     );
   }
 };

@@ -3,17 +3,7 @@
   "builds": [
     {
       "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "config/**",
-          "db/**",
-          "routes/**",
-          "middleware/**",
-          "utils/**",
-          "package.json"
-        ]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -21,5 +11,10 @@
       "src": "/api/(.*)",
       "dest": "/api/index.js"
     }
-  ]
+  ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "**"
+    }
+  }
 }
