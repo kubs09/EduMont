@@ -27,13 +27,11 @@
     "nodemon": "^3.1.9"
   },
   "_moduleAliases": {
-    "@": ".",
     "@config": "./config",
+    "@db": "./db",
     "@routes": "./routes",
     "@middleware": "./middleware",
-    "@db": "./db",
-    "@src": "./src",
-    "@templates": "./templates",
+    "@utils": "./utils",
     "@scripts": "./scripts",
     "@uploads": "./uploads"
   }

@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 
@@ -29,7 +30,7 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-// Import modules with better error handling
+// Import modules with better error handling and fallback paths
 let pool,
   initDatabase,
   authRoutes,
@@ -43,16 +44,28 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 
+const requireWithFallback = (aliasPath, relativePath) => {
+  try {
+    return require(aliasPath);
+  } catch (error) {
+    try {
+      return require(path.join(__dirname, '..', relativePath));
+    } catch (fallbackError) {
+      throw new Error(`Failed to load module: ${aliasPath} (${error.message}) and fallback ${relativePath} (${fallbackError.message})`);
+    }
+  }
+};
+
 try {
-  pool = require('@config/database');
-  initDatabase = require('@db/init');
-  authRoutes = require('@routes/auth');
-  childrenRoutes = require('@routes/children');
-  usersRoutes = require('@routes/users');
-  classesRoutes = require('@routes/classes');
-  schedulesRoutes = require('@routes/schedules');
-  passwordResetRoutes = require('@routes/password-reset');
-  messageRoutes = require('@routes/messages');
+  pool = requireWithFallback('@config/database', 'config/database');
+  initDatabase = requireWithFallback('@db/init', 'db/init');
+  authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
+  childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
+  usersRoutes = requireWithFallback('@routes/users', 'routes/users');
+  classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
+  schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
+  passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
+  messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
   modulesLoaded = true;
 } catch (error) {
   console.error('Module import error:', error);
