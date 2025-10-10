@@ -9,7 +9,8 @@ const getBaseURL = () => {
 
   // In production (Vercel), use the current domain
   if (process.env.NODE_ENV === 'production') {
-    return window.location.origin;
+    // For Vercel deployment, use relative URLs
+    return '';
   }
 
   const devUrls = [
@@ -27,7 +28,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000, // Increased timeout for serverless cold starts
   withCredentials: true,
 });
 
@@ -37,7 +38,9 @@ const testConnection = async () => {
     console.log('✅ Server connection successful');
     return true;
   } catch (error) {
-    console.warn('❌ Server connection failed:', error.message);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('❌ Server connection failed:', error.message);
+    }
     return false;
   }
 };

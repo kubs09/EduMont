@@ -108,15 +108,36 @@ app.get('/api/debug', (req, res) => {
 
 // Initialize database only if modules loaded successfully
 if (modulesLoaded && pool && initDatabase) {
-  pool
-    .connect()
-    .then(() => {
-      return initDatabase();
-    })
-    .catch((err) => {
-      console.error('Database initialization failed:', err);
-      process.exit(1);
+  // For serverless, we need to handle database initialization differently
+  if (process.env.VERCEL) {
+    // In Vercel, initialize on first request rather than at startup
+    let dbInitialized = false;
+    app.use(async (req, res, next) => {
+      if (!dbInitialized) {
+        try {
+          await pool.connect();
+          await initDatabase();
+          dbInitialized = true;
+          console.log('Database initialized for serverless environment');
+        } catch (err) {
+          console.error('Database initialization failed in serverless:', err);
+          return res.status(500).json({ error: 'Database initialization failed' });
+        }
+      }
+      next();
     });
+  } else {
+    // Traditional server startup
+    pool
+      .connect()
+      .then(() => {
+        return initDatabase();
+      })
+      .catch((err) => {
+        console.error('Database initialization failed:', err);
+        process.exit(1);
+      });
+  }
 }
 
 app.use((req, res, next) => {
@@ -170,12 +191,12 @@ app.use((err, req, res, next) => {
 module.exports = app;
 
 // Only start the server if this file is run directly (not in serverless environment)
-if (require.main === module) {
+if (require.main === module && !process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`Modules loaded: ${modulesLoaded}`);
-    });
-  }
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Modules loaded: ${modulesLoaded}`);
+  });
+}
