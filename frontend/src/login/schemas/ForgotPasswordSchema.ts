@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { texts } from '../../texts';
+import { texts } from '@frontend/texts';
 
 export const createForgotPasswordSchema = (language: 'en' | 'cs') =>
   z.object({

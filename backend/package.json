@@ -19,9 +19,20 @@
     "dotenv": "^16.0.3",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "module-alias": "^2.2.3",
+    "nodemailer": "^6.10.0",
     "pg": "^8.13.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
+  },
+  "_moduleAliases": {
+    "@config": "./config",
+    "@db": "./db",
+    "@routes": "./routes",
+    "@middleware": "./middleware",
+    "@utils": "./utils",
+    "@scripts": "./scripts",
+    "@uploads": "./uploads"
   }
 }

@@ -13,40 +13,46 @@ export const texts = {
         cs: 'Heslo',
         en: 'Password',
       },
-      submitButton: {
+      loginButton: {
         cs: 'Přihlásit se',
         en: 'Sign In',
+      },
+      logout: {
+        cs: 'Odhlásit se',
+        en: 'Log Out',
       },
       serverError: {
         cs: 'Nepodařilo se připojit k serveru. Zkuste to prosím později.',
         en: 'Unable to connect to the server. Please try again later.',
       },
-      emailRequired: {
-        cs: 'Emailová adresa je povinná',
-        en: 'Email address is required',
-      },
-      passwordRequired: {
-        cs: 'Heslo je povinné',
-        en: 'Password is required',
-      },
-      invalidEmail: {
-        cs: 'Prosím zadejte platnou emailovou adresu',
-        en: 'Please enter a valid email address',
-      },
-      invalidCredentials: {
-        cs: 'Nesprávný email nebo heslo',
-        en: 'Invalid email or password',
+      validation: {
+        emailRequired: {
+          cs: 'Emailová adresa je povinná',
+          en: 'Email address is required',
+        },
+        passwordRequired: {
+          cs: 'Heslo je povinné',
+          en: 'Password is required',
+        },
+        invalidEmail: {
+          cs: 'Prosím zadejte platnou emailovou adresu',
+          en: 'Please enter a valid email address',
+        },
+        invalidCredentials: {
+          cs: 'Nesprávný email nebo heslo',
+          en: 'Invalid email or password',
+        },
       },
       forgotPassword: {
         cs: 'Zapomněli jste heslo?',
         en: 'Forgot your password?',
       },
     },
-    signup: {
-      cs: 'Registrace',
-      en: 'Sign Up',
-    },
     signUp: {
+      title: {
+        cs: 'Registrace',
+        en: 'Sign Up',
+      },
       validation: {
         firstNameRequired: {
           cs: 'Jméno musí mít alespoň 2 znaky',
@@ -69,14 +75,6 @@ export const texts = {
           en: "Passwords don't match",
         },
       },
-    },
-    login: {
-      cs: 'Přihlásit',
-      en: 'Login',
-    },
-    logout: {
-      cs: 'Odhlásit',
-      en: 'Logout',
     },
     forgotPassword: {
       title: {
@@ -101,15 +99,13 @@ export const texts = {
       },
       success: {
         title: {
-          cs: 'Email odeslán',
-          en: 'Email Sent',
+          cs: 'Email byl odeslán',
+          en: 'Email has been sent',
         },
         message: {
           cs: 'Pokud účet s tímto emailem existuje, poslali jsme vám odkaz pro obnovení hesla.',
           en: 'If an account exists with this email, we have sent you a password reset link.',
         },
-        cs: 'Email byl odeslán',
-        en: 'Email has been sent',
       },
       error: {
         title: {
@@ -119,6 +115,10 @@ export const texts = {
         message: {
           cs: 'Nepodařilo se odeslat email pro obnovení hesla. Zkuste to prosím později.',
           en: 'Failed to send password reset email. Please try again later.',
+        },
+        unknown: {
+          cs: 'Nastala neznámá chyba',
+          en: 'An unknown error occurred',
         },
         cs: 'Nepodařilo se odeslat email',
         en: 'Failed to send email',
@@ -160,12 +160,12 @@ export const texts = {
         en: 'Password has been reset successfully',
       },
       error: {
+        invalidToken: {
+          cs: 'Neplatný nebo expirovaný odkaz pro obnovení hesla',
+          en: 'Invalid or expired password reset link',
+        },
         cs: 'Nepodařilo se změnit heslo',
         en: 'Failed to reset password',
-      },
-      invalidToken: {
-        cs: 'Neplatný nebo expirovaný odkaz pro obnovení hesla',
-        en: 'Invalid or expired password reset link',
       },
     },
   },
@@ -175,8 +175,8 @@ export const texts = {
       en: 'Access Denied',
     },
     subtitle: {
-      cs: '401',
-      en: '401',
+      cs: '403',
+      en: '403',
     },
     message: {
       cs: 'Pro přístup k těmto stránkám se prosím přihlašte.',
@@ -191,10 +191,6 @@ export const texts = {
     title: {
       cs: 'Naši školáci',
       en: 'Our Students',
-    },
-    logout: {
-      cs: 'Odhlásit se',
-      en: 'Logout',
     },
   },
   childrenTable: {
@@ -984,6 +980,10 @@ export const texts = {
       cs: 'Smazat',
       en: 'Delete',
     },
+    messageDeleted: {
+      cs: 'Zpráva byla úspěšně smazána',
+      en: 'Message deleted successfully',
+    },
     noMessages: {
       cs: 'Žádné zprávy',
       en: 'No messages',
@@ -1000,10 +1000,6 @@ export const texts = {
       cs: 'Vyberte příjemce',
       en: 'Select recipient',
     },
-    refresh: {
-      cs: 'Obnovit',
-      en: 'Refresh',
-    },
     search: {
       cs: 'Hledat zprávy...',
       en: 'Search messages...',
@@ -1015,6 +1011,12 @@ export const texts = {
     noMessagesFound: {
       cs: 'Žádné zprávy nenalezeny',
       en: 'No messages found',
+    },
+    error: {
+      deleteError: {
+        cs: 'Nepodařilo se smazat zprávu',
+        en: 'Failed to delete message',
+      },
     },
     notification: {
       subject: {
@@ -1046,6 +1048,22 @@ export const texts = {
     },
   },
   schedule: {
+    confirmDelete: {
+      cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
+      en: 'Are you sure you want to delete this schedule entry?',
+    },
+    selectClassOrChild: {
+      cs: 'Prosím vyberte dítě nebo třídu pro zobrazení rozvrhu.',
+      en: 'Please select a child or class to view the schedule.',
+    },
+    refresh: {
+      cs: 'Obnovit',
+      en: 'Refresh',
+    },
+    select: {
+      cs: 'Vyberte',
+      en: 'Select',
+    },
     menuItem: {
       cs: 'Rozvrh',
       en: 'Schedule',
@@ -1107,7 +1125,7 @@ export const texts = {
       en: 'Child',
     },
     class: {
-      cs: 'Třída',
+      cs: 'Třídu',
       en: 'Class',
     },
     timeSlot: {
@@ -1131,6 +1149,14 @@ export const texts = {
       en: 'Monthly Schedule',
     },
     viewOptions: {
+      hour: {
+        cs: 'Hodina',
+        en: 'Hour',
+      },
+      minutes: {
+        cs: 'Minuta',
+        en: 'Minute',
+      },
       day: {
         cs: 'Den',
         en: 'Day',
@@ -1175,6 +1201,14 @@ export const texts = {
       },
     },
     messages: {
+      refreshSuccess: {
+        cs: 'Rozvrh byl aktualizován',
+        en: 'Schedule updated',
+      },
+      refreshError: {
+        cs: 'Nepodařilo se aktualizovat rozvrh',
+        en: 'Failed to update schedule',
+      },
       createSuccess: {
         cs: 'Položka rozvrhu byla úspěšně vytvořena',
         en: 'Schedule entry created successfully',
@@ -1215,14 +1249,106 @@ export const texts = {
       },
     },
   },
+  datePicker: {
+    months: {
+      cs: [
+        'Leden',
+        'Únor',
+        'Březen',
+        'Duben',
+        'Květen',
+        'Červen',
+        'Červenec',
+        'Srpen',
+        'Září',
+        'Říjen',
+        'Listopad',
+        'Prosinec',
+      ],
+      en: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ],
+    },
+    weekdays: {
+      cs: ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'],
+      en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    },
+    openPicker: {
+      cs: 'Otevřít výběr datumu',
+      en: 'Open date picker',
+    },
+    selectWeek: {
+      cs: 'Klikněte na libovolný den pro výběr týdne',
+      en: 'Click any day to select the week',
+    },
+    selectMonth: {
+      cs: 'Vyberte měsíc',
+      en: 'Select month',
+    },
+    selectDate: {
+      cs: 'Vyberte datum',
+      en: 'Select date',
+    },
+    clear: {
+      cs: 'Vymazat',
+      en: 'Clear',
+    },
+    thisMonth: {
+      cs: 'Tento měsíc',
+      en: 'This Month',
+    },
+    today: {
+      cs: 'Dnes',
+      en: 'Today',
+    },
+    previousMonth: {
+      cs: 'Předchozí měsíc',
+      en: 'Previous Month',
+    },
+    previousYear: {
+      cs: 'Předchozí rok',
+      en: 'Previous Year',
+    },
+    nextMonth: {
+      cs: 'Následující měsíc',
+      en: 'Next Month',
+    },
+    nextYear: {
+      cs: 'Následující rok',
+      en: 'Next Year',
+    },
+  },
   common: {
     actions: {
       cs: 'Akce',
       en: 'Actions',
     },
+    select: {
+      cs: 'Vyberte',
+      en: 'Select',
+    },
     delete: {
       cs: 'Smazat',
       en: 'Delete',
+    },
+    refresh: {
+      cs: 'Obnovit',
+      en: 'Refresh',
+    },
+    edit: {
+      cs: 'Upravit',
+      en: 'Edit',
     },
     save: {
       cs: 'Uložit',

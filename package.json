@@ -11,7 +11,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "nodemailer": "^6.10.0",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "module-alias": "^2.2.3"
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
@@ -33,5 +34,12 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+  },
+  "_moduleAliases": {
+    "@config": "backend/config",
+    "@db": "backend/db",
+    "@routes": "backend/routes",
+    "@middleware": "backend/middleware",
+    "@utils": "backend/utils"
   }
 }

@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../config/database');
 const authenticateToken = require('../middleware/auth');
 
-// Validation function for schedule data
 const validateSchedule = (data) => {
   const errors = [];
 
@@ -43,7 +42,6 @@ const validateSchedule = (data) => {
   return errors;
 };
 
-// Check if user can access child's schedule
 const canAccessChildSchedule = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
@@ -53,7 +51,6 @@ const canAccessChildSchedule = async (userId, userRole, childId) => {
   }
 
   if (userRole === 'teacher') {
-    // Check if teacher is assigned to any class that the child is in
     const result = await pool.query(
       `
       SELECT 1 FROM class_teachers ct
@@ -68,12 +65,10 @@ const canAccessChildSchedule = async (userId, userRole, childId) => {
   return false;
 };
 
-// Check if user can edit child's schedule
 const canEditChildSchedule = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    // Check if teacher is assigned to any class that the child is in
     const result = await pool.query(
       `
       SELECT 1 FROM class_teachers ct
@@ -85,16 +80,91 @@ const canEditChildSchedule = async (userId, userRole, childId) => {
     return result.rows.length > 0;
   }
 
-  return false; // Parents can only view, not edit
+  return false;
 };
 
-// GET /api/schedules/child/:childId - Get schedule for a specific child
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const { date, week, month } = req.query;
+
+    if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    let query = `
+      SELECT 
+        s.id,
+        s.child_id,
+        s.class_id,
+        s.date,
+        s.start_time,
+        s.duration_hours,
+        s.activity,
+        s.notes,
+        s.created_at,
+        s.updated_at,
+        c.name as class_name,
+        ch.firstname as child_firstname,
+        ch.surname as child_surname,
+        creator.firstname as created_by_firstname,
+        creator.surname as created_by_surname,
+        updater.firstname as updated_by_firstname,
+        updater.surname as updated_by_surname
+      FROM schedules s
+      JOIN classes c ON s.class_id = c.id
+      JOIN children ch ON s.child_id = ch.id
+      LEFT JOIN users creator ON s.created_by = creator.id
+      LEFT JOIN users updater ON s.updated_by = updater.id
+    `;
+
+    const params = [];
+    let whereConditions = [];
+
+    if (req.user.role === 'teacher') {
+      whereConditions.push(
+        's.class_id IN (SELECT class_id FROM class_teachers WHERE teacher_id = $' +
+          (params.length + 1) +
+          ')'
+      );
+      params.push(req.user.id);
+    }
+
+    if (date) {
+      whereConditions.push('s.date = $' + (params.length + 1));
+      params.push(date);
+    } else if (week) {
+      whereConditions.push(
+        's.date >= $' +
+          (params.length + 1) +
+          ' AND s.date < $' +
+          (params.length + 1) +
+          "::date + interval '7 days'"
+      );
+      params.push(week);
+    } else if (month) {
+      whereConditions.push("DATE_TRUNC('month', s.date) = $" + (params.length + 1) + '::date');
+      params.push(month + '-01');
+    }
+
+    if (whereConditions.length > 0) {
+      query += ' WHERE ' + whereConditions.join(' AND ');
+    }
+
+    query += ' ORDER BY s.date ASC, s.start_time ASC';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching all schedules:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const { childId } = req.params;
     const { date, week, month } = req.query;
 
-    // Check access permissions
     const hasAccess = await canAccessChildSchedule(req.user.id, req.user.role, parseInt(childId));
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied' });
@@ -129,16 +199,13 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
 
     const params = [childId];
 
-    // Add date filtering
     if (date) {
       query += ' AND s.date = $2';
       params.push(date);
     } else if (week) {
-      // Week format: YYYY-MM-DD (Monday of the week)
       query += " AND s.date >= $2 AND s.date < $2::date + interval '7 days'";
       params.push(week);
     } else if (month) {
-      // Month format: YYYY-MM
       query += " AND DATE_TRUNC('month', s.date) = $2::date";
       params.push(month + '-01');
     }
@@ -153,13 +220,11 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/schedules/class/:classId - Get schedule for a specific class
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const { classId } = req.params;
     const { date, week, month } = req.query;
 
-    // Check if user can access this class
     if (req.user.role === 'teacher') {
       const teacherClassResult = await pool.query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
@@ -169,7 +234,6 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
         return res.status(403).json({ error: 'Access denied' });
       }
     } else if (req.user.role === 'parent') {
-      // Parents can only see schedules of their own children in this class
       const parentChildResult = await pool.query(
         `
         SELECT 1 FROM class_children cc
@@ -212,13 +276,11 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
 
     const params = [classId];
 
-    // For parents, only show their children's schedules
     if (req.user.role === 'parent') {
       query += ' AND ch.parent_id = $2';
       params.push(req.user.id);
     }
 
-    // Add date filtering
     if (date) {
       query += ` AND s.date = $${params.length + 1}`;
       params.push(date);
@@ -242,19 +304,16 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/schedules - Create a new schedule entry
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { child_id, class_id, date, start_time, duration_hours, activity, notes } = req.body;
 
-    // Validate input
     const validationErrors = validateSchedule(req.body);
     if (validationErrors.length > 0) {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    // Check if user can edit this child's schedule
     const canEdit = await canEditChildSchedule(req.user.id, req.user.role, child_id);
     if (!canEdit) {
       return res
@@ -264,7 +323,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Check if child is in the specified class
     const classChildResult = await client.query(
       'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
       [child_id, class_id]
@@ -275,7 +333,6 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Child is not assigned to this class' });
     }
 
-    // Check for time conflicts
     const conflictResult = await client.query(
       `
       SELECT id FROM schedules 
@@ -294,7 +351,6 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(409).json({ error: 'Time conflict with existing schedule entry' });
     }
 
-    // Insert the schedule
     const result = await client.query(
       `
       INSERT INTO schedules (child_id, class_id, date, start_time, duration_hours, activity, notes, created_by, updated_by)
@@ -315,14 +371,12 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// PUT /api/schedules/:id - Update a schedule entry
 router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
     const { child_id, class_id, date, start_time, duration_hours, activity, notes } = req.body;
 
-    // Validate input
     const validationErrors = validateSchedule(req.body);
     if (validationErrors.length > 0) {
       return res.status(400).json({ errors: validationErrors });
@@ -330,14 +384,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Check if schedule exists and get current child_id
     const scheduleResult = await client.query('SELECT child_id FROM schedules WHERE id = $1', [id]);
     if (scheduleResult.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Schedule not found' });
     }
 
-    // Check if user can edit this child's schedule
     const canEdit = await canEditChildSchedule(req.user.id, req.user.role, child_id);
     if (!canEdit) {
       await client.query('ROLLBACK');
@@ -346,7 +398,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
         .json({ error: "You do not have permission to edit this child's schedule" });
     }
 
-    // Check if child is in the specified class
     const classChildResult = await client.query(
       'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
       [child_id, class_id]
@@ -357,7 +408,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Child is not assigned to this class' });
     }
 
-    // Check for time conflicts (excluding current schedule)
     const conflictResult = await client.query(
       `
       SELECT id FROM schedules 
@@ -376,7 +426,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(409).json({ error: 'Time conflict with existing schedule entry' });
     }
 
-    // Update the schedule
     const result = await client.query(
       `
       UPDATE schedules 
@@ -399,7 +448,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// DELETE /api/schedules/:id - Delete a schedule entry
 router.delete('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -407,7 +455,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Check if schedule exists and get child_id
     const scheduleResult = await client.query('SELECT child_id FROM schedules WHERE id = $1', [id]);
     if (scheduleResult.rows.length === 0) {
       await client.query('ROLLBACK');

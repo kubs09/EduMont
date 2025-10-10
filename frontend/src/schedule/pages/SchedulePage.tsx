@@ -6,7 +6,6 @@ import {
   Select,
   HStack,
   VStack,
-  Input,
   useDisclosure,
   useToast,
   Spinner,
@@ -19,27 +18,29 @@ import {
   AlertIcon,
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import {
   getChildSchedule,
   getClassSchedule,
+  getAllSchedules,
   createSchedule,
   updateSchedule,
   deleteSchedule,
-} from '../../services/api/schedule';
-import { getChildren } from '../../services/api/child';
-import { getClasses } from '../../services/api/class';
+} from '@frontend/services/api/schedule';
+import { getChildren } from '@frontend/services/api/child';
+import { getClasses } from '@frontend/services/api/class';
 import {
   Schedule,
   CreateScheduleData,
   UpdateScheduleData,
   ScheduleViewType,
-} from '../../types/schedule';
-import { Child } from '../../types/child';
-import { Class } from '../../types/class';
-import ScheduleModal from '../../components/schedule/ScheduleModal';
-import ScheduleTable from '../../components/schedule/ScheduleTable';
+} from '@frontend/types/schedule';
+import { Child } from '@frontend/types/child';
+import { Class } from '@frontend/types/class';
+import ScheduleModal from '@frontend/schedule/components/ScheduleModal';
+import ScheduleTable from '@frontend/schedule/components/ScheduleTable';
+import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
@@ -56,7 +57,6 @@ const SchedulePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
 
-  // Get user role from localStorage (existing auth pattern)
   const userRole = localStorage.getItem('userRole') || '';
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
@@ -69,12 +69,11 @@ const SchedulePage: React.FC = () => {
       case 'day':
         return { date: selectedDate };
       case 'week':
-        // Get Monday of the week
         const monday = new Date(date);
         monday.setDate(date.getDate() - date.getDay() + 1);
         return { week: monday.toISOString().split('T')[0] };
       case 'month':
-        return { month: selectedDate.substring(0, 7) }; // YYYY-MM format
+        return { month: selectedDate.substring(0, 7) };
       default:
         return {};
     }
@@ -91,6 +90,18 @@ const SchedulePage: React.FC = () => {
         scheduleData = await getChildSchedule(parseInt(selectedChild), filters);
       } else if (selectedClass) {
         scheduleData = await getClassSchedule(parseInt(selectedClass), filters);
+      } else if (canEdit) {
+        scheduleData = await getAllSchedules(filters);
+      } else if (isParent && !selectedChild) {
+        const childSchedulePromises = childrenList.map((child) =>
+          getChildSchedule(child.id, filters)
+        );
+        const allChildSchedules = await Promise.all(childSchedulePromises);
+        scheduleData = allChildSchedules.flat().sort((a, b) => {
+          const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime();
+          if (dateCompare !== 0) return dateCompare;
+          return a.start_time.localeCompare(b.start_time);
+        });
       }
 
       setSchedules(scheduleData);
@@ -104,20 +115,23 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedChild, selectedClass, getDateFilters, language, toast]);
+  }, [
+    selectedChild,
+    selectedClass,
+    getDateFilters,
+    language,
+    toast,
+    canEdit,
+    isParent,
+    childrenList,
+  ]);
 
   const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       const [childrenData, classesData] = await Promise.all([getChildren(), getClasses()]);
-
       setChildrenList(childrenData);
       setClasses(classesData);
-
-      // Auto-select first child for parents
-      if (isParent && childrenData.length > 0) {
-        setSelectedChild(childrenData[0].id.toString());
-      }
     } catch (error) {
       toast({
         title: texts.schedule.messages.fetchError[language],
@@ -128,34 +142,32 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [isParent, language, toast]);
+  }, [language, toast]);
 
-  // Function to refresh children list (for when new children are added)
   const refreshChildrenList = useCallback(async () => {
     try {
       const childrenData = await getChildren();
       setChildrenList(childrenData);
 
-      // If current selected child is no longer available, reset selection
       if (selectedChild && !childrenData.find((c) => c.id.toString() === selectedChild)) {
         setSelectedChild('');
       }
 
       toast({
-        title: 'Children list updated',
+        title: texts.schedule.messages.refreshSuccess[language],
         status: 'success',
         duration: 2000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: 'Failed to refresh children list',
+        title: texts.schedule.messages.refreshError[language],
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [selectedChild, toast]);
+  }, [selectedChild, toast, language]);
 
   useEffect(() => {
     loadInitialData();
@@ -192,7 +204,7 @@ const SchedulePage: React.FC = () => {
   };
 
   const handleDeleteSchedule = async (schedule: Schedule) => {
-    if (window.confirm(`Are you sure you want to delete this schedule entry?`)) {
+    if (window.confirm(texts.schedule.confirmDelete[language])) {
       try {
         await deleteSchedule(schedule.id);
         await loadSchedules();
@@ -244,7 +256,7 @@ const SchedulePage: React.FC = () => {
               onClick={refreshChildrenList}
               size={{ base: 'sm', md: 'md' }}
             >
-              Refresh
+              {texts.schedule.refresh[language]}
             </Button>
             {canEdit && (
               <Button
@@ -263,10 +275,10 @@ const SchedulePage: React.FC = () => {
           <CardHeader>
             <VStack spacing={4} align="stretch">
               <HStack wrap="wrap" spacing={4}>
-                {!isParent && (
+                {isParent && childrenList.length > 1 && (
                   <Box>
                     <Select
-                      placeholder={`Select ${texts.schedule.child[language].toLowerCase()}`}
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
                       value={selectedChild}
                       onChange={(e) => {
                         setSelectedChild(e.target.value);
@@ -283,10 +295,30 @@ const SchedulePage: React.FC = () => {
                   </Box>
                 )}
 
-                {!selectedChild && (
+                {!isParent && (
                   <Box>
                     <Select
-                      placeholder={`Select ${texts.schedule.class[language].toLowerCase()}`}
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
+                      value={selectedChild}
+                      onChange={(e) => {
+                        setSelectedChild(e.target.value);
+                        setSelectedClass('');
+                      }}
+                      maxW="200px"
+                    >
+                      {childrenList.map((child) => (
+                        <option key={child.id} value={child.id}>
+                          {child.firstname} {child.surname}
+                        </option>
+                      ))}
+                    </Select>
+                  </Box>
+                )}
+
+                {!selectedChild && !isParent && (
+                  <Box>
+                    <Select
+                      placeholder={`${texts.schedule.select[language]} ${texts.schedule.class[language].toLowerCase()}`}
                       value={selectedClass}
                       onChange={(e) => setSelectedClass(e.target.value)}
                       maxW="200px"
@@ -323,37 +355,36 @@ const SchedulePage: React.FC = () => {
                   </Button>
                 </ButtonGroup>
 
-                <Input
-                  type={viewType === 'month' ? 'month' : 'date'}
-                  value={viewType === 'month' ? selectedDate.substring(0, 7) : selectedDate}
-                  onChange={(e) => {
-                    if (viewType === 'month') {
-                      setSelectedDate(e.target.value + '-01');
-                    } else {
-                      setSelectedDate(e.target.value);
-                    }
+                <DatePicker
+                  viewType={viewType}
+                  value={selectedDate}
+                  onChange={(value) => {
+                    setSelectedDate(value);
                   }}
-                  maxW="200px"
+                  language={language}
                 />
               </HStack>
             </VStack>
           </CardHeader>
 
           <CardBody>
-            {!selectedChild && !selectedClass && !isParent && (
+            {!selectedChild && !selectedClass && isParent && childrenList.length === 0 && (
               <Alert status="info">
                 <AlertIcon />
-                Please select a child or class to view the schedule.
+                {texts.schedule.selectClassOrChild[language]}
               </Alert>
             )}
 
-            {(selectedChild || selectedClass || isParent) && (
+            {(selectedChild ||
+              selectedClass ||
+              (isParent && childrenList.length > 0) ||
+              canEdit) && (
               <ScheduleTable
                 schedules={schedules}
                 onEdit={canEdit ? handleEditSchedule : undefined}
                 onDelete={canEdit ? handleDeleteSchedule : undefined}
                 canEdit={canEdit}
-                showChild={!selectedChild}
+                showChild={isParent ? true : !selectedChild}
                 showClass={!selectedClass}
               />
             )}

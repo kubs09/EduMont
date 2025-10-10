@@ -20,7 +20,6 @@ const auth = async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    // Handle different types of JWT errors specifically
     if (error.name === 'TokenExpiredError') {
       console.log('Token expired:', error.expiredAt);
       return res.status(401).json({

@@ -16,11 +16,14 @@ import {
   VStack,
   useToast,
   FormErrorMessage,
+  HStack,
+  Text,
 } from '@chakra-ui/react';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule, CreateScheduleData, UpdateScheduleData } from '../../types/schedule';
 import { Child } from '../../types/child';
+import { DatePicker } from '../../shared/components/DatePicker';
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -75,7 +78,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (schedule) {
-        // Edit mode
         setFormData({
           child_id: schedule.child_id.toString(),
           date: schedule.date,
@@ -85,7 +87,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           notes: schedule.notes || '',
         });
       } else {
-        // Create mode
         setFormData({
           child_id: defaultChildId?.toString() || '',
           date: defaultDate || new Date().toISOString().split('T')[0],
@@ -132,7 +133,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Find the selected child to get their class_id
       const selectedChild = childrenData.find((child) => child.id === parseInt(formData.child_id));
       if (!selectedChild) {
         toast({
@@ -231,21 +231,55 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
             <FormControl isRequired isInvalid={!!errors.date}>
               <FormLabel>{texts.schedule.date[language]}</FormLabel>
-              <Input
-                type="date"
+              <DatePicker
+                viewType="day"
                 value={formData.date}
-                onChange={(e) => handleChange('date', e.target.value)}
+                onChange={(value) => handleChange('date', value)}
+                language={language}
               />
               <FormErrorMessage>{errors.date}</FormErrorMessage>
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.start_time}>
               <FormLabel>{texts.schedule.startTime[language]}</FormLabel>
-              <Input
-                type="time"
-                value={formData.start_time}
-                onChange={(e) => handleChange('start_time', e.target.value)}
-              />
+              <HStack spacing={2}>
+                <Select
+                  value={formData.start_time.split(':')[0] || ''}
+                  onChange={(e) => {
+                    const hours = e.target.value;
+                    const minutes = formData.start_time.split(':')[1] || '00';
+                    handleChange('start_time', `${hours}:${minutes}`);
+                  }}
+                  placeholder={texts.schedule.viewOptions.hour[language]}
+                  maxW="120px"
+                >
+                  {Array.from({ length: 24 }, (_, i) => (
+                    <option key={i} value={i.toString().padStart(2, '0')}>
+                      {i.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </Select>
+                <Text>:</Text>
+                <Select
+                  value={formData.start_time.split(':')[1] || ''}
+                  onChange={(e) => {
+                    const hours = formData.start_time.split(':')[0] || '00';
+                    const minutes = e.target.value;
+                    handleChange('start_time', `${hours}:${minutes}`);
+                  }}
+                  placeholder={texts.schedule.viewOptions.minutes[language]}
+                  maxW="120px"
+                >
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const minutes = (i * 5).toString().padStart(2, '0');
+                    return (
+                      <option key={minutes} value={minutes}>
+                        {minutes}
+                      </option>
+                    );
+                  })}
+                </Select>
+              </HStack>
               <FormErrorMessage>{errors.start_time}</FormErrorMessage>
             </FormControl>
 

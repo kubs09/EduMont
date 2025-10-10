@@ -1,7 +1,23 @@
 import axios from 'axios';
 
+// Determine the base URL with fallback logic
+const getBaseURL = () => {
+  // Check if we have an explicit API URL set
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  // In production (Vercel), use the current domain - Vercel routing adds /api
+  if (process.env.NODE_ENV === 'production') {
+    return window.location.origin;
+  }
+
+  // Development fallback
+  return 'http://localhost:5000';
+};
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

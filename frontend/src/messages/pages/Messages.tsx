@@ -93,9 +93,9 @@ const Messages: React.FC = () => {
       await deleteMessage(id);
       fetchMessages();
       setSelectedMessage(null);
-      enqueueSnackbar('Message deleted', { variant: 'success' });
+      enqueueSnackbar(texts.messages.messageDeleted[language], { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar('Failed to delete message', { variant: 'error' });
+      enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
     }
   };
 
@@ -141,7 +141,7 @@ const Messages: React.FC = () => {
             {t.compose[language]}
           </Button>
           <Button leftIcon={<RepeatIcon />} onClick={fetchMessages} isLoading={isRefreshing} mb={2}>
-            {t.refresh?.[language] || 'Refresh'}
+            {texts.common.refresh[language]}
           </Button>
         </GridItem>
 

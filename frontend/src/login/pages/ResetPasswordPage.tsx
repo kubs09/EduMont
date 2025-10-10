@@ -13,10 +13,13 @@ import {
   Heading,
   useToast,
 } from '@chakra-ui/react';
-import { resetPassword } from '../../services/api';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { createResetPasswordSchema, ResetPasswordSchema } from '../schemas/ResetPasswordSchema';
+import { resetPassword } from '@frontend/services/api/auth';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import {
+  createResetPasswordSchema,
+  ResetPasswordSchema,
+} from '@frontend/login/schemas/ResetPasswordSchema';
 
 const ResetPasswordPage = () => {
   const { language } = useLanguage();
@@ -39,7 +42,7 @@ const ResetPasswordPage = () => {
 
     if (!token) {
       toast({
-        title: texts.auth.resetPassword.invalidToken[language],
+        title: texts.auth.resetPassword.error.invalidToken[language],
         status: 'error',
         duration: 5000,
       });
@@ -59,7 +62,7 @@ const ResetPasswordPage = () => {
       let errorMessage = texts.auth.resetPassword.error[language];
       if (error instanceof Error) {
         if (error.message.includes('Token is invalid')) {
-          errorMessage = texts.auth.resetPassword.invalidToken[language];
+          errorMessage = texts.auth.resetPassword.error.invalidToken[language];
         }
       }
       toast({
