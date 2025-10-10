@@ -1,5 +1,5 @@
 {
-  "name": "edumont",
+  "name": "edumont-react",
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
@@ -34,7 +34,8 @@
     "dev": "nodemon backend/server.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "start": "cd backend && npm start"
   },
   "_moduleAliases": {
     "@config": "backend/config",

@@ -7,10 +7,9 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production (Vercel), use the current domain
+  // In production (Vercel), use the current domain with /api prefix
   if (process.env.NODE_ENV === 'production') {
-    // For Vercel deployment, use relative URLs
-    return '';
+    return '/api';
   }
 
   const devUrls = [
@@ -34,8 +33,8 @@ const api = axios.create({
 
 const testConnection = async () => {
   try {
-    await api.get('/api/debug');
-    console.log('✅ Server connection successful');
+    const response = await api.get('/debug');
+    console.log('✅ Server connection successful:', response.data);
     return true;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
