@@ -7,7 +7,7 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production (Vercel), use the current domain - Vercel routing adds /api
+  // In production (Vercel), use the current domain
   if (process.env.NODE_ENV === 'production') {
     return window.location.origin;
   }
@@ -22,6 +22,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000,
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -41,6 +42,13 @@ api.interceptors.response.use(
       data: error.response?.data,
       message: error.message,
     });
+
+    // Handle auth errors
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
     throw error;
   }
 );
