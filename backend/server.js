@@ -74,12 +74,25 @@ const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://10.0.1.37:3000', process.env.FRONTEND_URL],
+    origin: [
+      'http://localhost:3000', 
+      'http://10.0.1.37:3000', 
+      process.env.FRONTEND_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+      process.env.NODE_ENV === 'production' ? true : false
+    ].filter(Boolean),
     credentials: true,
   })
 );
 app.use(bodyParser.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Ensure public directory exists and is properly referenced
+const publicPath = path.join(__dirname, 'public');
+try {
+  app.use(express.static(publicPath));
+} catch (err) {
+  console.warn('Public directory not accessible:', publicPath);
+}
 
 // Add debug endpoint
 app.get('/api/debug', (req, res) => {
@@ -95,15 +108,36 @@ app.get('/api/debug', (req, res) => {
 
 // Initialize database only if modules loaded successfully
 if (modulesLoaded && pool && initDatabase) {
-  pool
-    .connect()
-    .then(() => {
-      return initDatabase();
-    })
-    .catch((err) => {
-      console.error('Database initialization failed:', err);
-      process.exit(1);
+  // For serverless, we need to handle database initialization differently
+  if (process.env.VERCEL) {
+    // In Vercel, initialize on first request rather than at startup
+    let dbInitialized = false;
+    app.use(async (req, res, next) => {
+      if (!dbInitialized) {
+        try {
+          await pool.connect();
+          await initDatabase();
+          dbInitialized = true;
+          console.log('Database initialized for serverless environment');
+        } catch (err) {
+          console.error('Database initialization failed in serverless:', err);
+          return res.status(500).json({ error: 'Database initialization failed' });
+        }
+      }
+      next();
     });
+  } else {
+    // Traditional server startup
+    pool
+      .connect()
+      .then(() => {
+        return initDatabase();
+      })
+      .catch((err) => {
+        console.error('Database initialization failed:', err);
+        process.exit(1);
+      });
+  }
 }
 
 app.use((req, res, next) => {
@@ -153,9 +187,16 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || 'localhost';
+// For Vercel serverless deployment
+module.exports = app;
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on ${HOST}:${PORT}`);
-});
+// Only start the server if this file is run directly (not in serverless environment)
+if (require.main === module && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Modules loaded: ${modulesLoaded}`);
+  });
+}

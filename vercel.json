@@ -1,26 +1,27 @@
 {
   "version": 2,
-  "builds": [
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/build",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
     {
-      "src": "backend/api/index.js",
-      "use": "@vercel/node"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/frontend/$1"
-    }
-  ]
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "true",
+    "GENERATE_SOURCEMAP": "false",
+    "TSC_COMPILE_ON_ERROR": "true",
+    "DISABLE_ESLINT_PLUGIN": "true"
+  }
 }

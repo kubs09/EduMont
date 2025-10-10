@@ -56,7 +56,7 @@ const ProfilePage = () => {
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
 
   useEffect(() => {
     if (userRole === 'parent') {

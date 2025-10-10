@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
   webpack: {
     alias: {
-      '@': path.resolve(__dirname, '../'),
+      '@': path.resolve(__dirname, 'src'),
       '@frontend': path.resolve(__dirname, 'src'),
       '@components': path.resolve(__dirname, 'src/components'),
       '@utils': path.resolve(__dirname, 'src/utils'),
@@ -13,8 +13,8 @@ module.exports = {
       '@assets': path.resolve(__dirname, 'src/assets'),
       '@styles': path.resolve(__dirname, 'src/styles'),
       '@services': path.resolve(__dirname, 'src/services'),
-      '@core': path.resolve(__dirname, '../core'),
-      '@shared': path.resolve(__dirname, '../shared'),
+      '@core': path.resolve(__dirname, '..', 'core'),
+      '@shared': path.resolve(__dirname, '..', 'shared'),
     },
     configure: (webpackConfig, { env = process.env.NODE_ENV } = {}) => {
       webpackConfig.resolve.modules = [path.resolve(__dirname, 'src'), 'node_modules'];
@@ -125,6 +125,21 @@ module.exports = {
       }
 
       return babelLoaderOptions;
+    },
+  },
+  jest: {
+    configure: {
+      moduleNameMapping: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@frontend/(.*)$': '<rootDir>/src/$1',
+        '^@components/(.*)$': '<rootDir>/src/components/$1',
+        '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+        '^@hooks/(.*)$': '<rootDir>/src/hooks/$1',
+        '^@types/(.*)$': '<rootDir>/src/types/$1',
+        '^@assets/(.*)$': '<rootDir>/src/assets/$1',
+        '^@styles/(.*)$': '<rootDir>/src/styles/$1',
+        '^@services/(.*)$': '<rootDir>/src/services/$1',
+      },
     },
   },
 };
