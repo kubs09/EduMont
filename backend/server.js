@@ -78,7 +78,8 @@ app.use(
       'http://localhost:3000', 
       'http://10.0.1.37:3000', 
       process.env.FRONTEND_URL,
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+      process.env.NODE_ENV === 'production' ? true : false
     ].filter(Boolean),
     credentials: true,
   })
@@ -166,15 +167,4 @@ app.use((err, req, res, next) => {
 });
 
 // For Vercel serverless deployment
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
-  const PORT = process.env.PORT || 5000;
-  const HOST = process.env.HOST || 'localhost';
-
-  app.listen(PORT, HOST, () => {
-    console.log(`Server running on ${HOST}:${PORT}`);
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('Modules loaded:', modulesLoaded);
-  });
-}
+module.exports = app;
