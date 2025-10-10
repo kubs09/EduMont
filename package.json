@@ -43,5 +43,8 @@
     "@routes": "backend/routes",
     "@middleware": "backend/middleware",
     "@utils": "backend/utils"
+  },
+  "engines": {
+    "node": ">=16.x"
   }
 }
