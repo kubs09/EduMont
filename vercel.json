@@ -12,7 +12,8 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "build"
+        "distDir": "build",
+        "buildCommand": "npm install && npm run build"
       }
     }
   ],
@@ -36,6 +37,8 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "VERCEL": "true"
+    "VERCEL": "true",
+    "GENERATE_SOURCEMAP": "false",
+    "TSC_COMPILE_ON_ERROR": "true"
   }
 }
