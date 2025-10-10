@@ -168,3 +168,14 @@ app.use((err, req, res, next) => {
 
 // For Vercel serverless deployment
 module.exports = app;
+
+// Only start the server if this file is run directly (not in serverless environment)
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Modules loaded: ${modulesLoaded}`);
+    });
+  }

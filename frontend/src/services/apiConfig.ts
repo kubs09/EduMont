@@ -12,8 +12,14 @@ const getBaseURL = () => {
     return window.location.origin;
   }
 
-  // Development fallback
-  return 'http://localhost:5000';
+  const devUrls = [
+    'http://localhost:5000',
+    'http://localhost:3001',
+    'http://127.0.0.1:5000',
+    'http://10.0.1.37:5000',
+  ];
+
+  return devUrls[0];
 };
 
 const api = axios.create({
@@ -21,9 +27,24 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000,
+  timeout: 10000,
   withCredentials: true,
 });
+
+const testConnection = async () => {
+  try {
+    await api.get('/api/debug');
+    console.log('✅ Server connection successful');
+    return true;
+  } catch (error) {
+    console.warn('❌ Server connection failed:', error.message);
+    return false;
+  }
+};
+
+if (process.env.NODE_ENV === 'development') {
+  testConnection();
+}
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -41,7 +62,14 @@ api.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data,
       message: error.message,
+      baseURL: error.config?.baseURL,
     });
+
+    if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
+      console.error('🚨 Backend server is not running!');
+      console.log('💡 Make sure to start the backend server:');
+      console.log('   cd backend && npm start');
+    }
 
     // Handle auth errors
     if (error.response?.status === 401) {
