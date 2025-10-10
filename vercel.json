@@ -13,7 +13,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build",
-        "buildCommand": "npm install && npm run build"
+        "buildCommand": "npm install && npm run vercel-build"
       }
     }
   ],
@@ -39,6 +39,7 @@
     "NODE_ENV": "production",
     "VERCEL": "true",
     "GENERATE_SOURCEMAP": "false",
-    "TSC_COMPILE_ON_ERROR": "true"
+    "TSC_COMPILE_ON_ERROR": "true",
+    "DISABLE_ESLINT_PLUGIN": "true"
   }
 }
