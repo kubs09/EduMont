@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { useLanguage } from '../shared/contexts/LanguageContext';
 import { texts } from '../texts';
-import api from '@frontend/services/apiConfig';
+import api from '../services/apiConfig';
 import { ROUTES } from '../shared/route';
 import { createSignupSchema, type SignupSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';

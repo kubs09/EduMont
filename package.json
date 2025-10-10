@@ -13,7 +13,9 @@
     "nodemailer": "^6.10.0",
     "pg": "^8.11.0",
     "module-alias": "^2.2.3",
-    "@craco/craco": "^7.1.0"
+    "@craco/craco": "^7.1.0",
+    "mysql2": "^3.6.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
@@ -36,7 +38,7 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "start": "cd backend && npm start",
-    "vercel-build": "cd frontend && npm install && npm run vercel-build"
+    "vercel-build": "cd frontend && npm install && npm run build"
   },
   "_moduleAliases": {
     "@config": "backend/config",
