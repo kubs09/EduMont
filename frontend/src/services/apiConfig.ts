@@ -7,13 +7,13 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production (Vercel), use the current domain with /api prefix
+  // In production (Vercel), use the current domain
   if (process.env.NODE_ENV === 'production') {
-    return `${window.location.origin}/api`;
+    return window.location.origin;
   }
 
   // Development fallback
-  return 'http://localhost:5000/api';
+  return 'http://localhost:5000';
 };
 
 const api = axios.create({
