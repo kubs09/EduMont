@@ -74,7 +74,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://10.0.1.37:3000', process.env.FRONTEND_URL],
+    origin: [
+      'http://localhost:3000', 
+      'http://10.0.1.37:3000', 
+      process.env.FRONTEND_URL,
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+    ].filter(Boolean),
     credentials: true,
   })
 );
@@ -169,5 +174,7 @@ if (process.env.VERCEL) {
 
   app.listen(PORT, HOST, () => {
     console.log(`Server running on ${HOST}:${PORT}`);
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Modules loaded:', modulesLoaded);
   });
 }
