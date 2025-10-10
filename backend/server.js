@@ -79,7 +79,14 @@ app.use(
   })
 );
 app.use(bodyParser.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Ensure public directory exists and is properly referenced
+const publicPath = path.join(__dirname, 'public');
+try {
+  app.use(express.static(publicPath));
+} catch (err) {
+  console.warn('Public directory not accessible:', publicPath);
+}
 
 // Add debug endpoint
 app.get('/api/debug', (req, res) => {
@@ -153,9 +160,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.HOST || 'localhost';
+// For Vercel serverless deployment
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  const PORT = process.env.PORT || 5000;
+  const HOST = process.env.HOST || 'localhost';
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on ${HOST}:${PORT}`);
-});
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running on ${HOST}:${PORT}`);
+  });
+}
