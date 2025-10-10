@@ -35,7 +35,8 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
-    "start": "cd backend && npm start"
+    "start": "cd backend && npm start",
+    "vercel-build": "cd frontend && npm install && npm run build"
   },
   "_moduleAliases": {
     "@config": "backend/config",
