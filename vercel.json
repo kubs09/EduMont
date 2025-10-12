@@ -10,8 +10,8 @@
   },
   "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "/api/index.js"
+      "source": "/api/:path*",
+      "destination": "/api/index"
     },
     {
       "source": "/(.*)",
@@ -24,6 +24,7 @@
     "GENERATE_SOURCEMAP": "false",
     "TSC_COMPILE_ON_ERROR": "true",
     "DISABLE_ESLINT_PLUGIN": "true",
-    "USE_BCRYPTJS": "true"
+    "USE_BCRYPTJS": "true",
+    "USE_SUPABASE": "true"
   }
 }

@@ -44,10 +44,7 @@ try {
   usersRoutes = requireWithFallback('@routes/users', 'routes/users');
   classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
   schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
-  passwordResetRoutes = requireWithFallback(
-    '@routes/password-reset',
-    'routes/password-reset'
-  );
+  passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
   messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
   modulesLoaded = true;
 } catch (error) {
@@ -62,11 +59,11 @@ const app = express();
 app.use(
   cors({
     origin: [
-      'http://localhost:3000', 
-      'http://10.0.1.37:3000', 
+      'http://localhost:3000',
+      'http://10.0.1.37:3000',
       process.env.FRONTEND_URL,
       process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      process.env.NODE_ENV === 'production' ? true : false
+      process.env.NODE_ENV === 'production' ? true : false,
     ].filter(Boolean),
     credentials: true,
   })
@@ -99,19 +96,66 @@ if (modulesLoaded && pool && initDatabase) {
   if (process.env.VERCEL) {
     // In Vercel, initialize on first request rather than at startup
     let dbInitialized = false;
+    let dbInitializing = false;
+
     app.use(async (req, res, next) => {
-      if (!dbInitialized) {
-        try {
-          await pool.connect();
-          await initDatabase();
-          dbInitialized = true;
-          console.log('Database initialized for serverless environment');
-        } catch (err) {
-          console.error('Database initialization failed in serverless:', err);
-          return res.status(500).json({ error: 'Database initialization failed' });
-        }
+      // Skip initialization for non-API routes
+      if (!req.path.startsWith('/api')) {
+        return next();
       }
-      next();
+
+      if (dbInitialized) {
+        return next();
+      }
+
+      // Prevent concurrent initialization attempts
+      if (dbInitializing) {
+        // Wait a bit and check again
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        if (dbInitialized) {
+          return next();
+        }
+        return res.status(503).json({ error: 'Database is initializing, please retry' });
+      }
+
+      dbInitializing = true;
+      try {
+        console.log('Initializing database for serverless environment...');
+
+        // Check if we're using Supabase
+        if (process.env.USE_SUPABASE === 'true') {
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+            throw new Error(
+              'Supabase configuration missing: SUPABASE_URL and SUPABASE_KEY required'
+            );
+          }
+          console.log('Using Supabase database');
+        } else {
+          console.log('Using SQLite database at:', process.env.DB_PATH);
+        }
+
+        await pool.connect();
+        await initDatabase();
+        dbInitialized = true;
+        dbInitializing = false;
+        console.log('✅ Database initialized successfully');
+        next();
+      } catch (err) {
+        dbInitializing = false;
+        console.error('❌ Database initialization failed:', err);
+        console.error('Error details:', {
+          message: err.message,
+          stack: err.stack,
+          useSupabase: process.env.USE_SUPABASE,
+          supabaseUrl: process.env.SUPABASE_URL ? 'set' : 'not set',
+          dbPath: process.env.DB_PATH,
+        });
+        return res.status(500).json({
+          error: 'Database initialization failed',
+          message: err.message,
+          details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        });
+      }
     });
   } else {
     // Traditional server startup
@@ -180,7 +224,7 @@ module.exports = app;
 // Only start the server if this file is run directly (not in serverless environment)
 if (require.main === module && !process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
-  
+
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
