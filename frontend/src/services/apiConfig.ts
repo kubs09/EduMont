@@ -9,7 +9,7 @@ const getBaseURL = () => {
 
   // In production (Vercel), use the current domain with /api prefix
   if (process.env.NODE_ENV === 'production') {
-    return '/api';
+    return '';
   }
 
   const devUrls = [
