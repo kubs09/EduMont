@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const pool = require('../config/database');
 const { sendEmail } = require('../config/mail');
 const getForgotPasswordEmail = require('../templates/forgotPasswordEmail');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const generateResetToken = () => crypto.randomBytes(32).toString('hex');
 

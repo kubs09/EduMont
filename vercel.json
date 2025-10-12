@@ -4,7 +4,8 @@
   "outputDirectory": "frontend/build",
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "excludeFiles": "{node_modules/bcrypt/**,node_modules/@mapbox/**,node_modules/sqlite3/**}"
     }
   },
   "rewrites": [
@@ -22,6 +23,7 @@
     "VERCEL": "true",
     "GENERATE_SOURCEMAP": "false",
     "TSC_COMPILE_ON_ERROR": "true",
-    "DISABLE_ESLINT_PLUGIN": "true"
+    "DISABLE_ESLINT_PLUGIN": "true",
+    "USE_BCRYPTJS": "true"
   }
 }

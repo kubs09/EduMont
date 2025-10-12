@@ -21,33 +21,18 @@ let modulesLoaded = false;
 let moduleError = null;
 
 const requireWithFallback = (aliasPath, relativePath) => {
-  const fallbackPaths = [
-    relativePath,
-    `./${relativePath}`,
-    `../${relativePath}`,
-    path.join(__dirname, relativePath),
-    path.join(__dirname, '..', relativePath),
-    path.join(process.cwd(), relativePath),
-    path.join(process.cwd(), 'backend', relativePath),
-  ];
-
+  // First try the alias
   try {
     return require(aliasPath);
-  } catch (error) {
-    let lastError = error;
-    for (const fallbackPath of fallbackPaths) {
-      try {
-        return require(fallbackPath);
-      } catch (fallbackError) {
-        lastError = fallbackError;
-        continue;
-      }
+  } catch (aliasError) {
+    // Then try relative to this file
+    try {
+      return require(path.join(__dirname, relativePath));
+    } catch (relativeError) {
+      throw new Error(
+        `Failed to load module: ${aliasPath}. Alias error: ${aliasError.message}. Relative error: ${relativeError.message}`
+      );
     }
-    throw new Error(
-      `Failed to load module: ${aliasPath} (${error.message}). Tried fallbacks: ${fallbackPaths.join(
-        ', '
-      )}. Last error: ${lastError.message}`
-    );
   }
 };
 
@@ -67,6 +52,8 @@ try {
   modulesLoaded = true;
 } catch (error) {
   console.error('Module import error:', error);
+  console.error('Current directory:', __dirname);
+  console.error('Process cwd:', process.cwd());
   moduleError = error.message;
 }
 
