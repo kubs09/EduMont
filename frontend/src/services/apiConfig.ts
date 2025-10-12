@@ -70,7 +70,7 @@ api.interceptors.response.use(
     if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
       console.error('🚨 Backend server is not running!');
       console.log('💡 Make sure to start the backend server:');
-      console.log('   cd backend && npm start');
+      console.log('cd backend && npm start');
     }
 
     // Handle auth errors
