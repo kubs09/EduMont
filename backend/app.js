@@ -50,14 +50,14 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.use('/api', passwordResetRoutes);
+app.use(passwordResetRoutes);
 
-app.use('/api', authRoutes);
-app.use('/api/children', childrenRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/classes', classesRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/schedules', schedulesRoutes);
+app.use(authRoutes);
+app.use('/children', childrenRoutes);
+app.use('/users', usersRoutes);
+app.use('/classes', classesRoutes);
+app.use('/messages', messageRoutes);
+app.use('/schedules', schedulesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
