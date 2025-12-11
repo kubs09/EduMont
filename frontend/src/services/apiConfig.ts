@@ -7,10 +7,6 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    return '/api';
-  }
-
   const devUrls = [
     'http://localhost:5000',
     'http://localhost:3001',
