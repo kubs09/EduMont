@@ -29,14 +29,14 @@
     "typescript": "^4.9.5"
   },
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
+    "build": "npm install --prefix backend && cd frontend && npm install && npm run build",
     "server": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "start": "cd backend && npm start",
-    "vercel-build": "echo 'Vercel will build frontend separately'"
+    "vercel-build": "npm run build"
   },
   "_moduleAliases": {
     "@config": "backend/config",
