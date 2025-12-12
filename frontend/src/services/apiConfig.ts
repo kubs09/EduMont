@@ -7,9 +7,9 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production, use the Supabase API URL
+  // In production/monorepo, use the same origin
   if (process.env.NODE_ENV === 'production') {
-    return 'https://yxduwbhmbgiqytzakiwl.supabase.co';
+    return window.location.origin;
   }
 
   const devUrls = [
