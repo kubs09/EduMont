@@ -6,8 +6,8 @@ const { Pool } = require('pg');
 // Only use Supabase if explicitly enabled AND credentials are provided
 const useSupabase =
   (process.env.NODE_ENV === 'production' ||
-  !!process.env.VERCEL ||
-  process.env.USE_SUPABASE === 'true') &&
+    !!process.env.VERCEL ||
+    process.env.USE_SUPABASE === 'true') &&
   (!!process.env.SUPABASE_URL || !!process.env.SUPABASE_DATABASE_URL);
 
 console.log('Database configuration check:', {
@@ -39,11 +39,15 @@ if (useSupabase) {
 
   if (!supabaseUrl && !process.env.SUPABASE_DATABASE_URL) {
     // If SUPABASE_DATABASE_URL is set, we can use that instead
-    console.warn('⚠️ Supabase URL not configured, but SUPABASE_DATABASE_URL provided - will use that');
+    console.warn(
+      '⚠️ Supabase URL not configured, but SUPABASE_DATABASE_URL provided - will use that'
+    );
   }
 
   if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
-    throw new Error('Supabase credentials incomplete: Either SUPABASE_URL + SUPABASE_ANON_KEY or SUPABASE_DATABASE_URL required');
+    throw new Error(
+      'Supabase credentials incomplete: Either SUPABASE_URL + SUPABASE_ANON_KEY or SUPABASE_DATABASE_URL required'
+    );
   }
 
   // Extract connection details from Supabase URL (postgresql://user:password@host:port/database)

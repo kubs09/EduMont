@@ -85,11 +85,11 @@ try {
 module.exports = (req, res) => {
   // Vercel rewrites /api/xxx to /api/index.js?path=xxx
   // We need to reconstruct the original path for Express to route correctly
-  
+
   // Debug logging
   const incomingUrl = req.url || req.originalUrl || '/api/index.js';
   const queryPath = req.query?.path;
-  
+
   console.log('🔍 [API Handler] Incoming request:', {
     method: req.method,
     incomingUrl,
@@ -103,24 +103,22 @@ module.exports = (req, res) => {
     // Vercel sends the path segment as a query parameter
     if (queryPath) {
       // Get the path from query parameter (set by Vercel rewrite)
-      let pathSegment = Array.isArray(queryPath) 
-        ? queryPath.join('/') 
-        : String(queryPath);
-      
+      let pathSegment = Array.isArray(queryPath) ? queryPath.join('/') : String(queryPath);
+
       // Ensure it starts with /
       if (!pathSegment.startsWith('/')) {
         pathSegment = '/' + pathSegment;
       }
-      
+
       // Reconstruct the full API path
       const newUrl = `/api${pathSegment}`;
-      
+
       // Modify the request object for Express routing
       req.url = newUrl;
       if (req.originalUrl) {
         req.originalUrl = newUrl;
       }
-      
+
       console.log('✅ [API Handler] Reconstructed URL:', newUrl);
     } else {
       // If no query parameter, check if URL is already correct
@@ -132,13 +130,13 @@ module.exports = (req, res) => {
     }
 
     console.log('🚀 [API Handler] Passing to Express app with URL:', req.url);
-    
+
     // Pass to Express app for routing
     const result = app(req, res);
-    
+
     // Handle promise if the app returns a promise (async)
     if (result && typeof result.then === 'function') {
-      return result.catch(error => {
+      return result.catch((error) => {
         console.error('❌ [API Handler] Promise error:', error);
         if (!res.headersSent) {
           res.status(500).json({
@@ -148,7 +146,7 @@ module.exports = (req, res) => {
         }
       });
     }
-    
+
     return result;
   } catch (error) {
     console.error('❌ [API Handler] Exception caught:', error);
