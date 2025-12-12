@@ -56,16 +56,28 @@ try {
 
 const app = express();
 
+// CORS configuration - allow requests from frontend and any vercel deployment
+const corsOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://10.0.1.37:3000',
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+].filter(Boolean);
+
+// In production (Vercel), allow same-origin requests
+if (process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production') {
+  corsOrigins.push('*'); // Allow all origins in production on Vercel since frontend is same-domain
+}
+
+console.log('CORS enabled for origins:', corsOrigins);
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://10.0.1.37:3000',
-      process.env.FRONTEND_URL,
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      process.env.NODE_ENV === 'production' ? true : false,
-    ].filter(Boolean),
+    origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(bodyParser.json({ limit: '1mb' }));
