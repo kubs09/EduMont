@@ -81,13 +81,28 @@ try {
   });
 }
 
-// Vercel serverless handler: normalize path from rewrite or raw URL before routing
+// Vercel serverless handler: normalize path from rewrite
 module.exports = (req, res) => {
-  // Extract the path from query parameter (from Vercel rewrite)
+  // Vercel sends the path as a query parameter from the rewrite
   if (req.query && req.query.path) {
-    const pathValue = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
-    // Reconstruct as /api/:path since the app expects routes under /api
-    req.url = `/api/${pathValue}`;
+    // Reconstruct the original requested path
+    let pathValue = Array.isArray(req.query.path) 
+      ? req.query.path.join('/') 
+      : req.query.path;
+    
+    // Ensure path starts with /
+    if (!pathValue.startsWith('/')) {
+      pathValue = '/' + pathValue;
+    }
+    
+    // Set the path - the Express app will handle routing from here
+    req.url = `/api${pathValue}`;
+    
+    console.log('Path reconstruction:', {
+      originalQuery: req.query.path,
+      reconstructedUrl: req.url,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   return app(req, res);
