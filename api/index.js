@@ -81,14 +81,12 @@ try {
   });
 }
 
-module.exports = app;
-
-// When using the Vercel rewrite, restore the original API path from the query parameter
-app.use((req, res, next) => {
+// Vercel serverless handler: normalize path from rewrite before passing to Express app
+module.exports = (req, res) => {
   if (req.query && req.query.path) {
     const originalPath = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
-    // Ensure the reconstructed path starts with /api/
     req.url = `/api/${originalPath}`.replace(/\/+/g, '/');
   }
-  next();
-});
+
+  return app(req, res);
+};
