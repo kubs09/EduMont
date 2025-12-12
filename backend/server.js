@@ -90,6 +90,11 @@ try {
   console.warn('Public directory not accessible:', publicPath);
 }
 
+// Health check endpoint - should always work
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Add debug endpoint
 app.get('/api/debug', (req, res) => {
   res.json({

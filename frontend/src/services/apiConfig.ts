@@ -42,13 +42,15 @@ const api = axios.create({
 
 const testConnection = async () => {
   try {
-    const response = await api.get('/api/debug');
+    // Try health endpoint first (faster, no db needed)
+    const response = await api.get('/api/health');
     console.log('✅ Server connection successful:', response.data);
     return true;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn('⚠️ Server connection failed:', error.message);
       console.warn('Make sure backend is running on localhost:5000');
+      console.warn('Current baseURL:', baseURL);
     }
     return false;
   }
