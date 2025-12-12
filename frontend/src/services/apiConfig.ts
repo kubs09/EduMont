@@ -7,6 +7,11 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
+  // In production, use the same domain
+  if (process.env.NODE_ENV === 'production') {
+    return window.location.origin;
+  }
+
   const devUrls = [
     'http://localhost:5000',
     'http://localhost:3001',

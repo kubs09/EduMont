@@ -3,9 +3,11 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 // Determine if using Supabase in production/preview
+// Automatically use Supabase if in production or on Vercel
 const useSupabase =
-  process.env.USE_SUPABASE === 'true' &&
-  (process.env.VERCEL || process.env.NODE_ENV === 'production');
+  process.env.NODE_ENV === 'production' ||
+  !!process.env.VERCEL ||
+  process.env.USE_SUPABASE === 'true';
 
 // Handle different SSL configurations for different environments
 const getSSLConfig = () => {
