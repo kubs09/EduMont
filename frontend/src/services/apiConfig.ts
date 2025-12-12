@@ -7,9 +7,9 @@ const getBaseURL = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production, use the same domain
+  // In production, use the Supabase API URL
   if (process.env.NODE_ENV === 'production') {
-    return window.location.origin;
+    return process.env.SUPABASE_URL || 'https://api.example.com';
   }
 
   const devUrls = [
