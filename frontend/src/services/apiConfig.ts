@@ -9,7 +9,7 @@ const getBaseURL = () => {
 
   // In production, use the Supabase API URL
   if (process.env.NODE_ENV === 'production') {
-    return process.env.SUPABASE_URL || 'https://api.example.com';
+    return 'https://yxduwbhmbgiqytzakiwl.supabase.co';
   }
 
   const devUrls = [
