@@ -86,20 +86,26 @@ module.exports = (req, res) => {
   // Vercel rewrites /api/xxx to /api/index.js?path=xxx
   // We need to reconstruct the original path for Express to route correctly
   
-  console.log('🔍 API Handler - Incoming:', {
+  // Debug logging
+  const incomingUrl = req.url || req.originalUrl || '/api/index.js';
+  const queryPath = req.query?.path;
+  
+  console.log('🔍 [API Handler] Incoming request:', {
     method: req.method,
+    incomingUrl,
     originalUrl: req.originalUrl,
-    url: req.url,
     path: req.path,
-    query: req.query,
+    queryPath,
+    allQuery: JSON.stringify(req.query),
   });
 
   try {
-    if (req.query && req.query.path) {
+    // Vercel sends the path segment as a query parameter
+    if (queryPath) {
       // Get the path from query parameter (set by Vercel rewrite)
-      let pathSegment = Array.isArray(req.query.path) 
-        ? req.query.path.join('/') 
-        : String(req.query.path);
+      let pathSegment = Array.isArray(queryPath) 
+        ? queryPath.join('/') 
+        : String(queryPath);
       
       // Ensure it starts with /
       if (!pathSegment.startsWith('/')) {
@@ -111,21 +117,47 @@ module.exports = (req, res) => {
       
       // Modify the request object for Express routing
       req.url = newUrl;
-      req.originalUrl = newUrl;
+      if (req.originalUrl) {
+        req.originalUrl = newUrl;
+      }
       
-      console.log('✅ Reconstructed URL:', {
-        from: req.query.path,
-        to: newUrl,
-      });
+      console.log('✅ [API Handler] Reconstructed URL:', newUrl);
+    } else {
+      // If no query parameter, check if URL is already correct
+      if (incomingUrl && !incomingUrl.startsWith('/api')) {
+        // Make sure it has /api prefix for the app routing
+        req.url = '/api' + (incomingUrl.startsWith('/') ? incomingUrl : '/' + incomingUrl);
+        console.log('⚠️  [API Handler] Added /api prefix:', req.url);
+      }
     }
 
+    console.log('🚀 [API Handler] Passing to Express app with URL:', req.url);
+    
     // Pass to Express app for routing
-    return app(req, res);
+    const result = app(req, res);
+    
+    // Handle promise if the app returns a promise (async)
+    if (result && typeof result.then === 'function') {
+      return result.catch(error => {
+        console.error('❌ [API Handler] Promise error:', error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            error: 'Server error',
+            message: error.message,
+          });
+        }
+      });
+    }
+    
+    return result;
   } catch (error) {
-    console.error('❌ Error in API handler:', error);
-    res.status(500).json({
-      error: 'API handler error',
-      message: error.message,
-    });
+    console.error('❌ [API Handler] Exception caught:', error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'API handler error',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      });
+    }
   }
 };
