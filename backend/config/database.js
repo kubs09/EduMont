@@ -3,11 +3,22 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 // Determine if using Supabase in production/preview
-// Automatically use Supabase if in production or on Vercel
+// Only use Supabase if explicitly enabled AND credentials are provided
 const useSupabase =
-  process.env.NODE_ENV === 'production' ||
+  (process.env.NODE_ENV === 'production' ||
   !!process.env.VERCEL ||
-  process.env.USE_SUPABASE === 'true';
+  process.env.USE_SUPABASE === 'true') &&
+  (!!process.env.SUPABASE_URL || !!process.env.SUPABASE_DATABASE_URL);
+
+console.log('Database configuration check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  VERCEL: process.env.VERCEL,
+  USE_SUPABASE: process.env.USE_SUPABASE,
+  SUPABASE_URL: process.env.SUPABASE_URL ? '✅ Set' : '❌ Not set',
+  SUPABASE_DATABASE_URL: process.env.SUPABASE_DATABASE_URL ? '✅ Set' : '❌ Not set',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? '✅ Set' : '❌ Not set',
+  useSupabase,
+});
 
 // Handle different SSL configurations for different environments
 const getSSLConfig = () => {
@@ -26,8 +37,13 @@ if (useSupabase) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase credentials missing: SUPABASE_URL and SUPABASE_KEY required');
+  if (!supabaseUrl && !process.env.SUPABASE_DATABASE_URL) {
+    // If SUPABASE_DATABASE_URL is set, we can use that instead
+    console.warn('⚠️ Supabase URL not configured, but SUPABASE_DATABASE_URL provided - will use that');
+  }
+
+  if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
+    throw new Error('Supabase credentials incomplete: Either SUPABASE_URL + SUPABASE_ANON_KEY or SUPABASE_DATABASE_URL required');
   }
 
   // Extract connection details from Supabase URL (postgresql://user:password@host:port/database)
@@ -54,20 +70,25 @@ if (useSupabase) {
 
   console.log('📡 Using Supabase PostgreSQL connection');
 } else {
-  // Use local PostgreSQL connection
+  // Use local PostgreSQL connection as fallback
+  if (!process.env.POSTGRES_HOST) {
+    console.warn('⚠️ No database configured - local PostgreSQL not set up');
+    console.warn('Please set SUPABASE_DATABASE_URL or configure PostgreSQL environment variables');
+  }
+
   poolConfig = {
-    user: process.env.POSTGRES_USER,
-    host: process.env.POSTGRES_HOST,
-    database: process.env.POSTGRES_DB,
-    password: process.env.POSTGRES_PASSWORD,
-    port: process.env.POSTGRES_PORT,
+    user: process.env.POSTGRES_USER || 'postgres',
+    host: process.env.POSTGRES_HOST || 'localhost',
+    database: process.env.POSTGRES_DB || 'edumont',
+    password: process.env.POSTGRES_PASSWORD || 'password',
+    port: process.env.POSTGRES_PORT || 5432,
     ssl: getSSLConfig(),
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,
     max: 20,
   };
 
-  console.log('🗄️ Using local PostgreSQL connection');
+  console.log('🗄️ Using PostgreSQL connection (local or environment-configured)');
 }
 
 const pool = new Pool(poolConfig);
