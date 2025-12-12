@@ -81,39 +81,51 @@ try {
   });
 }
 
-// Vercel serverless handler: normalize path from rewrite
+// Vercel serverless handler - converts rewritten paths back to original API paths
 module.exports = (req, res) => {
-  console.log('API Handler received:', {
+  // Vercel rewrites /api/xxx to /api/index.js?path=xxx
+  // We need to reconstruct the original path for Express to route correctly
+  
+  console.log('🔍 API Handler - Incoming:', {
     method: req.method,
+    originalUrl: req.originalUrl,
     url: req.url,
-    query: req.query,
     path: req.path,
+    query: req.query,
   });
 
-  // Vercel may send the path in different ways depending on configuration
-  // Try to find the path from query parameters
-  let pathValue = req.query?.path || req.path;
-  
-  // If we got a path value, use it to construct the proper request URL
-  if (pathValue && pathValue !== '/api/index.js') {
-    // Handle array paths (from splat matching)
-    if (Array.isArray(pathValue)) {
-      pathValue = pathValue.join('/');
+  try {
+    if (req.query && req.query.path) {
+      // Get the path from query parameter (set by Vercel rewrite)
+      let pathSegment = Array.isArray(req.query.path) 
+        ? req.query.path.join('/') 
+        : String(req.query.path);
+      
+      // Ensure it starts with /
+      if (!pathSegment.startsWith('/')) {
+        pathSegment = '/' + pathSegment;
+      }
+      
+      // Reconstruct the full API path
+      const newUrl = `/api${pathSegment}`;
+      
+      // Modify the request object for Express routing
+      req.url = newUrl;
+      req.originalUrl = newUrl;
+      
+      console.log('✅ Reconstructed URL:', {
+        from: req.query.path,
+        to: newUrl,
+      });
     }
-    
-    // Ensure path starts with /
-    if (!pathValue.startsWith('/')) {
-      pathValue = '/' + pathValue;
-    }
-    
-    // Set the URL for Express to route
-    req.url = `/api${pathValue}`;
-    
-    console.log('Reconstructed URL:', req.url);
-  } else if (!req.url.startsWith('/api')) {
-    // If URL doesn't already have /api prefix, add it
-    req.url = `/api${req.path}`;
-  }
 
-  return app(req, res);
+    // Pass to Express app for routing
+    return app(req, res);
+  } catch (error) {
+    console.error('❌ Error in API handler:', error);
+    res.status(500).json({
+      error: 'API handler error',
+      message: error.message,
+    });
+  }
 };
