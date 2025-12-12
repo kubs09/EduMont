@@ -81,12 +81,21 @@ try {
   });
 }
 
-// Vercel serverless handler: normalize path from rewrite before passing to Express app
+// Vercel serverless handler: normalize path from rewrite or raw URL before routing
 module.exports = (req, res) => {
+  let targetPath = req.url;
+
   if (req.query && req.query.path) {
     const originalPath = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
-    req.url = `/api/${originalPath}`.replace(/\/+/g, '/');
+    targetPath = `/api/${originalPath}`;
   }
 
+  // Ensure single slashes and leading /api
+  targetPath = targetPath.replace(/\/+/g, '/');
+  if (!targetPath.startsWith('/api')) {
+    targetPath = `/api${targetPath.startsWith('/') ? '' : '/'}${targetPath}`;
+  }
+
+  req.url = targetPath;
   return app(req, res);
 };
