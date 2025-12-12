@@ -35,7 +35,6 @@
     "GENERATE_SOURCEMAP": "false",
     "TSC_COMPILE_ON_ERROR": "true",
     "DISABLE_ESLINT_PLUGIN": "true",
-    "USE_BCRYPTJS": "true",
-    "USE_SUPABASE": "true"
+    "USE_BCRYPTJS": "true"
   }
 }
