@@ -87,7 +87,9 @@ module.exports = (req, res) => {
 
   if (req.query && req.query.path) {
     const originalPath = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
-    targetPath = `/api/${originalPath}`;
+    // Normalize to start with / and strip any leading /api to avoid double prefixing
+    const normalized = `/${originalPath}`.replace(/^\/api/, '');
+    targetPath = `/api${normalized}`;
   }
 
   // Ensure single slashes and leading /api
