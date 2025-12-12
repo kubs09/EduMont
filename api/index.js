@@ -83,26 +83,36 @@ try {
 
 // Vercel serverless handler: normalize path from rewrite
 module.exports = (req, res) => {
-  // Vercel sends the path as a query parameter from the rewrite
-  if (req.query && req.query.path) {
-    // Reconstruct the original requested path
-    let pathValue = Array.isArray(req.query.path) 
-      ? req.query.path.join('/') 
-      : req.query.path;
+  console.log('API Handler received:', {
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    path: req.path,
+  });
+
+  // Vercel may send the path in different ways depending on configuration
+  // Try to find the path from query parameters
+  let pathValue = req.query?.path || req.path;
+  
+  // If we got a path value, use it to construct the proper request URL
+  if (pathValue && pathValue !== '/api/index.js') {
+    // Handle array paths (from splat matching)
+    if (Array.isArray(pathValue)) {
+      pathValue = pathValue.join('/');
+    }
     
     // Ensure path starts with /
     if (!pathValue.startsWith('/')) {
       pathValue = '/' + pathValue;
     }
     
-    // Set the path - the Express app will handle routing from here
+    // Set the URL for Express to route
     req.url = `/api${pathValue}`;
     
-    console.log('Path reconstruction:', {
-      originalQuery: req.query.path,
-      reconstructedUrl: req.url,
-      timestamp: new Date().toISOString(),
-    });
+    console.log('Reconstructed URL:', req.url);
+  } else if (!req.url.startsWith('/api')) {
+    // If URL doesn't already have /api prefix, add it
+    req.url = `/api${req.path}`;
   }
 
   return app(req, res);
