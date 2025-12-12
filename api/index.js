@@ -83,14 +83,12 @@ try {
 
 // Vercel serverless handler: normalize path from rewrite or raw URL before routing
 module.exports = (req, res) => {
-  let targetPath = req.url;
-
+  // Extract the path from query parameter (from Vercel rewrite)
   if (req.query && req.query.path) {
-    const originalPath = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
-    // Reconstruct the path from the query parameter
-    targetPath = `/${originalPath}`.replace(/\/+/g, '/');
+    const pathValue = Array.isArray(req.query.path) ? req.query.path.join('/') : req.query.path;
+    // Reconstruct as /api/:path since the app expects routes under /api
+    req.url = `/api/${pathValue}`;
   }
 
-  req.url = targetPath;
   return app(req, res);
 };
