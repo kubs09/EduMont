@@ -20,6 +20,31 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 
+// Lazy load modules only when first request comes in
+const lazyLoadModules = () => {
+  if (modulesLoaded || moduleError) return;
+  
+  try {
+    pool = requireWithFallback('@config/database', 'config/database');
+    initDatabase = requireWithFallback('@db/init', 'db/init');
+    authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
+    childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
+    usersRoutes = requireWithFallback('@routes/users', 'routes/users');
+    classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
+    schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
+    passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
+    messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
+    modulesLoaded = true;
+  } catch (error) {
+    console.error('Module import error:', error);
+    console.error('Current directory:', __dirname);
+    console.error('Process cwd:', process.cwd());
+    moduleError = error.message;
+  }
+};
+
+let moduleError = null;
+
 const requireWithFallback = (aliasPath, relativePath) => {
   try {
     return require(aliasPath);
@@ -34,38 +59,25 @@ const requireWithFallback = (aliasPath, relativePath) => {
   }
 };
 
-try {
-  pool = requireWithFallback('@config/database', 'config/database');
-  initDatabase = requireWithFallback('@db/init', 'db/init');
-  authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
-  childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
-  usersRoutes = requireWithFallback('@routes/users', 'routes/users');
-  classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
-  schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
-  passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
-  messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
-  modulesLoaded = true;
-} catch (error) {
-  console.error('Module import error:', error);
-  console.error('Current directory:', __dirname);
-  console.error('Process cwd:', process.cwd());
-  moduleError = error.message;
-}
-
 const app = express();
 
 // CORS configuration - allow requests from frontend and any vercel deployment
+// Minimize CORS origin array to reduce memory footprint
 const corsOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
-  'http://10.0.1.37:3000',
-  process.env.FRONTEND_URL,
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
 ].filter(Boolean);
 
-// In production (Vercel), allow same-origin requests
-if (process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production') {
-  corsOrigins.push('*'); // Allow all origins in production on Vercel since frontend is same-domain
+// Add frontend URL and Vercel deployment URL only if configured
+if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
+if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
+
+// In production (Vercel), use relative URLs instead of allowing all origins
+if (!(process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production')) {
+  // Development only: add additional local URLs
+  if (process.env.INCLUDE_DEV_URLS) {
+    corsOrigins.push('http://10.0.1.37:3000');
+  }
 }
 
 console.log('CORS enabled for origins:', corsOrigins);
@@ -93,16 +105,24 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Add debug endpoint
-app.get('/api/debug', (req, res) => {
-  res.json({
-    message: 'Debug info',
-    modulesLoaded,
-    moduleError,
-    __dirname,
-    'process.cwd()': process.cwd(),
-    timestamp: new Date().toISOString(),
+// Add debug endpoint - only in development
+if (process.env.NODE_ENV === 'development') {
+  app.get('/api/debug', (req, res) => {
+    res.json({
+      message: 'Debug info',
+      modulesLoaded,
+      moduleError,
+      __dirname,
+      'process.cwd()': process.cwd(),
+      timestamp: new Date().toISOString(),
+    });
   });
+}
+
+// Initialize database and load routes on first API request (for serverless)
+app.use('/api', (req, res, next) => {
+  lazyLoadModules();
+  next();
 });
 
 // Initialize database only if modules loaded successfully
@@ -185,10 +205,6 @@ if (modulesLoaded && pool && initDatabase) {
       });
   }
 }
-
-app.use((req, res, next) => {
-  next();
-});
 
 app.use((req, res, next) => {
   next();
