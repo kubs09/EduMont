@@ -89,6 +89,19 @@ module.exports = async (req, res) => {
   // Debug logging
   const incomingUrl = req.url || req.originalUrl || '/api/index.js';
   const queryPath = req.query?.path;
+  // Fallback: parse query from raw URL when req.query isn't available
+  let parsedQueryPath = queryPath;
+  try {
+    if (!parsedQueryPath && typeof incomingUrl === 'string') {
+      const urlMod = require('url');
+      const parsed = urlMod.parse(incomingUrl, true);
+      if (parsed && parsed.query && parsed.query.path) {
+        parsedQueryPath = parsed.query.path;
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ [API Handler] Failed to parse query path from URL:', e?.message);
+  }
 
   console.log('🔍 [API Handler] Incoming request:', {
     method: req.method,
@@ -103,9 +116,9 @@ module.exports = async (req, res) => {
     // Reconstruct the path - Vercel sends path segments as query params
     let reconstructedPath = '/api';
 
-    if (queryPath) {
+    if (parsedQueryPath) {
       // Get the path from query parameter (set by Vercel rewrite)
-      const pathSegments = Array.isArray(queryPath) ? queryPath : [queryPath];
+      const pathSegments = Array.isArray(parsedQueryPath) ? parsedQueryPath : [parsedQueryPath];
 
       for (const segment of pathSegments) {
         if (segment) {
