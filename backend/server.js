@@ -221,8 +221,8 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Routes - only mount if modules loaded successfully
-if (modulesLoaded) {
+// Routes - mount dynamically based on module loading state
+const mountRoutes = () => {
   if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
   if (authRoutes) app.use('/api', authRoutes);
   if (childrenRoutes) app.use('/api/children', childrenRoutes);
@@ -230,14 +230,43 @@ if (modulesLoaded) {
   if (classesRoutes) app.use('/api/classes', classesRoutes);
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
-} else {
-  // Add fallback routes when modules aren't loaded
+};
+
+// Mount routes immediately if modules are already loaded (local dev)
+if (modulesLoaded) {
+  console.log('📍 Mounting routes at startup (local development)');
+  mountRoutes();
+} else if (process.env.VERCEL !== 'true') {
+  // For non-Vercel environments without modules, add error handler
   app.get('/api/*', (req, res) => {
     res.status(500).json({
       error: 'Server modules not loaded',
       details: moduleError,
     });
   });
+}
+
+// For Vercel: mount all routes but add middleware check first
+if (process.env.VERCEL === 'true') {
+  // Add check middleware before routes
+  app.use('/api', (req, res, next) => {
+    if (!modulesLoaded) {
+      return res.status(500).json({
+        error: 'Server modules not loaded',
+        details: moduleError || 'Modules still loading',
+      });
+    }
+    next();
+  });
+
+  // Now mount actual routes
+  if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
+  if (authRoutes) app.use('/api', authRoutes);
+  if (childrenRoutes) app.use('/api/children', childrenRoutes);
+  if (usersRoutes) app.use('/api/users', usersRoutes);
+  if (classesRoutes) app.use('/api/classes', classesRoutes);
+  if (messageRoutes) app.use('/api/messages', messageRoutes);
+  if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
 }
 
 app.use((req, res) => {
