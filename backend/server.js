@@ -7,7 +7,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 
-// Import modules with better error handling and fallback paths
 let pool,
   initDatabase,
   authRoutes,
@@ -22,11 +21,9 @@ let modulesLoaded = false;
 let moduleError = null;
 
 const requireWithFallback = (aliasPath, relativePath) => {
-  // First try the alias
   try {
     return require(aliasPath);
   } catch (aliasError) {
-    // Then try relative to this file
     try {
       return require(path.join(__dirname, relativePath));
     } catch (relativeError) {
