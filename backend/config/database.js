@@ -90,12 +90,6 @@ if (useSupabase) {
     idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
     max: process.env.NODE_ENV === 'production' ? 5 : 20,
   };
-
-  console.log('🗄️ Using PostgreSQL connection:', {
-    host: poolConfig.host,
-    database: poolConfig.database,
-    environment: process.env.NODE_ENV || 'development',
-  });
 }
 
 const pool = new Pool(poolConfig);
