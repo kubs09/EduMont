@@ -76,8 +76,7 @@ if (useSupabase) {
 } else {
   // Use local PostgreSQL connection as fallback
   if (!process.env.POSTGRES_HOST) {
-    console.warn('⚠️ No database configured - local PostgreSQL not set up');
-    console.warn('Please set SUPABASE_DATABASE_URL or configure PostgreSQL environment variables');
+    console.warn('⚠️ No POSTGRES_HOST configured - using localhost as default');
   }
 
   poolConfig = {
@@ -88,11 +87,15 @@ if (useSupabase) {
     port: process.env.POSTGRES_PORT || 5432,
     ssl: getSSLConfig(),
     connectionTimeoutMillis: 5000,
-    idleTimeoutMillis: 30000,
-    max: 20,
+    idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
+    max: process.env.NODE_ENV === 'production' ? 5 : 20,
   };
 
-  console.log('🗄️ Using PostgreSQL connection (local or environment-configured)');
+  console.log('🗄️ Using PostgreSQL connection:', {
+    host: poolConfig.host,
+    database: poolConfig.database,
+    environment: process.env.NODE_ENV || 'development',
+  });
 }
 
 const pool = new Pool(poolConfig);

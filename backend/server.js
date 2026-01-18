@@ -20,31 +20,6 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 
-// Lazy load modules only when first request comes in
-const lazyLoadModules = () => {
-  if (modulesLoaded || moduleError) return;
-  
-  try {
-    pool = requireWithFallback('@config/database', 'config/database');
-    initDatabase = requireWithFallback('@db/init', 'db/init');
-    authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
-    childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
-    usersRoutes = requireWithFallback('@routes/users', 'routes/users');
-    classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
-    schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
-    passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
-    messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
-    modulesLoaded = true;
-  } catch (error) {
-    console.error('Module import error:', error);
-    console.error('Current directory:', __dirname);
-    console.error('Process cwd:', process.cwd());
-    moduleError = error.message;
-  }
-};
-
-let moduleError = null;
-
 const requireWithFallback = (aliasPath, relativePath) => {
   try {
     return require(aliasPath);
@@ -59,14 +34,41 @@ const requireWithFallback = (aliasPath, relativePath) => {
   }
 };
 
+// Lazy load modules only when first request comes in (for serverless)
+const lazyLoadModules = () => {
+  if (modulesLoaded || moduleError) return;
+
+  try {
+    pool = requireWithFallback('@config/database', 'config/database');
+    initDatabase = requireWithFallback('@db/init', 'db/init');
+    authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
+    childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
+    usersRoutes = requireWithFallback('@routes/users', 'routes/users');
+    classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
+    schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
+    passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
+    messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
+    modulesLoaded = true;
+    console.log('✅ Modules loaded successfully');
+  } catch (error) {
+    console.error('Module import error:', error);
+    console.error('Current directory:', __dirname);
+    console.error('Process cwd:', process.cwd());
+    moduleError = error.message;
+  }
+};
+
+// For local development, load modules immediately at startup
+// For Vercel serverless, load on first request to save memory
+if (process.env.VERCEL !== 'true' && process.env.NODE_ENV !== 'production') {
+  lazyLoadModules();
+}
+
 const app = express();
 
 // CORS configuration - allow requests from frontend and any vercel deployment
 // Minimize CORS origin array to reduce memory footprint
-const corsOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-].filter(Boolean);
+const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
 
 // Add frontend URL and Vercel deployment URL only if configured
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
@@ -119,9 +121,11 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// Initialize database and load routes on first API request (for serverless)
+// Initialize database and load routes on first API request (for serverless/Vercel)
 app.use('/api', (req, res, next) => {
-  lazyLoadModules();
+  if (process.env.VERCEL === 'true') {
+    lazyLoadModules();
+  }
   next();
 });
 
