@@ -53,10 +53,11 @@ if (useSupabase) {
   poolConfig = process.env.SUPABASE_DATABASE_URL
     ? {
         connectionString: process.env.SUPABASE_DATABASE_URL,
-        ssl: getSSLConfig(),
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 10000,
-        max: 5,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
+        max: 1,
+        statement_timeout: 30000,
       }
     : {
         user: process.env.SUPABASE_USER || 'postgres',
@@ -64,10 +65,11 @@ if (useSupabase) {
         database: process.env.SUPABASE_DB || 'postgres',
         password: supabaseKey,
         port: 5432,
-        ssl: getSSLConfig(),
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 10000,
-        max: 5,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
+        max: 1,
+        statement_timeout: 30000,
       };
 
   console.log('📡 Using Supabase PostgreSQL connection');
