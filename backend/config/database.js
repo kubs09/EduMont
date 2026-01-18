@@ -37,7 +37,6 @@ if (useSupabase) {
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl && !process.env.SUPABASE_DATABASE_URL) {
-    // If SUPABASE_DATABASE_URL is set, we can use that instead
     console.warn(
       '⚠️ Supabase URL not configured, but SUPABASE_DATABASE_URL provided - will use that'
     );
