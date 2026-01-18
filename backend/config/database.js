@@ -20,7 +20,6 @@ console.log('Database configuration check:', {
   useSupabase,
 });
 
-// Handle different SSL configurations for different environments
 const getSSLConfig = () => {
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     return {
