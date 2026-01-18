@@ -173,7 +173,6 @@ if (modulesLoaded && pool && initDatabase) {
           console.log('Using SQLite database at:', process.env.DB_PATH);
         }
 
-        await pool.connect();
         await initDatabase();
         dbInitialized = true;
         dbInitializing = false;
@@ -198,15 +197,10 @@ if (modulesLoaded && pool && initDatabase) {
     });
   } else {
     // Traditional server startup
-    pool
-      .connect()
-      .then(() => {
-        return initDatabase();
-      })
-      .catch((err) => {
-        console.error('Database initialization failed:', err);
-        process.exit(1);
-      });
+    initDatabase().catch((err) => {
+      console.error('Database initialization failed:', err);
+      process.exit(1);
+    });
   }
 }
 
