@@ -222,7 +222,10 @@ app.use((err, req, res, next) => {
 });
 
 // Routes - mount dynamically based on module loading state
+let routesMounted = false;
 const mountRoutes = () => {
+  if (routesMounted) return; // Prevent duplicate mounting
+
   if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
   if (authRoutes) app.use('/api', authRoutes);
   if (childrenRoutes) app.use('/api/children', childrenRoutes);
@@ -230,43 +233,38 @@ const mountRoutes = () => {
   if (classesRoutes) app.use('/api/classes', classesRoutes);
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+  routesMounted = true;
+  console.log('✅ Routes mounted successfully');
 };
 
 // Mount routes immediately if modules are already loaded (local dev)
 if (modulesLoaded) {
   console.log('📍 Mounting routes at startup (local development)');
   mountRoutes();
-} else if (process.env.VERCEL !== 'true') {
-  // For non-Vercel environments without modules, add error handler
-  app.get('/api/*', (req, res) => {
-    res.status(500).json({
-      error: 'Server modules not loaded',
-      details: moduleError,
-    });
-  });
 }
 
-// For Vercel: mount all routes but add middleware check first
-if (process.env.VERCEL === 'true') {
-  // Add check middleware before routes
-  app.use('/api', (req, res, next) => {
-    if (!modulesLoaded) {
-      return res.status(500).json({
-        error: 'Server modules not loaded',
-        details: moduleError || 'Modules still loading',
-      });
-    }
-    next();
-  });
+// For all environments: ensure routes are mounted when needed
+app.use('/api', (req, res, next) => {
+  // This middleware runs before route handlers
+  // Ensure modules are loaded and routes are mounted
+  if (!modulesLoaded) {
+    return res.status(500).json({
+      error: 'Server modules not loaded',
+      details: moduleError || 'Modules still loading',
+    });
+  }
 
-  // Now mount actual routes
-  if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
-  if (authRoutes) app.use('/api', authRoutes);
-  if (childrenRoutes) app.use('/api/children', childrenRoutes);
-  if (usersRoutes) app.use('/api/users', usersRoutes);
-  if (classesRoutes) app.use('/api/classes', classesRoutes);
-  if (messageRoutes) app.use('/api/messages', messageRoutes);
-  if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+  if (!routesMounted && modulesLoaded) {
+    console.log('🔄 Mounting routes on first API request');
+    mountRoutes();
+  }
+
+  next();
+});
+
+// Now mount all routes for immediate availability (they'll be in Express's route table)
+if (modulesLoaded) {
+  mountRoutes();
 }
 
 app.use((req, res) => {
