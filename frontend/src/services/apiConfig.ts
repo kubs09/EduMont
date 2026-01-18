@@ -2,16 +2,22 @@ import axios from 'axios';
 
 // Determine the base URL with fallback logic
 const getBaseURL = () => {
-  // Check if we have an explicit API URL set
+  // 1. Check if we have an explicit API URL set (from environment variables)
   if (process.env.REACT_APP_API_URL) {
+    console.log('✅ Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
 
-  // In production (Vercel), use the current domain with /api prefix
+  // 2. Check if we're in production (Vercel or similar)
   if (process.env.NODE_ENV === 'production') {
-    return '/api';
+    // In a monorepo deployment (like Vercel), the frontend and API are on the same domain
+    // API calls already include /api/ prefix (e.g., /api/login)
+    // So we use empty baseURL to make them relative to current domain
+    console.log('📦 Production mode: Using relative URLs with /api prefix');
+    return '';
   }
 
+  // 3. Development mode: use local backend servers
   const devUrls = [
     'http://localhost:5000',
     'http://localhost:3001',
@@ -19,11 +25,14 @@ const getBaseURL = () => {
     'http://10.0.1.37:5000',
   ];
 
+  console.log('🔧 Development mode: Using', devUrls[0]);
   return devUrls[0];
 };
 
+const baseURL = getBaseURL();
+
 const api = axios.create({
-  baseURL: getBaseURL(),
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -33,12 +42,15 @@ const api = axios.create({
 
 const testConnection = async () => {
   try {
-    const response = await api.get('/debug');
+    // Try health endpoint first (faster, no db needed)
+    const response = await api.get('/api/health');
     console.log('✅ Server connection successful:', response.data);
     return true;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('❌ Server connection failed:', error.message);
+      console.warn('⚠️ Server connection failed:', error.message);
+      console.warn('Make sure backend is running on localhost:5000');
+      console.warn('Current baseURL:', baseURL);
     }
     return false;
   }
@@ -70,7 +82,7 @@ api.interceptors.response.use(
     if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED') {
       console.error('🚨 Backend server is not running!');
       console.log('💡 Make sure to start the backend server:');
-      console.log('   cd backend && npm start');
+      console.log('cd backend && npm start');
     }
 
     // Handle auth errors
