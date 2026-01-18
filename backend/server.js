@@ -58,9 +58,9 @@ const lazyLoadModules = () => {
   }
 };
 
-// For local development, load modules immediately at startup
-// For Vercel serverless, load on first request to save memory
-if (process.env.VERCEL !== 'true' && process.env.NODE_ENV !== 'production') {
+// Ensure modules are loaded at startup on Vercel and during local development
+// This prevents 404s on the first request due to late route mounting
+if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
   lazyLoadModules();
 }
 
@@ -239,7 +239,7 @@ const mountRoutes = () => {
 
 // Mount routes immediately if modules are already loaded (local dev)
 if (modulesLoaded) {
-  console.log('📍 Mounting routes at startup (local development)');
+  console.log('📍 Mounting routes at startup');
   mountRoutes();
 }
 
