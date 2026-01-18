@@ -163,9 +163,9 @@ if (modulesLoaded && pool && initDatabase) {
 
         // Check if we're using Supabase
         if (process.env.USE_SUPABASE === 'true') {
-          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
             throw new Error(
-              'Supabase configuration missing: SUPABASE_URL and SUPABASE_KEY required'
+              'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
             );
           }
           console.log('Using Supabase database');

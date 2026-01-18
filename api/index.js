@@ -27,7 +27,7 @@ if (process.env.USE_SUPABASE !== 'true') {
 console.log('Database configuration:', {
   useSupabase: process.env.USE_SUPABASE === 'true',
   supabaseUrl: process.env.SUPABASE_URL ? '✅ Set' : '❌ Not set',
-  supabaseKey: process.env.SUPABASE_KEY ? '✅ Set' : '❌ Not set',
+  supabaseKey: process.env.SUPABASE_ANON_KEY ? '✅ Set' : '❌ Not set',
   dbPath: process.env.DB_PATH,
   nodeEnv: process.env.NODE_ENV,
   vercel: process.env.VERCEL,
