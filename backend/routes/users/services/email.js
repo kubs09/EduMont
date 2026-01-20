@@ -31,7 +31,7 @@ const sendInvitationEmail = async (email, role, token, language = 'en') => {
   const emailContent = getInvitationEmail(role, inviteUrl, language);
 
   return await transporter.sendMail({
-    from: process.env.SMTP_FROM,
+    from: `EduMont <${process.env.SMTP_FROM}>`,
     to: email,
     subject: emailContent.subject,
     html: emailContent.html,
