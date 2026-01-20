@@ -4,7 +4,6 @@ const router = express.Router();
 
 let getRouter, createRouter, deleteRouter, usersRouter;
 
-// Load each module individually to identify which one is failing
 try {
   getRouter = require('./get');
   console.log('✓ Get messages router loaded successfully');
@@ -41,19 +40,20 @@ console.log('Messages route modules loaded:', {
   getRouter: !!getRouter,
   createRouter: !!createRouter,
   deleteRouter: !!deleteRouter,
-  usersRouter: !!usersRouter
+  usersRouter: !!usersRouter,
 });
 
+// Mount users router first to avoid conflicts with root routes
+if (usersRouter) router.use('/', usersRouter);
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
 if (deleteRouter) router.use('/', deleteRouter);
-if (usersRouter) router.use('/', usersRouter);
 
 // Add a test route to verify this router is working
 router.get('/test', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Messages router is working',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
