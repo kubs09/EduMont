@@ -3,11 +3,10 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
-const { transporter } = require('../../config/mail');
+const { sendEmail } = require('../../config/mail');
 const getMessageNotificationEmail = require('../../templates/messageNotificationEmail');
 const { getAllowedRecipients } = require('./helpers');
 
-// Create and send a new message
 router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -16,7 +15,6 @@ router.post('/', auth, async (req, res) => {
     const { to_user_ids, subject, content, language } = req.body;
     const from_user_id = req.user.id;
 
-    // Validate recipients
     const allowedRecipientsResult = await getAllowedRecipients(from_user_id, req.user.role, client);
     const allowedIds = new Set(allowedRecipientsResult.rows.map((r) => r.id));
 
@@ -31,7 +29,6 @@ router.post('/', auth, async (req, res) => {
 
     const senderName = `${senderResult.rows[0].firstname} ${senderResult.rows[0].surname}`;
 
-    // Create single message and get its ID
     const messageResult = await client.query(
       'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4) RETURNING *',
       [from_user_id, to_user_ids[0], subject, content]
@@ -39,7 +36,6 @@ router.post('/', auth, async (req, res) => {
 
     const messageId = messageResult.rows[0].id;
 
-    // Create additional messages for other recipients
     if (to_user_ids.length > 1) {
       const additionalValues = to_user_ids
         .slice(1)
@@ -57,7 +53,6 @@ router.post('/', auth, async (req, res) => {
       }
     }
 
-    // Get recipient info and send notifications with sender's language
     const recipientsResult = await client.query(
       'SELECT id, email, message_notifications FROM users WHERE id = ANY($1)',
       [to_user_ids]
@@ -65,7 +60,6 @@ router.post('/', auth, async (req, res) => {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    // Only send emails to users who have notifications enabled
     for (const recipient of recipientsResult.rows) {
       if (recipient.message_notifications) {
         try {
@@ -73,11 +67,10 @@ router.post('/', auth, async (req, res) => {
             senderName,
             messageId,
             frontendUrl,
-            language // Use language from request
+            language
           );
 
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM || `EduMont <${process.env.SMTP_USER}>`,
+          await sendEmail({
             to: recipient.email,
             subject: emailContent.subject,
             html: emailContent.html,
