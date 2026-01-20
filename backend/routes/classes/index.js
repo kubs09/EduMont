@@ -2,7 +2,13 @@
 const express = require('express');
 const router = express.Router();
 
-let getRouter, createRouter, updateRouter, deleteRouter, confirmRouter, historyRouter, activitiesRouter;
+let getRouter,
+  createRouter,
+  updateRouter,
+  deleteRouter,
+  confirmRouter,
+  historyRouter,
+  activitiesRouter;
 
 // Load each module individually to identify which one is failing
 try {
@@ -68,7 +74,7 @@ console.log('Classes route modules loaded:', {
   deleteRouter: !!deleteRouter,
   confirmRouter: !!confirmRouter,
   historyRouter: !!historyRouter,
-  activitiesRouter: !!activitiesRouter
+  activitiesRouter: !!activitiesRouter,
 });
 
 if (getRouter) router.use('/', getRouter);
@@ -81,9 +87,9 @@ if (activitiesRouter) router.use('/', activitiesRouter);
 
 // Add a test route to verify this router is working
 router.get('/test', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Classes router is working',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
