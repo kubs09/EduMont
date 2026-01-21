@@ -203,31 +203,31 @@ CROSS JOIN admin_user au
 CROSS JOIN (
     VALUES 
         -- Week 1 schedules
-        (DATE '2025-09-01', TIME '09:00', 2, 'Arts and Crafts', 'Drawing with crayons and paper crafts'),
-        (DATE '2025-09-01', TIME '14:00', 1, 'Story Time', 'Reading fairy tales and interactive stories'),
-        (DATE '2025-09-02', TIME '10:00', 2, 'Outdoor Play', 'Garden activities and nature exploration'),
-        (DATE '2025-09-03', TIME '09:30', 1, 'Music and Movement', 'Singing songs and simple dance moves'),
-        (DATE '2025-09-04', TIME '15:00', 2, 'Building Blocks', 'Creative construction with various blocks'),
-        (DATE '2025-09-05', TIME '11:00', 1, 'Show and Tell', 'Children share their favorite toys'),
+        (DATE '2026-01-30', TIME '09:00', 2, 'Arts and Crafts', 'Drawing with crayons and paper crafts'),
+        (DATE '2026-01-31', TIME '14:00', 1, 'Story Time', 'Reading fairy tales and interactive stories'),
+        (DATE '2026-02-01', TIME '10:00', 2, 'Outdoor Play', 'Garden activities and nature exploration'),
+        (DATE '2026-02-02', TIME '09:30', 1, 'Music and Movement', 'Singing songs and simple dance moves'),
+        (DATE '2026-02-03', TIME '15:00', 2, 'Building Blocks', 'Creative construction with various blocks'),
+        (DATE '2026-02-04', TIME '11:00', 1, 'Show and Tell', 'Children share their favorite toys'),
         
         -- Week 2 schedules
-        (DATE '2025-09-08', TIME '09:00', 2, 'Science Fun', 'Simple experiments with water and colors'),
-        (DATE '2025-09-09', TIME '14:30', 1, 'Cooking Activity', 'Making simple healthy snacks'),
-        (DATE '2025-09-10', TIME '10:30', 2, 'Physical Education', 'Basic movement and coordination games'),
-        (DATE '2025-09-11', TIME '09:00', 1, 'Language Learning', 'Basic vocabulary and pronunciation'),
-        (DATE '2025-09-12', TIME '16:00', 2, 'Creative Drama', 'Role-playing and imagination games'),
+        (DATE '2026-01-25', TIME '09:00', 2, 'Science Fun', 'Simple experiments with water and colors'),
+        (DATE '2026-01-26', TIME '14:30', 1, 'Cooking Activity', 'Making simple healthy snacks'),
+        (DATE '2026-01-27', TIME '10:30', 2, 'Physical Education', 'Basic movement and coordination games'),
+        (DATE '2026-01-28', TIME '09:00', 1, 'Language Learning', 'Basic vocabulary and pronunciation'),
+        (DATE '2026-01-29', TIME '16:00', 2, 'Creative Drama', 'Role-playing and imagination games'),
         
         -- Week 3 schedules
-        (DATE '2025-09-15', TIME '08:30', 2, 'Mathematics Fun', 'Counting games and number recognition'),
-        (DATE '2025-09-16', TIME '13:00', 1, 'Art Exploration', 'Painting with brushes and finger paints'),
-        (DATE '2025-09-17', TIME '10:00', 2, 'Nature Study', 'Learning about plants and animals'),
-        (DATE '2025-09-18', TIME '15:30', 1, 'Puzzle Time', 'Age-appropriate jigsaw puzzles'),
-        (DATE '2025-09-19', TIME '11:30', 2, 'Group Games', 'Cooperative play and team activities'),
+        (DATE '2026-01-22', TIME '08:30', 2, 'Mathematics Fun', 'Counting games and number recognition'),
+        (DATE '2026-01-23', TIME '13:00', 1, 'Art Exploration', 'Painting with brushes and finger paints'),
+        (DATE '2026-01-24', TIME '10:00', 2, 'Nature Study', 'Learning about plants and animals'),
+        (DATE '2026-01-25', TIME '15:30', 1, 'Puzzle Time', 'Age-appropriate jigsaw puzzles'),
+        (DATE '2026-01-26', TIME '11:30', 2, 'Group Games', 'Cooperative play and team activities'),
         
         -- Week 4 schedules
-        (DATE '2025-09-22', TIME '09:15', 1, 'Reading Corner', 'Independent reading and book exploration'),
-        (DATE '2025-09-23', TIME '14:00', 2, 'Cultural Awareness', 'Learning about different cultures'),
-        (DATE '2025-09-24', TIME '10:45', 1, 'Fine Motor Skills', 'Activities to develop hand coordination'),
-        (DATE '2025-09-25', TIME '16:15', 2, 'Community Helpers', 'Learning about different professions'),
-        (DATE '2025-09-26', TIME '12:00', 1, 'Celebration Day', 'Special activities and mini party')
+        (DATE '2026-01-22', TIME '09:15', 1, 'Reading Corner', 'Independent reading and book exploration'),
+        (DATE '2026-01-23', TIME '14:00', 2, 'Cultural Awareness', 'Learning about different cultures'),
+        (DATE '2026-01-24', TIME '10:45', 1, 'Fine Motor Skills', 'Activities to develop hand coordination'),
+        (DATE '2026-01-25', TIME '16:15', 2, 'Community Helpers', 'Learning about different professions'),
+        (DATE '2026-01-26', TIME '12:00', 1, 'Celebration Day', 'Special activities and mini party')
 ) AS schedule_data(date_val, start_time_val, duration_val, activity_val, notes_val);
