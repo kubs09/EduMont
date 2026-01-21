@@ -55,6 +55,38 @@ const UserDashboard: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      await api.delete(`/api/users/${userId}`);
+      toast({
+        title: texts.userTable.deleteSuccess[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchUsers();
+    } catch (error: unknown) {
+      const errorMsg = (error as { response?: { data?: { error?: string } } }).response?.data?.error;
+      let description = texts.userTable.deleteError[language];
+
+      // Map backend errors to localized messages
+
+      if (errorMsg === 'You cannot delete your own account') {
+        description = texts.userTable.cannotDeleteSelf[language];
+      } else if (errorMsg) {
+        description = errorMsg;
+      }
+
+      toast({
+        title: texts.userDashboard.errorTitle[language],
+        description,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Box p={6}>
       <Card>
@@ -67,7 +99,7 @@ const UserDashboard: React.FC = () => {
           </HStack>
         </CardHeader>
         <CardBody>
-          <UserTable data={users} loading={loading} error={error} />
+          <UserTable data={users} loading={loading} error={error} onDelete={handleDeleteUser} />
         </CardBody>
       </Card>
       <AddUserDialog

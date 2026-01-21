@@ -286,6 +286,34 @@ export const texts = {
       cs: 'Role',
       en: 'Role',
     },
+    actions: {
+      cs: 'Akce',
+      en: 'Actions',
+    },
+    deleteButton: {
+      cs: 'Smazat',
+      en: 'Delete',
+    },
+    deleteConfirmTitle: {
+      cs: 'Potvrdit smazání',
+      en: 'Confirm Deletion',
+    },
+    deleteConfirmMessage: {
+      cs: 'Opravdu chcete smazat uživatele',
+      en: 'Are you sure you want to delete user',
+    },
+    deleteSuccess: {
+      cs: 'Uživatel byl úspěšně smazán',
+      en: 'User deleted successfully',
+    },
+    deleteError: {
+      cs: 'Nepodařilo se smazat uživatele',
+      en: 'Failed to delete user',
+    },
+    cannotDeleteSelf: {
+      cs: 'Nemůžete smazat svůj vlastní účet',
+      en: 'You cannot delete your own account',
+    },
     roles: {
       admin: {
         cs: 'Administrátor',
