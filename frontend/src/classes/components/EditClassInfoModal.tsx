@@ -40,6 +40,7 @@ interface EditClassInfoModalProps {
     description: string;
     min_age: number;
     max_age: number;
+    teacherIds?: number[];
   }) => Promise<void>;
   size?: ThemingProps['size'] | { base: string; md: string };
 }
@@ -72,6 +73,7 @@ export const EditClassInfoModal = ({
         description: validationResult.description,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
+        teacherIds: classData.teachers.map((t) => t.id),
       });
       onClose();
     } catch (error) {

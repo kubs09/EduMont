@@ -239,7 +239,7 @@ const ClassDetailPage = () => {
     description: string;
     min_age: number;
     max_age: number;
-    teacherIds?: number[];
+    teacherIds: number[];
   }) => {
     if (!classData || !id) return;
 
