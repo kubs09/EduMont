@@ -31,6 +31,7 @@ const Header = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const isParent = userRole === 'parent';
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -82,6 +83,10 @@ const Header = () => {
 
   const handleMessages = () => {
     navigate(ROUTES.MESSAGES);
+  };
+
+  const handleChildren = () => {
+    navigate(ROUTES.CHILDREN);
   };
 
   return (
@@ -188,6 +193,15 @@ const Header = () => {
               >
                 {texts.classes.menuItem[language]}
               </MenuItem>
+              {isParent && (
+                <MenuItem
+                  bg="brand.primary.900"
+                  _hover={{ bg: 'brand.primary.800' }}
+                  onClick={handleChildren}
+                >
+                  {texts.profile.children.menuItem[language]}
+                </MenuItem>
+              )}
               <MenuItem
                 bg="brand.primary.900"
                 _hover={{ bg: 'brand.primary.800' }}

@@ -150,6 +150,14 @@ export const profile = {
     },
   },
   children: {
+    menuItem: {
+      cs: 'Moje děti',
+      en: 'My Children',
+    },
+    viewDashboard: {
+      cs: 'Zobrazit panel dětí',
+      en: "View Children's Dashboard",
+    },
     title: {
       cs: 'Moje děti',
       en: 'My Children',
