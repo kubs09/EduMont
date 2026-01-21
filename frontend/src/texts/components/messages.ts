@@ -47,6 +47,10 @@ export const messages = {
     cs: 'Smazat',
     en: 'Delete',
   },
+  messageSent: {
+    cs: 'Zpráva byla úspěšně odeslána',
+    en: 'Message sent successfully',
+  },
   messageDeleted: {
     cs: 'Zpráva byla úspěšně smazána',
     en: 'Message deleted successfully',
@@ -54,6 +58,10 @@ export const messages = {
   noMessages: {
     cs: 'Žádné zprávy',
     en: 'No messages',
+  },
+  fetchingMessagesError: {
+    cs: 'Nepodařilo se načíst zprávy',
+    en: 'Failed to fetch messages',
   },
   fetchUsersError: {
     cs: 'Nepodařilo se načíst seznam uživatelů',

@@ -52,11 +52,11 @@ const Messages: React.FC = () => {
       const data = await getMessages();
       setMessages(data);
     } catch (error) {
-      enqueueSnackbar('Failed to fetch messages', { variant: 'error' });
+      enqueueSnackbar(texts.messages.fetchingMessagesError[language], { variant: 'error' });
     } finally {
       setIsRefreshing(false);
     }
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, language]);
 
   const fetchUsers = React.useCallback(async () => {
     try {
@@ -84,7 +84,9 @@ const Messages: React.FC = () => {
       setSelectedMessage(message);
       fetchMessages();
     } catch (error) {
-      enqueueSnackbar('Failed to fetch message details', { variant: 'error' });
+      enqueueSnackbar(enqueueSnackbar(texts.messages.fetchUsersError[language]), {
+        variant: 'error',
+      });
     }
   };
 
@@ -225,9 +227,9 @@ const Messages: React.FC = () => {
           try {
             await sendMessage({ ...data, language });
             fetchMessages();
-            enqueueSnackbar('Message sent', { variant: 'success' });
+            enqueueSnackbar(texts.messages.messageSent[language], { variant: 'success' });
           } catch (error) {
-            enqueueSnackbar('Failed to send message', { variant: 'error' });
+            enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
           }
         }}
         users={users}

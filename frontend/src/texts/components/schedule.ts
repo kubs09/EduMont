@@ -76,7 +76,7 @@ export const schedule = {
     en: 'Child',
   },
   class: {
-    cs: 'Třídu',
+    cs: 'Třída',
     en: 'Class',
   },
   noChildrenFound: {
