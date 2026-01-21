@@ -244,6 +244,10 @@ export const texts = {
       cs: 'Nový uživatel',
       en: 'New User',
     },
+    searchPlaceholder: {
+      cs: 'Hledat uživatele...',
+      en: 'Search users...',
+    },
     emailLabel: {
       cs: 'Email',
       en: 'Email',
@@ -1155,6 +1159,10 @@ export const texts = {
     class: {
       cs: 'Třídu',
       en: 'Class',
+    },
+    noChildrenFound: {
+      cs: 'Nenalezeny žádné děti',
+      en: 'No children found',
     },
     timeSlot: {
       cs: 'Čas',

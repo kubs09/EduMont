@@ -14,6 +14,7 @@ import AddUserDialog from '../components/AddUserDialog';
 import api from '@frontend/services/apiConfig';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { SearchBar } from '@frontend/shared/components/SearchBar';
 
 interface User {
   id: number;
@@ -29,7 +30,21 @@ const UserDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const toast = useToast();
+
+  const filteredUsers = React.useMemo(() => {
+    if (!searchQuery) return users;
+
+    const query = searchQuery.toLowerCase();
+    return users.filter(
+      (user) =>
+        user.firstname.toLowerCase().includes(query) ||
+        user.surname.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.role.toLowerCase().includes(query)
+    );
+  }, [users, searchQuery]);
 
   const fetchUsers = React.useCallback(async () => {
     try {
@@ -66,10 +81,9 @@ const UserDashboard: React.FC = () => {
       });
       fetchUsers();
     } catch (error: unknown) {
-      const errorMsg = (error as { response?: { data?: { error?: string } } }).response?.data?.error;
+      const errorMsg = (error as { response?: { data?: { error?: string } } }).response?.data
+        ?.error;
       let description = texts.userTable.deleteError[language];
-
-      // Map backend errors to localized messages
 
       if (errorMsg === 'You cannot delete your own account') {
         description = texts.userTable.cannotDeleteSelf[language];
@@ -99,7 +113,17 @@ const UserDashboard: React.FC = () => {
           </HStack>
         </CardHeader>
         <CardBody>
-          <UserTable data={users} loading={loading} error={error} onDelete={handleDeleteUser} />
+          <SearchBar
+            placeholder={texts.userDashboard.searchPlaceholder[language]}
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
+          <UserTable
+            data={filteredUsers}
+            loading={loading}
+            error={error}
+            onDelete={handleDeleteUser}
+          />
         </CardBody>
       </Card>
       <AddUserDialog
