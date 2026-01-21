@@ -218,7 +218,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
               <Select
                 value={formData.child_id}
                 onChange={(e) => handleChange('child_id', e.target.value)}
-                placeholder={`Select ${texts.schedule.child[language].toLowerCase()}`}
+                placeholder={`${texts.schedule.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
               >
                 {childrenData.map((child: Child) => (
                   <option key={child.id} value={child.id}>

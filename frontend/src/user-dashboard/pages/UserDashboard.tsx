@@ -14,6 +14,7 @@ import AddUserDialog from '../components/AddUserDialog';
 import api from '@frontend/services/apiConfig';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { SearchBar } from '@frontend/shared/components/SearchBar';
 
 interface User {
   id: number;
@@ -29,7 +30,21 @@ const UserDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const toast = useToast();
+
+  const filteredUsers = React.useMemo(() => {
+    if (!searchQuery) return users;
+
+    const query = searchQuery.toLowerCase();
+    return users.filter(
+      (user) =>
+        user.firstname.toLowerCase().includes(query) ||
+        user.surname.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query) ||
+        user.role.toLowerCase().includes(query)
+    );
+  }, [users, searchQuery]);
 
   const fetchUsers = React.useCallback(async () => {
     try {
@@ -55,6 +70,37 @@ const UserDashboard: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      await api.delete(`/api/users/${userId}`);
+      toast({
+        title: texts.userTable.deleteSuccess[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchUsers();
+    } catch (error: unknown) {
+      const errorMsg = (error as { response?: { data?: { error?: string } } }).response?.data
+        ?.error;
+      let description = texts.userTable.deleteError[language];
+
+      if (errorMsg === 'You cannot delete your own account') {
+        description = texts.userTable.cannotDeleteSelf[language];
+      } else if (errorMsg) {
+        description = errorMsg;
+      }
+
+      toast({
+        title: texts.userDashboard.errorTitle[language],
+        description,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <Box p={6}>
       <Card>
@@ -67,7 +113,17 @@ const UserDashboard: React.FC = () => {
           </HStack>
         </CardHeader>
         <CardBody>
-          <UserTable data={users} loading={loading} error={error} />
+          <SearchBar
+            placeholder={texts.userDashboard.searchPlaceholder[language]}
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
+          <UserTable
+            data={filteredUsers}
+            loading={loading}
+            error={error}
+            onDelete={handleDeleteUser}
+          />
         </CardBody>
       </Card>
       <AddUserDialog
