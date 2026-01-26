@@ -21,16 +21,19 @@ import {
   AlertDialogFooter,
   Button,
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { useNavigate } from 'react-router-dom';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { getChildren, deleteChild } from '../../services/api';
 import { Child } from '../../types/child';
+import { ROUTES } from '../../shared/route';
 import AddChildModal from '../components/AddChildModal';
 import React from 'react';
 
 const ChildrenPage = () => {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const toast = useToast();
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
@@ -87,6 +90,10 @@ const ChildrenPage = () => {
     onClose();
   };
 
+  const handleViewDetail = (childId: number) => {
+    navigate(`${ROUTES.CHILDREN}/${childId}`);
+  };
+
   return (
     <Box p={4}>
       <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
@@ -123,6 +130,8 @@ const ChildrenPage = () => {
               {children.map((child, index) => (
                 <Tr
                   key={child.id}
+                  cursor="pointer"
+                  transition="all 0.2s"
                   borderLeftWidth={{ base: '4px', md: '0' }}
                   borderLeftColor={{
                     base:
@@ -135,7 +144,9 @@ const ChildrenPage = () => {
                   }}
                   _hover={{
                     bg: { base: 'gray.100', md: 'gray.50' },
+                    transform: { base: 'translateX(2px)', md: 'none' },
                   }}
+                  onClick={() => handleViewDetail(child.id)}
                 >
                   <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{child.firstname}</Td>
                   <Td display={{ base: 'none', md: 'table-cell' }}>{child.surname}</Td>
@@ -156,7 +167,7 @@ const ChildrenPage = () => {
                       {child.status || 'pending'}
                     </Badge>
                   </Td>
-                  <Td>
+                  <Td onClick={(e) => e.stopPropagation()}>
                     {isParent && (
                       <IconButton
                         aria-label="Delete child"
@@ -168,6 +179,9 @@ const ChildrenPage = () => {
                           onOpen();
                         }}
                       />
+                    )}
+                    {!isParent && (
+                      <ChevronRightIcon boxSize={6} color="gray.500" />
                     )}
                   </Td>
                 </Tr>

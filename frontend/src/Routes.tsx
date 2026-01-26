@@ -17,6 +17,7 @@ import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import SchedulePage from './schedule/pages/SchedulePage';
 import ChildrenPage from './children/pages/ChildrenPage';
+import ChildDetailPage from './children/pages/ChildDetailPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -63,6 +64,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
           <Route path={ROUTES.SCHEDULE} element={<SchedulePage />} />
           <Route path={ROUTES.CHILDREN} element={<ChildrenPage />} />
+          <Route path={`${ROUTES.CHILDREN}/:id`} element={<ChildDetailPage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
