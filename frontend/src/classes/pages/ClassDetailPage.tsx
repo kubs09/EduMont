@@ -12,8 +12,6 @@ import {
   Th,
   Td,
   Text,
-  Grid,
-  GridItem,
   Card,
   CardHeader,
   CardBody,
@@ -28,8 +26,6 @@ import {
   useDisclosure,
   Input,
   Textarea,
-  HStack,
-  Badge,
   TableContainer,
   Stack,
 } from '@chakra-ui/react';
@@ -37,10 +33,11 @@ import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { confirmClassChild, getClassNextActivities, NextActivity } from '../../services/api/class';
+import { getClassNextActivities, NextActivity } from '../../services/api/class';
 import { ROUTES } from '../../shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
+import Tabs, { TabItem } from '../../shared/components/Tabs/Tabs';
 
 import { Class } from '../../types/class';
 interface ClassHistory {
@@ -241,57 +238,12 @@ const ClassDetailPage = () => {
     }
   };
 
-  const handleConfirmChild = async (childId: number) => {
-    if (!id) return;
-
-    try {
-      const response = await confirmClassChild(parseInt(id), childId);
-      setClassData(transformClassData(response));
-
-      toast({
-        title: texts.classes.confirmation.success[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: texts.classes.confirmation.error[language],
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleDenyChild = async (childId: number) => {
-    if (!id) return;
-
-    try {
-      const response = await api.put(`/api/classes/${id}/children/${childId}/deny`);
-      setClassData(transformClassData(response.data));
-
-      toast({
-        title: texts.classes.confirmation.success[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: texts.classes.confirmation.error[language],
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
   const getVisibleChildren = () => {
     if (!classData) return [];
-    if (isAdmin || isTeacher) return classData.children;
+    const acceptedChildren = classData.children.filter((child) => child.status === 'accepted');
+    if (isAdmin || isTeacher) return acceptedChildren;
     if (isParent) {
-      return classData.children.filter((child) => child.parent_id === currentUserId);
+      return acceptedChildren.filter((child) => child.parent_id === currentUserId);
     }
     return [];
   };
@@ -300,7 +252,7 @@ const ClassDetailPage = () => {
     if (!classData) return [];
     return nextActivities.filter((activity) => {
       const child = classData.children.find((c) => c.id === activity.child_id);
-      return child && child.status === 'pending';
+      return child && child.status === 'accepted';
     });
   };
 
@@ -308,190 +260,60 @@ const ClassDetailPage = () => {
     return null;
   }
 
-  return (
-    <Box p={{ base: 2, md: 4 }}>
-      <Button
-        leftIcon={<ChevronLeftIcon />}
-        mb={4}
-        onClick={() => navigate(ROUTES.CLASSES)}
-        size="md"
-      >
-        {texts.classes.detail.backToList[language]}
-      </Button>
-
-      <Grid templateColumns="repeat(12, 1fr)" gap={{ base: 4, md: 6 }}>
-        <GridItem colSpan={{ base: 12, lg: 4 }}>
-          <Card>
-            <CardHeader>
-              <Heading size={{ base: 'sm', md: 'md' }}>
-                {texts.classes.detail.info[language]}
-              </Heading>
-            </CardHeader>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text fontWeight="bold">{texts.classes.name[language]}</Text>
-                  <Text>{classData.name}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.classes.description[language]}</Text>
-                  <Text>{classData.description}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.classes.ageRange[language]}</Text>
-                  <Text>{`${classData.min_age} - ${classData.max_age}`}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.classes.detail.teachers[language]}</Text>
-                  {classData.teachers.map((teacher) => (
-                    <Text key={teacher.id}>
-                      {teacher.firstname} {teacher.surname}
-                    </Text>
-                  ))}
-                </Box>
-              </VStack>
-              {isAdmin && (
-                <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={4} w="full">
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => setIsEditInfoModalOpen(true)}
-                    size="md"
-                    w={{ base: 'full', sm: 'auto' }}
-                  >
-                    {texts.classes.editInfo[language]}
-                  </Button>
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => setIsMembersModalOpen(true)}
-                    size="md"
-                    w={{ base: 'full', sm: 'auto' }}
-                  >
-                    {texts.classes.teachers[language]}
-                  </Button>
-                </Stack>
-              )}
-            </CardBody>
-          </Card>
-        </GridItem>
-
-        <GridItem colSpan={{ base: 12, lg: 8 }}>
-          <Card>
-            <CardHeader>
-              <Heading size={{ base: 'sm', md: 'md' }}>
-                {isParent
-                  ? texts.classes.detail.myChildren[language]
-                  : texts.classes.detail.students[language]}
-              </Heading>
-            </CardHeader>
-            <CardBody>
-              <TableContainer>
-                <Table variant="simple" size="md">
-                  <Thead>
-                    <Tr>
-                      <Th>{texts.childrenTable.firstname[language]}</Th>
-                      <Th>{texts.childrenTable.surname[language]}</Th>
-                      <Th>{texts.childrenTable.age[language]}</Th>
-                      {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
-                      {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
-                      {(isAdmin || isTeacher) && <Th>{texts.classes.name[language]}</Th>}
-                      {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {getVisibleChildren().map((child) => (
-                      <Tr key={child.id}>
-                        <Td>{child.firstname}</Td>
-                        <Td>{child.surname}</Td>
-                        <Td>{child.age}</Td>
-                        {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
-                        {(isAdmin || isTeacher) && (
-                          <Td>{child.parent_contact || child.parent_email}</Td>
-                        )}
-                        {(isAdmin || isTeacher) && (
-                          <Td>{child.status === 'pending' && classData.name}</Td>
-                        )}
-                        {(isAdmin || isTeacher) && (
-                          <Td>
-                            {child.status === 'accepted' ? (
-                              <Badge colorScheme="green">
-                                {texts.classes.confirmation.accepted[language]}
-                              </Badge>
-                            ) : child.status === 'denied' ? (
-                              <Badge colorScheme="red">
-                                {texts.classes.confirmation.denied[language]}
-                              </Badge>
-                            ) : (
-                              <HStack spacing={2}>
-                                <Badge colorScheme="yellow">
-                                  {texts.classes.confirmation.pending[language]}
-                                </Badge>
-                                <Button
-                                  size="sm"
-                                  colorScheme="green"
-                                  onClick={() => handleConfirmChild(child.id)}
-                                >
-                                  {texts.classes.confirmation.accept[language]}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  colorScheme="red"
-                                  onClick={() => handleDenyChild(child.id)}
-                                >
-                                  {texts.classes.confirmation.deny[language]}
-                                </Button>
-                              </HStack>
-                            )}
-                          </Td>
-                        )}
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            </CardBody>
-          </Card>
-        </GridItem>
-      </Grid>
-
-      <Card my={6}>
+  // Info Tab Content
+  const infoTabContent = (
+    <VStack align="stretch" spacing={6}>
+      <Card>
         <CardHeader>
-          <Heading size={{ base: 'sm', md: 'md' }}>
-            {texts.classes.detail.nextActivities[language]}
-          </Heading>
+          <Heading size={{ base: 'sm', md: 'md' }}>{texts.classes.detail.info[language]}</Heading>
         </CardHeader>
         <CardBody>
-          {getFilteredActivities().length === 0 ? (
-            <Text color="gray.500" fontStyle="italic">
-              {texts.classes.detail.noNextActivities[language]}
-            </Text>
-          ) : (
-            <TableContainer>
-              <Table variant="simple" size="md">
-                <Thead>
-                  <Tr>
-                    <Th>{texts.childrenTable.firstname[language]}</Th>
-                    <Th>{texts.childrenTable.surname[language]}</Th>
-                    <Th>{texts.classes.detail.activity[language]}</Th>
-                    {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {getFilteredActivities().map((activity) => (
-                    <Tr key={`${activity.child_id}-${activity.id}`}>
-                      <Td>{activity.firstname}</Td>
-                      <Td>{activity.surname}</Td>
-                      <Td>{activity.activity || '-'}</Td>
-                      {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
+          <VStack align="stretch" spacing={4}>
+            <Box>
+              <Text fontWeight="bold">{texts.classes.name[language]}</Text>
+              <Text>{classData.name}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">{texts.classes.description[language]}</Text>
+              <Text>{classData.description}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">{texts.classes.ageRange[language]}</Text>
+              <Text>{`${classData.min_age} - ${classData.max_age}`}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">{texts.classes.detail.teachers[language]}</Text>
+              {classData.teachers.map((teacher) => (
+                <Text key={teacher.id}>
+                  {teacher.firstname} {teacher.surname}
+                </Text>
+              ))}
+            </Box>
+          </VStack>
+          {isAdmin && (
+            <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={4} w="full">
+              <Button
+                colorScheme="blue"
+                onClick={() => setIsEditInfoModalOpen(true)}
+                size="md"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.editInfo[language]}
+              </Button>
+              <Button
+                colorScheme="blue"
+                onClick={() => setIsMembersModalOpen(true)}
+                size="md"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.teachers[language]}
+              </Button>
+            </Stack>
           )}
         </CardBody>
       </Card>
 
-      <Card my={12}>
+      <Card>
         <CardHeader>
           <Heading size={{ base: 'sm', md: 'md' }}>
             {texts.classes.detail.history[language]}
@@ -541,6 +363,120 @@ const ClassDetailPage = () => {
           </TableContainer>
         </CardBody>
       </Card>
+    </VStack>
+  );
+
+  const studentsTabContent = (
+    <Card>
+      <CardHeader>
+        <Heading size={{ base: 'sm', md: 'md' }}>
+          {isParent
+            ? texts.classes.detail.myChildren[language]
+            : texts.classes.detail.students[language]}
+        </Heading>
+      </CardHeader>
+      <CardBody>
+        <TableContainer>
+          <Table variant="simple" size="md">
+            <Thead>
+              <Tr>
+                <Th>{texts.childrenTable.firstname[language]}</Th>
+                <Th>{texts.childrenTable.surname[language]}</Th>
+                <Th>{texts.childrenTable.age[language]}</Th>
+                {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
+                {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {getVisibleChildren().map((child) => (
+                <Tr key={child.id}>
+                  <Td>{child.firstname}</Td>
+                  <Td>{child.surname}</Td>
+                  <Td>{child.age}</Td>
+                  {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
+                  {(isAdmin || isTeacher) && <Td>{child.parent_contact || child.parent_email}</Td>}
+                  {(isAdmin || isTeacher) && (
+                    <Td>{child.status === 'pending' && classData.name}</Td>
+                  )}
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </CardBody>
+    </Card>
+  );
+
+  const activitiesTabContent = (
+    <Card>
+      <CardHeader>
+        <Heading size={{ base: 'sm', md: 'md' }}>
+          {texts.classes.detail.nextActivities[language]}
+        </Heading>
+      </CardHeader>
+      <CardBody>
+        {getFilteredActivities().length === 0 ? (
+          <Text color="gray.500" fontStyle="italic">
+            {texts.classes.detail.noNextActivities[language]}
+          </Text>
+        ) : (
+          <TableContainer>
+            <Table variant="simple" size="md">
+              <Thead>
+                <Tr>
+                  <Th>{texts.childrenTable.firstname[language]}</Th>
+                  <Th>{texts.childrenTable.surname[language]}</Th>
+                  <Th>{texts.classes.detail.activity[language]}</Th>
+                  {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
+                </Tr>
+              </Thead>
+              <Tbody>
+                {getFilteredActivities().map((activity) => (
+                  <Tr key={`${activity.child_id}-${activity.id}`}>
+                    <Td>{activity.firstname}</Td>
+                    <Td>{activity.surname}</Td>
+                    <Td>{activity.activity || '-'}</Td>
+                    {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        )}
+      </CardBody>
+    </Card>
+  );
+
+  const classDetailTabs: TabItem[] = [
+    {
+      id: 'info',
+      label: texts.classes.detail.info[language],
+      content: infoTabContent,
+    },
+    {
+      id: 'students',
+      label: texts.classes.detail.students[language],
+      content: studentsTabContent,
+    },
+    {
+      id: 'activities',
+      label: texts.classes.detail.nextActivities[language],
+      content: activitiesTabContent,
+    },
+  ];
+
+  return (
+    <Box p={{ base: 2, md: 4 }}>
+      <Button
+        leftIcon={<ChevronLeftIcon />}
+        mb={4}
+        onClick={() => navigate(ROUTES.CLASSES)}
+        size="md"
+      >
+        {texts.classes.detail.backToList[language]}
+      </Button>
+
+      <Tabs tabs={classDetailTabs} variant="line" colorScheme="blue" />
 
       {(isAdmin || isTeacher) && (
         <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'lg' }}>

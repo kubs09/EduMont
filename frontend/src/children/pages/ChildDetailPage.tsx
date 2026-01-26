@@ -14,7 +14,6 @@ import {
   Th,
   Td,
   TableContainer,
-  IconButton,
   HStack,
   Badge,
   useDisclosure,
@@ -25,7 +24,7 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon, DeleteIcon } from '@chakra-ui/icons';
+import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '../../texts';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
@@ -55,12 +54,8 @@ const ChildDetailPage = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const {
-    isOpen: isClassDeleteOpen,
-    onOpen: onClassDeleteOpen,
-    onClose: onClassDeleteClose,
-  } = useDisclosure();
-  const [classToDelete, setClassToDelete] = useState<ChildClass | null>(null);
+  const { isOpen: isClassDeleteOpen, onClose: onClassDeleteClose } = useDisclosure();
+  const [classToDelete] = useState<ChildClass | null>(null);
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
   const userRole = localStorage.getItem('userRole');
   const currentUserId = localStorage.getItem('userId');
@@ -74,20 +69,16 @@ const ChildDetailPage = () => {
       if (!id) return;
 
       try {
-        // Fetch child data
         const childResponse = await api.get(`/api/children/${id}`);
         setChildData(childResponse.data);
 
-        // Fetch child's classes
         const classesResponse = await api.get(`/api/children/${id}/classes`);
         setClasses(classesResponse.data || []);
 
-        // Fetch child's schedules
         try {
           const schedulesResponse = await api.get(`/api/children/${id}/schedules`);
           setSchedules(schedulesResponse.data || []);
         } catch (err) {
-          // Schedules might not be available
           setSchedules([]);
         }
       } catch (error) {
@@ -181,6 +172,52 @@ const ChildDetailPage = () => {
       });
     }
     onClassDeleteClose();
+  };
+
+  const handleConfirmChildClass = async (classId: number) => {
+    if (!id) return;
+
+    try {
+      await api.post(`/api/classes/${classId}/children/${id}/confirm`);
+      setClasses(classes.map((c) => (c.id === classId ? { ...c, status: 'accepted' } : c)));
+      toast({
+        title: texts.classes.confirmation.success[language],
+        status: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to confirm class:', error);
+      toast({
+        title: texts.profile.error[language],
+        description: 'Failed to confirm class',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDenyChildClass = async (classId: number) => {
+    if (!id) return;
+
+    try {
+      await api.post(`/api/classes/${classId}/children/${id}/deny`);
+      setClasses(classes.map((c) => (c.id === classId ? { ...c, status: 'denied' } : c)));
+      toast({
+        title: texts.classes.confirmation.success[language],
+        status: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to deny class:', error);
+      toast({
+        title: texts.profile.error[language],
+        description: 'Failed to deny class',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const getStatusColor = (status: string): string => {
@@ -317,17 +354,22 @@ const ChildDetailPage = () => {
                       {canEdit && (
                         <Td>
                           {cls.status === 'pending' && (
-                            <IconButton
-                              aria-label="Remove class"
-                              icon={<DeleteIcon />}
-                              size="sm"
-                              colorScheme="red"
-                              variant="ghost"
-                              onClick={() => {
-                                setClassToDelete(cls);
-                                onClassDeleteOpen();
-                              }}
-                            />
+                            <HStack spacing={2}>
+                              <Button
+                                size="sm"
+                                colorScheme="green"
+                                onClick={() => handleConfirmChildClass(cls.id)}
+                              >
+                                {texts.classes.confirmation.accept[language]}
+                              </Button>
+                              <Button
+                                size="sm"
+                                colorScheme="red"
+                                onClick={() => handleDenyChildClass(cls.id)}
+                              >
+                                {texts.classes.confirmation.deny[language]}
+                              </Button>
+                            </HStack>
                           )}
                         </Td>
                       )}
