@@ -2,10 +2,9 @@ export interface Schedule {
   id: number;
   child_id: number;
   class_id: number;
-  date: string;
-  start_time: string;
-  duration_hours: number | string;
-  activity?: string;
+  name: string;
+  category?: string;
+  status: 'not started' | 'in progress' | 'done';
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -21,10 +20,9 @@ export interface Schedule {
 export interface CreateScheduleData {
   child_id: number;
   class_id: number;
-  date: string;
-  start_time: string;
-  duration_hours: number | string;
-  activity?: string;
+  name: string;
+  category?: string;
+  status?: 'not started' | 'in progress' | 'done';
   notes?: string;
 }
 

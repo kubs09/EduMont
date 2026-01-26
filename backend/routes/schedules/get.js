@@ -8,7 +8,7 @@ const { canAccessChildSchedule } = require('./validation');
 // Get all schedules (admin/teacher)
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const { date, week, month } = req.query;
+    const { status } = req.query;
 
     if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
       return res.status(403).json({ error: 'Access denied' });
@@ -19,10 +19,9 @@ router.get('/', authenticateToken, async (req, res) => {
         s.id,
         s.child_id,
         s.class_id,
-        s.date,
-        s.start_time,
-        s.duration_hours,
-        s.activity,
+        s.name,
+        s.category,
+        s.status,
         s.notes,
         s.created_at,
         s.updated_at,
@@ -52,28 +51,16 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(req.user.id);
     }
 
-    if (date) {
-      whereConditions.push('s.date = $' + (params.length + 1));
-      params.push(date);
-    } else if (week) {
-      whereConditions.push(
-        's.date >= $' +
-          (params.length + 1) +
-          ' AND s.date < $' +
-          (params.length + 1) +
-          "::date + interval '7 days'"
-      );
-      params.push(week);
-    } else if (month) {
-      whereConditions.push("DATE_TRUNC('month', s.date) = $" + (params.length + 1) + '::date');
-      params.push(month + '-01');
+    if (status) {
+      whereConditions.push('s.status = $' + (params.length + 1));
+      params.push(status);
     }
 
     if (whereConditions.length > 0) {
       query += ' WHERE ' + whereConditions.join(' AND ');
     }
 
-    query += ' ORDER BY s.date ASC, s.start_time ASC';
+    query += ' ORDER BY s.created_at DESC';
 
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -82,6 +69,138 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Get schedules for a specific child
+router.get('/child/:childId', authenticateToken, async (req, res) => {
+  try {
+    const { childId } = req.params;
+    const { status } = req.query;
+
+    const hasAccess = await canAccessChildSchedule(req.user.id, req.user.role, parseInt(childId));
+    if (!hasAccess) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    let query = `
+      SELECT 
+        s.id,
+        s.child_id,
+        s.class_id,
+        s.name,
+        s.category,
+        s.status,
+        s.notes,
+        s.created_at,
+        s.updated_at,
+        c.name as class_name,
+        ch.firstname as child_firstname,
+        ch.surname as child_surname,
+        creator.firstname as created_by_firstname,
+        creator.surname as created_by_surname,
+        updater.firstname as updated_by_firstname,
+        updater.surname as updated_by_surname
+      FROM schedules s
+      JOIN classes c ON s.class_id = c.id
+      JOIN children ch ON s.child_id = ch.id
+      LEFT JOIN users creator ON s.created_by = creator.id
+      LEFT JOIN users updater ON s.updated_by = updater.id
+      WHERE s.child_id = $1
+    `;
+
+    const params = [childId];
+
+    if (status) {
+      query += ' AND s.status = $2';
+      params.push(status);
+    }
+
+    query += ' ORDER BY s.created_at DESC';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching schedule:', err);
+    res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
+
+// Get schedules for a specific class
+router.get('/class/:classId', authenticateToken, async (req, res) => {
+  try {
+    const { classId } = req.params;
+    const { status } = req.query;
+
+    if (req.user.role === 'teacher') {
+      const teacherClassResult = await pool.query(
+        'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
+        [classId, req.user.id]
+      );
+      if (teacherClassResult.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    } else if (req.user.role === 'parent') {
+      const parentChildResult = await pool.query(
+        `
+        SELECT 1 FROM class_children cc
+        JOIN children ch ON cc.child_id = ch.id
+        WHERE cc.class_id = $1 AND ch.parent_id = $2
+      `,
+        [classId, req.user.id]
+      );
+      if (parentChildResult.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
+    let query = `
+      SELECT 
+        s.id,
+        s.child_id,
+        s.class_id,
+        s.name,
+        s.category,
+        s.status,
+        s.notes,
+        s.created_at,
+        s.updated_at,
+        c.name as class_name,
+        ch.firstname as child_firstname,
+        ch.surname as child_surname,
+        creator.firstname as created_by_firstname,
+        creator.surname as created_by_surname,
+        updater.firstname as updated_by_firstname,
+        updater.surname as updated_by_surname
+      FROM schedules s
+      JOIN classes c ON s.class_id = c.id
+      JOIN children ch ON s.child_id = ch.id
+      LEFT JOIN users creator ON s.created_by = creator.id
+      LEFT JOIN users updater ON s.updated_by = updater.id
+      WHERE s.class_id = $1
+    `;
+
+    const params = [classId];
+
+    if (req.user.role === 'parent') {
+      query += ' AND ch.parent_id = $2';
+      params.push(req.user.id);
+    }
+
+    if (status) {
+      query += ` AND s.status = $${params.length + 1}`;
+      params.push(status);
+    }
+
+    query += ' ORDER BY s.created_at DESC, ch.surname ASC, ch.firstname ASC';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching class schedule:', err);
+    res.status(500).json({ error: 'Failed to fetch class schedule' });
+  }
+});
+
+module.exports = router;
 
 // Get schedules for a specific child
 router.get('/child/:childId', authenticateToken, async (req, res) => {

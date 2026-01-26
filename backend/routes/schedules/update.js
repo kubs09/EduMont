@@ -10,7 +10,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const { child_id, class_id, date, start_time, duration_hours, activity, notes } = req.body;
+    const { child_id, class_id, name, category, status, notes } = req.body;
 
     const validationErrors = validateSchedule(req.body);
     if (validationErrors.length > 0) {
@@ -43,33 +43,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Child is not assigned to this class' });
     }
 
-    const conflictResult = await client.query(
-      `
-      SELECT id FROM schedules 
-      WHERE child_id = $1 AND date = $2 AND id != $5
-      AND (
-        (start_time <= $3 AND start_time + (duration_hours || ' hours')::interval > $3) OR
-        (start_time < ($3 + ($4 || ' hours')::interval) AND start_time + (duration_hours || ' hours')::interval >= ($3 + ($4 || ' hours')::interval)) OR
-        (start_time >= $3 AND start_time + (duration_hours || ' hours')::interval <= ($3 + ($4 || ' hours')::interval))
-      )
-    `,
-      [child_id, date, start_time, duration_hours, id]
-    );
-
-    if (conflictResult.rows.length > 0) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ error: 'Time conflict with existing schedule entry' });
-    }
-
     const result = await client.query(
       `
       UPDATE schedules 
-      SET child_id = $1, class_id = $2, date = $3, start_time = $4, duration_hours = $5, 
-          activity = $6, notes = $7, updated_at = CURRENT_TIMESTAMP, updated_by = $8
-      WHERE id = $9
+      SET child_id = $1, class_id = $2, name = $3, category = $4, status = $5, 
+          notes = $6, updated_at = CURRENT_TIMESTAMP, updated_by = $7
+      WHERE id = $8
       RETURNING *
     `,
-      [child_id, class_id, date, start_time, duration_hours, activity, notes, req.user.id, id]
+      [child_id, class_id, name, category, status, notes, req.user.id, id]
     );
 
     await client.query('COMMIT');

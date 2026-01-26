@@ -16,14 +16,11 @@ import {
   VStack,
   useToast,
   FormErrorMessage,
-  HStack,
-  Text,
 } from '@chakra-ui/react';
 import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule, CreateScheduleData, UpdateScheduleData } from '../../types/schedule';
 import { Child } from '../../types/child';
-import { DatePicker } from '../../shared/components/DatePicker';
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -32,24 +29,21 @@ interface ScheduleModalProps {
   schedule?: Schedule | null;
   childrenData: Child[];
   defaultChildId?: number;
-  defaultDate?: string;
 }
 
 interface FormData {
   child_id: string;
-  date: string;
-  start_time: string;
-  duration_hours: string;
-  activity: string;
+  name: string;
+  category: string;
+  status: string;
   notes: string;
 }
 
 interface FormErrors {
   child_id?: string;
-  date?: string;
-  start_time?: string;
-  duration_hours?: string;
-  activity?: string;
+  name?: string;
+  category?: string;
+  status?: string;
   notes?: string;
 }
 
@@ -60,17 +54,15 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
   schedule,
   childrenData,
   defaultChildId,
-  defaultDate,
 }) => {
   const { language } = useLanguage();
   const toast = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     child_id: '',
-    date: '',
-    start_time: '',
-    duration_hours: '1',
-    activity: '',
+    name: '',
+    category: '',
+    status: 'not started',
     notes: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -80,25 +72,23 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       if (schedule) {
         setFormData({
           child_id: schedule.child_id.toString(),
-          date: schedule.date,
-          start_time: schedule.start_time,
-          duration_hours: schedule.duration_hours.toString(),
-          activity: schedule.activity || '',
+          name: schedule.name,
+          category: schedule.category || '',
+          status: schedule.status,
           notes: schedule.notes || '',
         });
       } else {
         setFormData({
           child_id: defaultChildId?.toString() || '',
-          date: defaultDate || new Date().toISOString().split('T')[0],
-          start_time: '',
-          duration_hours: '1',
-          activity: '',
+          name: '',
+          category: '',
+          status: 'not started',
           notes: '',
         });
       }
       setErrors({});
     }
-  }, [isOpen, schedule, defaultChildId, defaultDate]);
+  }, [isOpen, schedule, defaultChildId]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -107,21 +97,15 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       newErrors.child_id = texts.schedule.validation.childRequired[language];
     }
 
-    if (!formData.date) {
-      newErrors.date = texts.schedule.validation.dateRequired[language];
+    if (!formData.name || !formData.name.trim()) {
+      newErrors.name = texts.schedule.validation?.nameRequired?.[language] || 'Name is required';
+    } else if (formData.name.length > 200) {
+      newErrors.name = texts.schedule.validation?.nameTooLong?.[language] || 'Name is too long';
     }
 
-    if (!formData.start_time) {
-      newErrors.start_time = texts.schedule.validation.startTimeRequired[language];
-    }
-
-    if (!formData.duration_hours) {
-      newErrors.duration_hours = texts.schedule.validation.durationRequired[language];
-    } else {
-      const duration = parseInt(formData.duration_hours);
-      if (isNaN(duration) || duration < 1 || duration > 3) {
-        newErrors.duration_hours = texts.schedule.validation.durationRange[language];
-      }
+    if (formData.category && formData.category.length > 100) {
+      newErrors.category =
+        texts.schedule.validation?.categoryTooLong?.[language] || 'Category is too long';
     }
 
     setErrors(newErrors);
@@ -148,11 +132,10 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       const scheduleData = {
         child_id: parseInt(formData.child_id),
         class_id: selectedChild.class_id,
-        date: formData.date,
-        start_time: formData.start_time,
-        duration_hours: parseInt(formData.duration_hours),
-        activity: formData.activity || undefined,
-        notes: formData.notes || undefined,
+        name: formData.name.trim(),
+        category: formData.category.trim() || undefined,
+        status: formData.status as 'not started' | 'in progress' | 'done',
+        notes: formData.notes.trim() || undefined,
         ...(schedule && { id: schedule.id }),
       };
 
@@ -172,13 +155,6 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
       let errorMessage = schedule
         ? texts.schedule.messages.updateError[language]
         : texts.schedule.messages.createError[language];
-
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number; data?: { error?: string } } };
-        if (axiosError.response?.status === 409) {
-          errorMessage = texts.schedule.validation.timeConflict[language];
-        }
-      }
 
       toast({
         title: errorMessage,
@@ -229,81 +205,45 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
               <FormErrorMessage>{errors.child_id}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isRequired isInvalid={!!errors.date}>
-              <FormLabel>{texts.schedule.date[language]}</FormLabel>
-              <DatePicker
-                viewType="day"
-                value={formData.date}
-                onChange={(value) => handleChange('date', value)}
-                language={language}
-              />
-              <FormErrorMessage>{errors.date}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.start_time}>
-              <FormLabel>{texts.schedule.startTime[language]}</FormLabel>
-              <HStack spacing={2}>
-                <Select
-                  value={formData.start_time.split(':')[0] || ''}
-                  onChange={(e) => {
-                    const hours = e.target.value;
-                    const minutes = formData.start_time.split(':')[1] || '00';
-                    handleChange('start_time', `${hours}:${minutes}`);
-                  }}
-                  placeholder={texts.schedule.viewOptions.hour[language]}
-                  maxW="120px"
-                >
-                  {Array.from({ length: 24 }, (_, i) => (
-                    <option key={i} value={i.toString().padStart(2, '0')}>
-                      {i.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </Select>
-                <Text>:</Text>
-                <Select
-                  value={formData.start_time.split(':')[1] || ''}
-                  onChange={(e) => {
-                    const hours = formData.start_time.split(':')[0] || '00';
-                    const minutes = e.target.value;
-                    handleChange('start_time', `${hours}:${minutes}`);
-                  }}
-                  placeholder={texts.schedule.viewOptions.minutes[language]}
-                  maxW="120px"
-                >
-                  {Array.from({ length: 12 }, (_, i) => {
-                    const minutes = (i * 5).toString().padStart(2, '0');
-                    return (
-                      <option key={minutes} value={minutes}>
-                        {minutes}
-                      </option>
-                    );
-                  })}
-                </Select>
-              </HStack>
-              <FormErrorMessage>{errors.start_time}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.duration_hours}>
-              <FormLabel>{texts.schedule.duration[language]}</FormLabel>
-              <Select
-                value={formData.duration_hours}
-                onChange={(e) => handleChange('duration_hours', e.target.value)}
-              >
-                <option value="1">1 {texts.schedule.hour[language]}</option>
-                <option value="2">2 {texts.schedule.hours[language]}</option>
-                <option value="3">3 {texts.schedule.hours[language]}</option>
-              </Select>
-              <FormErrorMessage>{errors.duration_hours}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={!!errors.activity}>
-              <FormLabel>{texts.schedule.activity[language]}</FormLabel>
+            <FormControl isRequired isInvalid={!!errors.name}>
+              <FormLabel>{texts.schedule.name?.[language] || 'Name'}</FormLabel>
               <Input
-                value={formData.activity}
-                onChange={(e) => handleChange('activity', e.target.value)}
-                placeholder={texts.schedule.placeholders.activity[language]}
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder={texts.schedule.placeholders?.name?.[language] || 'Enter task name'}
               />
-              <FormErrorMessage>{errors.activity}</FormErrorMessage>
+              <FormErrorMessage>{errors.name}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={!!errors.category}>
+              <FormLabel>{texts.schedule.category?.[language] || 'Category'}</FormLabel>
+              <Input
+                value={formData.category}
+                onChange={(e) => handleChange('category', e.target.value)}
+                placeholder={
+                  texts.schedule.placeholders?.category?.[language] || 'Enter category (optional)'
+                }
+              />
+              <FormErrorMessage>{errors.category}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isRequired isInvalid={!!errors.status}>
+              <FormLabel>{texts.schedule.status?.label?.[language] || 'Status'}</FormLabel>
+              <Select
+                value={formData.status}
+                onChange={(e) => handleChange('status', e.target.value)}
+              >
+                <option value="not started">
+                  {texts.schedule.status?.options?.notStarted?.[language] || 'Not Started'}
+                </option>
+                <option value="in progress">
+                  {texts.schedule.status?.options?.inProgress?.[language] || 'In Progress'}
+                </option>
+                <option value="done">
+                  {texts.schedule.status?.options?.done?.[language] || 'Done'}
+                </option>
+              </Select>
+              <FormErrorMessage>{errors.status}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!!errors.notes}>

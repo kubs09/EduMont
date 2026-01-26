@@ -18,25 +18,6 @@ import { useLanguage } from '../../shared/contexts/LanguageContext';
 import { texts } from '../../texts';
 import { Schedule } from '../../types/schedule';
 
-const calculateEndTime = (startTime: string, durationHours: number | string): string => {
-  const [hours, minutes] = startTime.split(':').map(Number);
-
-  let duration: number;
-  if (typeof durationHours === 'string') {
-    const match = durationHours.match(/^(\d+(?:\.\d+)?)/);
-    duration = match ? parseFloat(match[1]) : 0;
-  } else {
-    duration = durationHours;
-  }
-
-  if (isNaN(duration) || duration < 0) {
-    return startTime.substring(0, 5);
-  }
-
-  const endHours = hours + duration;
-  return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
 interface ScheduleTableProps {
   schedules: Schedule[];
   onEdit?: (schedule: Schedule) => void;
@@ -56,12 +37,30 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 }) => {
   const { language } = useLanguage();
 
-  const formatTime = (time: string): string => {
-    return time.substring(0, 5);
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'not started':
+        return 'gray';
+      case 'in progress':
+        return 'blue';
+      case 'done':
+        return 'green';
+      default:
+        return 'gray';
+    }
   };
 
-  const formatDate = (date: string): string => {
-    return new Date(date).toLocaleDateString(language === 'cs' ? 'cs-CZ' : 'en-US');
+  const getStatusText = (status: string): string => {
+    switch (status) {
+      case 'not started':
+        return texts.schedule.status?.options.notStarted[language] || 'Not Started';
+      case 'in progress':
+        return texts.schedule.status?.options.inProgress[language] || 'In Progress';
+      case 'done':
+        return texts.schedule.status?.options.done[language] || 'Done';
+      default:
+        return status;
+    }
   };
 
   if (schedules.length === 0) {
@@ -77,11 +76,11 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
       <Table variant="simple" size="md">
         <Thead>
           <Tr>
-            <Th>{texts.schedule.date[language]}</Th>
-            <Th>{texts.schedule.timeSlot[language]}</Th>
+            <Th>{texts.schedule.name?.[language] || 'Name'}</Th>
+            <Th>{texts.schedule.category?.[language] || 'Category'}</Th>
+            <Th>{texts.schedule.status?.label?.[language] || 'Status'}</Th>
             {showChild && <Th>{texts.schedule.child[language]}</Th>}
             {showClass && <Th>{texts.schedule.class[language]}</Th>}
-            <Th>{texts.schedule.activity[language]}</Th>
             <Th>{texts.schedule.notes[language]}</Th>
             {canEdit && <Th>{texts.common.actions[language]}</Th>}
           </Tr>
@@ -90,12 +89,20 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           {schedules.map((schedule) => (
             <Tr key={schedule.id}>
               <Td>
-                <Text>{formatDate(schedule.date)}</Text>
+                <Text fontWeight="medium">{schedule.name}</Text>
               </Td>
               <Td>
-                <Badge colorScheme="blue" variant="subtle" px={2} py={1} borderRadius="md">
-                  {formatTime(schedule.start_time)} -{' '}
-                  {formatTime(calculateEndTime(schedule.start_time, schedule.duration_hours))}
+                <Text>{schedule.category || '-'}</Text>
+              </Td>
+              <Td>
+                <Badge
+                  colorScheme={getStatusColor(schedule.status)}
+                  variant="subtle"
+                  px={2}
+                  py={1}
+                  borderRadius="md"
+                >
+                  {getStatusText(schedule.status)}
                 </Badge>
               </Td>
               {showChild && (
@@ -111,11 +118,8 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 </Td>
               )}
               <Td>
-                <Text>{schedule.activity || '-'}</Text>
-              </Td>
-              <Td>
                 <Text
-                  maxW="200px"
+                  maxW="250px"
                   overflow="hidden"
                   textOverflow="ellipsis"
                   whiteSpace="nowrap"

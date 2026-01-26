@@ -23,6 +23,34 @@ export const schedule = {
     cs: 'Rozvrh',
     en: 'Schedule',
   },
+  status: {
+    label: {
+      cs: 'Stav',
+      en: 'Status',
+    },
+    options: {
+      notStarted: {
+        cs: 'Nezačato',
+        en: 'Not Started',
+      },
+      inProgress: {
+        cs: 'Probíhá',
+        en: 'In Progress',
+      },
+      done: {
+        cs: 'Dokončeno',
+        en: 'Done',
+      },
+    },
+  },
+  name: {
+    cs: 'Název',
+    en: 'Name',
+  },
+  category: {
+    cs: 'Kategorie',
+    en: 'Category',
+  },
   childSchedule: {
     cs: 'Rozvrh dítěte',
     en: 'Child Schedule',
@@ -126,6 +154,18 @@ export const schedule = {
     },
   },
   validation: {
+    nameRequired: {
+      cs: 'Zadejte název aktivity',
+      en: 'Please enter the activity name',
+    },
+    nameTooLong: {
+      cs: 'Název aktivity je příliš dlouhý',
+      en: 'Activity name is too long',
+    },
+    categoryTooLong: {
+      cs: 'Kategorie je příliš dlouhá',
+      en: 'Category is too long',
+    },
     childRequired: {
       cs: 'Vyberte dítě',
       en: 'Please select a child',
@@ -201,6 +241,14 @@ export const schedule = {
     notes: {
       cs: 'Volitelné poznámky k této aktivitě...',
       en: 'Optional notes for this activity...',
+    },
+    name: {
+      cs: 'Zadejte název aktivity',
+      en: 'Enter activity name',
+    },
+    category: {
+      cs: 'Zadejte kategorii (např. Předmět, Volný čas...)',
+      en: 'Enter category (e.g. Subject, Leisure...)',
     },
   },
 };
