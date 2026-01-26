@@ -33,9 +33,7 @@ export interface UpdateScheduleData extends CreateScheduleData {
 }
 
 // Get all schedules (admin and teacher only)
-export const getAllSchedules = async (filters?: {
-  status?: string;
-}): Promise<Schedule[]> => {
+export const getAllSchedules = async (filters?: { status?: string }): Promise<Schedule[]> => {
   const params = new URLSearchParams();
   if (filters?.status) params.append('status', filters.status);
 

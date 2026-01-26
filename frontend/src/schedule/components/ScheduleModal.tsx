@@ -152,7 +152,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
 
       onClose();
     } catch (error: unknown) {
-      let errorMessage = schedule
+      const errorMessage = schedule
         ? texts.schedule.messages.updateError[language]
         : texts.schedule.messages.createError[language];
 
