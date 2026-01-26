@@ -29,24 +29,22 @@ router.get('/:id/next-activities', auth, async (req, res) => {
     }
 
     let query = `
-      WITH next_schedules AS (
-        SELECT DISTINCT ON (s.child_id)
-          s.child_id,
-          s.date,
-          s.start_time,
-          s.duration_hours,
-          (s.start_time + INTERVAL '1 hour' * s.duration_hours) AS end_time,
-          s.activity,
-          s.notes,
-          ch.firstname,
-          ch.surname,
-          ROW_NUMBER() OVER (PARTITION BY s.child_id ORDER BY s.date ASC, s.start_time ASC) as rn
-        FROM schedules s
-        JOIN children ch ON s.child_id = ch.id
-        JOIN class_children cc ON ch.id = cc.child_id
-        WHERE cc.class_id = $1 
-          AND (s.date > CURRENT_DATE OR (s.date = CURRENT_DATE AND s.start_time > CURRENT_TIME))
-          AND cc.confirmed = true
+      SELECT
+        s.id,
+        s.child_id,
+        s.name AS activity,
+        s.category,
+        s.status,
+        s.notes,
+        s.created_at,
+        ch.firstname,
+        ch.surname
+      FROM schedules s
+      JOIN children ch ON s.child_id = ch.id
+      JOIN class_children cc ON ch.id = cc.child_id
+      WHERE cc.class_id = $1 
+        AND s.status = 'in progress'
+        AND cc.status = 'pending'
     `;
 
     const params = [id];
@@ -57,12 +55,7 @@ router.get('/:id/next-activities', auth, async (req, res) => {
       params.push(req.user.id);
     }
 
-    query += `
-        ORDER BY s.child_id, s.date ASC, s.start_time ASC
-      )
-      SELECT * FROM next_schedules WHERE rn = 1
-      ORDER BY date ASC, start_time ASC
-    `;
+    query += ` ORDER BY s.created_at ASC`;
 
     const result = await pool.query(query, params);
     res.json(result.rows);

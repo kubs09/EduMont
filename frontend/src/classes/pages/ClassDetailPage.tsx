@@ -43,31 +43,6 @@ import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
 
 import { Class } from '../../types/class';
-
-const calculateEndTime = (startTime: string, durationHours: number | string): string => {
-  const [hours, minutes] = startTime.split(':').map(Number);
-
-  let duration: number;
-  if (typeof durationHours === 'string') {
-    const match = durationHours.match(/^(\d+(?:\.\d+)?)/);
-    duration = match ? parseFloat(match[1]) : 0;
-  } else {
-    duration = durationHours;
-  }
-
-  if (isNaN(duration) || duration < 0) {
-    return formatTime(startTime);
-  }
-
-  const endHours = hours + duration;
-  return `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
-const formatTime = (timeString: string): string => {
-  const [hours, minutes] = timeString.split(':');
-  return `${hours}:${minutes}`;
-};
-
 interface ClassHistory {
   id: number;
   date: string;
@@ -321,6 +296,14 @@ const ClassDetailPage = () => {
     return [];
   };
 
+  const getFilteredActivities = () => {
+    if (!classData) return [];
+    return nextActivities.filter((activity) => {
+      const child = classData.children.find((c) => c.id === activity.child_id);
+      return child && child.status === 'pending';
+    });
+  };
+
   if (!classData) {
     return null;
   }
@@ -410,6 +393,7 @@ const ClassDetailPage = () => {
                       <Th>{texts.childrenTable.age[language]}</Th>
                       {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
                       {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+                      {(isAdmin || isTeacher) && <Th>{texts.classes.name[language]}</Th>}
                       {(isAdmin || isTeacher) && <Th>{texts.common.actions[language]}</Th>}
                     </Tr>
                   </Thead>
@@ -422,6 +406,9 @@ const ClassDetailPage = () => {
                         {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
                         {(isAdmin || isTeacher) && (
                           <Td>{child.parent_contact || child.parent_email}</Td>
+                        )}
+                        {(isAdmin || isTeacher) && (
+                          <Td>{child.status === 'pending' && classData.name}</Td>
                         )}
                         {(isAdmin || isTeacher) && (
                           <Td>
@@ -473,7 +460,7 @@ const ClassDetailPage = () => {
           </Heading>
         </CardHeader>
         <CardBody>
-          {nextActivities.length === 0 ? (
+          {getFilteredActivities().length === 0 ? (
             <Text color="gray.500" fontStyle="italic">
               {texts.classes.detail.noNextActivities[language]}
             </Text>
@@ -484,23 +471,15 @@ const ClassDetailPage = () => {
                   <Tr>
                     <Th>{texts.childrenTable.firstname[language]}</Th>
                     <Th>{texts.childrenTable.surname[language]}</Th>
-                    <Th>{texts.classes.detail.date[language]}</Th>
-                    <Th>{texts.classes.detail.time[language]}</Th>
                     <Th>{texts.classes.detail.activity[language]}</Th>
                     {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {nextActivities.map((activity) => (
-                    <Tr key={`${activity.child_id}-${activity.date}-${activity.start_time}`}>
+                  {getFilteredActivities().map((activity) => (
+                    <Tr key={`${activity.child_id}-${activity.id}`}>
                       <Td>{activity.firstname}</Td>
                       <Td>{activity.surname}</Td>
-                      <Td>
-                        {new Date(activity.date).toLocaleDateString(
-                          language === 'cs' ? 'cs-CZ' : 'en-US'
-                        )}
-                      </Td>
-                      <Td>{`${formatTime(activity.start_time)} - ${calculateEndTime(activity.start_time, activity.duration_hours)}`}</Td>
                       <Td>{activity.activity || '-'}</Td>
                       {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
                     </Tr>
