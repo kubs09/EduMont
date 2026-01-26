@@ -4,7 +4,6 @@ import AuthLayout from './layouts/AuthLayout';
 import PublicLayout from './layouts/PublicLayout';
 import LoginPage from './login/pages/LoginPage';
 import HomePage from './home/HomePage';
-import Dashboard from './children-dashboard/pages/Dashboard';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
 import ProfilePage from './profile/ProfilePage';
@@ -17,6 +16,7 @@ import ResetPasswordPage from './login/pages/ResetPasswordPage';
 import Messages from './messages/pages/Messages';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import SchedulePage from './schedule/pages/SchedulePage';
+import ChildrenPage from './children/pages/ChildrenPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -59,10 +59,10 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       <Route element={<RequireAuth isAuthenticated={isAuthenticated} />}>
         <Route element={<AuthLayout />}>
           <Route path={ROUTES.MESSAGES} element={<Messages />} />
-          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
           <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
           <Route path={ROUTES.SCHEDULE} element={<SchedulePage />} />
+          <Route path={ROUTES.CHILDREN} element={<ChildrenPage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />

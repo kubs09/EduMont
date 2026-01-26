@@ -37,6 +37,8 @@ const ChildrenPage = () => {
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
+  const userRole = localStorage.getItem('userRole');
+  const isParent = userRole === 'parent';
 
   const fetchChildren = useCallback(async () => {
     try {
@@ -89,9 +91,11 @@ const ChildrenPage = () => {
     <Box p={4}>
       <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
         <Heading>{texts.profile.children.title[language]}</Heading>
-        <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
-          {texts.profile.children.addChild.title[language]}
-        </Button>
+        {isParent && (
+          <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
+            {texts.profile.children.addChild.title[language]}
+          </Button>
+        )}
       </Box>
 
       {children.length === 0 ? (
@@ -153,16 +157,18 @@ const ChildrenPage = () => {
                     </Badge>
                   </Td>
                   <Td>
-                    <IconButton
-                      aria-label="Delete child"
-                      icon={<DeleteIcon />}
-                      colorScheme="red"
-                      size="sm"
-                      onClick={() => {
-                        setChildToDelete(child);
-                        onOpen();
-                      }}
-                    />
+                    {isParent && (
+                      <IconButton
+                        aria-label="Delete child"
+                        icon={<DeleteIcon />}
+                        colorScheme="red"
+                        size="sm"
+                        onClick={() => {
+                          setChildToDelete(child);
+                          onOpen();
+                        }}
+                      />
+                    )}
                   </Td>
                 </Tr>
               ))}
@@ -171,37 +177,41 @@ const ChildrenPage = () => {
         </Box>
       )}
 
-      <AddChildModal
-        isOpen={isAddChildModalOpen}
-        onClose={() => setIsAddChildModalOpen(false)}
-        onSuccess={handleAddChildSuccess}
-      />
+      {isParent && (
+        <AddChildModal
+          isOpen={isAddChildModalOpen}
+          onClose={() => setIsAddChildModalOpen(false)}
+          onSuccess={handleAddChildSuccess}
+        />
+      )}
 
-      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              {texts.profile.children.deleteConfirm.title[language]}
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              {texts.profile.children.deleteConfirm.message[language]}
-              {childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                {texts.common.cancel[language]}
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => childToDelete && handleDeleteChild(childToDelete.id)}
-                ml={3}
-              >
-                {texts.common.delete[language]}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+      {isParent && (
+        <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                {texts.profile.children.deleteConfirm.title[language]}
+              </AlertDialogHeader>
+              <AlertDialogBody>
+                {texts.profile.children.deleteConfirm.message[language]}
+                {childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}
+              </AlertDialogBody>
+              <AlertDialogFooter>
+                <Button ref={cancelRef} onClick={onClose}>
+                  {texts.common.cancel[language]}
+                </Button>
+                <Button
+                  colorScheme="red"
+                  onClick={() => childToDelete && handleDeleteChild(childToDelete.id)}
+                  ml={3}
+                >
+                  {texts.common.delete[language]}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
     </Box>
   );
 };

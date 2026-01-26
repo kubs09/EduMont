@@ -193,15 +193,14 @@ const Header = () => {
               >
                 {texts.classes.menuItem[language]}
               </MenuItem>
-              {isParent && (
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleChildren}
-                >
-                  {texts.profile.children.menuItem[language]}
-                </MenuItem>
-              )}
+              <MenuItem
+                bg="brand.primary.900"
+                _hover={{ bg: 'brand.primary.800' }}
+                onClick={handleChildren}
+              >
+                {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
+                {!isParent && <>{texts.children[language]}</>}
+              </MenuItem>
               <MenuItem
                 bg="brand.primary.900"
                 _hover={{ bg: 'brand.primary.800' }}
