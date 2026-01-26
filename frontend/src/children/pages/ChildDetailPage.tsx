@@ -4,10 +4,6 @@ import {
   Button,
   Card,
   CardBody,
-  CardHeader,
-  Grid,
-  GridItem,
-  Heading,
   Text,
   VStack,
   useToast,
@@ -38,6 +34,7 @@ import { Child } from '../../types/child';
 import { Schedule } from '../../types/schedule';
 import { ROUTES } from '../../shared/route';
 import EditChildModal from '../components/EditChildModal';
+import { Tabs, TabItem } from '../../shared/components/Tabs';
 
 interface ChildClass {
   id: number;
@@ -218,6 +215,192 @@ const ChildDetailPage = () => {
 
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
 
+  const tabItems: TabItem[] = [
+    {
+      id: 'information',
+      label: texts.profile.children.title[language],
+      content: (
+        <VStack align="stretch" spacing={4}>
+          <Box>
+            <Text fontWeight="bold">{texts.childrenTable.firstname[language]}</Text>
+            <Text>{childData.firstname}</Text>
+          </Box>
+          <Box>
+            <Text fontWeight="bold">{texts.childrenTable.surname[language]}</Text>
+            <Text>{childData.surname}</Text>
+          </Box>
+          <Box>
+            <Text fontWeight="bold">{texts.childrenTable.age[language]}</Text>
+            <Text>{age}</Text>
+          </Box>
+          <Box>
+            <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
+            <Text>{new Date(childData.date_of_birth).toLocaleDateString(language)}</Text>
+          </Box>
+          {childData.notes && (
+            <Box>
+              <Text fontWeight="bold">{texts.childrenTable.notes[language]}</Text>
+              <Text>{childData.notes}</Text>
+            </Box>
+          )}
+          <Box>
+            <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
+            <Text>
+              {childData.parent_firstname} {childData.parent_surname}
+            </Text>
+          </Box>
+          {childData.parent_email && (
+            <Box>
+              <Text fontWeight="bold">{texts.profile.email[language]}</Text>
+              <Text>{childData.parent_email}</Text>
+            </Box>
+          )}
+          {canEdit && (
+            <HStack mt={6} spacing={3}>
+              <Button
+                colorScheme="blue"
+                onClick={() => setIsEditModalOpen(true)}
+                size="md"
+                flex={1}
+              >
+                {texts.profile.edit[language]}
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                size="md"
+                flex={1}
+              >
+                {texts.common.delete[language]}
+              </Button>
+            </HStack>
+          )}
+        </VStack>
+      ),
+    },
+    {
+      id: 'classes',
+      label: texts.classes.title[language],
+      content: (
+        <>
+          {classes.length === 0 ? (
+            <Text color="gray.500" fontStyle="italic">
+              {texts.profile.children.noChildren[language]}
+            </Text>
+          ) : (
+            <TableContainer>
+              <Table variant="simple" size="md">
+                <Thead>
+                  <Tr>
+                    <Th>{texts.classes.name[language]}</Th>
+                    <Th>{texts.classes.teachers[language]}</Th>
+                    <Th>{texts.classes.confirmation.status[language]}</Th>
+                    {canEdit && <Th>{texts.common.actions[language]}</Th>}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {classes.map((cls) => (
+                    <Tr key={cls.id}>
+                      <Td>
+                        <Text fontWeight="medium">{cls.name}</Text>
+                      </Td>
+                      <Td>
+                        <Text>
+                          {cls.teacher_firstname} {cls.teacher_surname}
+                        </Text>
+                      </Td>
+                      <Td>
+                        <Badge colorScheme={getStatusColor(cls.status)} variant="subtle">
+                          {getStatusText(cls.status)}
+                        </Badge>
+                      </Td>
+                      {canEdit && (
+                        <Td>
+                          {cls.status === 'pending' && (
+                            <IconButton
+                              aria-label="Remove class"
+                              icon={<DeleteIcon />}
+                              size="sm"
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={() => {
+                                setClassToDelete(cls);
+                                onClassDeleteOpen();
+                              }}
+                            />
+                          )}
+                        </Td>
+                      )}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          )}
+        </>
+      ),
+    },
+    ...(schedules.length > 0
+      ? [
+          {
+            id: 'schedules',
+            label: texts.schedule.title[language],
+            content: (
+              <TableContainer>
+                <Table variant="simple" size="md">
+                  <Thead>
+                    <Tr>
+                      <Th>{texts.schedule.name?.[language] || 'Name'}</Th>
+                      <Th>{texts.schedule.category?.[language] || 'Category'}</Th>
+                      <Th>{texts.schedule.status?.label?.[language] || 'Status'}</Th>
+                      <Th>{texts.schedule.notes[language]}</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {schedules.map((schedule) => (
+                      <Tr key={schedule.id}>
+                        <Td>
+                          <Text fontWeight="medium">{schedule.name}</Text>
+                        </Td>
+                        <Td>
+                          <Text>{schedule.category || '-'}</Text>
+                        </Td>
+                        <Td>
+                          <Badge
+                            colorScheme={
+                              schedule.status === 'done'
+                                ? 'green'
+                                : schedule.status === 'in progress'
+                                  ? 'blue'
+                                  : 'gray'
+                            }
+                            variant="subtle"
+                          >
+                            {schedule.status || '-'}
+                          </Badge>
+                        </Td>
+                        <Td>
+                          <Text
+                            maxW="250px"
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                            title={schedule.notes}
+                          >
+                            {schedule.notes || '-'}
+                          </Text>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            ),
+          },
+        ]
+      : []),
+  ];
+
   return (
     <Box p={{ base: 2, md: 4 }}>
       <Button
@@ -229,201 +412,11 @@ const ChildDetailPage = () => {
         {texts.profile.children.addChild.title[language]} Detail
       </Button>
 
-      <Grid templateColumns="repeat(12, 1fr)" gap={{ base: 4, md: 6 }}>
-        {/* Child Information Card */}
-        <GridItem colSpan={{ base: 12, lg: 4 }}>
-          <Card>
-            <CardHeader>
-              <Heading size={{ base: 'sm', md: 'md' }}>
-                {texts.profile.children.title[language]}
-              </Heading>
-            </CardHeader>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text fontWeight="bold">{texts.childrenTable.firstname[language]}</Text>
-                  <Text>{childData.firstname}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.childrenTable.surname[language]}</Text>
-                  <Text>{childData.surname}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.childrenTable.age[language]}</Text>
-                  <Text>{age}</Text>
-                </Box>
-                <Box>
-                  <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
-                  <Text>{new Date(childData.date_of_birth).toLocaleDateString(language)}</Text>
-                </Box>
-                {childData.notes && (
-                  <Box>
-                    <Text fontWeight="bold">{texts.childrenTable.notes[language]}</Text>
-                    <Text>{childData.notes}</Text>
-                  </Box>
-                )}
-                <Box>
-                  <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
-                  <Text>
-                    {childData.parent_firstname} {childData.parent_surname}
-                  </Text>
-                </Box>
-                {childData.parent_email && (
-                  <Box>
-                    <Text fontWeight="bold">{texts.profile.email[language]}</Text>
-                    <Text>{childData.parent_email}</Text>
-                  </Box>
-                )}
-              </VStack>
-              {canEdit && (
-                <HStack mt={6} spacing={3}>
-                  <Button
-                    colorScheme="blue"
-                    onClick={() => setIsEditModalOpen(true)}
-                    size="md"
-                    flex={1}
-                  >
-                    {texts.profile.edit[language]}
-                  </Button>
-                  <Button
-                    colorScheme="red"
-                    onClick={() => setIsDeleteConfirmOpen(true)}
-                    size="md"
-                    flex={1}
-                  >
-                    {texts.common.delete[language]}
-                  </Button>
-                </HStack>
-              )}
-            </CardBody>
-          </Card>
-        </GridItem>
-
-        {/* Classes Card */}
-        <GridItem colSpan={{ base: 12, lg: 8 }}>
-          <Card>
-            <CardHeader>
-              <Heading size={{ base: 'sm', md: 'md' }}>{texts.classes.title[language]}</Heading>
-            </CardHeader>
-            <CardBody>
-              {classes.length === 0 ? (
-                <Text color="gray.500" fontStyle="italic">
-                  {texts.profile.children.noChildren[language]}
-                </Text>
-              ) : (
-                <TableContainer>
-                  <Table variant="simple" size="md">
-                    <Thead>
-                      <Tr>
-                        <Th>{texts.classes.name[language]}</Th>
-                        <Th>{texts.classes.teachers[language]}</Th>
-                        <Th>{texts.classes.confirmation.status[language]}</Th>
-                        {canEdit && <Th>{texts.common.actions[language]}</Th>}
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {classes.map((cls) => (
-                        <Tr key={cls.id}>
-                          <Td>
-                            <Text fontWeight="medium">{cls.name}</Text>
-                          </Td>
-                          <Td>
-                            <Text>
-                              {cls.teacher_firstname} {cls.teacher_surname}
-                            </Text>
-                          </Td>
-                          <Td>
-                            <Badge colorScheme={getStatusColor(cls.status)} variant="subtle">
-                              {getStatusText(cls.status)}
-                            </Badge>
-                          </Td>
-                          {canEdit && (
-                            <Td>
-                              {cls.status === 'pending' && (
-                                <IconButton
-                                  aria-label="Remove class"
-                                  icon={<DeleteIcon />}
-                                  size="sm"
-                                  colorScheme="red"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setClassToDelete(cls);
-                                    onClassDeleteOpen();
-                                  }}
-                                />
-                              )}
-                            </Td>
-                          )}
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              )}
-            </CardBody>
-          </Card>
-        </GridItem>
-      </Grid>
-
-      {/* Schedules Card */}
-      {schedules.length > 0 && (
-        <Card my={6}>
-          <CardHeader>
-            <Heading size={{ base: 'sm', md: 'md' }}>{texts.schedule.title[language]}</Heading>
-          </CardHeader>
-          <CardBody>
-            <TableContainer>
-              <Table variant="simple" size="md">
-                <Thead>
-                  <Tr>
-                    <Th>{texts.schedule.name?.[language] || 'Name'}</Th>
-                    <Th>{texts.schedule.category?.[language] || 'Category'}</Th>
-                    <Th>{texts.schedule.status?.label?.[language] || 'Status'}</Th>
-                    <Th>{texts.schedule.notes[language]}</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {schedules.map((schedule) => (
-                    <Tr key={schedule.id}>
-                      <Td>
-                        <Text fontWeight="medium">{schedule.name}</Text>
-                      </Td>
-                      <Td>
-                        <Text>{schedule.category || '-'}</Text>
-                      </Td>
-                      <Td>
-                        <Badge
-                          colorScheme={
-                            schedule.status === 'done'
-                              ? 'green'
-                              : schedule.status === 'in progress'
-                                ? 'blue'
-                                : 'gray'
-                          }
-                          variant="subtle"
-                        >
-                          {schedule.status || '-'}
-                        </Badge>
-                      </Td>
-                      <Td>
-                        <Text
-                          maxW="250px"
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          whiteSpace="nowrap"
-                          title={schedule.notes}
-                        >
-                          {schedule.notes || '-'}
-                        </Text>
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </CardBody>
-        </Card>
-      )}
+      <Card>
+        <CardBody>
+          <Tabs tabs={tabItems} variant="line" colorScheme="blue" />
+        </CardBody>
+      </Card>
 
       {/* Edit Child Modal */}
       {canEdit && childData && (

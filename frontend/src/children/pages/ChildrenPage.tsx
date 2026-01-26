@@ -180,9 +180,7 @@ const ChildrenPage = () => {
                         }}
                       />
                     )}
-                    {!isParent && (
-                      <ChevronRightIcon boxSize={6} color="gray.500" />
-                    )}
+                    {!isParent && <ChevronRightIcon boxSize={6} color="gray.500" />}
                   </Td>
                 </Tr>
               ))}
