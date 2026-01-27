@@ -162,9 +162,13 @@ export const profile = {
       cs: 'Zobrazit panel dětí',
       en: "View Children's Dashboard",
     },
-    title: {
+    titleParent: {
       cs: 'Moje děti',
       en: 'My Children',
+    },
+    title: {
+      cs: 'Děti',
+      en: 'Children',
     },
     noChildren: {
       cs: 'Zatím nemáte přiřazené žádné děti',

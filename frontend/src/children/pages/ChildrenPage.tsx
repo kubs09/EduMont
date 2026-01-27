@@ -92,7 +92,11 @@ const ChildrenPage = () => {
   return (
     <Box p={4}>
       <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
-        <Heading>{texts.profile.children.title[language]}</Heading>
+        {isParent ? (
+          <Heading>{texts.profile.children.titleParent[language]}</Heading>
+        ) : (
+          <Heading>{texts.profile.children.title[language]}</Heading>
+        )}
         {isParent && (
           <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
             {texts.profile.children.addChild.title[language]}
