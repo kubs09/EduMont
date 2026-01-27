@@ -155,7 +155,20 @@ const ChildDetailPage = () => {
           </Box>
           <Box>
             <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
-            <Text>{childData.class_name}</Text>
+            <Text
+              as="button"
+              color="blue.500"
+              textDecoration="underline"
+              cursor="pointer"
+              _hover={{ color: 'blue.700' }}
+              onClick={() => {
+                if (childData.class_id) {
+                  navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
+                }
+              }}
+            >
+              {childData.class_name}
+            </Text>
           </Box>
           <Box>
             <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
