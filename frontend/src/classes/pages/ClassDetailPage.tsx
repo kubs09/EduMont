@@ -30,16 +30,17 @@ import {
   Stack,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { getClassNextActivities, NextActivity } from '../../services/api/class';
-import { ROUTES } from '../../shared/route';
+import { getClassNextActivities, NextActivity } from '@frontend/services/api/class';
+import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
-import Tabs, { TabItem } from '../../shared/components/Tabs/Tabs';
+import Tabs, { TabItem } from '@frontend/shared/components/Tabs/Tabs';
 
-import { Class } from '../../types/class';
+import { Class } from '@frontend/types/class';
+
 interface ClassHistory {
   id: number;
   date: string;

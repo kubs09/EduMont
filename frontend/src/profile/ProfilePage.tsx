@@ -13,10 +13,10 @@ import {
   FormControl,
   FormLabel,
 } from '@chakra-ui/react';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { ROUTES } from '../shared/route';
-import { updateNotificationSettings } from '../services/api';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
+import { updateNotificationSettings } from '@frontend/services/api';
 
 const ProfilePage = () => {
   const { language } = useLanguage();

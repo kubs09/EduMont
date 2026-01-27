@@ -17,10 +17,10 @@ import {
   useToast,
   FormErrorMessage,
 } from '@chakra-ui/react';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
-import { Schedule, CreateScheduleData, UpdateScheduleData } from '../../types/schedule';
-import { Child } from '../../types/child';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
+import { Schedule, CreateScheduleData, UpdateScheduleData } from '@frontend/types/schedule';
+import { Child } from '@frontend/types/child';
 
 interface ScheduleModalProps {
   isOpen: boolean;

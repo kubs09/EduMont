@@ -12,20 +12,20 @@ import {
   TabPanel,
 } from '@chakra-ui/react';
 import { EmailIcon, RepeatIcon } from '@chakra-ui/icons';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import {
   getMessage,
   getMessages,
   sendMessage,
   deleteMessage,
   getMessageUsers,
-} from '../../services/api';
+} from '@frontend/services/api';
 import { useSnackbar } from 'notistack';
 import ComposeMessageModal from '../components/ComposeMessageModal';
 import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
-import { Message } from '../types/message';
+import { Message } from '@frontend/types/message';
 
 const POLL_INTERVAL = 5000;
 

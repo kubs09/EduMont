@@ -14,10 +14,10 @@ import {
   useToast,
   FormErrorMessage,
 } from '@chakra-ui/react';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { texts } from '../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
-import { ROUTES } from '../shared/route';
+import { ROUTES } from '@frontend/shared/route';
 import { createSignupSchema, type SignupSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';

@@ -14,12 +14,12 @@ import {
 } from '@chakra-ui/react';
 import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
-import { texts } from '../../../texts';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { ROUTES } from '../../route';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
 import icon from './icon.png';
 import { useState, useEffect } from 'react';
-import { getMessages } from '../../../services/api';
+import { getMessages } from '@frontend/services/api';
 import ColorModeToggle from '../color-mode-toggle';
 
 const POLL_INTERVAL = 5000;

@@ -13,10 +13,10 @@ import {
   useToast,
   FormErrorMessage,
 } from '@chakra-ui/react';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { ROUTES } from '../shared/route';
-import { changePassword } from '../services/api';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
+import { changePassword } from '@frontend/services/api';
 import { createPasswordChangeSchema, PasswordChangeSchema } from './schemas/passwordSchema';
 
 const ChangePasswordPage = () => {

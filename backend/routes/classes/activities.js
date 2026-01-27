@@ -24,8 +24,11 @@ router.get('/:id/next-activities', auth, async (req, res) => {
         [id, req.user.id]
       );
       if (parentChildResult.rows.length === 0) {
-        return res.status(403).json({ error: 'Access denied' });
+        // Return empty array instead of 403 - parent has no children in this class yet
+        return res.json([]);
       }
+    } else if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
     let query = `

@@ -23,11 +23,11 @@ import {
 } from '@chakra-ui/react';
 import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { getChildren, deleteChild } from '../../services/api';
-import { Child } from '../../types/child';
-import { ROUTES } from '../../shared/route';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { getChildren, deleteChild } from '@frontend/services/api';
+import { Child } from '@frontend/types/child';
+import { ROUTES } from '@frontend/shared/route';
 import AddChildModal from '../components/AddChildModal';
 import React from 'react';
 

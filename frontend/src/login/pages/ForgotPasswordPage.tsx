@@ -13,9 +13,9 @@ import {
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { requestPasswordReset } from '../../services/api';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { requestPasswordReset } from '@frontend/services/api';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import {
   createForgotPasswordSchema,
   ForgotPasswordFormData,

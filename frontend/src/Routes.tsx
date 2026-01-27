@@ -13,7 +13,7 @@ import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
 import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
-import Messages from './messages/pages/Messages';
+import Messages from './messages/pages/MessagePage';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
 import SchedulePage from './schedule/pages/SchedulePage';
 import ChildrenPage from './children/pages/ChildrenPage';

@@ -15,10 +15,10 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { createChild } from '../../services/api';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { createChildSchema } from '../../profile/schemas/childSchema';
+import { createChild } from '@frontend/services/api';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { createChildSchema } from '@frontend/profile/schemas/childSchema';
 import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 
 interface AddChildModalProps {

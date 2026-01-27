@@ -26,14 +26,14 @@ import {
 } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { useParams, useNavigate } from 'react-router-dom';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import api from '../../services/apiConfig';
-import { Child } from '../../types/child';
-import { Schedule } from '../../types/schedule';
-import { ROUTES } from '../../shared/route';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import api from '@frontend/services/apiConfig';
+import { Child } from '@frontend/types/child';
+import { Schedule } from '@frontend/types/schedule';
+import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
-import { Tabs, TabItem } from '../../shared/components/Tabs';
+import { Tabs, TabItem } from '@frontend/shared/components/Tabs';
 
 interface ChildClass {
   id: number;

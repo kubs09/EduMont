@@ -14,9 +14,9 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
-import { Schedule } from '../../types/schedule';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
+import { Schedule } from '@frontend/types/schedule';
 
 interface ScheduleTableProps {
   schedules: Schedule[];

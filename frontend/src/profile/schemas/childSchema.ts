@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { texts } from '../../texts';
+import { texts } from '@frontend/texts';
 
 export type ChildFormData = {
   firstname: string;

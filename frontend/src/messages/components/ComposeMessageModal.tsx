@@ -22,8 +22,8 @@ import {
   Box,
   Text,
 } from '@chakra-ui/react';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 
 interface User {
   id: number;
