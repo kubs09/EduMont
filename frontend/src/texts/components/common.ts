@@ -44,6 +44,10 @@ export const common = {
       cs: 'Věk',
       en: 'Age',
     },
+    class: {
+      cs: 'Třída',
+      en: 'Class',
+    },
     parent: {
       cs: 'Rodič',
       en: 'Parent',

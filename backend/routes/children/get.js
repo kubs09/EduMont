@@ -73,9 +73,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
         u.firstname as parent_firstname,
         u.surname as parent_surname,
         u.email as parent_email,
-        u.phone as parent_contact
+        u.phone as parent_contact,
+        cl.id as class_id,
+        cl.name as class_name
       FROM children c
       JOIN users u ON c.parent_id = u.id
+      LEFT JOIN class_children cc ON c.id = cc.child_id
+      LEFT JOIN classes cl ON cc.class_id = cl.id
       WHERE c.id = $1
     `;
 

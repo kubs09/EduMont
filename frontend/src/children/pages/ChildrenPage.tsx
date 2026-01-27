@@ -13,12 +13,6 @@ import {
   Badge,
   IconButton,
   useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
   Button,
 } from '@chakra-ui/react';
 import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
@@ -30,6 +24,7 @@ import { Child } from '@frontend/types/child';
 import { ROUTES } from '@frontend/shared/route';
 import AddChildModal from '../components/AddChildModal';
 import React from 'react';
+import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
 
 const ChildrenPage = () => {
   const { language } = useLanguage();
@@ -198,31 +193,17 @@ const ChildrenPage = () => {
       )}
 
       {isParent && (
-        <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-          <AlertDialogOverlay>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                {texts.profile.children.deleteConfirm.title[language]}
-              </AlertDialogHeader>
-              <AlertDialogBody>
-                {texts.profile.children.deleteConfirm.message[language]}
-                {childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}
-              </AlertDialogBody>
-              <AlertDialogFooter>
-                <Button ref={cancelRef} onClick={onClose}>
-                  {texts.common.cancel[language]}
-                </Button>
-                <Button
-                  colorScheme="red"
-                  onClick={() => childToDelete && handleDeleteChild(childToDelete.id)}
-                  ml={3}
-                >
-                  {texts.common.delete[language]}
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialogOverlay>
-        </AlertDialog>
+        <ConfirmDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+          onConfirm={() => childToDelete && handleDeleteChild(childToDelete.id)}
+          title={texts.profile.children.deleteConfirm.title[language]}
+          message={`${texts.profile.children.deleteConfirm.message[language]}${childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}`}
+          cancelLabel={texts.common.cancel[language]}
+          confirmLabel={texts.common.delete[language]}
+          confirmColorScheme="red"
+        />
       )}
     </Box>
   );

@@ -150,6 +150,10 @@ export const profile = {
     },
   },
   children: {
+    backButton: {
+      cs: 'Zpět',
+      en: 'Back',
+    },
     menuItem: {
       cs: 'Moje děti',
       en: 'My Children',
