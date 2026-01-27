@@ -134,6 +134,7 @@ const ChildDetailPage = () => {
   }
 
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
+  const isAccepted = childData.status === 'accepted';
 
   const tabItems: TabItem[] = [
     {
@@ -155,20 +156,26 @@ const ChildDetailPage = () => {
           </Box>
           <Box>
             <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
-            <Text
-              as="button"
-              color="blue.500"
-              textDecoration="underline"
-              cursor="pointer"
-              _hover={{ color: 'blue.700' }}
-              onClick={() => {
-                if (childData.class_id) {
-                  navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
-                }
-              }}
-            >
-              {childData.class_name}
-            </Text>
+            {isAccepted && childData.class_id ? (
+              <Text
+                as="button"
+                color="blue.500"
+                textDecoration="underline"
+                cursor="pointer"
+                _hover={{ color: 'blue.700' }}
+                onClick={() => {
+                  if (childData.class_id) {
+                    navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
+                  }
+                }}
+              >
+                {childData.class_name}
+              </Text>
+            ) : (
+              <Badge colorScheme="yellow" variant="subtle" textTransform="capitalize">
+                {childData.status || 'pending'}
+              </Badge>
+            )}
           </Box>
           <Box>
             <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
