@@ -99,10 +99,6 @@ button:disabled {
   font-weight: bold;
 }
 
-.children-table tr:hover {
-  background-color: #f9f9f9;
-}
-
 .header {
   display: flex;
   justify-content: space-between;

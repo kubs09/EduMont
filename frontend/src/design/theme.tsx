@@ -140,6 +140,22 @@ const theme = extendTheme({
         },
       },
     },
+    Table: {
+      variants: {
+        simple: {
+          tbody: {
+            tr: {
+              _hover: {
+                bg: 'gray.200',
+                _dark: {
+                  bg: 'whiteAlpha.50',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     Input: {
       variants: {
         outline: {
