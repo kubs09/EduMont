@@ -9,30 +9,14 @@ import {
   Text,
   Button,
   useToast,
-  Tr,
-  Td,
   Switch,
   FormControl,
   FormLabel,
-  IconButton,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Badge,
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { ROUTES } from '../shared/route';
-import { getChildren, updateNotificationSettings, deleteChild } from '../services/api';
-import ProfileChildrenTable from './components/ProfileChildrenTable';
-import { Child } from '../types/child';
-import AddChildModal from './components/AddChildModal';
-import React from 'react';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
+import { updateNotificationSettings } from '@frontend/services/api';
 
 const ProfilePage = () => {
   const { language } = useLanguage();
@@ -41,7 +25,6 @@ const ProfilePage = () => {
   const userName = localStorage.getItem('userName') || '';
   const userRole = localStorage.getItem('userRole') || '';
   const [firstName, lastName] = userName.split(' ');
-  const [children, setChildren] = useState<Child[]>([]);
   const toast = useToast();
   const [messageNotifications, setMessageNotifications] = useState<boolean>(() => {
     const userSettings = localStorage.getItem('userSettings');
@@ -53,37 +36,14 @@ const ProfilePage = () => {
   });
   const userId = parseInt(localStorage.getItem('userId') || '0');
   const userPhone = localStorage.getItem('userPhone') || '';
-  const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
-  const [childToDelete, setChildToDelete] = useState<Child | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
 
   useEffect(() => {
-    if (userRole === 'parent') {
-      const fetchChildren = async () => {
-        try {
-          const data = await getChildren();
-          setChildren(data);
-        } catch (error) {
-          console.error('Failed to fetch children:', error);
-          toast({
-            title: texts.profile.error[language],
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-          });
-        }
-      };
-
-      fetchChildren();
-    }
-
     const userSettings = localStorage.getItem('userSettings');
     if (userSettings) {
       const { messageNotifications } = JSON.parse(userSettings);
       setMessageNotifications(messageNotifications);
     }
-  }, [userRole, language, toast]);
+  }, [language, toast]);
 
   const handleNotificationToggle = async () => {
     try {
@@ -107,40 +67,6 @@ const ProfilePage = () => {
         isClosable: true,
       });
     }
-  };
-
-  const handleAddChildSuccess = async () => {
-    try {
-      const data = await getChildren();
-      setChildren(data);
-      toast({
-        title: texts.profile.children.addChild.success[language],
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error('Failed to refresh children:', error);
-    }
-  };
-
-  const handleDeleteChild = async (childId: number) => {
-    try {
-      await deleteChild(childId);
-      const updatedChildren = await getChildren();
-      setChildren(updatedChildren);
-      toast({
-        title: texts.profile.children.deleteSuccess[language],
-        status: 'success',
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: texts.profile.children.deleteError[language],
-        status: 'error',
-        duration: 3000,
-      });
-    }
-    onClose();
   };
 
   return (
@@ -206,88 +132,15 @@ const ProfilePage = () => {
       {userRole === 'parent' && (
         <Card>
           <CardBody>
-            <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
-              <Heading size="md">{texts.profile.children.title[language]}</Heading>
-              <Button colorScheme="blue" size="sm" onClick={() => setIsAddChildModalOpen(true)}>
-                {texts.profile.children.addChild.title[language]}
-              </Button>
-            </Box>
-            {children.length > 0 ? (
-              <ProfileChildrenTable>
-                {children.map((child) => (
-                  <Tr key={child.id}>
-                    <Td>{child.firstname}</Td>
-                    <Td>{child.surname}</Td>
-                    <Td>
-                      {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
-                    </Td>
-                    <Td>{child.notes}</Td>
-                    <Td>
-                      <Badge
-                        colorScheme={
-                          child.status === 'accepted'
-                            ? 'green'
-                            : child.status === 'denied'
-                              ? 'red'
-                              : 'yellow'
-                        }
-                      >
-                        {child.status || 'pending'}
-                      </Badge>
-                    </Td>
-                    <Td>
-                      <IconButton
-                        aria-label="Delete child"
-                        icon={<DeleteIcon />}
-                        colorScheme="red"
-                        size="sm"
-                        onClick={() => {
-                          setChildToDelete(child);
-                          onOpen();
-                        }}
-                      />
-                    </Td>
-                  </Tr>
-                ))}
-              </ProfileChildrenTable>
-            ) : (
-              <Text>{texts.profile.children.noChildren[language]}</Text>
-            )}
+            <Heading size="md" mb={4}>
+              {texts.profile.children.title[language]}
+            </Heading>
+            <Button colorScheme="blue" onClick={() => navigate(ROUTES.CHILDREN)}>
+              {texts.profile.children.viewDashboard[language]}
+            </Button>
           </CardBody>
         </Card>
       )}
-
-      <AddChildModal
-        isOpen={isAddChildModalOpen}
-        onClose={() => setIsAddChildModalOpen(false)}
-        onSuccess={handleAddChildSuccess}
-      />
-
-      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              {texts.profile.children.deleteConfirm.title[language]}
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              {texts.profile.children.deleteConfirm.message[language]}
-              {childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                {texts.common.cancel[language]}
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => childToDelete && handleDeleteChild(childToDelete.id)}
-                ml={3}
-              >
-                {texts.common.delete[language]}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </Box>
   );
 };

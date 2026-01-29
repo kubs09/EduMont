@@ -1,9 +1,10 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 const PublicLayout = () => {
   const isAuthenticated = !!localStorage.getItem('token');
+  const location = useLocation();
 
-  if (isAuthenticated) {
+  if (isAuthenticated && location.pathname !== '/unauthorized') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -4,10 +4,9 @@ export interface Schedule {
   id: number;
   child_id: number;
   class_id: number;
-  date: string;
-  start_time: string;
-  duration_hours: number | string;
-  activity?: string;
+  name: string;
+  category?: string;
+  status: 'not started' | 'in progress' | 'done';
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -23,10 +22,9 @@ export interface Schedule {
 export interface CreateScheduleData {
   child_id: number;
   class_id: number;
-  date: string;
-  start_time: string;
-  duration_hours: number | string;
-  activity?: string;
+  name: string;
+  category?: string;
+  status?: 'not started' | 'in progress' | 'done';
   notes?: string;
 }
 
@@ -35,15 +33,9 @@ export interface UpdateScheduleData extends CreateScheduleData {
 }
 
 // Get all schedules (admin and teacher only)
-export const getAllSchedules = async (filters?: {
-  date?: string;
-  week?: string;
-  month?: string;
-}): Promise<Schedule[]> => {
+export const getAllSchedules = async (filters?: { status?: string }): Promise<Schedule[]> => {
   const params = new URLSearchParams();
-  if (filters?.date) params.append('date', filters.date);
-  if (filters?.week) params.append('week', filters.week);
-  if (filters?.month) params.append('month', filters.month);
+  if (filters?.status) params.append('status', filters.status);
 
   const queryString = params.toString();
   const url = `/api/schedules${queryString ? `?${queryString}` : ''}`;
@@ -55,12 +47,10 @@ export const getAllSchedules = async (filters?: {
 // Get schedule for a specific child
 export const getChildSchedule = async (
   childId: number,
-  filters?: { date?: string; week?: string; month?: string }
+  filters?: { status?: string }
 ): Promise<Schedule[]> => {
   const params = new URLSearchParams();
-  if (filters?.date) params.append('date', filters.date);
-  if (filters?.week) params.append('week', filters.week);
-  if (filters?.month) params.append('month', filters.month);
+  if (filters?.status) params.append('status', filters.status);
 
   const queryString = params.toString();
   const url = `/api/schedules/child/${childId}${queryString ? `?${queryString}` : ''}`;
@@ -72,12 +62,10 @@ export const getChildSchedule = async (
 // Get schedule for a specific class
 export const getClassSchedule = async (
   classId: number,
-  filters?: { date?: string; week?: string; month?: string }
+  filters?: { status?: string }
 ): Promise<Schedule[]> => {
   const params = new URLSearchParams();
-  if (filters?.date) params.append('date', filters.date);
-  if (filters?.week) params.append('week', filters.week);
-  if (filters?.month) params.append('month', filters.month);
+  if (filters?.status) params.append('status', filters.status);
 
   const queryString = params.toString();
   const url = `/api/schedules/class/${classId}${queryString ? `?${queryString}` : ''}`;

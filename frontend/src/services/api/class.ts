@@ -111,11 +111,11 @@ export const confirmClassChild = async (classId: number, childId: number): Promi
 };
 
 export interface NextActivity {
+  id: number;
   child_id: number;
-  date: string;
-  start_time: string;
-  duration_hours: number | string;
   activity: string;
+  category?: string;
+  status: string;
   notes?: string;
   firstname: string;
   surname: string;

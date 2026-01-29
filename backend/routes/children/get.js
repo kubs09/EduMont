@@ -58,4 +58,109 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const query = `
+      SELECT 
+        c.id, 
+        c.firstname,
+        c.surname, 
+        c.date_of_birth,
+        c.notes,
+        c.parent_id,
+        u.firstname as parent_firstname,
+        u.surname as parent_surname,
+        u.email as parent_email,
+        u.phone as parent_contact,
+        cl.id as class_id,
+        cl.name as class_name
+      FROM children c
+      JOIN users u ON c.parent_id = u.id
+      LEFT JOIN class_children cc ON c.id = cc.child_id
+      LEFT JOIN classes cl ON cc.class_id = cl.id
+      WHERE c.id = $1
+    `;
+
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Child not found' });
+    }
+
+    const child = result.rows[0];
+
+    // Check if user has access to this child
+    if (req.user.role === 'parent' && child.parent_id !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    res.json(child);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Failed to fetch child',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+});
+
+router.get('/:id/classes', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const query = `
+      SELECT 
+        cl.id,
+        cl.name,
+        cl.description,
+        cc.status,
+        u.firstname as teacher_firstname,
+        u.surname as teacher_surname
+      FROM class_children cc
+      JOIN classes cl ON cc.class_id = cl.id
+      LEFT JOIN class_teachers ct ON cl.id = ct.class_id
+      LEFT JOIN users u ON ct.teacher_id = u.id
+      WHERE cc.child_id = $1
+      ORDER BY cl.name ASC
+    `;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows || []);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Failed to fetch child classes',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+});
+
+router.get('/:id/schedules', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const query = `
+      SELECT 
+        s.id,
+        s.name,
+        s.category,
+        s.status,
+        s.notes,
+        s.child_id,
+        s.class_id
+      FROM schedules s
+      WHERE s.child_id = $1
+      ORDER BY s.created_at DESC
+    `;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows || []);
+  } catch (err) {
+    res.status(500).json({
+      error: 'Failed to fetch child schedules',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  }
+});
+
 module.exports = router;

@@ -91,26 +91,24 @@ CREATE TABLE class_history (
 CREATE INDEX idx_class_history_class_id ON class_history(class_id);
 CREATE INDEX idx_class_history_date ON class_history(date);
 
--- Schedule table for children's schedules
+-- Schedule table for children's schedules (task/assignment tracking)
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
     child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-    date DATE NOT NULL,
-    start_time TIME NOT NULL,
-    duration_hours INTEGER NOT NULL CHECK (duration_hours >= 1 AND duration_hours <= 3),
-    activity VARCHAR(200),
+    name VARCHAR(200) NOT NULL,
+    category VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'not started' CHECK (status IN ('not started', 'in progress', 'done')),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(id),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INTEGER REFERENCES users(id),
-    UNIQUE(child_id, date, start_time)
+    updated_by INTEGER REFERENCES users(id)
 );
 
 CREATE INDEX idx_schedules_child_id ON schedules(child_id);
 CREATE INDEX idx_schedules_class_id ON schedules(class_id);
-CREATE INDEX idx_schedules_date ON schedules(date);
+CREATE INDEX idx_schedules_status ON schedules(status);
 
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES
@@ -188,46 +186,28 @@ child_class_mapping AS (
     JOIN classes cl ON cc.class_id = cl.id
     WHERE cc.confirmed = TRUE
 )
-INSERT INTO schedules (child_id, class_id, date, start_time, duration_hours, activity, notes, created_by)
+INSERT INTO schedules (child_id, class_id, name, category, status, notes, created_by)
 SELECT 
     ccm.child_id,
     ccm.class_id,
-    date_val,
-    start_time_val,
-    duration_val,
-    activity_val,
+    name_val,
+    category_val,
+    status_val,
     notes_val,
     au.id
 FROM child_class_mapping ccm
 CROSS JOIN admin_user au
 CROSS JOIN (
     VALUES 
-        -- Week 1 schedules
-        (DATE '2026-01-30', TIME '09:00', 2, 'Arts and Crafts', 'Drawing with crayons and paper crafts'),
-        (DATE '2026-01-31', TIME '14:00', 1, 'Story Time', 'Reading fairy tales and interactive stories'),
-        (DATE '2026-02-01', TIME '10:00', 2, 'Outdoor Play', 'Garden activities and nature exploration'),
-        (DATE '2026-02-02', TIME '09:30', 1, 'Music and Movement', 'Singing songs and simple dance moves'),
-        (DATE '2026-02-03', TIME '15:00', 2, 'Building Blocks', 'Creative construction with various blocks'),
-        (DATE '2026-02-04', TIME '11:00', 1, 'Show and Tell', 'Children share their favorite toys'),
-        
-        -- Week 2 schedules
-        (DATE '2026-01-25', TIME '09:00', 2, 'Science Fun', 'Simple experiments with water and colors'),
-        (DATE '2026-01-26', TIME '14:30', 1, 'Cooking Activity', 'Making simple healthy snacks'),
-        (DATE '2026-01-27', TIME '10:30', 2, 'Physical Education', 'Basic movement and coordination games'),
-        (DATE '2026-01-28', TIME '09:00', 1, 'Language Learning', 'Basic vocabulary and pronunciation'),
-        (DATE '2026-01-29', TIME '16:00', 2, 'Creative Drama', 'Role-playing and imagination games'),
-        
-        -- Week 3 schedules
-        (DATE '2026-01-22', TIME '08:30', 2, 'Mathematics Fun', 'Counting games and number recognition'),
-        (DATE '2026-01-23', TIME '13:00', 1, 'Art Exploration', 'Painting with brushes and finger paints'),
-        (DATE '2026-01-24', TIME '10:00', 2, 'Nature Study', 'Learning about plants and animals'),
-        (DATE '2026-01-25', TIME '15:30', 1, 'Puzzle Time', 'Age-appropriate jigsaw puzzles'),
-        (DATE '2026-01-26', TIME '11:30', 2, 'Group Games', 'Cooperative play and team activities'),
-        
-        -- Week 4 schedules
-        (DATE '2026-01-22', TIME '09:15', 1, 'Reading Corner', 'Independent reading and book exploration'),
-        (DATE '2026-01-23', TIME '14:00', 2, 'Cultural Awareness', 'Learning about different cultures'),
-        (DATE '2026-01-24', TIME '10:45', 1, 'Fine Motor Skills', 'Activities to develop hand coordination'),
-        (DATE '2026-01-25', TIME '16:15', 2, 'Community Helpers', 'Learning about different professions'),
-        (DATE '2026-01-26', TIME '12:00', 1, 'Celebration Day', 'Special activities and mini party')
-) AS schedule_data(date_val, start_time_val, duration_val, activity_val, notes_val);
+        -- Sample tasks/assignments for children
+        ('Complete Drawing Project', 'Arts and Crafts', 'in progress', 'Draw a picture of your family'),
+        ('Learn New Song', 'Music', 'done', 'Learned "Twinkle Twinkle Little Star"'),
+        ('Nature Collection', 'Science', 'not started', 'Collect 5 different types of leaves'),
+        ('Practice Counting', 'Mathematics', 'done', 'Count to 20'),
+        ('Build Block Tower', 'Construction Play', 'in progress', 'Build a tower taller than yourself'),
+        ('Read Storybook', 'Reading', 'done', 'Finished "The Very Hungry Caterpillar"'),
+        ('Color Recognition', 'Learning', 'not started', 'Identify 8 basic colors'),
+        ('Physical Exercise', 'PE', 'done', 'Completed obstacle course'),
+        ('Social Skills', 'Group Activity', 'in progress', 'Share toys with friends'),
+        ('Alphabet Practice', 'Language', 'not started', 'Recognize letters A-M')
+) AS schedule_data(name_val, category_val, status_val, notes_val);

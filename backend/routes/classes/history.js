@@ -6,13 +6,26 @@ const auth = require('../../middleware/auth');
 
 // Get class history
 router.get('/:id/history', auth, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res
-      .status(403)
-      .json({ error: 'Only teachers and administrators can view class history' });
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher' && req.user.role !== 'parent') {
+    return res.status(403).json({ error: 'Unauthorized to view class history' });
   }
 
   try {
+    const { id } = req.params;
+
+    // For parents, check if they have a child in this class
+    if (req.user.role === 'parent') {
+      const parentChildCheck = await pool.query(
+        `SELECT 1 FROM class_children cc
+         JOIN children ch ON cc.child_id = ch.id
+         WHERE cc.class_id = $1 AND ch.parent_id = $2`,
+        [id, req.user.id]
+      );
+      if (parentChildCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
     const result = await pool.query(
       `
       SELECT ch.*, 
@@ -21,7 +34,7 @@ router.get('/:id/history', auth, async (req, res) => {
       LEFT JOIN users u ON ch.created_by = u.id
       WHERE ch.class_id = $1
       ORDER BY ch.date DESC`,
-      [req.params.id]
+      [id]
     );
     res.json(result.rows);
   } catch (error) {

@@ -21,8 +21,8 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 
 interface User {
   id: number;

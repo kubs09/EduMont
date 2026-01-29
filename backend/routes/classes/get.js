@@ -120,6 +120,21 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
   try {
+    const { id } = req.params;
+
+    // For parents, check if they have a child in this class
+    if (req.user.role === 'parent') {
+      const parentChildCheck = await pool.query(
+        `SELECT 1 FROM class_children cc
+         JOIN children ch ON cc.child_id = ch.id
+         WHERE cc.class_id = $1 AND ch.parent_id = $2`,
+        [id, req.user.id]
+      );
+      if (parentChildCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
     let query = `
       SELECT 
         c.*,
@@ -156,10 +171,10 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1`;
 
-    const params = [req.params.id];
+    const params = [id];
 
     if (req.user.role === 'parent') {
-      query += ` AND ch.parent_id = $2`;
+      query += ` AND (ch.parent_id = $2 OR ch.id IS NULL)`;
       params.push(req.user.id);
     }
 

@@ -15,10 +15,10 @@ import {
   ThemingProps,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { Teacher } from '../../types/teacher';
-import { classSchema } from '../validation/classValidation';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { Teacher } from '@frontend/types/teacher';
+import { classSchema } from '../schemas/classSchema';
 import { z } from 'zod';
 
 interface Class {
@@ -40,6 +40,7 @@ interface EditClassInfoModalProps {
     description: string;
     min_age: number;
     max_age: number;
+    teacherIds?: number[];
   }) => Promise<void>;
   size?: ThemingProps['size'] | { base: string; md: string };
 }
@@ -72,6 +73,7 @@ export const EditClassInfoModal = ({
         description: validationResult.description,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
+        teacherIds: classData.teachers.map((t) => t.id),
       });
       onClose();
     } catch (error) {

@@ -14,9 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { Search2Icon, TriangleDownIcon, TriangleUpIcon, EmailIcon } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import { Message } from '../types/message';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { Message } from '@frontend/types/message';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 
 interface MessageListProps {
   messages: Message[];

@@ -21,7 +21,7 @@ import { login } from '@frontend/services/api/auth';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createLoginSchema, LoginFormData } from '../schemas/LoginSchema';
-import { ROUTES } from '../../shared/route';
+import { ROUTES } from '@frontend/shared/route';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string) => void;

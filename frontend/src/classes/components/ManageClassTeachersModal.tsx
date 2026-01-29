@@ -17,10 +17,10 @@ import {
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { Teacher } from '../../types/teacher';
-import { classTeachersSchema } from '../validation/classValidation';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { Teacher } from '@frontend/types/teacher';
+import { classTeachersSchema } from '../schemas/classSchema';
 
 interface Class {
   id: number;
