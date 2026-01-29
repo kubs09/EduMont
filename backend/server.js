@@ -14,6 +14,7 @@ let pool,
   usersRoutes,
   classesRoutes,
   schedulesRoutes,
+  documentsRoutes,
   passwordResetRoutes,
   messageRoutes;
 
@@ -46,6 +47,7 @@ const lazyLoadModules = () => {
     usersRoutes = requireWithFallback('@routes/users', 'routes/users');
     classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
     schedulesRoutes = requireWithFallback('@routes/schedules', 'routes/schedules');
+    documentsRoutes = requireWithFallback('@routes/documents', 'routes/documents');
     passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
     messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
     modulesLoaded = true;
@@ -227,6 +229,7 @@ const mountRoutes = () => {
   if (classesRoutes) app.use('/api/classes', classesRoutes);
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
+  if (documentsRoutes) app.use('/api/documents', documentsRoutes);
   routesMounted = true;
   console.log('✅ Routes mounted successfully');
 };
