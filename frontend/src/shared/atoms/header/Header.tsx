@@ -21,12 +21,15 @@ import icon from './icon.png';
 import { useState, useEffect } from 'react';
 import { getMessages } from '@frontend/services/api';
 import ColorModeToggle from '../color-mode-toggle';
+import { useHeaderColors, useMenuColors } from '@frontend/design/colorModeUtils';
 
 const POLL_INTERVAL = 5000;
 
 const Header = () => {
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
+  const { bg: headerBg, color: headerColor } = useHeaderColors();
+  const { bg: menuBg, hoverBg: menuHoverBg, borderColor: menuBorderColor } = useMenuColors();
   const isAuthenticated = !!localStorage.getItem('token');
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
@@ -93,8 +96,8 @@ const Header = () => {
     <Flex
       as="header"
       p={{ base: 2, md: 4 }}
-      bg="brand.primary.900"
-      color="white"
+      bg={headerBg}
+      color={headerColor}
       borderBottomWidth={1}
       justify="space-between"
       align="center"
@@ -178,50 +181,26 @@ const Header = () => {
               <Hide below="md">{userName}</Hide>
               <Show below="md">👤</Show>
             </MenuButton>
-            <MenuList bg="brand.primary.900" borderColor="whiteAlpha.300">
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleProfile}
-              >
+            <MenuList bg={menuBg} borderColor={menuBorderColor}>
+              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleProfile}>
                 {texts.profile.menuItem[language]}
               </MenuItem>
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleClasses}
-              >
+              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleClasses}>
                 {texts.classes.menuItem[language]}
               </MenuItem>
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleChildren}
-              >
+              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
                 {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
                 {!isParent && <>{texts.children[language]}</>}
               </MenuItem>
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleSchedule}
-              >
+              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleSchedule}>
                 {texts.schedule.menuItem[language]}
               </MenuItem>
               {isAdmin && (
-                <MenuItem
-                  bg="brand.primary.900"
-                  _hover={{ bg: 'brand.primary.800' }}
-                  onClick={handleUserDashboard}
-                >
+                <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
                   {texts.userDashboard.menuItem[language]}
                 </MenuItem>
               )}
-              <MenuItem
-                bg="brand.primary.900"
-                _hover={{ bg: 'brand.primary.800' }}
-                onClick={handleLogout}
-              >
+              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleLogout}>
                 {texts.auth.signIn.logout[language]}
               </MenuItem>
             </MenuList>

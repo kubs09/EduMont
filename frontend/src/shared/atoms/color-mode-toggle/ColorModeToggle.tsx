@@ -1,6 +1,8 @@
 import React from 'react';
 import { IconButton, useColorMode, useColorModeValue, Tooltip } from '@chakra-ui/react';
 import { FiSun, FiMoon } from 'react-icons/fi';
+import texts from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 
 interface ColorModeToggleProps {
   size?: 'sm' | 'md' | 'lg';
@@ -9,8 +11,12 @@ interface ColorModeToggleProps {
 
 const ColorModeToggle: React.FC<ColorModeToggleProps> = ({ size = 'md', variant = 'ghost' }) => {
   const { toggleColorMode } = useColorMode();
+  const { language } = useLanguage();
   const Icon = useColorModeValue(FiMoon, FiSun);
-  const label = useColorModeValue('Switch to dark mode', 'Switch to light mode');
+  const label = useColorModeValue(
+    texts.common.colorModeToggle.dark[language],
+    texts.common.colorModeToggle.light[language]
+  );
 
   return (
     <Tooltip label={label} placement="bottom">

@@ -97,14 +97,10 @@ const ProfilePage = () => {
                 {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}
               </Text>
             </Box>
-            <Button colorScheme="blue" onClick={() => navigate(ROUTES.PROFILE_EDIT)}>
+            <Button onClick={() => navigate(ROUTES.PROFILE_EDIT)}>
               {texts.profile.edit[language]}
             </Button>
-            <Button
-              colorScheme="blue"
-              variant="outline"
-              onClick={() => navigate(ROUTES.PROFILE_CHANGE_PASSWORD)}
-            >
+            <Button variant="outline" onClick={() => navigate(ROUTES.PROFILE_CHANGE_PASSWORD)}>
               {texts.profile.changePassword[language]}
             </Button>
           </Stack>
