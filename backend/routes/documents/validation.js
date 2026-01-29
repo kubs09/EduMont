@@ -28,7 +28,10 @@ const validateDocument = (data) => {
     errors.push('Description must not exceed 1000 characters');
   }
 
-  if (data.size_bytes !== undefined && (!Number.isInteger(data.size_bytes) || data.size_bytes < 0)) {
+  if (
+    data.size_bytes !== undefined &&
+    (!Number.isInteger(data.size_bytes) || data.size_bytes < 0)
+  ) {
     errors.push('Size must be a non-negative integer');
   }
 

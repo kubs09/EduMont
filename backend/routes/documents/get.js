@@ -53,12 +53,7 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(classId);
       conditions.push(`d.class_id = $${params.length}`);
 
-      const canAccess = await canAccessDocumentByIds(
-        req.user.id,
-        req.user.role,
-        null,
-        classId
-      );
+      const canAccess = await canAccessDocumentByIds(req.user.id, req.user.role, null, classId);
       if (!canAccess) {
         return res.status(403).json({ error: 'Access denied' });
       }
@@ -73,12 +68,7 @@ router.get('/', authenticateToken, async (req, res) => {
       params.push(childId);
       conditions.push(`d.child_id = $${params.length}`);
 
-      const canAccess = await canAccessDocumentByIds(
-        req.user.id,
-        req.user.role,
-        childId,
-        null
-      );
+      const canAccess = await canAccessDocumentByIds(req.user.id, req.user.role, childId, null);
       if (!canAccess) {
         return res.status(403).json({ error: 'Access denied' });
       }

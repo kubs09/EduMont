@@ -9,16 +9,8 @@ const { validateDocument, canEditDocumentByIds, ensureChildInClass } = require('
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const {
-      title,
-      description,
-      file_url,
-      file_name,
-      mime_type,
-      size_bytes,
-      class_id,
-      child_id,
-    } = req.body;
+    const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
+      req.body;
 
     const validationErrors = validateDocument(req.body);
     if (validationErrors.length > 0) {

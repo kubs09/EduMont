@@ -3,27 +3,15 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
-const {
-  validateDocument,
-  canEditDocumentByIds,
-  ensureChildInClass,
-} = require('./validation');
+const { validateDocument, canEditDocumentByIds, ensureChildInClass } = require('./validation');
 
 // Update a document
 router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const {
-      title,
-      description,
-      file_url,
-      file_name,
-      mime_type,
-      size_bytes,
-      class_id,
-      child_id,
-    } = req.body;
+    const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
+      req.body;
 
     const validationErrors = validateDocument(req.body);
     if (validationErrors.length > 0) {
