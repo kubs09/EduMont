@@ -13,8 +13,8 @@ import {
   Select,
   useToast,
 } from '@chakra-ui/react';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
 
 interface AddUserDialogProps {

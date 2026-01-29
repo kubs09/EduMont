@@ -12,24 +12,20 @@ const validateSchedule = (data) => {
     errors.push('Class ID is required and must be a valid number');
   }
 
-  if (!data.date || !/^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
-    errors.push('Date is required and must be in YYYY-MM-DD format');
+  if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+    errors.push('Name is required and must be a non-empty string');
   }
 
-  if (!data.start_time || !/^\d{2}:\d{2}$/.test(data.start_time)) {
-    errors.push('Start time is required and must be in HH:MM format');
+  if (data.name && data.name.length > 200) {
+    errors.push('Name must not exceed 200 characters');
   }
 
-  if (!data.duration_hours || !Number.isInteger(data.duration_hours)) {
-    errors.push('Duration is required and must be a valid number');
+  if (data.category && data.category.length > 100) {
+    errors.push('Category must not exceed 100 characters');
   }
 
-  if (data.duration_hours && (data.duration_hours < 1 || data.duration_hours > 3)) {
-    errors.push('Duration must be between 1 and 3 hours');
-  }
-
-  if (data.activity && data.activity.length > 200) {
-    errors.push('Activity must not exceed 200 characters');
+  if (data.status && !['not started', 'in progress', 'done'].includes(data.status)) {
+    errors.push('Status must be "not started", "in progress", or "done"');
   }
 
   if (data.notes && data.notes.length > 1000) {

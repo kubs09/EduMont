@@ -15,10 +15,10 @@ import {
   ThemingProps,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { Teacher } from '../../types/teacher';
-import { classSchema } from '../validation/classValidation';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { Teacher } from '@frontend/types/teacher';
+import { classSchema } from '../schemas/classSchema';
 import { z } from 'zod';
 
 interface Class {

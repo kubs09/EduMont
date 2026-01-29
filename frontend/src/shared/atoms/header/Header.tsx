@@ -14,12 +14,12 @@ import {
 } from '@chakra-ui/react';
 import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
-import { texts } from '../../../texts';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { ROUTES } from '../../route';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
 import icon from './icon.png';
 import { useState, useEffect } from 'react';
-import { getMessages } from '../../../services/api';
+import { getMessages } from '@frontend/services/api';
 import ColorModeToggle from '../color-mode-toggle';
 
 const POLL_INTERVAL = 5000;
@@ -31,6 +31,7 @@ const Header = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const isParent = userRole === 'parent';
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -82,6 +83,10 @@ const Header = () => {
 
   const handleMessages = () => {
     navigate(ROUTES.MESSAGES);
+  };
+
+  const handleChildren = () => {
+    navigate(ROUTES.CHILDREN);
   };
 
   return (
@@ -187,6 +192,14 @@ const Header = () => {
                 onClick={handleClasses}
               >
                 {texts.classes.menuItem[language]}
+              </MenuItem>
+              <MenuItem
+                bg="brand.primary.900"
+                _hover={{ bg: 'brand.primary.800' }}
+                onClick={handleChildren}
+              >
+                {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
+                {!isParent && <>{texts.children[language]}</>}
               </MenuItem>
               <MenuItem
                 bg="brand.primary.900"

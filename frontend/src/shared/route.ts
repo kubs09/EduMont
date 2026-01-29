@@ -19,4 +19,5 @@ export const ROUTES = {
   SCHEDULE: '/schedule',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
+  CHILDREN: '/children',
 } as const;

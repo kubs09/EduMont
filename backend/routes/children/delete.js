@@ -41,4 +41,39 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { childId, classId } = req.params;
+
+    // Check if child exists and get parent_id
+    const child = await client.query('SELECT parent_id FROM children WHERE id = $1', [childId]);
+
+    if (child.rows.length === 0) {
+      return res.status(404).json({ error: 'Child not found' });
+    }
+
+    // Verify ownership or admin/teacher role
+    if (req.user.role === 'parent' && child.rows[0].parent_id !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Delete from class_children
+    await client.query('DELETE FROM class_children WHERE child_id = $1 AND class_id = $2', [
+      childId,
+      classId,
+    ]);
+
+    res.json({ message: 'Child removed from class successfully' });
+  } catch (err) {
+    console.error('Error removing child from class:', err);
+    res.status(500).json({
+      error: 'Failed to remove child from class',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
+    });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

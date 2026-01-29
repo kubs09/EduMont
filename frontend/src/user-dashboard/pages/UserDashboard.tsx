@@ -12,8 +12,8 @@ import {
 import UserTable from '../components/UserTable';
 import AddUserDialog from '../components/AddUserDialog';
 import api from '@frontend/services/apiConfig';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { SearchBar } from '@frontend/shared/components/SearchBar';
 
 interface User {

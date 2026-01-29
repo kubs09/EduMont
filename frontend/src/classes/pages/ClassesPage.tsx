@@ -12,8 +12,8 @@ import {
   VStack,
   useToast,
 } from '@chakra-ui/react';
-import { texts } from '../../texts';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
@@ -29,6 +29,7 @@ interface Child {
   id: number;
   firstname: string;
   surname: string;
+  status?: 'accepted' | 'denied' | 'pending';
 }
 
 interface Class {
@@ -63,6 +64,9 @@ const ClassesPage = () => {
 
     fetchData();
   }, [toast]);
+
+  const getAcceptedChildren = (cls: Class) =>
+    (cls.children || []).filter((child) => child.status === 'accepted');
 
   const handleViewDetail = (classId: number) => {
     navigate(`/classes/${classId}`);
@@ -126,7 +130,7 @@ const ClassesPage = () => {
                   </Td>
                   <Td display={{ base: 'none', xl: 'table-cell' }}>
                     <VStack align="start" spacing={1}>
-                      {cls.children.map((child) => (
+                      {getAcceptedChildren(cls).map((child) => (
                         <Text key={child.id} fontSize={{ base: 'sm', md: 'md' }}>
                           {child.firstname} {child.surname}
                         </Text>

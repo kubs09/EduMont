@@ -2,7 +2,7 @@ import React from 'react';
 import { VStack, HStack, Text, IconButton, Button, Box } from '@chakra-ui/react';
 import { DeleteIcon, EmailIcon } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import { Message } from '../types/message';
+import { Message } from '@frontend/types/message';
 
 interface MessageDetailProps {
   message: Message | null;

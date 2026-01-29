@@ -15,10 +15,10 @@ import {
   ButtonGroup,
   FormErrorMessage,
 } from '@chakra-ui/react';
-import { texts } from '../texts';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { ROUTES } from '../shared/route';
-import { updateUser } from '../services/api';
+import { texts } from '@frontend/texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { ROUTES } from '@frontend/shared/route';
+import { updateUser } from '@frontend/services/api';
 import { createProfileSchema, type ProfileSchema } from './schemas/profileSchema';
 
 const EditProfilePage = () => {

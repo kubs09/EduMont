@@ -1,6 +1,6 @@
 import { Table, Thead, Tbody, Tr, Th, TableContainer } from '@chakra-ui/react';
-import { useLanguage } from '../../shared/contexts/LanguageContext';
-import { texts } from '../../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 import { ReactNode } from 'react';
 
 interface ProfileChildrenTableProps {

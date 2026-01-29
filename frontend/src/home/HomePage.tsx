@@ -13,8 +13,8 @@ import { FaGraduationCap, FaChalkboardTeacher, FaUserFriends } from 'react-icons
 import { IconType } from 'react-icons';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../shared/route';
-import { useLanguage } from '../shared/contexts/LanguageContext';
-import { texts } from '../texts';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import { texts } from '@frontend/texts';
 
 const HomePage = () => {
   const navigate = useNavigate();
