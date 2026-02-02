@@ -23,11 +23,13 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  Progress,
 } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { Document, createDocument } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
+import api from '@frontend/services/apiConfig';
 
 interface DocumentsTabProps {
   documents: Document[];
@@ -50,6 +52,14 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   const [uploadDescription, setUploadDescription] = React.useState('');
   const [isUploading, setIsUploading] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState(0);
+
+  const resetForm = () => {
+    setUploadFile(null);
+    setUploadTitle('');
+    setUploadDescription('');
+    setUploadProgress(0);
+  };
 
   const readFileAsDataUrl = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -59,10 +69,12 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
       reader.readAsDataURL(file);
     });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const handleUploadDocument = async () => {
     if (!childData.id || !uploadFile) return;
 
-    const maxBytes = 5 * 1024 * 1024;
+    const maxBytes = 5 * 1024 * 1024; // 5MB
     if (uploadFile.size > maxBytes) {
       toast({
         title: texts.profile.error[language],
@@ -76,24 +88,71 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
     try {
       setIsUploading(true);
+      setUploadProgress(0);
 
-      const dataUrl = await readFileAsDataUrl(uploadFile);
       const title = uploadTitle.trim() || uploadFile.name;
 
-      await createDocument({
-        title,
-        description: uploadDescription.trim() || undefined,
-        file_url: dataUrl,
-        file_name: uploadFile.name,
-        mime_type: uploadFile.type || undefined,
-        size_bytes: uploadFile.size,
-        child_id: childData.id,
-        class_id: childData.class_id || undefined,
-      });
+      if (isProduction) {
+        // Production: Direct upload to Supabase Storage
+        // Step 1: Get signed upload URL from backend
+        const uploadUrlResponse = await api.post('/api/documents/upload-url', {
+          fileName: uploadFile.name,
+          fileType: uploadFile.type,
+          childId: childData.id,
+          classId: childData.class_id || undefined,
+        });
 
-      setUploadFile(null);
-      setUploadTitle('');
-      setUploadDescription('');
+        const { uploadUrl, filePath } = uploadUrlResponse.data;
+        setUploadProgress(25);
+
+        // Step 2: Upload file directly to Supabase Storage
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': uploadFile.type || 'application/octet-stream',
+          },
+          body: uploadFile,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        }
+
+        setUploadProgress(75);
+
+        // Step 3: Create document record with Supabase Storage URL
+        const fileUrl = `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
+
+        await createDocument({
+          title,
+          description: uploadDescription.trim() || undefined,
+          file_url: fileUrl,
+          file_name: uploadFile.name,
+          mime_type: uploadFile.type || undefined,
+          size_bytes: uploadFile.size,
+          child_id: childData.id,
+          class_id: childData.class_id || undefined,
+        });
+      } else {
+        // Development: Base64 upload (smaller size limit but works locally)
+        const dataUrl = await readFileAsDataUrl(uploadFile);
+        setUploadProgress(50);
+
+        await createDocument({
+          title,
+          description: uploadDescription.trim() || undefined,
+          file_url: dataUrl,
+          file_name: uploadFile.name,
+          mime_type: uploadFile.type || undefined,
+          size_bytes: uploadFile.size,
+          child_id: childData.id,
+          class_id: childData.class_id || undefined,
+        });
+
+        setUploadProgress(100);
+      }
+
+      resetForm();
       setIsModalOpen(false);
       await onDocumentsUpdate();
 
@@ -114,6 +173,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -214,10 +274,23 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
             <Button variant="ghost" mr={3} onClick={() => setIsModalOpen(false)}>
               {texts.common?.cancel?.[language] || 'Cancel'}
             </Button>
-            <Button onClick={handleUploadDocument} isLoading={isUploading} isDisabled={!uploadFile}>
+            <Button
+              onClick={handleUploadDocument}
+              isLoading={isUploading}
+              isDisabled={!uploadFile}
+              colorScheme="blue"
+            >
               {texts.document.uploadDocument[language]}
             </Button>
           </ModalFooter>
+          {isUploading && uploadProgress > 0 && (
+            <Box px={6} pb={4}>
+              <Progress value={uploadProgress} size="sm" colorScheme="blue" />
+              <Text fontSize="sm" color="gray.600" mt={2}>
+                {uploadProgress}%
+              </Text>
+            </Box>
+          )}
         </ModalContent>
       </Modal>
     </VStack>

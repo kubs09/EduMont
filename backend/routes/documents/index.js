@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-let getRouter, createRouter, updateRouter, deleteRouter, validationHelpers;
+let getRouter, createRouter, updateRouter, deleteRouter, uploadUrlRouter, validationHelpers;
 
 try {
   validationHelpers = require('./validation');
@@ -44,18 +44,28 @@ try {
   deleteRouter = null;
 }
 
+try {
+  uploadUrlRouter = require('./upload-url');
+  console.log('✓ Upload URL router loaded successfully');
+} catch (error) {
+  console.error('✗ Failed to load upload URL router:', error.message);
+  uploadUrlRouter = null;
+}
+
 console.log('Documents route modules loaded:', {
   validationHelpers: !!validationHelpers,
   getRouter: !!getRouter,
   createRouter: !!createRouter,
   updateRouter: !!updateRouter,
   deleteRouter: !!deleteRouter,
+  uploadUrlRouter: !!uploadUrlRouter,
 });
 
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
 if (updateRouter) router.use('/', updateRouter);
 if (deleteRouter) router.use('/', deleteRouter);
+if (uploadUrlRouter) router.use('/', uploadUrlRouter);
 
 router.get('/test', (req, res) => {
   res.json({
