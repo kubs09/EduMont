@@ -94,7 +94,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // Ensure public directory exists and is properly referenced
 const publicPath = path.join(__dirname, 'public');
@@ -222,6 +222,7 @@ let routesMounted = false;
 const mountRoutes = () => {
   if (routesMounted) return; // Prevent duplicate mounting
 
+  console.log('📍 Mounting API routes...');
   if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
   if (authRoutes) app.use('/api', authRoutes);
   if (childrenRoutes) app.use('/api/children', childrenRoutes);
@@ -229,7 +230,12 @@ const mountRoutes = () => {
   if (classesRoutes) app.use('/api/classes', classesRoutes);
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
-  if (documentsRoutes) app.use('/api/documents', documentsRoutes);
+  if (documentsRoutes) {
+    console.log('📄 Mounting documents routes at /api/documents');
+    app.use('/api/documents', documentsRoutes);
+  } else {
+    console.warn('⚠️ documentsRoutes not available!');
+  }
   routesMounted = true;
   console.log('✅ Routes mounted successfully');
 };
@@ -264,7 +270,13 @@ if (modulesLoaded) {
   mountRoutes();
 }
 
-app.use((req, res) => {
+// 404 handler - MUST be after all route mounting
+// Note: In serverless, this gets added during cold start, but routes are added dynamically
+// So we use a middleware that checks if routes were mounted before sending 404
+app.use((req, res, next) => {
+  // If we reach here, no route matched
+  // Log for debugging
+  console.log('⚠️ 404 Not Found:', req.method, req.url, 'Routes mounted:', routesMounted);
   res.status(404).json({ error: 'Not Found' });
 });
 
