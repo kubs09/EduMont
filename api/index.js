@@ -53,20 +53,8 @@ moduleAlias();
 
 let app;
 try {
-  console.log('Loading server from:', path.join(backendPath, 'server.js'));
-  console.log('Backend path:', backendPath);
-  console.log('Database path:', process.env.DB_PATH);
-  console.log('Working directory:', process.cwd());
-
-  // Import and export the Express app
   app = require(path.join(backendPath, 'server.js'));
-
-  console.log('✅ Server loaded successfully');
 } catch (error) {
-  console.error('❌ Failed to load server:', error);
-  console.error('Stack:', error.stack);
-
-  // Create a minimal error app
   const express = require('express');
   app = express();
   app.use((req, res) => {
@@ -118,6 +106,7 @@ module.exports = async (req, res) => {
         }
       }
     } else if (incomingUrl && incomingUrl !== '/api/index.js') {
+      const urlPath = incomingUrl.split('?')[0];
       const urlPath = incomingUrl.split('?')[0];
       if (urlPath !== '/' && !urlPath.startsWith('/api/index.js')) {
         reconstructedPath = urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;

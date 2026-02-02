@@ -1,1 +1,1 @@
-export { texts, default } from './texts/index';
+export { texts, default, type Texts } from './texts/index';

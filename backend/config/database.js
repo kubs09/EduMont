@@ -2,23 +2,11 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-// Determine if using Supabase in production/preview
-// Only use Supabase if explicitly enabled AND credentials are provided
 const useSupabase =
   (process.env.NODE_ENV === 'production' ||
     !!process.env.VERCEL ||
     process.env.USE_SUPABASE === 'true') &&
   (!!process.env.SUPABASE_URL || !!process.env.SUPABASE_DATABASE_URL);
-
-console.log('Database configuration check:', {
-  NODE_ENV: process.env.NODE_ENV,
-  VERCEL: process.env.VERCEL,
-  USE_SUPABASE: process.env.USE_SUPABASE,
-  SUPABASE_URL: process.env.SUPABASE_URL ? '✅ Set' : '❌ Not set',
-  SUPABASE_DATABASE_URL: process.env.SUPABASE_DATABASE_URL ? '✅ Set' : '❌ Not set',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? '✅ Set' : '❌ Not set',
-  useSupabase,
-});
 
 const getSSLConfig = () => {
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
@@ -34,12 +22,6 @@ let poolConfig;
 if (useSupabase) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl && !process.env.SUPABASE_DATABASE_URL) {
-    console.warn(
-      '⚠️ Supabase URL not configured, but SUPABASE_DATABASE_URL provided - will use that'
-    );
-  }
 
   if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
     throw new Error(
@@ -70,13 +52,7 @@ if (useSupabase) {
         min: 0,
         statement_timeout: 15000,
       };
-
-  console.log('📡 Using Supabase PostgreSQL connection');
 } else {
-  if (!process.env.POSTGRES_HOST) {
-    console.warn('⚠️ No POSTGRES_HOST configured - using localhost as default');
-  }
-
   poolConfig = {
     user: process.env.POSTGRES_USER || 'postgres',
     host: process.env.POSTGRES_HOST || 'localhost',
