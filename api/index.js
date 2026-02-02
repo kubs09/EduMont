@@ -75,15 +75,25 @@ module.exports = async (req, res) => {
   let parsedQueryPath = queryPath;
   try {
     if (!parsedQueryPath && typeof incomingUrl === 'string') {
-      const urlMod = require('url');
-      const parsed = urlMod.parse(incomingUrl, true);
-      if (parsed && parsed.query && parsed.query.path) {
-        parsedQueryPath = parsed.query.path;
+      const urlObj = new URL(incomingUrl, 'http://localhost');
+      const pathParam = urlObj.searchParams.get('path');
+      if (pathParam) {
+        parsedQueryPath = pathParam;
       }
     }
   } catch (e) {
     console.warn('⚠️ [API Handler] Failed to parse query path from URL:', e?.message);
   }
+
+  console.log('🔍 [API Handler] Incoming request:', {
+    method: req.method,
+    incomingUrl,
+    originalUrl: req.originalUrl,
+    path: req.path,
+    queryPath,
+    allQuery: JSON.stringify(req.query),
+  });
+
   try {
     let reconstructedPath = '/api';
 
@@ -101,6 +111,7 @@ module.exports = async (req, res) => {
         reconstructedPath = urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;
       }
     }
+
     req.url = reconstructedPath;
     req.originalUrl = reconstructedPath;
 
