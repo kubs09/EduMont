@@ -107,7 +107,6 @@ module.exports = async (req, res) => {
       }
     } else if (incomingUrl && incomingUrl !== '/api/index.js') {
       const urlPath = incomingUrl.split('?')[0];
-      const urlPath = incomingUrl.split('?')[0];
       if (urlPath !== '/' && !urlPath.startsWith('/api/index.js')) {
         reconstructedPath = urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;
       }
