@@ -248,18 +248,18 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
               <FormLabel>{texts.document.file[language]}</FormLabel>
               <Box
                 border="2px dashed"
-                borderColor={isDragging ? 'blue.400' : 'gray.300'}
+                borderColor={isDragging ? 'brand.primary.500' : 'border-color'}
                 borderRadius="md"
                 p={6}
                 textAlign="center"
-                bg={isDragging ? 'blue.50' : 'gray.50'}
+                bg={isDragging ? 'brand.primary.300' : 'bg-surface'}
                 transition="all 0.2s"
                 cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                _hover={{ borderColor: 'blue.400', bg: 'blue.50' }}
+                _hover={{ borderColor: 'brand.primary.500', bg: 'brand.primary.300' }}
               >
                 <Input
                   ref={fileInputRef}
@@ -270,14 +270,14 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                 />
                 {!uploadFile ? (
                   <VStack spacing={2}>
-                    <Icon as={FiUploadCloud} boxSize={12} color="gray.400" />
-                    <Text fontWeight="medium" color="gray.700">
+                    <Icon as={FiUploadCloud} boxSize={12} color="text-muted" />
+                    <Text fontWeight="medium" color="text-primary">
                       {texts.document.placeholder?.dragDrop?.[language]}
                     </Text>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color="text-secondary">
                       {texts.document.placeholder?.orClick?.[language]}
                     </Text>
-                    <Text fontSize="xs" color="gray.400">
+                    <Text fontSize="xs" color="text-muted">
                       PDF, DOC, TXT, PNG, JPG (max 5MB)
                     </Text>
                   </VStack>
@@ -285,16 +285,16 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                   <HStack
                     spacing={3}
                     p={3}
-                    bg="white"
+                    bg="bg-surface"
                     borderRadius="md"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Icon as={FiFile} boxSize={6} color="blue.500" />
+                    <Icon as={FiFile} boxSize={6} color="brand.primary.500" />
                     <VStack align="start" flex={1} spacing={0}>
                       <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
                         {uploadFile.name}
                       </Text>
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color="text-muted">
                         {formatFileSize(uploadFile.size)}
                       </Text>
                     </VStack>

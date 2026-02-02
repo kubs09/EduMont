@@ -85,7 +85,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
       )}
       {canEdit && (
         <HStack mt={6} spacing={3}>
-          <Button colorScheme="blue" onClick={onEditClick} size="md" flex={1}>
+          <Button onClick={onEditClick} size="md" flex={1}>
             {texts.profile.edit[language]}
           </Button>
           <Button colorScheme="red" onClick={onDeleteClick} size="md" flex={1}>
