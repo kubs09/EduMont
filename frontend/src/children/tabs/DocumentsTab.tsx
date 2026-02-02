@@ -16,7 +16,15 @@ import {
   FormLabel,
   Input,
   Textarea,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
 } from '@chakra-ui/react';
+import { AddIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { Document, createDocument } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
@@ -41,6 +49,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   const [uploadTitle, setUploadTitle] = React.useState('');
   const [uploadDescription, setUploadDescription] = React.useState('');
   const [isUploading, setIsUploading] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   const readFileAsDataUrl = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -85,6 +94,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
       setUploadFile(null);
       setUploadTitle('');
       setUploadDescription('');
+      setIsModalOpen(false);
       await onDocumentsUpdate();
 
       toast({
@@ -109,47 +119,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
   return (
     <VStack align="stretch" spacing={4}>
-      {canUpload && (
-        <Box borderWidth="1px" borderRadius="md" p={4}>
-          <Text fontWeight="bold" mb={3}>
-            {texts.document.uploadDocument[language]}
-          </Text>
-          <VStack align="stretch" spacing={3}>
-            <FormControl>
-              <FormLabel>{texts.document.title[language]}</FormLabel>
-              <Input
-                value={uploadTitle}
-                onChange={(event) => setUploadTitle(event.target.value)}
-                placeholder={texts.document.placeholder.title[language]}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>{texts.document.description[language]}</FormLabel>
-              <Textarea
-                value={uploadDescription}
-                onChange={(event) => setUploadDescription(event.target.value)}
-                placeholder={texts.document.placeholder.description[language]}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>{texts.document.file[language]}</FormLabel>
-              <Input
-                type="file"
-                onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
-              />
-            </FormControl>
-            <Button
-              colorScheme="blue"
-              onClick={handleUploadDocument}
-              isLoading={isUploading}
-              isDisabled={!uploadFile}
-            >
-              {texts.document.uploadDocument[language]}
-            </Button>
-          </VStack>
-        </Box>
-      )}
-
       {documents.length > 0 ? (
         <TableContainer>
           <Table variant="simple" size="md">
@@ -200,6 +169,57 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
       ) : (
         <Text color="gray.600">{texts.document.noDocuments[language]}</Text>
       )}
+
+      {canUpload && (
+        <Box>
+          <Button leftIcon={<AddIcon />} onClick={() => setIsModalOpen(true)}>
+            {texts.document.uploadDocument[language]}
+          </Button>
+        </Box>
+      )}
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{texts.document.uploadDocument[language]}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack align="stretch" spacing={4}>
+              <FormControl>
+                <FormLabel>{texts.document.title[language]}</FormLabel>
+                <Input
+                  value={uploadTitle}
+                  onChange={(event) => setUploadTitle(event.target.value)}
+                  placeholder={texts.document.placeholder.title[language]}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>{texts.document.description[language]}</FormLabel>
+                <Textarea
+                  value={uploadDescription}
+                  onChange={(event) => setUploadDescription(event.target.value)}
+                  placeholder={texts.document.placeholder.description[language]}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>{texts.document.file[language]}</FormLabel>
+                <Input
+                  type="file"
+                  onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => setIsModalOpen(false)}>
+              {texts.common?.cancel?.[language] || 'Cancel'}
+            </Button>
+            <Button onClick={handleUploadDocument} isLoading={isUploading} isDisabled={!uploadFile}>
+              {texts.document.uploadDocument[language]}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };

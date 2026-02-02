@@ -1,7 +1,7 @@
 export const document = {
   title: {
-    cs: 'Dokument',
-    en: 'Document',
+    cs: 'Dokumenty',
+    en: 'Documents',
   },
   description: {
     cs: 'Správa dokumentů pro děti a třídy.',

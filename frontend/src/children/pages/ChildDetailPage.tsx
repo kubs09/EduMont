@@ -12,9 +12,9 @@ import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
 import { Tabs, TabItem } from '@frontend/shared/components/Tabs';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
-import InformationTab from '../components/tabs/InformationTab';
-import SchedulesTab from '../components/tabs/SchedulesTab';
-import DocumentsTab from '../components/tabs/DocumentsTab';
+import InformationTab from '../tabs/InformationTab';
+import SchedulesTab from '../tabs/SchedulesTab';
+import DocumentsTab from '../tabs/DocumentsTab';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
