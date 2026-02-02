@@ -53,20 +53,8 @@ moduleAlias();
 
 let app;
 try {
-  console.log('Loading server from:', path.join(backendPath, 'server.js'));
-  console.log('Backend path:', backendPath);
-  console.log('Database path:', process.env.DB_PATH);
-  console.log('Working directory:', process.cwd());
-
-  // Import and export the Express app
   app = require(path.join(backendPath, 'server.js'));
-
-  console.log('✅ Server loaded successfully');
 } catch (error) {
-  console.error('❌ Failed to load server:', error);
-  console.error('Stack:', error.stack);
-
-  // Create a minimal error app
   const express = require('express');
   app = express();
   app.use((req, res) => {
@@ -81,15 +69,9 @@ try {
   });
 }
 
-// Vercel serverless handler - converts rewritten paths back to original API paths
 module.exports = async (req, res) => {
-  // Vercel rewrites /api/xxx to /api/index.js?path=xxx
-  // We need to reconstruct the original path for Express to route correctly
-
-  // Debug logging
   const incomingUrl = req.url || req.originalUrl || '/api/index.js';
   const queryPath = req.query?.path;
-  // Fallback: parse query from raw URL when req.query isn't available
   let parsedQueryPath = queryPath;
   try {
     if (!parsedQueryPath && typeof incomingUrl === 'string') {
@@ -102,22 +84,10 @@ module.exports = async (req, res) => {
   } catch (e) {
     console.warn('⚠️ [API Handler] Failed to parse query path from URL:', e?.message);
   }
-
-  console.log('🔍 [API Handler] Incoming request:', {
-    method: req.method,
-    incomingUrl,
-    originalUrl: req.originalUrl,
-    path: req.path,
-    queryPath,
-    allQuery: JSON.stringify(req.query),
-  });
-
   try {
-    // Reconstruct the path - Vercel sends path segments as query params
     let reconstructedPath = '/api';
 
     if (parsedQueryPath) {
-      // Get the path from query parameter (set by Vercel rewrite)
       const pathSegments = Array.isArray(parsedQueryPath) ? parsedQueryPath : [parsedQueryPath];
 
       for (const segment of pathSegments) {
@@ -126,27 +96,16 @@ module.exports = async (req, res) => {
         }
       }
     } else if (incomingUrl && incomingUrl !== '/api/index.js') {
-      // If no query param but URL has path, use that
-      const urlPath = incomingUrl.split('?')[0]; // Remove query string
+      const urlPath = incomingUrl.split('?')[0];
       if (urlPath !== '/' && !urlPath.startsWith('/api/index.js')) {
         reconstructedPath = urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;
       }
     }
-
-    // Set the URL for Express routing
     req.url = reconstructedPath;
     req.originalUrl = reconstructedPath;
 
-    console.log('✅ [API Handler] Reconstructed URL:', reconstructedPath);
-    console.log('🚀 [API Handler] Passing to Express app');
-
-    // Pass to Express app for routing
-    // The app handles the request and sends response
     app(req, res);
   } catch (error) {
-    console.error('❌ [API Handler] Exception caught:', error);
-    console.error('Stack:', error.stack);
-
     if (!res.headersSent) {
       res.status(500).json({
         error: 'API handler error',
