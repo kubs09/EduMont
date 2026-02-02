@@ -18,8 +18,8 @@ import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { Document } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
-import AddDocumentModal from '../dialogs/AddDocumentModal';
-import DeleteDocumentDialog from '../dialogs/DeleteDocumentDialog';
+import AddDocumentModal from '../components/AddDocumentModal';
+import DeleteDocumentDialog from '../components/DeleteDocumentDialog';
 
 interface DocumentsTabProps {
   documents: Document[];
