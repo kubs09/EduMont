@@ -121,7 +121,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
 
                           return (
                             <Box key={role} mb={4}>
-                              <Text fontWeight="bold" mb={2} color="gray.600">
+                              <Text fontWeight="bold" mb={2}>
                                 {t.roleGroups[role][language]}
                               </Text>
 
@@ -172,7 +172,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                 <Controller
                   name="subject"
                   control={control}
-                  render={({ field }) => <Input {...field} />}
+                  render={({ field }) => <Input variant="filled" {...field} />}
                 />
                 <FormErrorMessage>{errors.subject?.message}</FormErrorMessage>
               </FormControl>
@@ -182,17 +182,17 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                 <Controller
                   name="content"
                   control={control}
-                  render={({ field }) => <Textarea rows={4} {...field} />}
+                  render={({ field }) => <Textarea variant="filled" rows={4} {...field} />}
                 />
                 <FormErrorMessage>{errors.content?.message}</FormErrorMessage>
               </FormControl>
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button mr={3} onClick={onClose}>
+            <Button mr={3} onClick={onClose} variant="secondary">
               {texts.classes.cancel[language]}
             </Button>
-            <Button type="submit" colorScheme="blue" isLoading={isSubmitting}>
+            <Button type="submit" variant="brand" isLoading={isSubmitting}>
               {t.send[language]}
             </Button>
           </ModalFooter>

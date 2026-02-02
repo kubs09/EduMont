@@ -122,8 +122,8 @@ const Header = () => {
         {isAuthenticated && (
           <Button
             position="relative"
+            variant="brand"
             leftIcon={<EmailIcon />}
-            colorScheme="whiteAlpha"
             onClick={handleMessages}
             size={{ base: 'sm', md: 'md' }}
             px={{ base: 2, md: 4 }}
@@ -147,18 +147,20 @@ const Header = () => {
         )}
         <ButtonGroup spacing={{ base: 1, md: 2 }}>
           <Button
-            colorScheme="whiteAlpha"
-            variant={language === 'cs' ? 'solid' : 'outline'}
+            variant={language === 'cs' ? 'brand' : 'outline'}
             onClick={() => setLanguage('cs')}
             size={{ base: 'sm', md: 'md' }}
+            _hover={language === 'cs' ? {} : undefined}
+            _dark={language === 'cs' ? { _hover: {} } : undefined}
           >
             CZ
           </Button>
           <Button
-            colorScheme="whiteAlpha"
-            variant={language === 'en' ? 'solid' : 'outline'}
+            variant={language === 'en' ? 'brand' : 'outline'}
             onClick={() => setLanguage('en')}
             size={{ base: 'sm', md: 'md' }}
+            _hover={language === 'en' ? {} : undefined}
+            _dark={language === 'en' ? { _hover: {} } : undefined}
           >
             EN
           </Button>
@@ -166,9 +168,9 @@ const Header = () => {
         {isAuthenticated ? (
           <Menu>
             <MenuButton
+              variant="brand"
               as={Button}
               rightIcon={<ChevronDownIcon />}
-              colorScheme="whiteAlpha"
               size={{ base: 'sm', md: 'md' }}
             >
               <Hide below="md">{userName}</Hide>

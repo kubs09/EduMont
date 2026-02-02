@@ -53,7 +53,7 @@ export const useAppShadows = () => {
 // Header and Menu colors
 export const useHeaderColors = () => {
   return {
-    bg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    bg: useColorModeValue('brand.light.surface', 'brand.dark.surface'),
     color: useColorModeValue('white', 'brand.dark.text.primary'),
   };
 };

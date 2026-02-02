@@ -42,7 +42,6 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
         align="stretch"
         spacing={{ base: 2, md: 3 }}
         p={{ base: 3, md: 4 }}
-        bg="gray.50"
         borderRadius="md"
         borderWidth="1px"
         borderColor="gray.200"
