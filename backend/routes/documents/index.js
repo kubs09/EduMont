@@ -65,11 +65,25 @@ if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
 if (updateRouter) router.use('/', updateRouter);
 if (deleteRouter) router.use('/', deleteRouter);
-if (uploadUrlRouter) router.use('/', uploadUrlRouter);
+if (uploadUrlRouter) {
+  console.log('📄 Mounting upload-url router at /api/documents');
+  router.use('/', uploadUrlRouter);
+} else {
+  console.warn('⚠️ uploadUrlRouter not loaded!');
+}
 
 router.get('/test', (req, res) => {
   res.json({
     message: 'Documents router is working',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Debug endpoint to check if upload-url route is registered
+router.get('/debug-routes', (req, res) => {
+  res.json({
+    message: 'Documents routes debug info',
+    uploadUrlRouterLoaded: !!uploadUrlRouter,
     timestamp: new Date().toISOString(),
   });
 });

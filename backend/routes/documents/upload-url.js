@@ -6,12 +6,15 @@ const supabase = require('../../config/supabase');
 
 // Generate a signed upload URL for direct browser upload to Supabase Storage
 router.post('/upload-url', authenticateToken, async (req, res) => {
+  console.log('📤 [Upload-URL] POST /upload-url received');
   try {
     if (!supabase) {
+      console.error('❌ Supabase not configured');
       return res.status(500).json({ error: 'Supabase not configured' });
     }
 
     const { fileName, fileType, childId, classId } = req.body;
+    console.log('📋 [Upload-URL] Request body:', { fileName, fileType, childId, classId });
 
     if (!fileName || !fileType) {
       return res.status(400).json({ error: 'fileName and fileType required' });
