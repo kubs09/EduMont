@@ -35,7 +35,6 @@ const requireWithFallback = (aliasPath, relativePath) => {
   }
 };
 
-// Lazy load modules only when first request comes in (for serverless)
 const lazyLoadModules = () => {
   if (modulesLoaded || moduleError) return;
 
@@ -51,40 +50,27 @@ const lazyLoadModules = () => {
     passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
     messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
     modulesLoaded = true;
-    console.log('✅ Modules loaded successfully');
   } catch (error) {
-    console.error('Module import error:', error);
-    console.error('Current directory:', __dirname);
-    console.error('Process cwd:', process.cwd());
     moduleError = error.message;
   }
 };
 
-// Ensure modules are loaded at startup on Vercel and during local development
-// This prevents 404s on the first request due to late route mounting
 if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
   lazyLoadModules();
 }
 
 const app = express();
 
-// CORS configuration - allow requests from frontend and any vercel deployment
-// Minimize CORS origin array to reduce memory footprint
 const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
 
-// Add frontend URL and Vercel deployment URL only if configured
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
 if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
 
-// In production (Vercel), use relative URLs instead of allowing all origins
 if (!(process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production')) {
-  // Development only: add additional local URLs
   if (process.env.INCLUDE_DEV_URLS) {
     corsOrigins.push('http://10.0.1.37:3000');
   }
 }
-
-console.log('CORS enabled for origins:', corsOrigins);
 
 app.use(
   cors({
@@ -96,7 +82,6 @@ app.use(
 );
 app.use(bodyParser.json({ limit: '10mb' }));
 
-// Ensure public directory exists and is properly referenced
 const publicPath = path.join(__dirname, 'public');
 try {
   app.use(express.static(publicPath));
@@ -104,12 +89,10 @@ try {
   console.warn('Public directory not accessible:', publicPath);
 }
 
-// Health check endpoint - should always work
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Add debug endpoint - only in development
 if (process.env.NODE_ENV === 'development') {
   app.get('/api/debug', (req, res) => {
     res.json({
@@ -123,7 +106,6 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// Initialize database and load routes on first API request (for serverless/Vercel)
 app.use('/api', (req, res, next) => {
   if (process.env.VERCEL === 'true') {
     lazyLoadModules();
@@ -131,16 +113,12 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Initialize database only if modules loaded successfully
 if (modulesLoaded && pool && initDatabase) {
-  // For serverless, we need to handle database initialization differently
   if (process.env.VERCEL) {
-    // In Vercel, initialize on first request rather than at startup
     let dbInitialized = false;
     let dbInitializing = false;
 
     app.use(async (req, res, next) => {
-      // Skip initialization for non-API routes
       if (!req.path.startsWith('/api')) {
         return next();
       }
@@ -149,9 +127,7 @@ if (modulesLoaded && pool && initDatabase) {
         return next();
       }
 
-      // Prevent concurrent initialization attempts
       if (dbInitializing) {
-        // Wait a bit and check again
         await new Promise((resolve) => setTimeout(resolve, 100));
         if (dbInitialized) {
           return next();
@@ -161,35 +137,21 @@ if (modulesLoaded && pool && initDatabase) {
 
       dbInitializing = true;
       try {
-        console.log('Initializing database for serverless environment...');
-
-        // Check if we're using Supabase
         if (process.env.USE_SUPABASE === 'true') {
           if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
             throw new Error(
               'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
             );
           }
-          console.log('Using Supabase database');
         } else {
-          console.log('Using SQLite database at:', process.env.DB_PATH);
         }
 
         await initDatabase();
         dbInitialized = true;
         dbInitializing = false;
-        console.log('✅ Database initialized successfully');
         next();
       } catch (err) {
         dbInitializing = false;
-        console.error('❌ Database initialization failed:', err);
-        console.error('Error details:', {
-          message: err.message,
-          stack: err.stack,
-          useSupabase: process.env.USE_SUPABASE,
-          supabaseUrl: process.env.SUPABASE_URL ? 'set' : 'not set',
-          dbPath: process.env.DB_PATH,
-        });
         return res.status(500).json({
           error: 'Database initialization failed',
           message: err.message,
@@ -198,9 +160,7 @@ if (modulesLoaded && pool && initDatabase) {
       }
     });
   } else {
-    // Traditional server startup
     initDatabase().catch((err) => {
-      console.error('Database initialization failed:', err);
       process.exit(1);
     });
   }
@@ -217,12 +177,10 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Routes - mount dynamically based on module loading state
 let routesMounted = false;
 const mountRoutes = () => {
-  if (routesMounted) return; // Prevent duplicate mounting
+  if (routesMounted) return;
 
-  console.log('📍 Mounting API routes...');
   if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
   if (authRoutes) app.use('/api', authRoutes);
   if (childrenRoutes) app.use('/api/children', childrenRoutes);
@@ -231,25 +189,18 @@ const mountRoutes = () => {
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (schedulesRoutes) app.use('/api/schedules', schedulesRoutes);
   if (documentsRoutes) {
-    console.log('📄 Mounting documents routes at /api/documents');
     app.use('/api/documents', documentsRoutes);
   } else {
     console.warn('⚠️ documentsRoutes not available!');
   }
   routesMounted = true;
-  console.log('✅ Routes mounted successfully');
 };
 
-// Mount routes immediately if modules are already loaded (local dev)
 if (modulesLoaded) {
-  console.log('📍 Mounting routes at startup');
   mountRoutes();
 }
 
-// For all environments: ensure routes are mounted when needed
 app.use('/api', (req, res, next) => {
-  // This middleware runs before route handlers
-  // Ensure modules are loaded and routes are mounted
   if (!modulesLoaded) {
     return res.status(500).json({
       error: 'Server modules not loaded',
@@ -258,30 +209,21 @@ app.use('/api', (req, res, next) => {
   }
 
   if (!routesMounted && modulesLoaded) {
-    console.log('🔄 Mounting routes on first API request');
     mountRoutes();
   }
 
   next();
 });
 
-// Now mount all routes for immediate availability (they'll be in Express's route table)
 if (modulesLoaded) {
   mountRoutes();
 }
 
-// 404 handler - MUST be after all route mounting
-// Note: In serverless, this gets added during cold start, but routes are added dynamically
-// So we use a middleware that checks if routes were mounted before sending 404
 app.use((req, res, next) => {
-  // If we reach here, no route matched
-  // Log for debugging
-  console.log('⚠️ 404 Not Found:', req.method, req.url, 'Routes mounted:', routesMounted);
   res.status(404).json({ error: 'Not Found' });
 });
 
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
   res.status(500).json({
     error: 'Internal server error',
     message: err.message,
@@ -289,16 +231,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// For Vercel serverless deployment
 module.exports = app;
 
-// Only start the server if this file is run directly (not in serverless environment)
 if (require.main === module && !process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
-
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`Modules loaded: ${modulesLoaded}`);
-  });
+  app.listen(PORT, () => {});
 }

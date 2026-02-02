@@ -7,6 +7,14 @@ export const document = {
     cs: 'Správa dokumentů pro děti a třídy.',
     en: 'Manage documents for children and classes.',
   },
+  documentTitle: {
+    cs: 'Název dokumentu',
+    en: 'Document Title',
+  },
+  documentDescription: {
+    cs: 'Popis',
+    en: 'Description',
+  },
   file: {
     cs: 'Soubor',
     en: 'File',
@@ -27,7 +35,23 @@ export const document = {
     cs: 'Nahrát dokument',
     en: 'Upload Document',
   },
+  deleteConfirmation: {
+    cs: 'Smazat dokument',
+    en: 'Delete Document',
+  },
+  deleteMessage: {
+    cs: 'Opravdu chcete smazat tento dokument?',
+    en: 'Are you sure you want to delete this document?',
+  },
   placeholder: {
+    dragDrop: {
+      cs: 'Přetáhněte sem soubor',
+      en: 'Drag and drop file here',
+    },
+    orClick: {
+      cs: 'nebo klikněte pro výběr',
+      en: 'or click to browse',
+    },
     title: {
       cs: 'Zadejte název dokumentu...',
       en: 'Enter document title...',
@@ -43,8 +67,16 @@ export const document = {
   },
   error: {
     fileTooLarge: {
-      cs: 'Soubor je příliš velký. Maximální povolená velikost je 10 MB.',
-      en: 'File is too large. Maximum allowed size is 10 MB.',
+      cs: 'Soubor je příliš velký. Maximální povolená velikost je 5 MB.',
+      en: 'File is too large. Maximum allowed size is 5 MB.',
+    },
+    deleteFailed: {
+      cs: 'Smazání dokumentu se nezdařilo. Zkuste to prosím znovu.',
+      en: 'Failed to delete document. Please try again.',
+    },
+    deleteSuccess: {
+      cs: 'Dokument byl úspěšně smazán.',
+      en: 'Document deleted successfully.',
     },
     uploadFailed: {
       cs: 'Nahrání souboru se nezdařilo. Zkuste to prosím znovu.',

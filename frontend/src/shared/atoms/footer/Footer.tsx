@@ -1,4 +1,5 @@
-import { Flex, Text, useColorModeValue } from '@chakra-ui/react';
+import { Box, Flex, Hide, Show, Text, useColorModeValue } from '@chakra-ui/react';
+import ColorModeToggle from '../color-mode-toggle';
 
 const Footer = () => {
   const footerBg = useColorModeValue('brand.primary.900', 'brand.dark.surface');
@@ -9,7 +10,8 @@ const Footer = () => {
       as="footer"
       bg={footerBg}
       color={footerColor}
-      p={4}
+      p={2}
+      flexDirection="column"
       justifyContent="center"
       alignItems="center"
       position="fixed"
@@ -18,6 +20,14 @@ const Footer = () => {
       borderTop="1px"
       borderColor="border-color"
     >
+      <Box>
+        <Show above="md">
+          <ColorModeToggle size="md" />
+        </Show>
+        <Hide above="md">
+          <ColorModeToggle size="sm" />
+        </Hide>
+      </Box>
       <Text fontSize="sm">©2025, Šimon Kubín, Vysoká Škola Ekonomická</Text>
     </Flex>
   );
