@@ -62,7 +62,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   const handleUploadDocument = async () => {
     if (!childData.id || !uploadFile) return;
 
-    const maxBytes = 500 * 1024;
+    const maxBytes = 5 * 1024 * 1024;
     if (uploadFile.size > maxBytes) {
       toast({
         title: texts.profile.error[language],

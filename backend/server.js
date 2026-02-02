@@ -94,7 +94,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
 
 // Ensure public directory exists and is properly referenced
 const publicPath = path.join(__dirname, 'public');
