@@ -55,6 +55,18 @@ const colors = {
       },
     },
   },
+  red: {
+    50: '#FDF5F4',
+    100: '#F9E6E4',
+    200: '#F3D1CE',
+    300: '#E9B5B0',
+    400: '#DE9791',
+    500: '#D27974',
+    600: '#C4625C',
+    700: '#B04F49',
+    800: '#94413D',
+    900: '#7A3431',
+  },
 };
 
 const theme = extendTheme({
@@ -107,6 +119,26 @@ const theme = extendTheme({
             bg: 'brand.primary.700',
             _hover: {
               bg: 'brand.primary.600',
+            },
+          },
+        },
+        delete: {
+          bg: 'red.500',
+          color: 'white',
+          _hover: {
+            bg: 'red.600',
+          },
+          _active: {
+            bg: 'red.700',
+          },
+          _dark: {
+            bg: 'red.900',
+            color: 'white',
+            _hover: {
+              bg: 'red.800',
+            },
+            _active: {
+              bg: 'red.600',
             },
           },
         },
