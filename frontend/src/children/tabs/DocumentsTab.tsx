@@ -92,8 +92,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                           aria-label="delete"
                           icon={<DeleteIcon />}
                           size="sm"
-                          colorScheme="red"
-                          variant="ghost"
+                          variant="delete"
                           onClick={() => {
                             setSelectedDocument(doc);
                             setDeleteDialogOpen(true);
@@ -113,7 +112,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
       {canUpload && (
         <Box>
-          <Button leftIcon={<AddIcon />} onClick={() => setIsModalOpen(true)}>
+          <Button leftIcon={<AddIcon />} variant="brand" onClick={() => setIsModalOpen(true)}>
             {texts.document.uploadDocument[language]}
           </Button>
         </Box>

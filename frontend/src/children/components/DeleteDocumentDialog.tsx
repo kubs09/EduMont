@@ -69,11 +69,11 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
           </AlertDialogHeader>
           <AlertDialogBody>{texts.document.deleteMessage[language]}</AlertDialogBody>
           <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              {texts.common?.cancel?.[language] || 'Cancel'}
+            <Button ref={cancelRef} variant="secondary" onClick={onClose}>
+              {texts.common.cancel[language]}
             </Button>
-            <Button colorScheme="red" onClick={handleDelete} ml={3} isLoading={isDeleting}>
-              {texts.common?.delete?.[language] || 'Delete'}
+            <Button variant="delete" onClick={handleDelete} ml={3} isLoading={isDeleting}>
+              {texts.common.delete[language]}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
