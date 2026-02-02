@@ -5,8 +5,8 @@ const authenticateToken = require('../../middleware/auth');
 const supabase = require('../../config/supabase');
 
 // Generate a signed upload URL for direct browser upload to Supabase Storage
-router.post('/upload-url', authenticateToken, async (req, res) => {
-  console.log('📤 [Upload-URL] POST /upload-url received');
+router.post('/', authenticateToken, async (req, res) => {
+  console.log('📤 [Upload-URL] POST / received (mounted at /upload-url)');
   try {
     if (!supabase) {
       console.error('❌ Supabase not configured');

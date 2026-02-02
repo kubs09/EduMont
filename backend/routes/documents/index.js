@@ -61,16 +61,16 @@ console.log('Documents route modules loaded:', {
   uploadUrlRouter: !!uploadUrlRouter,
 });
 
+if (uploadUrlRouter) {
+  console.log('📄 Mounting upload-url router at /api/documents/upload-url');
+  router.use('/upload-url', uploadUrlRouter);
+} else {
+  console.warn('⚠️ uploadUrlRouter not loaded!');
+}
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
 if (updateRouter) router.use('/', updateRouter);
 if (deleteRouter) router.use('/', deleteRouter);
-if (uploadUrlRouter) {
-  console.log('📄 Mounting upload-url router at /api/documents');
-  router.use('/', uploadUrlRouter);
-} else {
-  console.warn('⚠️ uploadUrlRouter not loaded!');
-}
 
 router.get('/test', (req, res) => {
   res.json({
