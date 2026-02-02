@@ -93,8 +93,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
       const title = uploadTitle.trim() || uploadFile.name;
 
       if (isProduction) {
-        // Production: Direct upload to Supabase Storage
-        // Step 1: Get signed upload URL from backend
         const uploadUrlResponse = await api.post('/api/documents/upload-url', {
           fileName: uploadFile.name,
           fileType: uploadFile.type,
@@ -105,7 +103,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
         const { uploadUrl, filePath } = uploadUrlResponse.data;
         setUploadProgress(25);
 
-        // Step 2: Upload file directly to Supabase Storage
         const uploadResponse = await fetch(uploadUrl, {
           method: 'PUT',
           headers: {
@@ -120,7 +117,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
         setUploadProgress(75);
 
-        // Step 3: Create document record with Supabase Storage URL
         const fileUrl = `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
 
         await createDocument({
@@ -134,7 +130,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
           class_id: childData.class_id || undefined,
         });
       } else {
-        // Development: Base64 upload (smaller size limit but works locally)
         const dataUrl = await readFileAsDataUrl(uploadFile);
         setUploadProgress(50);
 

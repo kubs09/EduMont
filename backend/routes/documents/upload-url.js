@@ -43,13 +43,16 @@ router.post('/', authenticateToken, async (req, res) => {
     // Generate unique file path: documents/{childId or classId}/{timestamp}-{filename}
     const timestamp = Date.now();
     const storagePath = classId
-      ? `documents/class-${classId}/${timestamp}-${fileName}`
-      : `documents/child-${childId}/${timestamp}-${fileName}`;
+      ? `class-${classId}/${timestamp}-${fileName}`
+      : `child-${childId}/${timestamp}-${fileName}`;
+
+    console.log('📁 Storage path:', storagePath);
 
     // Create a signed URL valid for 1 hour
+    // Using service role key should bypass RLS
     const { data, error } = await supabase.storage
       .from('documents')
-      .createSignedUploadUrl(storagePath, 3600);
+      .createSignedUploadUrl(storagePath);
 
     if (error) {
       console.error('Supabase upload URL error:', error);

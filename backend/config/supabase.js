@@ -10,7 +10,15 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn('  SUPABASE_KEY:', supabaseKey ? 'set' : 'missing');
 }
 
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const supabase =
+  supabaseUrl && supabaseKey
+    ? createClient(supabaseUrl, supabaseKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      })
+    : null;
 
 if (supabase) {
   console.log('✅ Supabase client initialized');
