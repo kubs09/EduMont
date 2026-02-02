@@ -7,6 +7,14 @@ export const document = {
     cs: 'Správa dokumentů pro děti a třídy.',
     en: 'Manage documents for children and classes.',
   },
+  documentTitle: {
+    cs: 'Název dokumentu',
+    en: 'Document Title',
+  },
+  documentDescription: {
+    cs: 'Popis',
+    en: 'Description',
+  },
   file: {
     cs: 'Soubor',
     en: 'File',
@@ -36,6 +44,14 @@ export const document = {
     en: 'Are you sure you want to delete this document?',
   },
   placeholder: {
+    dragDrop: {
+      cs: 'Přetáhněte sem soubor',
+      en: 'Drag and drop file here',
+    },
+    orClick: {
+      cs: 'nebo klikněte pro výběr',
+      en: 'or click to browse',
+    },
     title: {
       cs: 'Zadejte název dokumentu...',
       en: 'Enter document title...',

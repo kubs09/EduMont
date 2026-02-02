@@ -17,7 +17,10 @@ import {
   ModalBody,
   ModalCloseButton,
   Progress,
+  Icon,
+  HStack,
 } from '@chakra-ui/react';
+import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { createDocument } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
@@ -44,6 +47,8 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
   const [uploadDescription, setUploadDescription] = React.useState('');
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const resetForm = () => {
     setUploadFile(null);
@@ -167,6 +172,54 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
     onClose();
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      setUploadFile(files[0]);
+      if (!uploadTitle) {
+        setUploadTitle(files[0].name);
+      }
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setUploadFile(files[0]);
+      if (!uploadTitle) {
+        setUploadTitle(files[0].name);
+      }
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setUploadFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="lg">
       <ModalOverlay />
@@ -176,7 +229,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
         <ModalBody>
           <VStack align="stretch" spacing={4}>
             <FormControl>
-              <FormLabel>{texts.document.title[language]}</FormLabel>
+              <FormLabel>{texts.document.documentTitle[language]}</FormLabel>
               <Input
                 value={uploadTitle}
                 onChange={(event) => setUploadTitle(event.target.value)}
@@ -184,7 +237,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
               />
             </FormControl>
             <FormControl>
-              <FormLabel>{texts.document.description[language]}</FormLabel>
+              <FormLabel>{texts.document.documentDescription[language]}</FormLabel>
               <Textarea
                 value={uploadDescription}
                 onChange={(event) => setUploadDescription(event.target.value)}
@@ -193,10 +246,64 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
             </FormControl>
             <FormControl>
               <FormLabel>{texts.document.file[language]}</FormLabel>
-              <Input
-                type="file"
-                onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
-              />
+              <Box
+                border="2px dashed"
+                borderColor={isDragging ? 'blue.400' : 'gray.300'}
+                borderRadius="md"
+                p={6}
+                textAlign="center"
+                bg={isDragging ? 'blue.50' : 'gray.50'}
+                transition="all 0.2s"
+                cursor="pointer"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                _hover={{ borderColor: 'blue.400', bg: 'blue.50' }}
+              >
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  display="none"
+                  onChange={handleFileSelect}
+                  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+                />
+                {!uploadFile ? (
+                  <VStack spacing={2}>
+                    <Icon as={FiUploadCloud} boxSize={12} color="gray.400" />
+                    <Text fontWeight="medium" color="gray.700">
+                      {texts.document.placeholder?.dragDrop?.[language]}
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
+                      {texts.document.placeholder?.orClick?.[language]}
+                    </Text>
+                    <Text fontSize="xs" color="gray.400">
+                      PDF, DOC, TXT, PNG, JPG (max 5MB)
+                    </Text>
+                  </VStack>
+                ) : (
+                  <HStack
+                    spacing={3}
+                    p={3}
+                    bg="white"
+                    borderRadius="md"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Icon as={FiFile} boxSize={6} color="blue.500" />
+                    <VStack align="start" flex={1} spacing={0}>
+                      <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
+                        {uploadFile.name}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        {formatFileSize(uploadFile.size)}
+                      </Text>
+                    </VStack>
+                    <Button size="sm" variant="ghost" colorScheme="red" onClick={handleRemoveFile}>
+                      <Icon as={FiX} />
+                    </Button>
+                  </HStack>
+                )}
+              </Box>
             </FormControl>
           </VStack>
         </ModalBody>
