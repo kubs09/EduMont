@@ -30,9 +30,10 @@ router.post('/upload-url', authenticateToken, async (req, res) => {
 
     if (error) {
       console.error('Supabase upload URL error:', error);
-      return res
-        .status(500)
-        .json({ error: 'Failed to generate upload URL', details: error.message });
+      return res.status(500).json({
+        error: 'Failed to generate upload URL',
+        details: error.message || JSON.stringify(error),
+      });
     }
 
     res.json({
