@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, users, invitations, messages, children, classes, class_teachers, class_children, schedules CASCADE;
+DROP TABLE IF EXISTS class_history, users, invitations, messages, children, classes, class_teachers, class_children, schedules, documents CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -109,6 +109,28 @@ CREATE TABLE schedules (
 CREATE INDEX idx_schedules_child_id ON schedules(child_id);
 CREATE INDEX idx_schedules_class_id ON schedules(class_id);
 CREATE INDEX idx_schedules_status ON schedules(status);
+
+-- Documents table (metadata for uploaded/shared files)
+CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    file_url TEXT NOT NULL,
+    file_name VARCHAR(255),
+    mime_type VARCHAR(100),
+    size_bytes INTEGER CHECK (size_bytes >= 0),
+    class_id INTEGER REFERENCES classes(id) ON DELETE SET NULL,
+    child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER REFERENCES users(id),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (class_id IS NOT NULL OR child_id IS NOT NULL)
+);
+
+CREATE INDEX idx_documents_child_id ON documents(child_id);
+CREATE INDEX idx_documents_class_id ON documents(class_id);
+CREATE INDEX idx_documents_created_by ON documents(created_by);
 
 -- Insert admin and parent users
 INSERT INTO users (email, firstname, surname, password, role) VALUES

@@ -54,18 +54,39 @@ const initDatabase = async () => {
     );
   `;
 
+  const createDocumentsTable = `
+    CREATE TABLE IF NOT EXISTS documents (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(200) NOT NULL,
+      description TEXT,
+      file_url TEXT NOT NULL,
+      file_name VARCHAR(255),
+      mime_type VARCHAR(100),
+      size_bytes INTEGER CHECK (size_bytes >= 0),
+      class_id INTEGER REFERENCES classes(id) ON DELETE SET NULL,
+      child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
+      created_by INTEGER REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_by INTEGER REFERENCES users(id),
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CHECK (class_id IS NOT NULL OR child_id IS NOT NULL)
+    );
+  `;
+
   try {
     await pool.query(createClassesTable);
     await pool.query(createClassTeachersTable);
     await pool.query(createClassChildrenTable);
     await pool.query(createMessagesTable);
     await pool.query(createChildrenTable);
+    await pool.query(createDocumentsTable);
     await pool.query('SELECT * FROM users');
     await pool.query('SELECT * FROM children');
     await pool.query('SELECT * FROM classes');
     await pool.query('SELECT * FROM class_teachers');
     await pool.query('SELECT * FROM class_children');
     await pool.query('SELECT * FROM messages');
+    await pool.query('SELECT * FROM documents');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(

@@ -49,3 +49,29 @@ export const useAppShadows = () => {
     lg: useColorModeValue('rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.5)'),
   };
 };
+
+// Header and Menu colors
+export const useHeaderColors = () => {
+  return {
+    bg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    color: useColorModeValue('white', 'brand.dark.text.primary'),
+  };
+};
+
+export const useMenuColors = () => {
+  return {
+    bg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    hoverBg: useColorModeValue('brand.primary.800', 'brand.dark.surface'),
+    borderColor: useColorModeValue('whiteAlpha.300', 'brand.dark.border'),
+  };
+};
+
+// HomePage colors
+export const useHomePageColors = () => {
+  return {
+    bgColor: useColorModeValue('brand.light.bg', 'brand.dark.bg'),
+    heroBg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    heroColor: useColorModeValue('white', 'brand.dark.text.primary'),
+    cardBg: useColorModeValue('brand.light.surface', 'brand.dark.surface'),
+  };
+};

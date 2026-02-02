@@ -61,6 +61,16 @@ export const common = {
       en: 'Notes',
     },
   },
+  colorModeToggle: {
+    light: {
+      cs: 'Přepnout na světlý režim',
+      en: 'Switch to Light Mode',
+    },
+    dark: {
+      cs: 'Přepnout na tmavý režim',
+      en: 'Switch to Dark Mode',
+    },
+  },
   userDashboard: {
     title: {
       cs: 'Seznam uživatelů',

@@ -1,30 +1,21 @@
-import {
-  Box,
-  Button,
-  Container,
-  Heading,
-  Text,
-  SimpleGrid,
-  Icon,
-  VStack,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { Box, Button, Container, Heading, Text, SimpleGrid, Icon, VStack } from '@chakra-ui/react';
 import { FaGraduationCap, FaChalkboardTeacher, FaUserFriends } from 'react-icons/fa';
 import { IconType } from 'react-icons';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../shared/route';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
+import { useHomePageColors } from '@frontend/design/colorModeUtils';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const { bgColor, heroBg, heroColor } = useHomePageColors();
   const { language } = useLanguage();
 
   return (
     <Box>
       {/* Hero Section */}
-      <Box bg="brand.primary.900" color="white" py={20}>
+      <Box bg={heroBg} color={heroColor} py={20}>
         <Container maxW="container.xl" textAlign="center">
           <Heading size="2xl" mb={6}>
             {texts.home.hero.title[language]}
@@ -81,7 +72,7 @@ const HomePage = () => {
   );
 };
 const FeatureCard = ({ icon, title, text }: { icon: IconType; title: string; text: string }) => {
-  const cardBg = useColorModeValue('white', 'gray.800');
+  const { cardBg } = useHomePageColors();
 
   return (
     <VStack p={8} bg={cardBg} borderRadius="lg" boxShadow="md" align="center" spacing={4}>

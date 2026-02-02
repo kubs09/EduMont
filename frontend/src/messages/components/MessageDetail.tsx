@@ -29,12 +29,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
         <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.500" textAlign="center">
           {translations.title}
         </Text>
-        <Button
-          leftIcon={<EmailIcon />}
-          size={{ base: 'sm', md: 'md' }}
-          colorScheme="blue"
-          onClick={onCompose}
-        >
+        <Button leftIcon={<EmailIcon />} size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
           {translations.compose}
         </Button>
       </VStack>

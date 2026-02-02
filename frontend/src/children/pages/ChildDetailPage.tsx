@@ -1,33 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Text,
-  VStack,
-  useToast,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  HStack,
-  Badge,
-} from '@chakra-ui/react';
+import { Box, Button, Card, CardBody, useToast } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
+import { Document, getChildDocuments } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
 import { Schedule } from '@frontend/types/schedule';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
 import { Tabs, TabItem } from '@frontend/shared/components/Tabs';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
+import InformationTab from '../tabs/InformationTab';
+import SchedulesTab from '../tabs/SchedulesTab';
+import DocumentsTab from '../tabs/DocumentsTab';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
@@ -36,6 +23,7 @@ const ChildDetailPage = () => {
   const toast = useToast();
   const [childData, setChildData] = useState<Child | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
@@ -43,8 +31,19 @@ const ChildDetailPage = () => {
   const currentUserId = localStorage.getItem('userId');
   const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
+  const isTeacher = userRole === 'teacher';
 
   const canEdit = isAdmin || (isParent && childData?.parent_id === parseInt(currentUserId || '0'));
+  const canUpload = isAdmin || isTeacher;
+
+  const loadDocuments = async (childId: number) => {
+    try {
+      const documentsResponse = await getChildDocuments(childId);
+      setDocuments(documentsResponse || []);
+    } catch (err) {
+      setDocuments([]);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,6 +58,12 @@ const ChildDetailPage = () => {
           setSchedules(schedulesResponse.data || []);
         } catch (err) {
           setSchedules([]);
+        }
+
+        try {
+          await loadDocuments(parseInt(id));
+        } catch (err) {
+          setDocuments([]);
         }
       } catch (error) {
         console.error('Failed to fetch child data:', error);
@@ -133,93 +138,18 @@ const ChildDetailPage = () => {
     return null;
   }
 
-  const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
-  const isAccepted = childData.status === 'accepted';
-
   const tabItems: TabItem[] = [
     {
       id: 'information',
       label: texts.profile.children.title[language],
       content: (
-        <VStack align="stretch" spacing={4}>
-          <Box>
-            <Text fontWeight="bold">{texts.childrenTable.firstname[language]}</Text>
-            <Text>{childData.firstname}</Text>
-          </Box>
-          <Box>
-            <Text fontWeight="bold">{texts.childrenTable.surname[language]}</Text>
-            <Text>{childData.surname}</Text>
-          </Box>
-          <Box>
-            <Text fontWeight="bold">{texts.childrenTable.age[language]}</Text>
-            <Text>{age}</Text>
-          </Box>
-          <Box>
-            <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
-            {isAccepted && childData.class_id ? (
-              <Text
-                as="button"
-                color="blue.500"
-                textDecoration="underline"
-                cursor="pointer"
-                _hover={{ color: 'blue.700' }}
-                onClick={() => {
-                  if (childData.class_id) {
-                    navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
-                  }
-                }}
-              >
-                {childData.class_name}
-              </Text>
-            ) : (
-              <Badge colorScheme="yellow" variant="subtle" textTransform="capitalize">
-                {childData.status || 'pending'}
-              </Badge>
-            )}
-          </Box>
-          <Box>
-            <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
-            <Text>{new Date(childData.date_of_birth).toLocaleDateString(language)}</Text>
-          </Box>
-          {childData.notes && (
-            <Box>
-              <Text fontWeight="bold">{texts.childrenTable.notes[language]}</Text>
-              <Text>{childData.notes}</Text>
-            </Box>
-          )}
-          <Box>
-            <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
-            <Text>
-              {childData.parent_firstname} {childData.parent_surname}
-            </Text>
-          </Box>
-          {childData.parent_email && (
-            <Box>
-              <Text fontWeight="bold">{texts.profile.email[language]}</Text>
-              <Text>{childData.parent_email}</Text>
-            </Box>
-          )}
-          {canEdit && (
-            <HStack mt={6} spacing={3}>
-              <Button
-                colorScheme="blue"
-                onClick={() => setIsEditModalOpen(true)}
-                size="md"
-                flex={1}
-              >
-                {texts.profile.edit[language]}
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => setIsDeleteConfirmOpen(true)}
-                size="md"
-                flex={1}
-              >
-                {texts.common.delete[language]}
-              </Button>
-            </HStack>
-          )}
-        </VStack>
+        <InformationTab
+          childData={childData}
+          language={language}
+          canEdit={canEdit}
+          onEditClick={() => setIsEditModalOpen(true)}
+          onDeleteClick={() => setIsDeleteConfirmOpen(true)}
+        />
       ),
     },
     ...(schedules.length > 0
@@ -227,60 +157,25 @@ const ChildDetailPage = () => {
           {
             id: 'schedules',
             label: texts.schedule.title[language],
-            content: (
-              <TableContainer>
-                <Table variant="simple" size="md">
-                  <Thead>
-                    <Tr>
-                      <Th>{texts.schedule.name?.[language] || 'Name'}</Th>
-                      <Th>{texts.schedule.category?.[language] || 'Category'}</Th>
-                      <Th>{texts.schedule.status?.label?.[language] || 'Status'}</Th>
-                      <Th>{texts.schedule.notes[language]}</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {schedules.map((schedule) => (
-                      <Tr key={schedule.id}>
-                        <Td>
-                          <Text fontWeight="medium">{schedule.name}</Text>
-                        </Td>
-                        <Td>
-                          <Text>{schedule.category || '-'}</Text>
-                        </Td>
-                        <Td>
-                          <Badge
-                            colorScheme={
-                              schedule.status === 'done'
-                                ? 'green'
-                                : schedule.status === 'in progress'
-                                  ? 'blue'
-                                  : 'gray'
-                            }
-                            variant="subtle"
-                          >
-                            {schedule.status || '-'}
-                          </Badge>
-                        </Td>
-                        <Td>
-                          <Text
-                            maxW="250px"
-                            overflow="hidden"
-                            textOverflow="ellipsis"
-                            whiteSpace="nowrap"
-                            title={schedule.notes}
-                          >
-                            {schedule.notes || '-'}
-                          </Text>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            ),
+            content: <SchedulesTab schedules={schedules} language={language} />,
           },
         ]
       : []),
+    {
+      id: 'documents',
+      label: texts.document.title[language],
+      content: (
+        <DocumentsTab
+          documents={documents}
+          language={language}
+          canUpload={canUpload}
+          childData={childData}
+          onDocumentsUpdate={async () => {
+            if (id) await loadDocuments(parseInt(id));
+          }}
+        />
+      ),
+    },
   ];
 
   return (

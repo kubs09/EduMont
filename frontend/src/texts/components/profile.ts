@@ -167,8 +167,8 @@ export const profile = {
       en: 'My Children',
     },
     title: {
-      cs: 'Děti',
-      en: 'Children',
+      cs: 'Přehled',
+      en: 'Overview',
     },
     noChildren: {
       cs: 'Zatím nemáte přiřazené žádné děti',

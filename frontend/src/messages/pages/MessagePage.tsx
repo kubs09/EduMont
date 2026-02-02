@@ -133,13 +133,7 @@ const Messages: React.FC = () => {
     <Box p={3}>
       <Grid templateColumns="repeat(12, 1fr)" gap={4}>
         <GridItem colSpan={12}>
-          <Button
-            leftIcon={<EmailIcon />}
-            colorScheme="blue"
-            onClick={() => setComposeOpen(true)}
-            mb={2}
-            mr={2}
-          >
+          <Button leftIcon={<EmailIcon />} onClick={() => setComposeOpen(true)} mb={2} mr={2}>
             {t.compose[language]}
           </Button>
           <Button leftIcon={<RepeatIcon />} onClick={fetchMessages} isLoading={isRefreshing} mb={2}>
