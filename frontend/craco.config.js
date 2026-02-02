@@ -21,11 +21,9 @@ module.exports = {
 
       const isProd = env === 'production';
 
-      // Force disable fast refresh in production
       if (isProd) {
         process.env.FAST_REFRESH = 'false';
 
-        // Remove the ReactRefreshWebpackPlugin
         webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
           const name = plugin.constructor?.name || '';
           return (
@@ -35,7 +33,6 @@ module.exports = {
           );
         });
 
-        // Set FAST_REFRESH to false
         webpackConfig.plugins.forEach((plugin) => {
           if (plugin.constructor?.name === 'DefinePlugin') {
             plugin.definitions = plugin.definitions || {};
@@ -51,7 +48,6 @@ module.exports = {
             if (!plugin) return false;
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
             const nameStr = name ? name.toString() : '';
-            // In production, completely remove react-refresh plugins
             if (isProd && (nameStr.includes('react-refresh') || nameStr.includes('ReactRefresh'))) {
               return false;
             }
@@ -109,12 +105,21 @@ module.exports = {
       return webpackConfig;
     },
   },
+  devServer: (devServerConfig) => {
+    delete devServerConfig.onBeforeSetupMiddleware;
+    delete devServerConfig.onAfterSetupMiddleware;
+
+    devServerConfig.setupMiddlewares = (middlewares) => {
+      return middlewares;
+    };
+
+    return devServerConfig;
+  },
   babel: {
     loaderOptions: (babelLoaderOptions, { env = process.env.NODE_ENV } = {}) => {
       const isProd = env === 'production';
 
       if (isProd) {
-        // In production, completely remove react-refresh plugins
         if (babelLoaderOptions.plugins && Array.isArray(babelLoaderOptions.plugins)) {
           babelLoaderOptions.plugins = babelLoaderOptions.plugins.filter((plugin) => {
             const name = Array.isArray(plugin) ? plugin[0] : plugin;
