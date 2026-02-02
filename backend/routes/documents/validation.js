@@ -1,5 +1,6 @@
 /* eslint-disable */
 const pool = require('../../config/database');
+const { executeQuery } = require('../../utils/dbQuery');
 
 const validateDocument = (data) => {
   const errors = [];
@@ -110,12 +111,17 @@ const canEditDocumentByIds = async (userId, userRole, childId, classId) => {
 const ensureChildInClass = async (childId, classId) => {
   if (!childId || !classId) return true;
 
-  const result = await pool.query(
-    'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
-    [childId, classId]
-  );
-
-  return result.rows.length > 0;
+  try {
+    const result = await executeQuery(
+      'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
+      [childId, classId]
+    );
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error('Error checking child in class:', error);
+    // On error, assume not in class to prevent orphaned documents
+    return false;
+  }
 };
 
 module.exports = {

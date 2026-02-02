@@ -32,7 +32,6 @@ const getSSLConfig = () => {
 let poolConfig;
 
 if (useSupabase) {
-  // Use Supabase PostgreSQL connection
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
@@ -48,16 +47,15 @@ if (useSupabase) {
     );
   }
 
-  // Extract connection details from Supabase URL (postgresql://user:password@host:port/database)
-  // Or use a direct connection string if provided
   poolConfig = process.env.SUPABASE_DATABASE_URL
     ? {
         connectionString: process.env.SUPABASE_DATABASE_URL,
         ssl: { rejectUnauthorized: false },
-        connectionTimeoutMillis: 10000,
-        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 5000,
         max: 1,
-        statement_timeout: 30000,
+        min: 0,
+        statement_timeout: 15000,
       }
     : {
         user: process.env.SUPABASE_USER || 'postgres',
@@ -66,15 +64,15 @@ if (useSupabase) {
         password: supabaseKey,
         port: 5432,
         ssl: { rejectUnauthorized: false },
-        connectionTimeoutMillis: 10000,
-        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+        idleTimeoutMillis: 5000,
         max: 1,
-        statement_timeout: 30000,
+        min: 0,
+        statement_timeout: 15000,
       };
 
   console.log('📡 Using Supabase PostgreSQL connection');
 } else {
-  // Use local PostgreSQL connection as fallback
   if (!process.env.POSTGRES_HOST) {
     console.warn('⚠️ No POSTGRES_HOST configured - using localhost as default');
   }
