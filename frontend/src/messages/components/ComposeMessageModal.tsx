@@ -1,5 +1,4 @@
 import React from 'react';
-import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -24,6 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
+import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
 
 interface User {
   id: number;
@@ -41,17 +41,10 @@ interface Props {
   users: User[];
 }
 
-const messageSchema = z.object({
-  to_user_ids: z.array(z.number()).min(1, 'At least one recipient is required'),
-  subject: z.string().min(1, 'Subject is required'),
-  content: z.string().min(1, 'Message content is required'),
-});
-
-type MessageFormData = z.infer<typeof messageSchema>;
-
 export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, users }) => {
   const { language } = useLanguage();
   const t = texts.messages;
+  const messageSchema = createMessageSchema(language as 'en' | 'cs');
 
   const {
     control,
@@ -78,7 +71,6 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
     const noClassUsers = roleUsers.filter((u) => !u.class_ids || u.class_ids.length === 0);
     const classUsers = roleUsers.filter((u) => u.class_ids && u.class_ids.length > 0);
 
-    // Group users by class
     const classMaps = new Map<string, User[]>();
     classUsers.forEach((user) => {
       const classes = user.class_names?.split(', ') || [];

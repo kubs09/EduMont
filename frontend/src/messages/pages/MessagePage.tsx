@@ -27,7 +27,7 @@ import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
 import { Message } from '@frontend/types/message';
 
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 60 * 1000;
 
 type SortDirection = 'asc' | 'desc';
 
