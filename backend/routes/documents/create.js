@@ -3,12 +3,14 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
+const { executeQuery } = require('../../utils/dbQuery');
 const { validateDocument, canEditDocumentByIds, ensureChildInClass } = require('./validation');
 
 // Create a new document
 router.post('/', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
   try {
+    // Use pool.query directly instead of pool.connect for better serverless compatibility
+    // This avoids connection pool exhaustion issues on Vercel
     const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
       req.body;
 
@@ -27,9 +29,8 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Child is not assigned to this class' });
     }
 
-    await client.query('BEGIN');
-
-    const result = await client.query(
+    // Use executeQuery for better serverless retry handling
+    const result = await executeQuery(
       `
       INSERT INTO documents (
         title,
@@ -59,14 +60,14 @@ router.post('/', authenticateToken, async (req, res) => {
       ]
     );
 
-    await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
     console.error('Error creating document:', err);
-    res.status(500).json({ error: 'Failed to create document' });
-  } finally {
-    client.release();
+    const statusCode = err.code === 'ECONNREFUSED' || err.message.includes('timeout') ? 503 : 500;
+    res.status(statusCode).json({
+      error: 'Failed to create document',
+      details: err.message,
+    });
   }
 });
 
