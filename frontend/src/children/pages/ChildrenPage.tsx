@@ -24,12 +24,14 @@ import { ROUTES } from '@frontend/shared/route';
 import AddChildModal from '../components/AddChildModal';
 import React from 'react';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
+import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 
 const ChildrenPage = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
   const toast = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -37,11 +39,13 @@ const ChildrenPage = () => {
   const userRole = localStorage.getItem('userRole');
   const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
+  const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
   const fetchChildren = useCallback(async () => {
     try {
       const data = await getChildren();
       setChildren(data);
+      setCurrentPage(1);
     } catch (error) {
       console.error('Failed to fetch children:', error);
       toast({
@@ -89,6 +93,15 @@ const ChildrenPage = () => {
     navigate(`${ROUTES.CHILDREN}/${childId}`);
   };
 
+  const totalPages = Math.ceil(children.length / PAGE_SIZE);
+  const paginatedChildren = children.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   return (
     <Box p={4}>
       <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
@@ -125,7 +138,7 @@ const ChildrenPage = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {children.map((child, index) => (
+              {paginatedChildren.map((child, index) => (
                 <Tr
                   key={child.id}
                   cursor="pointer"
@@ -133,11 +146,15 @@ const ChildrenPage = () => {
                   borderLeftWidth={{ base: '4px', md: '0' }}
                   borderLeftColor={{
                     base:
-                      index % 3 === 0 ? 'blue.400' : index % 3 === 1 ? 'purple.400' : 'teal.400',
+                      ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
+                        ? 'blue.400'
+                        : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
+                          ? 'purple.400'
+                          : 'teal.400',
                     md: 'transparent',
                   }}
                   bg={{
-                    base: index % 2 === 0 ? 'gray.50' : 'white',
+                    base: ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0 ? 'gray.50' : 'white',
                     md: 'transparent',
                   }}
                   _hover={{
@@ -171,6 +188,13 @@ const ChildrenPage = () => {
               ))}
             </Tbody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            pageSize={PAGE_SIZE}
+            totalCount={children.length}
+          />
         </Box>
       )}
 

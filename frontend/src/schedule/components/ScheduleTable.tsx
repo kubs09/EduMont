@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   Thead,
@@ -17,6 +17,7 @@ import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { Schedule } from '@frontend/types/schedule';
+import { TablePagination } from '@frontend/shared/components';
 
 interface ScheduleTableProps {
   schedules: Schedule[];
@@ -36,6 +37,20 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   showClass = true,
 }) => {
   const { language } = useLanguage();
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 4;
+
+  const totalPages = Math.ceil(schedules.length / PAGE_SIZE);
+  const paginatedSchedules = schedules.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const getStatusColor = (status: string): string => {
     switch (status) {
@@ -86,7 +101,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           </Tr>
         </Thead>
         <Tbody>
-          {schedules.map((schedule) => (
+          {paginatedSchedules.map((schedule) => (
             <Tr key={schedule.id}>
               <Td>
                 <Text fontWeight="medium">{schedule.name}</Text>
@@ -154,6 +169,13 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           ))}
         </Tbody>
       </Table>
+      <TablePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={PAGE_SIZE}
+        totalCount={schedules.length}
+      />
     </TableContainer>
   );
 };

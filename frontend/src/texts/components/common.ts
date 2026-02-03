@@ -31,6 +31,32 @@ export const common = {
       en: 'Our Students',
     },
   },
+  pagination: {
+    page: {
+      cs: 'Stránka',
+      en: 'Page',
+    },
+    previous: {
+      cs: 'Předchozí',
+      en: 'Previous',
+    },
+    next: {
+      cs: 'Další',
+      en: 'Next',
+    },
+    showing: {
+      cs: 'Zobrazuji',
+      en: 'Showing',
+    },
+    to: {
+      cs: 'do',
+      en: 'to',
+    },
+    ofPage: {
+      cs: 'z',
+      en: 'of',
+    },
+  },
   childrenTable: {
     firstname: {
       cs: 'Jméno',
