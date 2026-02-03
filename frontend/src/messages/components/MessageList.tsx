@@ -50,7 +50,7 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <VStack spacing={0}>
-      <VStack w="full" p={2} spacing={2}>
+      <VStack w="full" p={2}>
         <InputGroup>
           <InputLeftElement pointerEvents="none">
             <Search2Icon color="gray.500" />
@@ -58,6 +58,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <Input
             placeholder={t.search[language]}
             value={searchQuery}
+            variant="filled"
             onChange={(e) => onSearchChange(e.target.value)}
             size="sm"
           />

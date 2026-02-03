@@ -100,6 +100,7 @@ const ChangePasswordPage = () => {
                 <Input
                   type="password"
                   name="currentPassword"
+                  variant="filled"
                   value={formData.currentPassword}
                   onChange={handleChange}
                 />
@@ -110,6 +111,7 @@ const ChangePasswordPage = () => {
                 <Input
                   type="password"
                   name="newPassword"
+                  variant="filled"
                   value={formData.newPassword}
                   onChange={handleChange}
                 />
@@ -120,6 +122,7 @@ const ChangePasswordPage = () => {
                 <Input
                   type="password"
                   name="confirmPassword"
+                  variant="filled"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />

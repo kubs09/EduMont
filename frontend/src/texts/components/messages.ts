@@ -87,6 +87,28 @@ export const messages = {
     cs: 'Žádné zprávy nenalezeny',
     en: 'No messages found',
   },
+  validation: {
+    toUserIds: {
+      cs: 'Je vyžadován alespoň jeden příjemce',
+      en: 'At least one recipient is required',
+    },
+    subject: {
+      cs: 'Předmět je povinný',
+      en: 'Subject is required',
+    },
+    subjectMaxLength: {
+      cs: 'Předmět musí být kratší než 255 znaků',
+      en: 'Subject must be less than 255 characters',
+    },
+    content: {
+      cs: 'Obsah zprávy je povinný',
+      en: 'Message content is required',
+    },
+    contentMaxLength: {
+      cs: 'Obsah zprávy musí být kratší než 5000 znaků',
+      en: 'Message content must be less than 5000 characters',
+    },
+  },
   error: {
     deleteError: {
       cs: 'Nepodařilo se smazat zprávu',

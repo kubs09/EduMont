@@ -51,16 +51,16 @@ export const useAppShadows = () => {
 };
 
 // Header and Menu colors
-export const useHeaderColors = () => {
+export const useAtomColors = () => {
   return {
-    bg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    bg: useColorModeValue('brand.light.atom', 'brand.dark.atom'),
     color: useColorModeValue('white', 'brand.dark.text.primary'),
   };
 };
 
 export const useMenuColors = () => {
   return {
-    bg: useColorModeValue('brand.primary.900', 'brand.dark.surface'),
+    bg: useColorModeValue('brand.primary.900', 'brand.dark.bg'),
     hoverBg: useColorModeValue('brand.primary.800', 'brand.dark.surface'),
     borderColor: useColorModeValue('whiteAlpha.300', 'brand.dark.border'),
   };

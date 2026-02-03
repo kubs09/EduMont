@@ -8,19 +8,19 @@ const config: ThemeConfig = {
 const colors = {
   brand: {
     primary: {
-      900: '#557A95', // Calm blue
+      900: '#2c83c1', // Calm blue
       800: '#7A8B99',
-      700: '#89A1B5',
-      600: '#9BB4C8',
+      700: '#0e3471',
+      600: '#020b71',
       500: '#B4C7D9',
       400: '#CCDAEA',
       300: '#E5EDFB',
     },
     secondary: {
-      900: '#BE8A60', // Warm earth tone
-      800: '#C99B76',
-      700: '#D4AC8B',
-      600: '#DFBDA1',
+      900: '#a3b8f1', // Warm earth tone
+      800: '#accbeb',
+      700: '#5f8595',
+      600: '#3e6786',
       500: '#EACEB6',
       400: '#F5DFCB',
       300: '#FAF0E0',
@@ -36,8 +36,9 @@ const colors = {
     },
     dark: {
       bg: '#1A202C',
-      surface: '#2D3748',
+      surface: '#365282',
       border: '#4A5568',
+      atom: '#01253e',
       text: {
         primary: '#F7FAFC',
         secondary: '#E2E8F0',
@@ -45,9 +46,10 @@ const colors = {
       },
     },
     light: {
-      bg: '#FAF9F6',
-      surface: '#FFFFFF',
+      bg: '#e1e3e5',
+      surface: '#c3cfe9',
       border: '#E2E8F0',
+      atom: '#538eb9',
       text: {
         primary: '#2D3748',
         secondary: '#4A5568',

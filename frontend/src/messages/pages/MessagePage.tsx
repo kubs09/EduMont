@@ -27,7 +27,7 @@ import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
 import { Message } from '@frontend/types/message';
 
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 60 * 1000;
 
 type SortDirection = 'asc' | 'desc';
 
@@ -133,10 +133,22 @@ const Messages: React.FC = () => {
     <Box p={3}>
       <Grid templateColumns="repeat(12, 1fr)" gap={4}>
         <GridItem colSpan={12}>
-          <Button leftIcon={<EmailIcon />} onClick={() => setComposeOpen(true)} mb={2} mr={2}>
+          <Button
+            variant="brand"
+            leftIcon={<EmailIcon />}
+            onClick={() => setComposeOpen(true)}
+            mb={2}
+            mr={2}
+          >
             {t.compose[language]}
           </Button>
-          <Button leftIcon={<RepeatIcon />} onClick={fetchMessages} isLoading={isRefreshing} mb={2}>
+          <Button
+            variant="secondary"
+            leftIcon={<RepeatIcon />}
+            onClick={fetchMessages}
+            isLoading={isRefreshing}
+            mb={2}
+          >
             {texts.common.refresh[language]}
           </Button>
         </GridItem>

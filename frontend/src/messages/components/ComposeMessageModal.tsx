@@ -1,5 +1,4 @@
 import React from 'react';
-import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -24,6 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
+import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
 
 interface User {
   id: number;
@@ -41,17 +41,10 @@ interface Props {
   users: User[];
 }
 
-const messageSchema = z.object({
-  to_user_ids: z.array(z.number()).min(1, 'At least one recipient is required'),
-  subject: z.string().min(1, 'Subject is required'),
-  content: z.string().min(1, 'Message content is required'),
-});
-
-type MessageFormData = z.infer<typeof messageSchema>;
-
 export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, users }) => {
   const { language } = useLanguage();
   const t = texts.messages;
+  const messageSchema = createMessageSchema(language as 'en' | 'cs');
 
   const {
     control,
@@ -78,7 +71,6 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
     const noClassUsers = roleUsers.filter((u) => !u.class_ids || u.class_ids.length === 0);
     const classUsers = roleUsers.filter((u) => u.class_ids && u.class_ids.length > 0);
 
-    // Group users by class
     const classMaps = new Map<string, User[]>();
     classUsers.forEach((user) => {
       const classes = user.class_names?.split(', ') || [];
@@ -129,7 +121,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
 
                           return (
                             <Box key={role} mb={4}>
-                              <Text fontWeight="bold" mb={2} color="gray.600">
+                              <Text fontWeight="bold" mb={2}>
                                 {t.roleGroups[role][language]}
                               </Text>
 
@@ -180,7 +172,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                 <Controller
                   name="subject"
                   control={control}
-                  render={({ field }) => <Input {...field} />}
+                  render={({ field }) => <Input variant="filled" {...field} />}
                 />
                 <FormErrorMessage>{errors.subject?.message}</FormErrorMessage>
               </FormControl>
@@ -190,17 +182,17 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                 <Controller
                   name="content"
                   control={control}
-                  render={({ field }) => <Textarea rows={4} {...field} />}
+                  render={({ field }) => <Textarea variant="filled" rows={4} {...field} />}
                 />
                 <FormErrorMessage>{errors.content?.message}</FormErrorMessage>
               </FormControl>
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button mr={3} onClick={onClose}>
+            <Button mr={3} onClick={onClose} variant="secondary">
               {texts.classes.cancel[language]}
             </Button>
-            <Button type="submit" colorScheme="blue" isLoading={isSubmitting}>
+            <Button type="submit" variant="brand" isLoading={isSubmitting}>
               {t.send[language]}
             </Button>
           </ModalFooter>

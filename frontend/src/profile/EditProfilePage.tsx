@@ -56,10 +56,8 @@ const EditProfilePage = () => {
         throw new Error('No user ID found');
       }
 
-      // Add this: actually call the updateUser function
       await updateUser(userId, formData);
 
-      // Only show success toast after successful update
       toast({
         title: texts.profile.success[language],
         status: 'success',
@@ -69,7 +67,6 @@ const EditProfilePage = () => {
 
       navigate(ROUTES.PROFILE);
     } catch (error) {
-      console.error('Update error:', error);
       if (error.errors) {
         const validationErrors: Record<string, string> = {};
         error.errors.forEach((err: { path: string[]; message: string }) => {
@@ -96,22 +93,43 @@ const EditProfilePage = () => {
           <Stack spacing={4}>
             <FormControl isRequired isInvalid={!!errors.firstname}>
               <FormLabel>{texts.profile.firstName[language]}</FormLabel>
-              <Input name="firstname" value={formData.firstname} onChange={handleChange} />
+              <Input
+                variant="filled"
+                name="firstname"
+                value={formData.firstname}
+                onChange={handleChange}
+              />
               <FormErrorMessage>{errors.firstname}</FormErrorMessage>
             </FormControl>
             <FormControl isRequired isInvalid={!!errors.surname}>
               <FormLabel>{texts.profile.lastName[language]}</FormLabel>
-              <Input name="surname" value={formData.surname} onChange={handleChange} />
+              <Input
+                variant="filled"
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+              />
               <FormErrorMessage>{errors.surname}</FormErrorMessage>
             </FormControl>
             <FormControl isRequired isInvalid={!!errors.email}>
               <FormLabel>{texts.profile.email[language]}</FormLabel>
-              <Input name="email" type="email" value={formData.email} onChange={handleChange} />
+              <Input
+                variant="filled"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
               <FormErrorMessage>{errors.email}</FormErrorMessage>
             </FormControl>
             <FormControl isInvalid={!!errors.phone}>
               <FormLabel>{texts.profile.phone[language]}</FormLabel>
-              <Input name="phone" value={formData.phone || ''} onChange={handleChange} />
+              <Input
+                variant="filled"
+                name="phone"
+                value={formData.phone || ''}
+                onChange={handleChange}
+              />
               <FormErrorMessage>{errors.phone}</FormErrorMessage>
             </FormControl>
             <FormControl>
@@ -121,10 +139,10 @@ const EditProfilePage = () => {
               </Text>
             </FormControl>
             <ButtonGroup spacing={4}>
-              <Button colorScheme="blue" onClick={handleSubmit}>
+              <Button variant="brand" onClick={handleSubmit}>
                 {texts.profile.save[language]}
               </Button>
-              <Button onClick={() => navigate(ROUTES.PROFILE)}>
+              <Button variant="secondary" onClick={() => navigate(ROUTES.PROFILE)}>
                 {texts.profile.cancel[language]}
               </Button>
             </ButtonGroup>
