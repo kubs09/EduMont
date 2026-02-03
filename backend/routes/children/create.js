@@ -59,10 +59,10 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     // Assign child to the class
-    await client.query(
-      'INSERT INTO class_children (class_id, child_id, confirmed) VALUES ($1, $2, false)',
-      [classResult.rows[0].id, childResult.rows[0].id]
-    );
+    await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
+      classResult.rows[0].id,
+      childResult.rows[0].id,
+    ]);
 
     await client.query('COMMIT');
     res.status(201).json(childResult.rows[0]);

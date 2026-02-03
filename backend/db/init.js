@@ -24,7 +24,7 @@ const initDatabase = async () => {
     CREATE TABLE IF NOT EXISTS class_children (
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
       child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
-      confirmed BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (class_id, child_id)
     );
   `;

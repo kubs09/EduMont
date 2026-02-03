@@ -22,7 +22,6 @@ const InformationTab: React.FC<InformationTabProps> = ({
 }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
-  const isAccepted = childData.status === 'accepted';
 
   return (
     <VStack align="stretch" spacing={4}>
@@ -40,7 +39,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
       </Box>
       <Box>
         <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
-        {isAccepted && childData.class_id ? (
+        {childData.class_id ? (
           <Text
             as="button"
             color="blue.500"
@@ -56,9 +55,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             {childData.class_name}
           </Text>
         ) : (
-          <Badge colorScheme="yellow" variant="subtle" textTransform="capitalize">
-            {childData.status || 'pending'}
-          </Badge>
+          <Text>Not assigned to a class</Text>
         )}
       </Box>
       <Box>

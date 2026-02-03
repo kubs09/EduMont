@@ -121,7 +121,6 @@ const ChildrenPage = () => {
                 <Th display={{ base: 'none', xl: 'table-cell' }}>
                   {texts.childrenTable.notes[language]}
                 </Th>
-                <Th>{texts.profile.children.viewDashboard[language]}</Th>
                 <Th width="4"></Th>
               </Tr>
             </Thead>
@@ -153,19 +152,6 @@ const ChildrenPage = () => {
                     {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
                   </Td>
                   <Td display={{ base: 'none', xl: 'table-cell' }}>{child.notes}</Td>
-                  <Td>
-                    <Badge
-                      colorScheme={
-                        child.status === 'accepted'
-                          ? 'green'
-                          : child.status === 'denied'
-                            ? 'red'
-                            : 'yellow'
-                      }
-                    >
-                      {child.status || 'pending'}
-                    </Badge>
-                  </Td>
                   <Td onClick={(e) => e.stopPropagation()}>
                     {isParent && (
                       <IconButton

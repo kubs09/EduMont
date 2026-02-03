@@ -29,7 +29,6 @@ interface Child {
   id: number;
   firstname: string;
   surname: string;
-  status?: 'accepted' | 'denied' | 'pending';
 }
 
 interface Class {
@@ -65,8 +64,7 @@ const ClassesPage = () => {
     fetchData();
   }, [toast]);
 
-  const getAcceptedChildren = (cls: Class) =>
-    (cls.children || []).filter((child) => child.status === 'accepted');
+  const getAcceptedChildren = (cls: Class) => cls.children || [];
 
   const handleViewDetail = (classId: number) => {
     navigate(`/classes/${classId}`);

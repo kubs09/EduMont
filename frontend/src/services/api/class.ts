@@ -95,21 +95,6 @@ export const autoAssignClasses = async (): Promise<void> => {
   }
 };
 
-export const confirmClassChild = async (classId: number, childId: number): Promise<Class> => {
-  try {
-    const response = await api.post(`/api/classes/${classId}/children/${childId}/confirm`);
-    return response.data;
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      throw new ApiError(
-        error.response?.data?.error || 'Failed to confirm child',
-        error.response?.status
-      );
-    }
-    throw error;
-  }
-};
-
 export interface NextActivity {
   id: number;
   child_id: number;
