@@ -10,7 +10,6 @@ import {
   Td,
   Text,
   useToast,
-  Badge,
   IconButton,
   useDisclosure,
   Button,
@@ -37,6 +36,7 @@ const ChildrenPage = () => {
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
   const userRole = localStorage.getItem('userRole');
   const isParent = userRole === 'parent';
+  const isAdmin = userRole === 'admin';
 
   const fetchChildren = useCallback(async () => {
     try {
@@ -97,7 +97,7 @@ const ChildrenPage = () => {
         ) : (
           <Heading>{texts.profile.children.title[language]}</Heading>
         )}
-        {isParent && (
+        {isAdmin && (
           <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
             {texts.profile.children.addChild.title[language]}
           </Button>
@@ -153,7 +153,7 @@ const ChildrenPage = () => {
                   </Td>
                   <Td display={{ base: 'none', xl: 'table-cell' }}>{child.notes}</Td>
                   <Td onClick={(e) => e.stopPropagation()}>
-                    {isParent && (
+                    {isAdmin && (
                       <IconButton
                         aria-label="Delete child"
                         icon={<DeleteIcon />}
@@ -165,7 +165,7 @@ const ChildrenPage = () => {
                         }}
                       />
                     )}
-                    {!isParent && <ChevronRightIcon boxSize={6} color="gray.500" />}
+                    {!isAdmin && <ChevronRightIcon boxSize={6} color="gray.500" />}
                   </Td>
                 </Tr>
               ))}
@@ -174,7 +174,7 @@ const ChildrenPage = () => {
         </Box>
       )}
 
-      {isParent && (
+      {isAdmin && (
         <AddChildModal
           isOpen={isAddChildModalOpen}
           onClose={() => setIsAddChildModalOpen(false)}
@@ -182,7 +182,7 @@ const ChildrenPage = () => {
         />
       )}
 
-      {isParent && (
+      {isAdmin && (
         <ConfirmDialog
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}

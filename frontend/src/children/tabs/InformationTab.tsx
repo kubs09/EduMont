@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Text, VStack, HStack, Badge } from '@chakra-ui/react';
+import { Box, Button, Text, VStack, HStack } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Child } from '@frontend/types/child';
