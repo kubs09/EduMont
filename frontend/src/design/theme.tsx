@@ -36,8 +36,9 @@ const colors = {
     },
     dark: {
       bg: '#1A202C',
-      surface: '#2D3748',
+      surface: '#365282',
       border: '#4A5568',
+      atom: '#01253e',
       text: {
         primary: '#F7FAFC',
         secondary: '#E2E8F0',
@@ -45,9 +46,10 @@ const colors = {
       },
     },
     light: {
-      bg: '#f6f8fa',
-      surface: '#6394f4',
+      bg: '#e1e3e5',
+      surface: '#c3cfe9',
       border: '#E2E8F0',
+      atom: '#538eb9',
       text: {
         primary: '#2D3748',
         secondary: '#4A5568',

@@ -1,9 +1,9 @@
-import { Box, Flex, Hide, Show, Text, useColorModeValue } from '@chakra-ui/react';
+import { Box, Flex, Hide, Show, Text } from '@chakra-ui/react';
 import ColorModeToggle from '../color-mode-toggle';
+import { useAtomColors } from '@frontend/design/colorModeUtils';
 
 const Footer = () => {
-  const footerBg = useColorModeValue('brand.primary.900', 'brand.dark.surface');
-  const footerColor = useColorModeValue('white', 'brand.dark.text.primary');
+  const { bg: footerBg, color: footerColor } = useAtomColors();
 
   return (
     <Flex

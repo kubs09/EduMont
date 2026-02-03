@@ -20,14 +20,14 @@ import { ROUTES } from '@frontend/shared/route';
 import icon from './icon.png';
 import { useState, useEffect } from 'react';
 import { getMessages } from '@frontend/services/api';
-import { useHeaderColors, useMenuColors } from '@frontend/design/colorModeUtils';
+import { useAtomColors, useMenuColors } from '@frontend/design/colorModeUtils';
 
 const POLL_INTERVAL = 5000;
 
 const Header = () => {
   const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
-  const { bg: headerBg, color: headerColor } = useHeaderColors();
+  const { bg: headerBg, color: headerColor } = useAtomColors();
   const { bg: menuBg, hoverBg: menuHoverBg, borderColor: menuBorderColor } = useMenuColors();
   const isAuthenticated = !!localStorage.getItem('token');
   const userName = localStorage.getItem('userName') || 'User';
@@ -201,7 +201,7 @@ const Header = () => {
             </MenuList>
           </Menu>
         ) : (
-          <Button colorScheme="whiteAlpha" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
+          <Button variant="brand" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
             {texts.auth.signIn.loginButton[language]}
           </Button>
         )}

@@ -12,6 +12,7 @@ import {
   Switch,
   FormControl,
   FormLabel,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -26,6 +27,7 @@ const ProfilePage = () => {
   const userRole = localStorage.getItem('userRole') || '';
   const [firstName, lastName] = userName.split(' ');
   const toast = useToast();
+  const subtleBg = useColorModeValue('gray.50', 'whiteAlpha.50');
   const [messageNotifications, setMessageNotifications] = useState<boolean>(() => {
     const userSettings = localStorage.getItem('userSettings');
     if (userSettings) {
@@ -75,23 +77,23 @@ const ProfilePage = () => {
       <Card mb={6}>
         <CardBody>
           <Stack spacing={4}>
-            <Box>
+            <Box bg={subtleBg} p={3} borderRadius="md">
               <Text fontWeight="bold">{texts.profile.firstName[language]}</Text>
               <Text>{firstName}</Text>
             </Box>
-            <Box>
+            <Box bg={subtleBg} p={3} borderRadius="md">
               <Text fontWeight="bold">{texts.profile.lastName[language]}</Text>
               <Text>{lastName}</Text>
             </Box>
-            <Box>
+            <Box bg={subtleBg} p={3} borderRadius="md">
               <Text fontWeight="bold">{texts.profile.email[language]}</Text>
               <Text>{userEmail}</Text>
             </Box>
-            <Box>
+            <Box bg={subtleBg} p={3} borderRadius="md">
               <Text fontWeight="bold">{texts.profile.phone[language]}</Text>
               <Text>{userPhone || '-'}</Text>
             </Box>
-            <Box>
+            <Box bg={subtleBg} p={3} borderRadius="md">
               <Text fontWeight="bold">{texts.profile.role[language]}</Text>
               <Text>
                 {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}
