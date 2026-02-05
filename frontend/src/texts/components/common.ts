@@ -78,6 +78,10 @@ export const common = {
       cs: 'Rodič',
       en: 'Parent',
     },
+    parentEmail: {
+      cs: 'Email rodiče',
+      en: 'Parent Email',
+    },
     contact: {
       cs: 'Kontakt na rodiče',
       en: 'Parent Contact',

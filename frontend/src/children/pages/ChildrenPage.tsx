@@ -131,10 +131,19 @@ const ChildrenPage = () => {
                 <Th display={{ base: 'none', lg: 'table-cell' }}>
                   {texts.childrenTable.age[language]}
                 </Th>
+                {!isParent && (
+                  <>
+                    <Th display={{ base: 'none', xl: 'table-cell' }}>
+                      {texts.childrenTable.parent[language]}
+                    </Th>
+                    <Th display={{ base: 'none', xl: 'table-cell' }}>
+                      {texts.childrenTable.parentEmail[language]}
+                    </Th>
+                  </>
+                )}
                 <Th display={{ base: 'none', xl: 'table-cell' }}>
-                  {texts.childrenTable.notes[language]}
+                  {texts.common.actions[language]}
                 </Th>
-                <Th width="4"></Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -168,7 +177,14 @@ const ChildrenPage = () => {
                   <Td display={{ base: 'none', lg: 'table-cell' }}>
                     {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
                   </Td>
-                  <Td display={{ base: 'none', xl: 'table-cell' }}>{child.notes}</Td>
+                  {!isParent && (
+                    <>
+                      <Td display={{ base: 'none', xl: 'table-cell' }}>
+                        {child.parent_firstname} {child.parent_surname}
+                      </Td>
+                      <Td display={{ base: 'none', xl: 'table-cell' }}>{child.parent_email}</Td>
+                    </>
+                  )}
                   <Td onClick={(e) => e.stopPropagation()}>
                     {isAdmin && (
                       <IconButton

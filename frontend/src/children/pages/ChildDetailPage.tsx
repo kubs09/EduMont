@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card, CardBody, useToast } from '@chakra-ui/react';
-import { ChevronLeftIcon } from '@chakra-ui/icons';
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Flex,
+  Heading,
+  HStack,
+  IconButton,
+  useToast,
+} from '@chakra-ui/react';
+import { ChevronLeftIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -66,7 +76,6 @@ const ChildDetailPage = () => {
           setDocuments([]);
         }
       } catch (error) {
-        console.error('Failed to fetch child data:', error);
         toast({
           title: texts.profile.error[language],
           description: 'Failed to load child data',
@@ -99,7 +108,6 @@ const ChildDetailPage = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Failed to update child:', error);
       toast({
         title: texts.profile.error[language],
         description: 'Failed to update child',
@@ -179,18 +187,65 @@ const ChildDetailPage = () => {
   ];
 
   return (
-    <Box p={{ base: 2, md: 4 }}>
-      <Button
-        leftIcon={<ChevronLeftIcon />}
-        mb={4}
-        onClick={() => navigate(ROUTES.CHILDREN)}
-        size="md"
-      >
-        {texts.profile.children.backButton[language]}
-      </Button>
-
+    <Box p={{ base: 2, md: 4 }} pb={{ base: 20, md: 24 }}>
       <Card>
         <CardBody>
+          <Flex align="center" mb={4} wrap="wrap" gap={2}>
+            <Box display={{ base: 'block', md: 'none' }} order={{ base: 1, md: 1 }}>
+              <IconButton
+                aria-label={texts.profile.children.backButton[language]}
+                icon={<ChevronLeftIcon />}
+                size="sm"
+                onClick={() => navigate(ROUTES.CHILDREN)}
+              />
+            </Box>
+            <Box display={{ base: 'none', md: 'block' }}>
+              <Button
+                leftIcon={<ChevronLeftIcon />}
+                onClick={() => navigate(ROUTES.CHILDREN)}
+                size="md"
+                px={4}
+                minW="auto"
+              >
+                {texts.profile.children.backButton[language]}
+              </Button>
+            </Box>
+            <Box flex={{ base: '0 0 auto', md: '1' }} display={{ base: 'none', md: 'block' }} />
+            <Heading
+              size="lg"
+              textAlign="center"
+              flex={{ base: '1 1 100%', md: '0 1 auto' }}
+              order={{ base: 3, md: 2 }}
+            >
+              {`${childData.firstname} ${childData.surname}`}
+            </Heading>
+            <Box
+              flex={{ base: '1 1 auto', md: '1' }}
+              display="flex"
+              justifyContent="flex-end"
+              ml={{ base: 0, md: 0 }}
+              order={{ base: 2, md: 3 }}
+            >
+              {canEdit && (
+                <HStack spacing={2}>
+                  <IconButton
+                    aria-label={texts.profile.edit[language]}
+                    icon={<EditIcon />}
+                    variant="brand"
+                    size={{ base: 'sm', md: 'md' }}
+                    onClick={() => setIsEditModalOpen(true)}
+                  />
+                  <IconButton
+                    aria-label={texts.common.delete[language]}
+                    icon={<DeleteIcon />}
+                    variant="delete"
+                    size={{ base: 'sm', md: 'md' }}
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                  />
+                </HStack>
+              )}
+            </Box>
+          </Flex>
           <Tabs tabs={tabItems} variant="line" colorScheme="blue" />
         </CardBody>
       </Card>
