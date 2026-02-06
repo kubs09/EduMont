@@ -17,8 +17,8 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
     await client.query('BEGIN');
 
     await client.query(
-      'UPDATE class_children SET confirmed = TRUE, status = $3 WHERE class_id = $1 AND child_id = $2',
-      [req.params.classId, req.params.childId, 'accepted']
+      'UPDATE class_children SET confirmed = TRUE WHERE class_id = $1 AND child_id = $2',
+      [req.params.classId, req.params.childId]
     );
 
     // Fetch updated class data
@@ -46,7 +46,6 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
             'parent_email', p.email,
             'parent_contact', p.phone,
             'confirmed', cc.confirmed,
-            'status', COALESCE(cc.status, 'pending'),
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
           '[]'::jsonb
@@ -85,8 +84,8 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
     await client.query('BEGIN');
 
     await client.query(
-      'UPDATE class_children SET confirmed = FALSE, status = $3 WHERE class_id = $1 AND child_id = $2',
-      [req.params.classId, req.params.childId, 'denied']
+      'UPDATE class_children SET confirmed = FALSE WHERE class_id = $1 AND child_id = $2',
+      [req.params.classId, req.params.childId]
     );
 
     // Fetch updated class data with all children and their confirmation status
@@ -114,11 +113,6 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
             'parent_email', p.email,
             'parent_contact', p.phone,
             'confirmed', COALESCE(cc.confirmed, false),
-            'status', CASE 
-              WHEN cc.status = 'denied' THEN 'denied'
-              WHEN cc.confirmed THEN 'accepted'
-              ELSE 'pending'
-            END,
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
           '[]'::jsonb

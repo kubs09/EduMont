@@ -1,6 +1,23 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError, UpdateUserData } from '@frontend/types/shared';
+import { ApiError, UpdateUserData, User } from '@frontend/types/shared';
+
+export const getUsers = async (role?: string): Promise<User[]> => {
+  try {
+    const response = await api.get<User[]>('/api/users', {
+      params: role ? { role } : undefined,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch users',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
 
 export const updateUser = async (userId: number, userData: UpdateUserData) => {
   try {

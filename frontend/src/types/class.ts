@@ -2,8 +2,6 @@ import { Teacher } from './shared';
 import { Child } from './child';
 
 export interface ClassChild extends Child {
-  confirmed: boolean;
-  status: 'accepted' | 'denied' | 'pending';
   parent?: string; // Changed to optional since it's a computed field
 }
 

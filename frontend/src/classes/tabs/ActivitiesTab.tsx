@@ -35,7 +35,7 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
   const getFilteredActivities = () => {
     return nextActivities.filter((activity) => {
       const child = classData.children.find((c) => c.id === activity.child_id);
-      return child && child.status === 'accepted';
+      return child !== undefined;
     });
   };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Table,
   Thead,
@@ -23,6 +23,7 @@ import {
 import { DeleteIcon } from '@chakra-ui/icons';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
+import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 
 interface User {
   id: number;
@@ -43,7 +44,18 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
   const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const PAGE_SIZE = DEFAULT_PAGE_SIZE;
+
+  const totalPages = Math.ceil(data.length / PAGE_SIZE);
+  const paginatedUsers = data.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleDeleteClick = (user: User) => {
     setSelectedUser(user);
@@ -87,7 +99,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
             </Tr>
           </Thead>
           <Tbody>
-            {data.map((user) => (
+            {paginatedUsers.map((user) => (
               <Tr key={user.id}>
                 <Td>{`${user.firstname} ${user.surname}`}</Td>
                 <Td>{user.email}</Td>
@@ -106,6 +118,13 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
             ))}
           </Tbody>
         </Table>
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={PAGE_SIZE}
+          totalCount={data.length}
+        />
       </TableContainer>
 
       <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>

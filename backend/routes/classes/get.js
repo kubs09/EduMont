@@ -42,8 +42,6 @@ router.get('/', auth, async (req, res) => {
                 concat(p.firstname, ' ', p.surname) as parent,
                 p.phone as parent_contact,
                 ch.parent_id,
-                cc.confirmed,
-                cc.status,
                 EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer as age
               FROM class_children cc
               JOIN children ch ON cc.child_id = ch.id
@@ -87,9 +85,7 @@ router.get('/', auth, async (req, res) => {
               json_build_object(
                 'id', ch.id,
                 'firstname', ch.firstname,
-                'surname', ch.surname,
-                'status', cc.status,
-                'confirmed', cc.confirmed
+                'surname', ch.surname
               )
             )
             FROM class_children cc
@@ -157,8 +153,6 @@ router.get('/:id', auth, async (req, res) => {
             'parent_surname', p.surname,
             'parent_email', p.email,
             'parent_contact', p.phone,
-            'confirmed', cc.confirmed,
-            'status', COALESCE(cc.status, 'pending'),
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
           '[]'::jsonb

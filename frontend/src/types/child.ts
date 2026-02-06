@@ -11,8 +11,6 @@ export interface Child {
   parent_email: string;
   parent_contact?: string;
   parent?: string;
-  confirmed?: boolean;
-  status?: 'accepted' | 'denied' | 'pending';
   class_id?: number;
   class_name?: string;
 }

@@ -33,10 +33,10 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   currentUserId,
 }) => {
   const getVisibleChildren = () => {
-    const acceptedChildren = classData.children.filter((child) => child.status === 'accepted');
-    if (isAdmin || isTeacher) return acceptedChildren;
+    const allChildren = classData.children;
+    if (isAdmin || isTeacher) return allChildren;
     if (isParent) {
-      return acceptedChildren.filter((child) => child.parent_id === currentUserId);
+      return allChildren.filter((child) => child.parent_id === currentUserId);
     }
     return [];
   };
@@ -70,9 +70,6 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                   <Td>{child.age}</Td>
                   {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
                   {(isAdmin || isTeacher) && <Td>{child.parent_contact || child.parent_email}</Td>}
-                  {(isAdmin || isTeacher) && (
-                    <Td>{child.status === 'pending' && classData.name}</Td>
-                  )}
                 </Tr>
               ))}
             </Tbody>
