@@ -53,8 +53,6 @@ CREATE TABLE class_children (
     class_id INTEGER REFERENCES classes(id),
     child_id INTEGER REFERENCES children(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    confirmed BOOLEAN DEFAULT FALSE,
-    status VARCHAR(10) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'denied')),
     PRIMARY KEY (class_id, child_id)
 );
 
@@ -178,11 +176,10 @@ UNION ALL
 SELECT 3, id FROM teacher_ids WHERE email = 'martin.novotny@example.com';
 
 -- Auto-assign children to classes based on age
-INSERT INTO class_children (class_id, child_id, confirmed)
+INSERT INTO class_children (class_id, child_id)
 SELECT 
     c.id,
-    ch.id,
-    TRUE
+    ch.id
 FROM children ch
 CROSS JOIN LATERAL (
     SELECT id 
@@ -206,7 +203,6 @@ child_class_mapping AS (
     FROM children ch
     JOIN class_children cc ON ch.id = cc.child_id
     JOIN classes cl ON cc.class_id = cl.id
-    WHERE cc.confirmed = TRUE
 )
 INSERT INTO schedules (child_id, class_id, name, category, status, notes, created_by)
 SELECT 

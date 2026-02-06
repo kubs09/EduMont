@@ -177,32 +177,31 @@ const SchedulePage: React.FC = () => {
   return (
     <Box p={{ base: 4, md: 6 }}>
       <VStack spacing={6} align="stretch">
-        <HStack justify="space-between" wrap="wrap" spacing={4}>
-          <Heading size={{ base: 'md', md: 'lg' }}>{texts.schedule.title[language]}</Heading>
-          <HStack spacing={2}>
-            <Button
-              leftIcon={<RepeatIcon />}
-              variant="outline"
-              onClick={refreshData}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              {texts.schedule.refresh[language]}
-            </Button>
-            {canEdit && (
-              <Button
-                leftIcon={<AddIcon />}
-                colorScheme="blue"
-                onClick={handleAddSchedule}
-                size={{ base: 'sm', md: 'md' }}
-              >
-                {texts.schedule.addEntry[language]}
-              </Button>
-            )}
-          </HStack>
-        </HStack>
-
         <Card>
           <CardBody>
+            <HStack justify="space-between" wrap="wrap" spacing={4} mb={2}>
+              <Heading size={{ base: 'md', md: 'lg' }}>{texts.schedule.title[language]}</Heading>
+              <HStack spacing={2}>
+                <Button
+                  leftIcon={<RepeatIcon />}
+                  variant="outline"
+                  onClick={refreshData}
+                  size={{ base: 'sm', md: 'md' }}
+                >
+                  {texts.schedule.refresh[language]}
+                </Button>
+                {canEdit && (
+                  <Button
+                    leftIcon={<AddIcon />}
+                    colorScheme="blue"
+                    onClick={handleAddSchedule}
+                    size={{ base: 'sm', md: 'md' }}
+                  >
+                    {texts.schedule.addEntry[language]}
+                  </Button>
+                )}
+              </HStack>
+            </HStack>
             <ScheduleTable
               schedules={schedules}
               onEdit={canEdit ? handleEditSchedule : undefined}

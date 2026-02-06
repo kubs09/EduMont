@@ -58,16 +58,16 @@ router.post('/auto-assign', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    // First, clear all unconfirmed assignments
-    await client.query('DELETE FROM class_children WHERE confirmed = FALSE');
+    // First, clear all previous assignments
+    await client.query('DELETE FROM class_children');
 
-    // Get all children who aren't assigned to any class or have unconfirmed assignments
+    // Get all children who aren't assigned to any class
     const childrenQuery = `
       SELECT id, date_of_birth 
       FROM children ch
       WHERE NOT EXISTS (
         SELECT 1 FROM class_children cc 
-        WHERE cc.child_id = ch.id AND cc.confirmed = TRUE
+        WHERE cc.child_id = ch.id
       )
     `;
     const childrenResult = await client.query(childrenQuery);
@@ -84,10 +84,10 @@ router.post('/auto-assign', auth, async (req, res) => {
 
       if (suitableClass) {
         await client.query(
-          `INSERT INTO class_children (class_id, child_id, confirmed, created_at) 
-           VALUES ($1, $2, FALSE, CURRENT_TIMESTAMP)
+          `INSERT INTO class_children (class_id, child_id, created_at) 
+           VALUES ($1, $2, CURRENT_TIMESTAMP)
            ON CONFLICT (class_id, child_id) 
-           DO UPDATE SET confirmed = FALSE, created_at = CURRENT_TIMESTAMP`,
+           DO UPDATE SET created_at = CURRENT_TIMESTAMP`,
           [suitableClass.id, child.id]
         );
       }

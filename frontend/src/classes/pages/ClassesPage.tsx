@@ -17,6 +17,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
+import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 
 interface Teacher {
   id: number;
@@ -29,7 +30,6 @@ interface Child {
   id: number;
   firstname: string;
   surname: string;
-  status?: 'accepted' | 'denied' | 'pending';
 }
 
 interface Class {
@@ -44,13 +44,16 @@ const ClassesPage = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const [classes, setClasses] = useState<Class[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const toast = useToast();
+  const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const classesResponse = await api.get('/api/classes');
         setClasses(classesResponse.data);
+        setCurrentPage(1);
       } catch (error) {
         toast({
           title: 'Error',
@@ -65,8 +68,16 @@ const ClassesPage = () => {
     fetchData();
   }, [toast]);
 
-  const getAcceptedChildren = (cls: Class) =>
-    (cls.children || []).filter((child) => child.status === 'accepted');
+  const getAcceptedChildren = (cls: Class) => cls.children || [];
+
+  const totalPages = Math.ceil(classes.length / PAGE_SIZE);
+  const paginatedClasses = classes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const handleViewDetail = (classId: number) => {
     navigate(`/classes/${classId}`);
@@ -96,7 +107,7 @@ const ClassesPage = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {classes.map((cls, index) => (
+              {paginatedClasses.map((cls, index) => (
                 <Tr
                   key={cls.id}
                   cursor="pointer"
@@ -104,11 +115,15 @@ const ClassesPage = () => {
                   borderLeftWidth={{ base: '4px', md: '0' }}
                   borderLeftColor={{
                     base:
-                      index % 3 === 0 ? 'blue.400' : index % 3 === 1 ? 'purple.400' : 'teal.400',
+                      ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
+                        ? 'blue.400'
+                        : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
+                          ? 'purple.400'
+                          : 'teal.400',
                     md: 'transparent',
                   }}
                   bg={{
-                    base: index % 2 === 0 ? 'gray.50' : 'white',
+                    base: ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0 ? 'gray.50' : 'white',
                     md: 'transparent',
                   }}
                   _hover={{
@@ -144,6 +159,13 @@ const ClassesPage = () => {
               ))}
             </Tbody>
           </Table>
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            pageSize={PAGE_SIZE}
+            totalCount={classes.length}
+          />
         </Box>
       )}
     </Box>

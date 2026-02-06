@@ -14,12 +14,15 @@ import {
   FormErrorMessage,
   useToast,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createChild } from '@frontend/services/api';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createChildSchema } from '@frontend/profile/schemas/childSchema';
 import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
+import { Combobox, type ComboboxOption } from '@frontend/shared/components';
+import { getUsers } from '@frontend/services/api/user';
+import { User } from '@frontend/types/shared';
 
 interface AddChildModalProps {
   isOpen: boolean;
@@ -43,8 +46,44 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     date_of_birth: '',
     notes: '',
   });
+  const [parents, setParents] = useState<User[]>([]);
+  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const [isLoadingParents, setIsLoadingParents] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const userRole = localStorage.getItem('userRole');
+  const isAdmin = userRole === 'admin';
+
+  useEffect(() => {
+    if (!isOpen || !isAdmin) return;
+
+    const fetchParents = async () => {
+      try {
+        setIsLoadingParents(true);
+        const data = await getUsers('parent');
+        setParents(data);
+      } catch (error) {
+        toast({
+          title: texts.profile.error[language],
+          description: error.message || 'Failed to fetch parents',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoadingParents(false);
+      }
+    };
+
+    fetchParents();
+  }, [isOpen, isAdmin, language, toast]);
+
+  const parentOptions = useMemo<ComboboxOption[]>(() => {
+    return parents.map((parent) => ({
+      value: parent.id,
+      label: `${parent.firstname} ${parent.surname} (${parent.email})`,
+    }));
+  }, [parents]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
@@ -58,6 +97,12 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
       setIsSubmitting(true);
       setErrors({});
 
+      if (isAdmin && !selectedParentId) {
+        setErrors({ parent_id: texts.profile.error[language] });
+        setIsSubmitting(false);
+        return;
+      }
+
       const schema = createChildSchema(language);
       schema.parse(formData);
 
@@ -66,7 +111,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
 
       await createChild({
         ...formData,
-        parent_id: userId,
+        parent_id: isAdmin ? Number(selectedParentId) : userId,
       });
 
       onSuccess();
@@ -106,6 +151,19 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
         <ModalHeader>{texts.profile.children.addChild.title[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          {isAdmin && (
+            <FormControl isRequired isInvalid={!!errors.parent_id} mb={4}>
+              <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
+              <Combobox
+                options={parentOptions}
+                value={selectedParentId}
+                onChange={(value) => setSelectedParentId(value as number | null)}
+                placeholder={texts.common.select[language]}
+                isDisabled={isLoadingParents}
+              />
+              <FormErrorMessage>{errors.parent_id}</FormErrorMessage>
+            </FormControl>
+          )}
           <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>
             <FormLabel>{texts.childrenTable.firstname[language]}</FormLabel>
             <Input name="firstname" value={formData.firstname} onChange={handleChange} />

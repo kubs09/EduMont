@@ -17,8 +17,6 @@ router.get('/', authenticateToken, async (req, res) => {
         u.surname as parent_surname,
         u.email as parent_email,
         u.phone as parent_contact,
-        COALESCE(cc.status, 'pending') as status,
-        COALESCE(cc.confirmed, false) as confirmed,
         cl.id as class_id,
         cl.name as class_name
       FROM children c
