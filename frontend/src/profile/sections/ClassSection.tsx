@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, HStack, Stack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Stack, Text, VStack } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { Section } from '@frontend/shared/components';
