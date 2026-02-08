@@ -13,6 +13,7 @@ import {
   IconButton,
   useDisclosure,
   Button,
+  VStack,
 } from '@chakra-ui/react';
 import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
@@ -40,6 +41,11 @@ const ChildrenPage = () => {
   const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
   const PAGE_SIZE = DEFAULT_PAGE_SIZE;
+
+  const formatParentNames = (parents: Child['parents']) =>
+    parents.map((parent) => `${parent.firstname} ${parent.surname}`);
+
+  const formatParentEmails = (parents: Child['parents']) => parents.map((parent) => parent.email);
 
   const fetchChildren = useCallback(async () => {
     try {
@@ -180,9 +186,19 @@ const ChildrenPage = () => {
                   {!isParent && (
                     <>
                       <Td display={{ base: 'none', xl: 'table-cell' }}>
-                        {child.parent_firstname} {child.parent_surname}
+                        <VStack align="start" spacing={1}>
+                          {formatParentNames(child.parents).map((name, parentIndex) => (
+                            <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
+                          ))}
+                        </VStack>
                       </Td>
-                      <Td display={{ base: 'none', xl: 'table-cell' }}>{child.parent_email}</Td>
+                      <Td display={{ base: 'none', xl: 'table-cell' }}>
+                        <VStack align="start" spacing={1}>
+                          {formatParentEmails(child.parents).map((email, parentIndex) => (
+                            <Text key={`${child.id}-parent-email-${parentIndex}`}>{email}</Text>
+                          ))}
+                        </VStack>
+                      </Td>
                     </>
                   )}
                   <Td onClick={(e) => e.stopPropagation()}>

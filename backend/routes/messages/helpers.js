@@ -28,7 +28,8 @@ async function getAllowedRecipients(userId, userRole, client) {
             c.id as class_id,
             c.name as class_name
           FROM users u
-          LEFT JOIN children ch ON u.id = ch.parent_id
+          LEFT JOIN child_parents cp ON u.id = cp.parent_id
+          LEFT JOIN children ch ON cp.child_id = ch.id
           LEFT JOIN class_children cc ON ch.id = cc.child_id
           LEFT JOIN classes c ON cc.class_id = c.id
           WHERE u.id != $1
@@ -71,7 +72,8 @@ async function getAllowedRecipients(userId, userRole, client) {
           -- Get parents of children in teacher's classes
           SELECT DISTINCT u.*, cc.class_id, c.name as class_name
           FROM users u
-          JOIN children ch ON u.id = ch.parent_id
+          JOIN child_parents cp ON u.id = cp.parent_id
+          JOIN children ch ON cp.child_id = ch.id
           JOIN class_children cc ON ch.id = cc.child_id
           JOIN classes c ON cc.class_id = c.id
           JOIN teacher_classes tc ON tc.class_id = cc.class_id
@@ -95,10 +97,11 @@ async function getAllowedRecipients(userId, userRole, client) {
       return client.query(
         `WITH parent_classes AS (
           SELECT DISTINCT c.id as class_id, c.name as class_name
-          FROM children ch
+          FROM child_parents cp
+          JOIN children ch ON cp.child_id = ch.id
           JOIN class_children cc ON ch.id = cc.child_id
           JOIN classes c ON cc.class_id = c.id
-          WHERE ch.parent_id = $1
+          WHERE cp.parent_id = $1
         )
         SELECT 
           u.id,

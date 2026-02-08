@@ -4,6 +4,7 @@ import {
   Input,
   VStack,
   Text,
+  HStack,
   useDisclosure,
   InputGroup,
   InputRightElement,
@@ -19,6 +20,7 @@ const Combobox: React.FC<ComboboxProps> = ({
   value,
   onChange,
   placeholder = 'Select an option',
+  isMulti = false,
   isDisabled = false,
   isClearable = true,
   onInputChange,
@@ -28,6 +30,7 @@ const Combobox: React.FC<ComboboxProps> = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputWrapperRef = useRef<HTMLDivElement>(null);
 
   useOutsideClick({
     ref: containerRef,
@@ -42,7 +45,13 @@ const Combobox: React.FC<ComboboxProps> = ({
   }, [inputValue, options]);
 
   const getDisplayValue = () => {
-    if (!value) return '';
+    if (!value || (Array.isArray(value) && value.length === 0)) return '';
+    if (Array.isArray(value)) {
+      return options
+        .filter((opt) => value.includes(opt.value))
+        .map((opt) => opt.label)
+        .join(', ');
+    }
     const selected = options.find((opt) => opt.value === value);
     return selected?.label || '';
   };
@@ -59,6 +68,15 @@ const Combobox: React.FC<ComboboxProps> = ({
   };
 
   const handleSelectOption = (selectedValue: string | number) => {
+    if (isMulti) {
+      const currentValues = Array.isArray(value) ? value : [];
+      const nextValues = currentValues.includes(selectedValue)
+        ? currentValues.filter((val) => val !== selectedValue)
+        : [...currentValues, selectedValue];
+      onChange(nextValues);
+      setInputValue('');
+      return;
+    }
     onChange(selectedValue);
     const selected = options.find((opt) => opt.value === selectedValue);
     setInputValue(selected?.label || '');
@@ -67,49 +85,55 @@ const Combobox: React.FC<ComboboxProps> = ({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(null);
+    onChange(isMulti ? [] : null);
     setInputValue('');
     inputRef.current?.focus();
   };
 
-  const displayValue = value ? getDisplayValue() : '';
+  const displayValue = getDisplayValue();
+  const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
+  const selectedOptions = Array.isArray(value)
+    ? options.filter((option) => value.includes(option.value))
+    : [];
 
   return (
     <Box position="relative" width="100%" ref={containerRef}>
-      <InputGroup>
-        <Input
-          ref={inputRef}
-          placeholder={placeholder}
-          value={inputValue || displayValue}
-          onChange={handleInputChange}
-          onFocus={onOpen}
-          isDisabled={isDisabled}
-          pr={isClearable && value ? '2.5rem' : '2rem'}
-          variant="outline"
-        />
-        {isClearable && value && (
-          <InputRightElement width="2.5rem">
-            <IconButton
-              aria-label="Clear selection"
-              icon={<CloseIcon />}
-              size="sm"
-              variant="ghost"
-              onClick={handleClear}
-              isDisabled={isDisabled}
-              color="text-muted"
-              _hover={{ color: 'text-primary' }}
-            />
-          </InputRightElement>
-        )}
-        {!isClearable || !value ? (
-          <InputRightElement pointerEvents="none">
-            <ChevronDownIcon color="text-muted" />
-          </InputRightElement>
-        ) : null}
-      </InputGroup>
+      <Box position="relative" ref={inputWrapperRef}>
+        <InputGroup>
+          <Input
+            ref={inputRef}
+            placeholder={placeholder}
+            value={isMulti ? inputValue : inputValue || displayValue}
+            onChange={handleInputChange}
+            onFocus={onOpen}
+            isDisabled={isDisabled}
+            pr={isClearable && hasValue ? '2.5rem' : '2rem'}
+            variant="outline"
+          />
+          {isClearable && hasValue && (
+            <InputRightElement width="2.5rem">
+              <IconButton
+                aria-label="Clear selection"
+                icon={<CloseIcon />}
+                size="sm"
+                variant="ghost"
+                onClick={handleClear}
+                isDisabled={isDisabled}
+                color="text-muted"
+                _hover={{ color: 'text-primary' }}
+              />
+            </InputRightElement>
+          )}
+          {!isClearable || !hasValue ? (
+            <InputRightElement pointerEvents="none">
+              <ChevronDownIcon color="text-muted" />
+            </InputRightElement>
+          ) : null}
+        </InputGroup>
+      </Box>
 
       {isOpen && (
-        <Portal containerRef={containerRef}>
+        <Portal containerRef={inputWrapperRef}>
           <Box
             position="absolute"
             top="100%"
@@ -127,29 +151,34 @@ const Combobox: React.FC<ComboboxProps> = ({
           >
             {filteredOptions.length > 0 ? (
               <VStack spacing={0} align="stretch">
-                {filteredOptions.map((option) => (
-                  <Box
-                    key={option.value}
-                    p={2}
-                    px={4}
-                    cursor="pointer"
-                    bg={value === option.value ? 'brand.primary.500' : 'transparent'}
-                    color={value === option.value ? 'white' : 'text-primary'}
-                    _hover={{
-                      bg: value === option.value ? 'brand.primary.500' : 'brand.primary.300',
-                      _dark: {
-                        bg: value === option.value ? 'brand.primary.600' : 'whiteAlpha.100',
-                      },
-                    }}
-                    _dark={{
-                      color: value === option.value ? 'white' : 'text-primary',
-                    }}
-                    onClick={() => handleSelectOption(option.value)}
-                    transition="background-color 0.2s"
-                  >
-                    {option.label}
-                  </Box>
-                ))}
+                {filteredOptions.map((option) => {
+                  const isSelected = Array.isArray(value)
+                    ? value.includes(option.value)
+                    : value === option.value;
+                  return (
+                    <Box
+                      key={option.value}
+                      p={2}
+                      px={4}
+                      cursor="pointer"
+                      bg={isSelected ? 'brand.primary.500' : 'transparent'}
+                      color={isSelected ? 'white' : 'text-primary'}
+                      _hover={{
+                        bg: isSelected ? 'brand.primary.500' : 'brand.primary.300',
+                        _dark: {
+                          bg: isSelected ? 'brand.primary.600' : 'whiteAlpha.100',
+                        },
+                      }}
+                      _dark={{
+                        color: isSelected ? 'white' : 'text-primary',
+                      }}
+                      onClick={() => handleSelectOption(option.value)}
+                      transition="background-color 0.2s"
+                    >
+                      {option.label}
+                    </Box>
+                  );
+                })}
               </VStack>
             ) : (
               <Box p={4}>
@@ -160,6 +189,35 @@ const Combobox: React.FC<ComboboxProps> = ({
             )}
           </Box>
         </Portal>
+      )}
+
+      {isMulti && selectedOptions.length > 0 && (
+        <VStack align="stretch" spacing={2} mt={3}>
+          {selectedOptions.map((option) => (
+            <HStack
+              key={option.value}
+              justify="space-between"
+              borderWidth="1px"
+              borderRadius="md"
+              px={3}
+              py={2}
+            >
+              <Text color="text-primary" fontSize="sm">
+                {option.label}
+              </Text>
+              <IconButton
+                aria-label="Remove selection"
+                icon={<CloseIcon />}
+                size="xs"
+                variant="ghost"
+                onClick={() => handleSelectOption(option.value)}
+                isDisabled={isDisabled}
+                color="text-muted"
+                _hover={{ color: 'text-primary' }}
+              />
+            </HStack>
+          ))}
+        </VStack>
       )}
     </Box>
   );

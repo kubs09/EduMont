@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Confirm a child's class assignment
 router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
@@ -21,7 +20,6 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
       [req.params.classId, req.params.childId]
     );
 
-    // Fetch updated class data
     const result = await client.query(
       `
       SELECT 
@@ -40,11 +38,19 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
             'firstname', ch.firstname,
             'surname', ch.surname,
             'date_of_birth', ch.date_of_birth,
-            'parent_id', ch.parent_id,
-            'parent_firstname', p.firstname,
-            'parent_surname', p.surname,
-            'parent_email', p.email,
-            'parent_contact', p.phone,
+            'parents', COALESCE(
+              (SELECT jsonb_agg(jsonb_build_object(
+                'id', u.id,
+                'firstname', u.firstname,
+                'surname', u.surname,
+                'email', u.email,
+                'phone', u.phone
+              ) ORDER BY u.surname, u.firstname)
+              FROM child_parents cp
+              JOIN users u ON cp.parent_id = u.id
+              WHERE cp.child_id = ch.id),
+              '[]'::jsonb
+            ),
             'confirmed', cc.confirmed,
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
@@ -55,7 +61,6 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
       LEFT JOIN users t ON ct.teacher_id = t.id
       LEFT JOIN class_children cc ON c.id = cc.class_id
       LEFT JOIN children ch ON cc.child_id = ch.id
-      LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1
       GROUP BY c.id`,
       [req.params.classId]
@@ -107,11 +112,19 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
             'firstname', ch.firstname,
             'surname', ch.surname,
             'date_of_birth', ch.date_of_birth,
-            'parent_id', ch.parent_id,
-            'parent_firstname', p.firstname,
-            'parent_surname', p.surname,
-            'parent_email', p.email,
-            'parent_contact', p.phone,
+            'parents', COALESCE(
+              (SELECT jsonb_agg(jsonb_build_object(
+                'id', u.id,
+                'firstname', u.firstname,
+                'surname', u.surname,
+                'email', u.email,
+                'phone', u.phone
+              ) ORDER BY u.surname, u.firstname)
+              FROM child_parents cp
+              JOIN users u ON cp.parent_id = u.id
+              WHERE cp.child_id = ch.id),
+              '[]'::jsonb
+            ),
             'confirmed', COALESCE(cc.confirmed, false),
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
@@ -122,7 +135,6 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
       LEFT JOIN users t ON ct.teacher_id = t.id
       LEFT JOIN class_children cc ON c.id = cc.class_id
       LEFT JOIN children ch ON cc.child_id = ch.id
-      LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1
       GROUP BY c.id`,
       [req.params.classId]

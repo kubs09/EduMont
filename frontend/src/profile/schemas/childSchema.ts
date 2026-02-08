@@ -28,3 +28,20 @@ export const createChildSchema = (language: 'en' | 'cs') => {
       .optional(),
   });
 };
+
+export const editChildSchema = (language: 'en' | 'cs') => {
+  return z.object({
+    firstname: z
+      .string()
+      .min(2, texts.profile.children.validation.firstNameLength[language])
+      .max(100, texts.profile.children.validation.firstNameMaxLength[language]),
+    surname: z
+      .string()
+      .min(2, texts.profile.children.validation.surnameLength[language])
+      .max(100, texts.profile.children.validation.surnameMaxLength[language]),
+    notes: z
+      .string()
+      .max(1000, texts.profile.children.validation.notesMaxLength[language])
+      .optional(),
+  });
+};

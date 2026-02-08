@@ -39,8 +39,11 @@ const canAccessChildSchedule = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'parent') {
-    const result = await pool.query('SELECT parent_id FROM children WHERE id = $1', [childId]);
-    return result.rows.length > 0 && result.rows[0].parent_id === userId;
+    const result = await pool.query(
+      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
+      [childId, userId]
+    );
+    return result.rows.length > 0;
   }
 
   if (userRole === 'teacher') {

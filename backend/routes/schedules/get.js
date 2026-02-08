@@ -5,7 +5,6 @@ const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
 const { canAccessChildSchedule } = require('./validation');
 
-// Get all schedules (admin/teacher)
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
@@ -70,7 +69,6 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific child
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const { childId } = req.params;
@@ -124,7 +122,6 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific class
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const { classId } = req.params;
@@ -143,7 +140,9 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
         `
         SELECT 1 FROM class_children cc
         JOIN children ch ON cc.child_id = ch.id
-        WHERE cc.class_id = $1 AND ch.parent_id = $2
+        WHERE cc.class_id = $1 AND EXISTS (
+          SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+        )
       `,
         [classId, req.user.id]
       );
@@ -181,7 +180,8 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
     const params = [classId];
 
     if (req.user.role === 'parent') {
-      query += ' AND ch.parent_id = $2';
+      query +=
+        ' AND EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2)';
       params.push(req.user.id);
     }
 
@@ -202,7 +202,6 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
 
 module.exports = router;
 
-// Get schedules for a specific child
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const { childId } = req.params;
@@ -263,7 +262,6 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific class
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const { classId } = req.params;
@@ -282,7 +280,9 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
         `
         SELECT 1 FROM class_children cc
         JOIN children ch ON cc.child_id = ch.id
-        WHERE cc.class_id = $1 AND ch.parent_id = $2
+        WHERE cc.class_id = $1 AND EXISTS (
+          SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+        )
       `,
         [classId, req.user.id]
       );
@@ -321,7 +321,8 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
     const params = [classId];
 
     if (req.user.role === 'parent') {
-      query += ' AND ch.parent_id = $2';
+      query +=
+        ' AND EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2)';
       params.push(req.user.id);
     }
 

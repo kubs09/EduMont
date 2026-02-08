@@ -74,6 +74,10 @@ export const common = {
       cs: 'Třída',
       en: 'Class',
     },
+    noClass: {
+      cs: 'Dítě není přiřazeno do žádné třídy',
+      en: 'Child is not assigned to any class',
+    },
     parent: {
       cs: 'Rodič',
       en: 'Parent',

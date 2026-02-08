@@ -13,6 +13,10 @@ import {
   Textarea,
   FormErrorMessage,
   useToast,
+  Box,
+  Checkbox,
+  CheckboxGroup,
+  Stack,
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { createChild } from '@frontend/services/api';
@@ -20,7 +24,6 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createChildSchema } from '@frontend/profile/schemas/childSchema';
 import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
-import { Combobox, type ComboboxOption } from '@frontend/shared/components';
 import { getUsers } from '@frontend/services/api/user';
 import { User } from '@frontend/types/shared';
 
@@ -47,7 +50,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     notes: '',
   });
   const [parents, setParents] = useState<User[]>([]);
-  const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
+  const [selectedParentIds, setSelectedParentIds] = useState<number[]>([]);
   const [isLoadingParents, setIsLoadingParents] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,9 +81,9 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     fetchParents();
   }, [isOpen, isAdmin, language, toast]);
 
-  const parentOptions = useMemo<ComboboxOption[]>(() => {
+  const parentOptions = useMemo(() => {
     return parents.map((parent) => ({
-      value: parent.id,
+      id: parent.id,
       label: `${parent.firstname} ${parent.surname} (${parent.email})`,
     }));
   }, [parents]);
@@ -97,8 +100,8 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
       setIsSubmitting(true);
       setErrors({});
 
-      if (isAdmin && !selectedParentId) {
-        setErrors({ parent_id: texts.profile.error[language] });
+      if (isAdmin && selectedParentIds.length === 0) {
+        setErrors({ parent_ids: texts.profile.error[language] });
         setIsSubmitting(false);
         return;
       }
@@ -111,7 +114,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
 
       await createChild({
         ...formData,
-        parent_id: isAdmin ? Number(selectedParentId) : userId,
+        parent_ids: isAdmin ? selectedParentIds : [userId],
       });
 
       onSuccess();
@@ -152,16 +155,27 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
         <ModalCloseButton />
         <ModalBody>
           {isAdmin && (
-            <FormControl isRequired isInvalid={!!errors.parent_id} mb={4}>
+            <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
               <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
-              <Combobox
-                options={parentOptions}
-                value={selectedParentId}
-                onChange={(value) => setSelectedParentId(value as number | null)}
-                placeholder={texts.common.select[language]}
-                isDisabled={isLoadingParents}
-              />
-              <FormErrorMessage>{errors.parent_id}</FormErrorMessage>
+              <Box maxH="180px" overflowY="auto" borderWidth="1px" borderRadius="md" p={2}>
+                <CheckboxGroup
+                  value={selectedParentIds.map((id) => id.toString())}
+                  onChange={(values) => setSelectedParentIds(values.map((value) => Number(value)))}
+                >
+                  <Stack spacing={2}>
+                    {parentOptions.map((parent) => (
+                      <Checkbox
+                        key={parent.id}
+                        value={parent.id.toString()}
+                        isDisabled={isLoadingParents}
+                      >
+                        {parent.label}
+                      </Checkbox>
+                    ))}
+                  </Stack>
+                </CheckboxGroup>
+              </Box>
+              <FormErrorMessage>{errors.parent_ids}</FormErrorMessage>
             </FormControl>
           )}
           <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>

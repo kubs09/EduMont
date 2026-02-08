@@ -16,7 +16,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { Document, getChildDocuments } from '@frontend/services/api';
-import { Child } from '@frontend/types/child';
+import { Child, UpdateChildData } from '@frontend/types/child';
 import { Schedule } from '@frontend/types/schedule';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
@@ -38,13 +38,13 @@ const ChildDetailPage = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
   const userRole = localStorage.getItem('userRole');
-  const currentUserId = localStorage.getItem('userId');
-  const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
+  const isParent = userRole === 'parent';
 
-  const canEdit = isAdmin || (isParent && childData?.parent_id === parseInt(currentUserId || '0'));
-  const canUpload = isAdmin || isTeacher;
+  const canEdit = isAdmin;
+  const canUpload = isAdmin || isTeacher || isParent;
+  const canDeleteDocuments = isAdmin;
 
   const loadDocuments = async (childId: number) => {
     try {
@@ -89,14 +89,14 @@ const ChildDetailPage = () => {
     fetchData();
   }, [id, language, toast]);
 
-  const handleEditSave = async (updatedData: Partial<Child>) => {
+  const handleEditSave = async (updatedData: UpdateChildData) => {
     if (!childData || !id) return;
 
     try {
       const response = await api.put(`/api/children/${id}`, {
         firstname: updatedData.firstname || childData.firstname,
         surname: updatedData.surname || childData.surname,
-        date_of_birth: updatedData.date_of_birth || childData.date_of_birth,
+        parent_ids: updatedData.parent_ids,
         notes: updatedData.notes || childData.notes,
       });
 
@@ -177,6 +177,7 @@ const ChildDetailPage = () => {
           documents={documents}
           language={language}
           canUpload={canUpload}
+          canDelete={canDeleteDocuments}
           childData={childData}
           onDocumentsUpdate={async () => {
             if (id) await loadDocuments(parseInt(id));

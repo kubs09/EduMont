@@ -2,7 +2,7 @@ import { Teacher } from './shared';
 import { Child } from './child';
 
 export interface ClassChild extends Child {
-  parent?: string; // Changed to optional since it's a computed field
+  parent_names?: string;
 }
 
 export interface Class {

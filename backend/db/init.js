@@ -49,8 +49,16 @@ const initDatabase = async () => {
       firstname VARCHAR(100) NOT NULL,
       surname VARCHAR(100) NOT NULL,
       date_of_birth DATE NOT NULL,
-      parent_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       notes TEXT
+    );
+  `;
+
+  const createChildParentsTable = `
+    CREATE TABLE IF NOT EXISTS child_parents (
+      child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
+      parent_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (child_id, parent_id)
     );
   `;
 
@@ -79,9 +87,11 @@ const initDatabase = async () => {
     await pool.query(createClassChildrenTable);
     await pool.query(createMessagesTable);
     await pool.query(createChildrenTable);
+    await pool.query(createChildParentsTable);
     await pool.query(createDocumentsTable);
     await pool.query('SELECT * FROM users');
     await pool.query('SELECT * FROM children');
+    await pool.query('SELECT * FROM child_parents');
     await pool.query('SELECT * FROM classes');
     await pool.query('SELECT * FROM class_teachers');
     await pool.query('SELECT * FROM class_children');

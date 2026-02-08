@@ -23,13 +23,7 @@ interface User {
   role: string;
 }
 
-const transformClassData = (data: Class): Class => ({
-  ...data,
-  children: data.children.map((child) => ({
-    ...child,
-    parent: `${child.parent_firstname} ${child.parent_surname}`.trim(),
-  })),
-});
+const transformClassData = (data: Class): Class => data;
 
 const ClassDetailPage = () => {
   const { id } = useParams();

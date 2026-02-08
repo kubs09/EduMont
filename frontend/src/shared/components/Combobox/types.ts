@@ -5,8 +5,8 @@ export interface ComboboxOption {
 
 export interface ComboboxProps {
   options: ComboboxOption[];
-  value: string | number | null;
-  onChange: (value: string | number | null) => void;
+  value: string | number | Array<string | number> | null;
+  onChange: (value: string | number | Array<string | number> | null) => void;
   placeholder?: string;
   isMulti?: boolean;
   isDisabled?: boolean;
