@@ -23,10 +23,9 @@ const InformationTab: React.FC<InformationTabProps> = ({
 }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
-  const parentNames = childData.parents
-    .map((parent) => `${parent.firstname} ${parent.surname}`)
-    .join(', ');
-  const parentEmails = childData.parents.map((parent) => parent.email).join(', ');
+  const parentContacts = childData.parents.map(
+    (parent) => `${parent.firstname} ${parent.surname} - ${parent.email}`
+  );
 
   return (
     <VStack align="stretch" spacing={{ base: 4, md: 6 }} overflowX="hidden">
@@ -74,19 +73,17 @@ const InformationTab: React.FC<InformationTabProps> = ({
                   {childData.class_name}
                 </Text>
               ) : (
-                <Text>Not assigned to a class</Text>
+                <Text>{texts.childrenTable.noClass[language]}</Text>
               )}
             </Box>
             <Box>
               <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
-              <Text>{parentNames || '-'}</Text>
+              <VStack align="start" spacing={1}>
+                {parentContacts.map((contact, index) => (
+                  <Text key={`${contact}-${index}`}>{contact}</Text>
+                ))}
+              </VStack>
             </Box>
-            {parentEmails && (
-              <Box>
-                <Text fontWeight="bold">{texts.profile.email[language]}</Text>
-                <Text>{parentEmails}</Text>
-              </Box>
-            )}
           </VStack>
         </GridItem>
       </Grid>

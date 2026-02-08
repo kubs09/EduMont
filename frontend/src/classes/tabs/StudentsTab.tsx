@@ -11,6 +11,8 @@ import {
   Th,
   Thead,
   Tr,
+  Text,
+  VStack,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
@@ -44,10 +46,10 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   };
 
   const formatParentNames = (parents: Class['children'][number]['parents']) =>
-    parents.map((parent) => `${parent.firstname} ${parent.surname}`).join(', ');
+    parents.map((parent) => `${parent.firstname} ${parent.surname}`);
 
   const formatParentContacts = (parents: Class['children'][number]['parents']) =>
-    parents.map((parent) => parent.phone || parent.email).join(', ');
+    parents.map((parent) => parent.phone || parent.email);
 
   return (
     <Card>
@@ -76,8 +78,24 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                   <Td>{child.firstname}</Td>
                   <Td>{child.surname}</Td>
                   <Td>{child.age}</Td>
-                  {(isAdmin || isTeacher) && <Td>{formatParentNames(child.parents)}</Td>}
-                  {(isAdmin || isTeacher) && <Td>{formatParentContacts(child.parents)}</Td>}
+                  {(isAdmin || isTeacher) && (
+                    <Td>
+                      <VStack align="start" spacing={1}>
+                        {formatParentNames(child.parents).map((name, parentIndex) => (
+                          <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
+                        ))}
+                      </VStack>
+                    </Td>
+                  )}
+                  {(isAdmin || isTeacher) && (
+                    <Td>
+                      <VStack align="start" spacing={1}>
+                        {formatParentContacts(child.parents).map((contact, parentIndex) => (
+                          <Text key={`${child.id}-parent-contact-${parentIndex}`}>{contact}</Text>
+                        ))}
+                      </VStack>
+                    </Td>
+                  )}
                 </Tr>
               ))}
             </Tbody>

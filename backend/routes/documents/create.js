@@ -19,12 +19,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    const canUpload = await canAccessDocumentByIds(
-      req.user.id,
-      req.user.role,
-      child_id,
-      class_id
-    );
+    const canUpload = await canAccessDocumentByIds(req.user.id, req.user.role, child_id, class_id);
     if (!canUpload) {
       return res.status(403).json({ error: 'Access denied' });
     }
