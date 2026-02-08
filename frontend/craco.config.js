@@ -22,8 +22,6 @@ module.exports = {
       const isProd = env === 'production';
 
       if (isProd) {
-        process.env.FAST_REFRESH = 'false';
-
         webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
           const name = plugin.constructor?.name || '';
           return (
@@ -31,13 +29,6 @@ module.exports = {
             !name.includes('ReactRefreshPlugin') &&
             !name.includes('ReactRefresh')
           );
-        });
-
-        webpackConfig.plugins.forEach((plugin) => {
-          if (plugin.constructor?.name === 'DefinePlugin') {
-            plugin.definitions = plugin.definitions || {};
-            plugin.definitions['process.env.FAST_REFRESH'] = 'false';
-          }
         });
       }
 
