@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Text, VStack, Grid, GridItem } from '@chakra-ui/react';
+import { Box, Text, VStack, Grid, GridItem, HStack, IconButton } from '@chakra-ui/react';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Child } from '@frontend/types/child';
@@ -58,20 +59,20 @@ const InformationTab: React.FC<InformationTabProps> = ({
             <Box>
               <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
               {childData.class_id ? (
-                <Text
-                  as="button"
-                  color="blue.500"
-                  textDecoration="underline"
-                  cursor="pointer"
-                  _hover={{ color: 'blue.700' }}
-                  onClick={() => {
-                    if (childData.class_id) {
-                      navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
-                    }
-                  }}
-                >
-                  {childData.class_name}
-                </Text>
+                <HStack spacing={2} align="center">
+                  <Text>{childData.class_name}</Text>
+                  <IconButton
+                    aria-label={texts.classes.detail.title[language]}
+                    icon={<ExternalLinkIcon />}
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      if (childData.class_id) {
+                        navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
+                      }
+                    }}
+                  />
+                </HStack>
               ) : (
                 <Text>{texts.childrenTable.noClass[language]}</Text>
               )}
