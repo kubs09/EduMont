@@ -1,9 +1,5 @@
 import React from 'react';
 import {
-  Card,
-  CardBody,
-  CardHeader,
-  Heading,
   Table,
   TableContainer,
   Tbody,
@@ -13,6 +9,7 @@ import {
   Tr,
   Text,
   VStack,
+  Box,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
@@ -52,57 +49,48 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
     parents.map((parent) => parent.phone || parent.email);
 
   return (
-    <Card>
-      <CardHeader>
-        <Heading size={{ base: 'sm', md: 'md' }}>
-          {isParent
-            ? texts.classes.detail.myChildren[language]
-            : texts.classes.detail.students[language]}
-        </Heading>
-      </CardHeader>
-      <CardBody>
-        <TableContainer>
-          <Table variant="simple" size="md">
-            <Thead>
-              <Tr>
-                <Th>{texts.childrenTable.firstname[language]}</Th>
-                <Th>{texts.childrenTable.surname[language]}</Th>
-                <Th>{texts.childrenTable.age[language]}</Th>
-                {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
-                {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+    <Box>
+      <TableContainer>
+        <Table variant="simple" size="md">
+          <Thead>
+            <Tr>
+              <Th>{texts.childrenTable.firstname[language]}</Th>
+              <Th>{texts.childrenTable.surname[language]}</Th>
+              <Th>{texts.childrenTable.age[language]}</Th>
+              {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
+              {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+            </Tr>
+          </Thead>
+          <Tbody>
+            {getVisibleChildren().map((child) => (
+              <Tr key={child.id}>
+                <Td>{child.firstname}</Td>
+                <Td>{child.surname}</Td>
+                <Td>{child.age}</Td>
+                {(isAdmin || isTeacher) && (
+                  <Td>
+                    <VStack align="start" spacing={1}>
+                      {formatParentNames(child.parents).map((name, parentIndex) => (
+                        <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
+                      ))}
+                    </VStack>
+                  </Td>
+                )}
+                {(isAdmin || isTeacher) && (
+                  <Td>
+                    <VStack align="start" spacing={1}>
+                      {formatParentContacts(child.parents).map((contact, parentIndex) => (
+                        <Text key={`${child.id}-parent-contact-${parentIndex}`}>{contact}</Text>
+                      ))}
+                    </VStack>
+                  </Td>
+                )}
               </Tr>
-            </Thead>
-            <Tbody>
-              {getVisibleChildren().map((child) => (
-                <Tr key={child.id}>
-                  <Td>{child.firstname}</Td>
-                  <Td>{child.surname}</Td>
-                  <Td>{child.age}</Td>
-                  {(isAdmin || isTeacher) && (
-                    <Td>
-                      <VStack align="start" spacing={1}>
-                        {formatParentNames(child.parents).map((name, parentIndex) => (
-                          <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
-                        ))}
-                      </VStack>
-                    </Td>
-                  )}
-                  {(isAdmin || isTeacher) && (
-                    <Td>
-                      <VStack align="start" spacing={1}>
-                        {formatParentContacts(child.parents).map((contact, parentIndex) => (
-                          <Text key={`${child.id}-parent-contact-${parentIndex}`}>{contact}</Text>
-                        ))}
-                      </VStack>
-                    </Td>
-                  )}
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </CardBody>
-    </Card>
+            ))}
+          </Tbody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 

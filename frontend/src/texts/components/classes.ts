@@ -43,9 +43,9 @@ export const classes = {
     cs: 'Asistent',
     en: 'Assistant',
   },
-  children: {
-    cs: 'Děti',
-    en: 'Children',
+  students: {
+    cs: 'Studenti',
+    en: 'Students',
   },
   manageClass: {
     cs: 'Správa třídy',

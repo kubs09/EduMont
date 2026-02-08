@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Heading, Stack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Stack, Text, VStack } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 
@@ -23,7 +23,6 @@ const InfoTab: React.FC<InfoTabProps> = ({
 
   return (
     <VStack align="stretch" spacing={6}>
-      <Heading size={{ base: 'sm', md: 'md' }}>{texts.classes.detail.info[language]}</Heading>
       <VStack align="stretch" spacing={4}>
         <Box>
           <Text fontWeight="bold">{texts.classes.name[language]}</Text>

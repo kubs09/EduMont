@@ -203,7 +203,7 @@ const Header = () => {
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
                 {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
-                {!isParent && !isTeacher && <>{texts.children[language]}</>}
+                {isAdmin && <>{texts.students[language]}</>}
                 {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleSchedule}>

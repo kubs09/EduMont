@@ -99,7 +99,7 @@ const ClassesPage = () => {
                   {texts.classes.teachers[language]}
                 </Th>
                 <Th display={{ base: 'none', xl: 'table-cell' }}>
-                  {texts.classes.children[language]}
+                  {texts.classes.students[language]}
                 </Th>
                 <Th width="4"></Th>
               </Tr>
@@ -125,10 +125,7 @@ const ClassesPage = () => {
                       md: 'transparent',
                     }}
                     bg={{
-                      base:
-                        ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0
-                          ? 'gray.50'
-                          : 'white',
+                      base: ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0 ? 'gray.50' : 'white',
                       md: 'transparent',
                     }}
                     _hover={{
