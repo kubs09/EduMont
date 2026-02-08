@@ -2,7 +2,13 @@
 const express = require('express');
 const router = express.Router();
 
-let getRouter, createRouter, updateRouter, deleteRouter, historyRouter, activitiesRouter, attendanceRouter;
+let getRouter,
+  createRouter,
+  updateRouter,
+  deleteRouter,
+  historyRouter,
+  activitiesRouter,
+  attendanceRouter;
 
 try {
   getRouter = require('./get');

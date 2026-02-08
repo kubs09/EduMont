@@ -13,6 +13,7 @@ import Tabs, { TabItem } from '@frontend/shared/components/Tabs/Tabs';
 import InfoTab from '../tabs/InfoTab';
 import StudentsTab from '../tabs/StudentsTab';
 import ActivitiesTab from '../tabs/ActivitiesTab';
+import AttendanceTab from '../tabs/AttendanceTab';
 
 import { Class } from '@frontend/types/class';
 
@@ -178,6 +179,17 @@ const ClassDetailPage = () => {
     />
   );
 
+  const attendanceTabContent = (
+    <AttendanceTab
+      classData={classData}
+      language={language}
+      isAdmin={isAdmin}
+      isTeacher={isTeacher}
+      isParent={isParent}
+      currentUserId={currentUserId}
+    />
+  );
+
   const classDetailTabs: TabItem[] = [
     {
       id: 'info',
@@ -193,6 +205,11 @@ const ClassDetailPage = () => {
       id: 'activities',
       label: texts.classes.detail.nextActivities[language],
       content: activitiesTabContent,
+    },
+    {
+      id: 'attendance',
+      label: texts.classes.detail.attendance[language],
+      content: attendanceTabContent,
     },
   ];
 

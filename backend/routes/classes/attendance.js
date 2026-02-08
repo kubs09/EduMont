@@ -4,10 +4,10 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-const isValidDateString = (value) =>
-  typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
-const isValidTimestamp = (value) => value === undefined || value === null || !Number.isNaN(Date.parse(value));
+const isValidTimestamp = (value) =>
+  value === undefined || value === null || !Number.isNaN(Date.parse(value));
 
 const parseId = (value) => {
   const parsed = Number.parseInt(value, 10);
@@ -121,7 +121,9 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
 
   const classId = parseId(req.params.id);
   const childId = parseId(req.body.child_id);
-  const attendanceDate = isValidDateString(req.body.attendance_date) ? req.body.attendance_date : null;
+  const attendanceDate = isValidDateString(req.body.attendance_date)
+    ? req.body.attendance_date
+    : null;
   const checkInAt = req.body.check_in_at;
 
   if (!classId) {
@@ -206,7 +208,9 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
 
   const classId = parseId(req.params.id);
   const childId = parseId(req.body.child_id);
-  const attendanceDate = isValidDateString(req.body.attendance_date) ? req.body.attendance_date : null;
+  const attendanceDate = isValidDateString(req.body.attendance_date)
+    ? req.body.attendance_date
+    : null;
   const checkOutAt = req.body.check_out_at;
 
   if (!classId) {
