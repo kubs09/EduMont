@@ -3,5 +3,5 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "root": true,
-  "ignorePatterns": ["build", "build/", "frontend/build", "frontend/build/"]
+  "ignorePatterns": ["build", "build/", "frontend/build", "frontend/build/", "**/build/**"]
 }
