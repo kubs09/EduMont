@@ -41,6 +41,12 @@ const ChildrenPage = () => {
   const isAdmin = userRole === 'admin';
   const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
+  const formatParentNames = (parents: Child['parents']) =>
+    parents.map((parent) => `${parent.firstname} ${parent.surname}`).join(', ');
+
+  const formatParentEmails = (parents: Child['parents']) =>
+    parents.map((parent) => parent.email).join(', ');
+
   const fetchChildren = useCallback(async () => {
     try {
       const data = await getChildren();
@@ -180,9 +186,11 @@ const ChildrenPage = () => {
                   {!isParent && (
                     <>
                       <Td display={{ base: 'none', xl: 'table-cell' }}>
-                        {child.parent_firstname} {child.parent_surname}
+                        {formatParentNames(child.parents)}
                       </Td>
-                      <Td display={{ base: 'none', xl: 'table-cell' }}>{child.parent_email}</Td>
+                      <Td display={{ base: 'none', xl: 'table-cell' }}>
+                        {formatParentEmails(child.parents)}
+                      </Td>
                     </>
                   )}
                   <Td onClick={(e) => e.stopPropagation()}>

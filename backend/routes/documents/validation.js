@@ -78,8 +78,11 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
 
   if (userRole === 'parent') {
     if (childId) {
-      const result = await pool.query('SELECT parent_id FROM children WHERE id = $1', [childId]);
-      return result.rows.length > 0 && result.rows[0].parent_id === userId;
+      const result = await pool.query(
+        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
+        [childId, userId]
+      );
+      return result.rows.length > 0;
     }
 
     if (classId) {
@@ -87,7 +90,9 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
         `
         SELECT 1 FROM class_children cc
         JOIN children ch ON cc.child_id = ch.id
-        WHERE cc.class_id = $1 AND ch.parent_id = $2
+        WHERE cc.class_id = $1 AND EXISTS (
+          SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+        )
       `,
         [classId, userId]
       );

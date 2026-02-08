@@ -9,16 +9,22 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if child exists and get parent_id
-    const child = await client.query('SELECT parent_id FROM children WHERE id = $1', [id]);
+    // Check if child exists
+    const child = await client.query('SELECT id FROM children WHERE id = $1', [id]);
 
     if (child.rows.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
 
     // Verify ownership or admin/teacher role
-    if (req.user.role === 'parent' && child.rows[0].parent_id !== req.user.id) {
-      return res.status(403).json({ error: 'Unauthorized to delete this child' });
+    if (req.user.role === 'parent') {
+      const parentLink = await client.query(
+        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
+        [id, req.user.id]
+      );
+      if (parentLink.rows.length === 0) {
+        return res.status(403).json({ error: 'Unauthorized to delete this child' });
+      }
     }
 
     // Start transaction
@@ -46,16 +52,22 @@ router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) 
   try {
     const { childId, classId } = req.params;
 
-    // Check if child exists and get parent_id
-    const child = await client.query('SELECT parent_id FROM children WHERE id = $1', [childId]);
+    // Check if child exists
+    const child = await client.query('SELECT id FROM children WHERE id = $1', [childId]);
 
     if (child.rows.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
 
     // Verify ownership or admin/teacher role
-    if (req.user.role === 'parent' && child.rows[0].parent_id !== req.user.id) {
-      return res.status(403).json({ error: 'Unauthorized' });
+    if (req.user.role === 'parent') {
+      const parentLink = await client.query(
+        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
+        [childId, req.user.id]
+      );
+      if (parentLink.rows.length === 0) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
     }
 
     // Delete from class_children

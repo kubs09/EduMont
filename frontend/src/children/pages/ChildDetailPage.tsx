@@ -16,7 +16,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { Document, getChildDocuments } from '@frontend/services/api';
-import { Child } from '@frontend/types/child';
+import { Child, UpdateChildData } from '@frontend/types/child';
 import { Schedule } from '@frontend/types/schedule';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
@@ -43,7 +43,10 @@ const ChildDetailPage = () => {
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
 
-  const canEdit = isAdmin || (isParent && childData?.parent_id === parseInt(currentUserId || '0'));
+  const canEdit =
+    isAdmin ||
+    (isParent &&
+      !!childData?.parents?.some((parent) => parent.id === parseInt(currentUserId || '0')));
   const canUpload = isAdmin || isTeacher;
 
   const loadDocuments = async (childId: number) => {
@@ -89,14 +92,14 @@ const ChildDetailPage = () => {
     fetchData();
   }, [id, language, toast]);
 
-  const handleEditSave = async (updatedData: Partial<Child>) => {
+  const handleEditSave = async (updatedData: UpdateChildData) => {
     if (!childData || !id) return;
 
     try {
       const response = await api.put(`/api/children/${id}`, {
         firstname: updatedData.firstname || childData.firstname,
         surname: updatedData.surname || childData.surname,
-        date_of_birth: updatedData.date_of_birth || childData.date_of_birth,
+        parent_ids: updatedData.parent_ids,
         notes: updatedData.notes || childData.notes,
       });
 

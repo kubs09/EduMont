@@ -13,21 +13,33 @@ router.get('/', authenticateToken, async (req, res) => {
         c.surname, 
         c.date_of_birth,
         c.notes,
-        u.firstname as parent_firstname,
-        u.surname as parent_surname,
-        u.email as parent_email,
-        u.phone as parent_contact,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'id', u.id,
+              'firstname', u.firstname,
+              'surname', u.surname,
+              'email', u.email,
+              'phone', u.phone
+            )
+            ORDER BY u.surname, u.firstname
+          )
+          FROM child_parents cp
+          JOIN users u ON cp.parent_id = u.id
+          WHERE cp.child_id = c.id),
+          '[]'
+        ) as parents,
         cl.id as class_id,
         cl.name as class_name
       FROM children c
-      JOIN users u ON c.parent_id = u.id
       LEFT JOIN class_children cc ON c.id = cc.child_id
       LEFT JOIN classes cl ON cc.class_id = cl.id
     `;
 
     const params = [];
     if (req.user.role === 'parent') {
-      query += ' WHERE c.parent_id = $1';
+      query +=
+        ' WHERE EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = c.id AND cp.parent_id = $1)';
       params.push(req.user.id);
     } else if (req.user.role === 'teacher') {
       // Teachers can only see children from their assigned classes
@@ -67,15 +79,25 @@ router.get('/:id', authenticateToken, async (req, res) => {
         c.surname, 
         c.date_of_birth,
         c.notes,
-        c.parent_id,
-        u.firstname as parent_firstname,
-        u.surname as parent_surname,
-        u.email as parent_email,
-        u.phone as parent_contact,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'id', u.id,
+              'firstname', u.firstname,
+              'surname', u.surname,
+              'email', u.email,
+              'phone', u.phone
+            )
+            ORDER BY u.surname, u.firstname
+          )
+          FROM child_parents cp
+          JOIN users u ON cp.parent_id = u.id
+          WHERE cp.child_id = c.id),
+          '[]'
+        ) as parents,
         cl.id as class_id,
         cl.name as class_name
       FROM children c
-      JOIN users u ON c.parent_id = u.id
       LEFT JOIN class_children cc ON c.id = cc.child_id
       LEFT JOIN classes cl ON cc.class_id = cl.id
       WHERE c.id = $1
@@ -90,7 +112,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const child = result.rows[0];
 
     // Check if user has access to this child
-    if (req.user.role === 'parent' && child.parent_id !== req.user.id) {
+    if (req.user.role === 'parent' && !child.parents.some((parent) => parent.id === req.user.id)) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 

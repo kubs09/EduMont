@@ -13,37 +13,47 @@ import {
   Textarea,
   FormErrorMessage,
   useToast,
+  Box,
+  Checkbox,
+  CheckboxGroup,
+  Stack,
 } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { createChildSchema } from '@frontend/profile/schemas/childSchema';
-import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
-import { Child } from '@frontend/types/child';
+import { editChildSchema } from '@frontend/profile/schemas/childSchema';
+import { Child, UpdateChildData } from '@frontend/types/child';
+import { getUsers } from '@frontend/services/api/user';
+import { User } from '@frontend/types/shared';
 
 interface EditChildModalProps {
   isOpen: boolean;
   onClose: () => void;
   childData: Child;
-  onSave: (updatedData: Partial<Child>) => Promise<void>;
+  onSave: (updatedData: UpdateChildData) => Promise<void>;
 }
 
 interface FormData {
   firstname: string;
   surname: string;
-  date_of_birth: string;
   notes?: string;
 }
 
 const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalProps) => {
   const { language } = useLanguage();
   const toast = useToast();
+  const userRole = localStorage.getItem('userRole');
+  const isAdmin = userRole === 'admin';
   const [formData, setFormData] = useState<FormData>({
     firstname: childData.firstname,
     surname: childData.surname,
-    date_of_birth: childData.date_of_birth,
     notes: childData.notes || '',
   });
+  const [parents, setParents] = useState<User[]>([]);
+  const [selectedParentIds, setSelectedParentIds] = useState<number[]>(
+    childData.parents?.map((parent) => parent.id) || []
+  );
+  const [isLoadingParents, setIsLoadingParents] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,10 +61,41 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
     setFormData({
       firstname: childData.firstname,
       surname: childData.surname,
-      date_of_birth: childData.date_of_birth,
       notes: childData.notes || '',
     });
+    setSelectedParentIds(childData.parents?.map((parent) => parent.id) || []);
   }, [childData]);
+
+  useEffect(() => {
+    if (!isAdmin || !isOpen) return;
+
+    const fetchParents = async () => {
+      try {
+        setIsLoadingParents(true);
+        const data = await getUsers('parent');
+        setParents(data);
+      } catch (error) {
+        toast({
+          title: texts.profile.error[language],
+          description: error.message || 'Failed to fetch parents',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoadingParents(false);
+      }
+    };
+
+    fetchParents();
+  }, [isAdmin, isOpen, language, toast]);
+
+  const parentOptions = useMemo(() => {
+    return parents.map((parent) => ({
+      id: parent.id,
+      label: `${parent.firstname} ${parent.surname} (${parent.email})`,
+    }));
+  }, [parents]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData((prev) => ({
@@ -68,10 +109,20 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
       setIsSubmitting(true);
       setErrors({});
 
-      const schema = createChildSchema(language);
+      const schema = editChildSchema(language);
       schema.parse(formData);
 
-      await onSave(formData);
+      if (isAdmin && selectedParentIds.length === 0) {
+        setErrors({ parent_ids: texts.profile.error[language] });
+        setIsSubmitting(false);
+        return;
+      }
+
+      await onSave({
+        id: childData.id,
+        ...formData,
+        parent_ids: isAdmin ? selectedParentIds : undefined,
+      });
       onClose();
     } catch (error) {
       if (error.errors) {
@@ -101,6 +152,30 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
         <ModalHeader>{texts.profile.children.addChild.title[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          {isAdmin && (
+            <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
+              <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
+              <Box maxH="180px" overflowY="auto" borderWidth="1px" borderRadius="md" p={2}>
+                <CheckboxGroup
+                  value={selectedParentIds.map((id) => id.toString())}
+                  onChange={(values) => setSelectedParentIds(values.map((value) => Number(value)))}
+                >
+                  <Stack spacing={2}>
+                    {parentOptions.map((parent) => (
+                      <Checkbox
+                        key={parent.id}
+                        value={parent.id.toString()}
+                        isDisabled={isLoadingParents}
+                      >
+                        {parent.label}
+                      </Checkbox>
+                    ))}
+                  </Stack>
+                </CheckboxGroup>
+              </Box>
+              <FormErrorMessage>{errors.parent_ids}</FormErrorMessage>
+            </FormControl>
+          )}
           <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>
             <FormLabel>{texts.childrenTable.firstname[language]}</FormLabel>
             <Input name="firstname" value={formData.firstname} onChange={handleChange} />
@@ -110,21 +185,6 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
             <FormLabel>{texts.childrenTable.surname[language]}</FormLabel>
             <Input name="surname" value={formData.surname} onChange={handleChange} />
             <FormErrorMessage>{errors.surname}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.date_of_birth} mb={4}>
-            <FormLabel>{texts.profile.children.dateOfBirth[language]}</FormLabel>
-            <DatePicker
-              viewType="day"
-              value={formData.date_of_birth}
-              onChange={(date) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date_of_birth: date,
-                }))
-              }
-              language={language}
-            />
-            <FormErrorMessage>{errors.date_of_birth}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.notes} mb={4}>
             <FormLabel>{texts.childrenTable.notes[language]}</FormLabel>

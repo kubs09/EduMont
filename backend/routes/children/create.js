@@ -3,12 +3,12 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
-const { validateChild } = require('./validation');
+const { validateChild, validateParentIds } = require('./validation');
 
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { firstname, surname, date_of_birth, parent_id, notes } = req.body;
+    const { firstname, surname, date_of_birth, parent_ids, notes } = req.body;
 
     // Validate input
     const validationErrors = validateChild(req.body);
@@ -16,12 +16,17 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    // For parents, force parent_id to be their own ID
-    const actualParentId = req.user.role === 'parent' ? req.user.id : parent_id;
+    // For parents, force parent_ids to their own ID
+    const actualParentIds = req.user.role === 'parent' ? [req.user.id] : parent_ids;
 
     // Verify if admin/teacher or parent is creating for themselves
-    if (req.user.role === 'parent' && actualParentId !== req.user.id) {
+    if (req.user.role === 'parent' && (!actualParentIds || actualParentIds[0] !== req.user.id)) {
       return res.status(403).json({ error: 'Parents can only add their own children' });
+    }
+
+    const parentIdErrors = validateParentIds(actualParentIds, true);
+    if (parentIdErrors.length > 0) {
+      return res.status(400).json({ errors: parentIdErrors });
     }
 
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -33,10 +38,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Insert the child
     const childResult = await client.query(
-      `INSERT INTO children (firstname, surname, date_of_birth, parent_id, notes)
-       VALUES ($1, $2, $3::date, $4, $5)
+      `INSERT INTO children (firstname, surname, date_of_birth, notes)
+       VALUES ($1, $2, $3::date, $4)
        RETURNING *`,
-      [firstname, surname, date_of_birth, actualParentId, notes]
+      [firstname, surname, date_of_birth, notes]
     );
 
     // Calculate child's age
@@ -63,6 +68,21 @@ router.post('/', authenticateToken, async (req, res) => {
       classResult.rows[0].id,
       childResult.rows[0].id,
     ]);
+
+    const validParents = await client.query(
+      'SELECT id FROM users WHERE role = $1 AND id = ANY($2)',
+      ['parent', actualParentIds]
+    );
+    if (validParents.rows.length !== actualParentIds.length) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ errors: ['One or more parent IDs are invalid'] });
+    }
+
+    await client.query(
+      `INSERT INTO child_parents (child_id, parent_id)
+       SELECT $1, unnest($2::int[])`,
+      [childResult.rows[0].id, actualParentIds]
+    );
 
     await client.query('COMMIT');
     res.status(201).json(childResult.rows[0]);

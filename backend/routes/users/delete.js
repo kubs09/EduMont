@@ -26,17 +26,28 @@ router.delete('/:id', auth, async (req, res) => {
     await client.query('DELETE FROM class_teachers WHERE teacher_id = $1', [userId]);
 
     if (userRole === 'parent') {
-      const childrenResult = await client.query('SELECT id FROM children WHERE parent_id = $1', [
-        userId,
-      ]);
-      const childIds = childrenResult.rows.map((row) => row.id);
+      const childrenResult = await client.query(
+        'SELECT child_id FROM child_parents WHERE parent_id = $1',
+        [userId]
+      );
+      const childIds = childrenResult.rows.map((row) => row.child_id);
+
+      await client.query('DELETE FROM child_parents WHERE parent_id = $1', [userId]);
 
       if (childIds.length > 0) {
-        await client.query('DELETE FROM schedules WHERE child_id = ANY($1)', [childIds]);
+        const orphanedChildren = await client.query(
+          `SELECT ch.id
+           FROM children ch
+           LEFT JOIN child_parents cp ON ch.id = cp.child_id
+           WHERE ch.id = ANY($1) AND cp.child_id IS NULL`,
+          [childIds]
+        );
 
-        await client.query('DELETE FROM class_children WHERE child_id = ANY($1)', [childIds]);
+        const orphanedIds = orphanedChildren.rows.map((row) => row.id);
+        if (orphanedIds.length > 0) {
+          await client.query('DELETE FROM children WHERE id = ANY($1)', [orphanedIds]);
+        }
       }
-      await client.query('DELETE FROM children WHERE parent_id = $1', [userId]);
     }
 
     await client.query('DELETE FROM messages WHERE from_user_id = $1 OR to_user_id = $1', [userId]);

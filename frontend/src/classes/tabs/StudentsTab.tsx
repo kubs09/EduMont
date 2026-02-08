@@ -36,10 +36,18 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
     const allChildren = classData.children;
     if (isAdmin || isTeacher) return allChildren;
     if (isParent) {
-      return allChildren.filter((child) => child.parent_id === currentUserId);
+      return allChildren.filter((child) =>
+        child.parents.some((parent) => parent.id === currentUserId)
+      );
     }
     return [];
   };
+
+  const formatParentNames = (parents: Class['children'][number]['parents']) =>
+    parents.map((parent) => `${parent.firstname} ${parent.surname}`).join(', ');
+
+  const formatParentContacts = (parents: Class['children'][number]['parents']) =>
+    parents.map((parent) => parent.phone || parent.email).join(', ');
 
   return (
     <Card>
@@ -68,8 +76,8 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                   <Td>{child.firstname}</Td>
                   <Td>{child.surname}</Td>
                   <Td>{child.age}</Td>
-                  {(isAdmin || isTeacher) && <Td>{child.parent}</Td>}
-                  {(isAdmin || isTeacher) && <Td>{child.parent_contact || child.parent_email}</Td>}
+                  {(isAdmin || isTeacher) && <Td>{formatParentNames(child.parents)}</Td>}
+                  {(isAdmin || isTeacher) && <Td>{formatParentContacts(child.parents)}</Td>}
                 </Tr>
               ))}
             </Tbody>

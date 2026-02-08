@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Child } from '@frontend/types/child';
 import { ROUTES } from '@frontend/shared/route';
+import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 
 interface InformationTabProps {
   childData: Child;
@@ -22,6 +23,10 @@ const InformationTab: React.FC<InformationTabProps> = ({
 }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
+  const parentNames = childData.parents
+    .map((parent) => `${parent.firstname} ${parent.surname}`)
+    .join(', ');
+  const parentEmails = childData.parents.map((parent) => parent.email).join(', ');
 
   return (
     <VStack align="stretch" spacing={{ base: 4, md: 6 }} overflowX="hidden">
@@ -38,7 +43,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </Box>
             <Box>
               <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
-              <Text>{new Date(childData.date_of_birth).toLocaleDateString(language)}</Text>
+              <Text>{formatDate(new Date(childData.date_of_birth), language)}</Text>
             </Box>
             {childData.notes && (
               <Box>
@@ -74,14 +79,12 @@ const InformationTab: React.FC<InformationTabProps> = ({
             </Box>
             <Box>
               <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
-              <Text>
-                {childData.parent_firstname} {childData.parent_surname}
-              </Text>
+              <Text>{parentNames || '-'}</Text>
             </Box>
-            {childData.parent_email && (
+            {parentEmails && (
               <Box>
                 <Text fontWeight="bold">{texts.profile.email[language]}</Text>
-                <Text>{childData.parent_email}</Text>
+                <Text>{parentEmails}</Text>
               </Box>
             )}
           </VStack>

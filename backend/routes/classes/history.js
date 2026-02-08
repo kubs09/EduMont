@@ -18,7 +18,9 @@ router.get('/:id/history', auth, async (req, res) => {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
-         WHERE cc.class_id = $1 AND ch.parent_id = $2`,
+         WHERE cc.class_id = $1 AND EXISTS (
+           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+         )`,
         [id, req.user.id]
       );
       if (parentChildCheck.rows.length === 0) {

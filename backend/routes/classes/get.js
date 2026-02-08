@@ -36,16 +36,25 @@ router.get('/', auth, async (req, res) => {
                 ch.firstname,
                 ch.surname,
                 ch.date_of_birth,
-                p.firstname as parent_firstname,
-                p.surname as parent_surname,
-                p.email as parent_email,
-                concat(p.firstname, ' ', p.surname) as parent,
-                p.phone as parent_contact,
-                ch.parent_id,
+                COALESCE(
+                  (SELECT json_agg(
+                    json_build_object(
+                      'id', u.id,
+                      'firstname', u.firstname,
+                      'surname', u.surname,
+                      'email', u.email,
+                      'phone', u.phone
+                    )
+                    ORDER BY u.surname, u.firstname
+                  )
+                  FROM child_parents cp
+                  JOIN users u ON cp.parent_id = u.id
+                  WHERE cp.child_id = ch.id),
+                  '[]'
+                ) as parents,
                 EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer as age
               FROM class_children cc
               JOIN children ch ON cc.child_id = ch.id
-              JOIN users p ON ch.parent_id = p.id
               WHERE cc.class_id = c.id
             ) child),
             '[]'
@@ -90,14 +99,18 @@ router.get('/', auth, async (req, res) => {
             )
             FROM class_children cc
             JOIN children ch ON cc.child_id = ch.id
-            WHERE cc.class_id = c.id AND ch.parent_id = $1),
+            WHERE cc.class_id = c.id AND EXISTS (
+              SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $1
+            )),
             '[]'
           ) as children
         FROM classes c
         WHERE EXISTS (
           SELECT 1 FROM class_children cc
           JOIN children ch ON cc.child_id = ch.id
-          WHERE cc.class_id = c.id AND ch.parent_id = $1
+          WHERE cc.class_id = c.id AND EXISTS (
+            SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $1
+          )
         )
         ORDER BY c.name`;
       params.push(req.user.id);
@@ -123,7 +136,9 @@ router.get('/:id', auth, async (req, res) => {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
-         WHERE cc.class_id = $1 AND ch.parent_id = $2`,
+         WHERE cc.class_id = $1 AND EXISTS (
+           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+         )`,
         [id, req.user.id]
       );
       if (parentChildCheck.rows.length === 0) {
@@ -148,11 +163,19 @@ router.get('/:id', auth, async (req, res) => {
             'firstname', ch.firstname,
             'surname', ch.surname,
             'date_of_birth', ch.date_of_birth,
-            'parent_id', ch.parent_id,
-            'parent_firstname', p.firstname,
-            'parent_surname', p.surname,
-            'parent_email', p.email,
-            'parent_contact', p.phone,
+            'parents', COALESCE(
+              (SELECT jsonb_agg(jsonb_build_object(
+                'id', u.id,
+                'firstname', u.firstname,
+                'surname', u.surname,
+                'email', u.email,
+                'phone', u.phone
+              ) ORDER BY u.surname, u.firstname)
+              FROM child_parents cp
+              JOIN users u ON cp.parent_id = u.id
+              WHERE cp.child_id = ch.id),
+              '[]'::jsonb
+            ),
             'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
           )) FILTER (WHERE ch.id IS NOT NULL),
           '[]'::jsonb
@@ -162,13 +185,14 @@ router.get('/:id', auth, async (req, res) => {
       LEFT JOIN users t ON ct.teacher_id = t.id
       LEFT JOIN class_children cc ON c.id = cc.class_id
       LEFT JOIN children ch ON cc.child_id = ch.id
-      LEFT JOIN users p ON ch.parent_id = p.id
       WHERE c.id = $1`;
 
     const params = [id];
 
     if (req.user.role === 'parent') {
-      query += ` AND (ch.parent_id = $2 OR ch.id IS NULL)`;
+      query += ` AND (ch.id IS NULL OR EXISTS (
+        SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+      ))`;
       params.push(req.user.id);
     }
 

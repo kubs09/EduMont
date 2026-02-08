@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, users, invitations, messages, children, classes, class_teachers, class_children, schedules, documents CASCADE;
+DROP TABLE IF EXISTS class_history, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -20,9 +20,17 @@ CREATE TABLE children (
     firstname VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     date_of_birth DATE NOT NULL,
-    parent_id INTEGER NOT NULL REFERENCES users(id),
     notes TEXT
 );
+
+CREATE TABLE child_parents (
+    child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+    parent_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (child_id, parent_id)
+);
+
+CREATE INDEX idx_child_parents_parent_id ON child_parents(parent_id);
 
 CREATE TABLE invitations (
     id SERIAL PRIMARY KEY,
@@ -143,18 +151,19 @@ INSERT INTO users (email, firstname, surname, password, role) VALUES
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert children with correct parent_id references and proper date casting
-INSERT INTO children (firstname, surname, date_of_birth, parent_id, notes)
-SELECT 
-    'Jakub', 'Novák', DATE '2022-01-01', u.id, 'Alergie na ořechy'
-FROM users u WHERE u.email = 'petr.novak@example.com'
-UNION ALL
-SELECT 
-    'Ema', 'Dvořáková', DATE '2020-01-01', u.id, 'Bez speciálních požadavků'
-FROM users u WHERE u.email = 'lucie.dvorakova@example.com'
-UNION ALL
-SELECT 
-    'Tereza', 'Svobodová', DATE '2017-01-01', u.id, 'Vegetariánská strava'
-FROM users u WHERE u.email = 'karel.svoboda@example.com';
+INSERT INTO children (firstname, surname, date_of_birth, notes) VALUES
+('Jakub', 'Novák', DATE '2022-01-01', 'Alergie na ořechy'),
+('Ema', 'Dvořáková', DATE '2020-01-01', 'Bez speciálních požadavků'),
+('Tereza', 'Svobodová', DATE '2017-01-01', 'Vegetariánská strava');
+
+INSERT INTO child_parents (child_id, parent_id)
+SELECT ch.id, u.id
+FROM children ch
+JOIN users u ON (
+  (ch.firstname = 'Jakub' AND u.email = 'petr.novak@example.com') OR
+  (ch.firstname = 'Ema' AND u.email = 'lucie.dvorakova@example.com') OR
+  (ch.firstname = 'Tereza' AND u.email = 'karel.svoboda@example.com')
+);
 
 -- Insert sample class
 INSERT INTO classes (name, description, min_age, max_age) VALUES
