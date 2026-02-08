@@ -10,7 +10,12 @@ import {
   useColorModeValue,
   Flex,
   VStack,
+  HStack,
+  IconButton,
+  Collapse,
+  useBreakpointValue,
 } from '@chakra-ui/react';
+import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
@@ -40,6 +45,8 @@ const ProfilePage = () => {
   const menuActiveBg = useColorModeValue('gray.100', 'whiteAlpha.200');
   const menuActiveColor = useColorModeValue('gray.900', 'white');
   const menuTextColor = useColorModeValue('gray.700', 'whiteAlpha.800');
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   type SectionKey = 'contact' | 'class' | 'children' | 'settings';
   const [activeSection, setActiveSection] = useState<SectionKey>('contact');
@@ -83,6 +90,11 @@ const ProfilePage = () => {
     }
   }, [activeSection, visibleSections]);
 
+  useEffect(() => {
+    if (isMobile === undefined) return;
+    setIsMenuOpen(!isMobile);
+  }, [isMobile]);
+
   const handleNotificationToggle = async () => {
     try {
       await updateNotificationSettings(userId, { messageNotifications: !messageNotifications });
@@ -112,36 +124,53 @@ const ProfilePage = () => {
   const handleOpenChildren = () => navigate(ROUTES.CHILDREN);
 
   return (
-    <Box maxW="container.lg" mx="auto">
-      <Flex direction={{ base: 'column', md: 'row' }} gap={6} align="start">
-        <Card w={{ base: 'full', md: '240px' }} bg={menuBg} position="sticky" top={6}>
-          <CardBody>
-            <Heading size="md" mb={4}>
-              {texts.profile.title[language]}
-            </Heading>
-            <VStack spacing={2} align="stretch">
-              {visibleSections.map((section) => {
-                const isActive = section.key === activeSection;
-                return (
-                  <Button
-                    key={section.key}
-                    variant="ghost"
-                    justifyContent="flex-start"
-                    onClick={() => setActiveSection(section.key)}
-                    bg={isActive ? menuActiveBg : 'transparent'}
-                    color={isActive ? menuActiveColor : menuTextColor}
-                    fontWeight={isActive ? 'semibold' : 'normal'}
-                    aria-current={isActive ? 'page' : undefined}
-                  >
-                    {section.label}
-                  </Button>
-                );
-              })}
-            </VStack>
+    <Box maxW={{ base: 'full', md: 'container.lg' }} mx="auto" px={{ base: 2, md: 0 }}>
+      <Flex direction={{ base: 'column', md: 'row' }} gap={{ base: 4, md: 6 }} align="start">
+        <Card
+          w={{ base: 'full', md: '240px' }}
+          bg={menuBg}
+          position={{ base: 'static', md: 'sticky' }}
+          top={{ md: 6 }}
+        >
+          <CardBody p={{ base: 2, md: 4 }}>
+            <HStack justify="space-between" mb={{ base: 2, md: 4 }}>
+              <Heading size={{ base: 'sm', md: 'md' }}>{texts.profile.title[language]}</Heading>
+              {isMobile && (
+                <IconButton
+                  aria-label={texts.profile.title[language]}
+                  icon={isMenuOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMenuOpen((open) => !open)}
+                />
+              )}
+            </HStack>
+            <Collapse in={!isMobile || isMenuOpen} animateOpacity>
+              <VStack spacing={{ base: 1, md: 2 }} align="stretch">
+                {visibleSections.map((section) => {
+                  const isActive = section.key === activeSection;
+                  return (
+                    <Button
+                      key={section.key}
+                      variant="ghost"
+                      justifyContent="flex-start"
+                      size={{ base: 'sm', md: 'md' }}
+                      onClick={() => setActiveSection(section.key)}
+                      bg={isActive ? menuActiveBg : 'transparent'}
+                      color={isActive ? menuActiveColor : menuTextColor}
+                      fontWeight={isActive ? 'semibold' : 'normal'}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      {section.label}
+                    </Button>
+                  );
+                })}
+              </VStack>
+            </Collapse>
           </CardBody>
         </Card>
 
-        <Box flex="1">
+        <Box flex="1" w={{ base: 'full', md: 'auto' }}>
           {activeSection === 'contact' && (
             <ContactSection
               firstName={firstName}
@@ -155,11 +184,11 @@ const ProfilePage = () => {
           )}
 
           {activeSection === 'class' && userRole === 'teacher' && (
-            <ClassSection onOpenClasses={handleOpenClasses} />
+            <ClassSection onOpenClasses={handleOpenClasses} subtleBg={subtleBg} />
           )}
 
           {activeSection === 'children' && userRole === 'parent' && (
-            <ChildrenSection onOpenChildren={handleOpenChildren} />
+            <ChildrenSection onOpenChildren={handleOpenChildren} subtleBg={subtleBg} />
           )}
 
           {activeSection === 'settings' && (
