@@ -124,7 +124,6 @@ const ensureChildInClass = async (childId, classId) => {
     return result.rows.length > 0;
   } catch (error) {
     console.error('Error checking child in class:', error);
-    // On error, assume not in class to prevent orphaned documents
     return false;
   }
 };

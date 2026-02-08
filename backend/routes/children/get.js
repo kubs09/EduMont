@@ -42,7 +42,6 @@ router.get('/', authenticateToken, async (req, res) => {
         ' WHERE EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = c.id AND cp.parent_id = $1)';
       params.push(req.user.id);
     } else if (req.user.role === 'teacher') {
-      // Teachers can only see children from their assigned classes
       query += ` WHERE cl.id IN (
         SELECT ct.class_id 
         FROM class_teachers ct 
@@ -111,7 +110,6 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
     const child = result.rows[0];
 
-    // Check if user has access to this child
     if (req.user.role === 'parent' && !child.parents.some((parent) => parent.id === req.user.id)) {
       return res.status(403).json({ error: 'Unauthorized' });
     }

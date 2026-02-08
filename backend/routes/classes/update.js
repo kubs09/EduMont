@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Update a class
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
@@ -15,7 +14,6 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { name, description, min_age, max_age, teacherIds } = req.body;
 
-    // Validate required fields
     if (
       !name ||
       min_age === undefined ||
@@ -26,7 +24,6 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('Missing required fields: name, min_age, and max_age are required');
     }
 
-    // Convert to numbers and validate
     const minAge = Number(min_age);
     const maxAge = Number(max_age);
 
@@ -34,13 +31,11 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('Invalid age range values');
     }
 
-    // First update the class details
     await client.query(
       'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
       [name, description, minAge, maxAge, id]
     );
 
-    // Then handle teacher assignments
     await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
 
     if (Array.isArray(teacherIds) && teacherIds.length > 0) {
@@ -51,7 +46,6 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await client.query('COMMIT');
-    // Return the updated class data
     const updatedClass = await client.query(
       `
       SELECT c.*, 

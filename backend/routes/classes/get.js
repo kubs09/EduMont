@@ -131,7 +131,6 @@ router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // For parents, check if they have a child in this class
     if (req.user.role === 'parent') {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc

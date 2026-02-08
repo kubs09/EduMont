@@ -36,7 +36,6 @@ router.post('/', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // Insert the child
     const childResult = await client.query(
       `INSERT INTO children (firstname, surname, date_of_birth, notes)
        VALUES ($1, $2, $3::date, $4)
@@ -44,12 +43,9 @@ router.post('/', authenticateToken, async (req, res) => {
       [firstname, surname, date_of_birth, notes]
     );
 
-    // Calculate child's age
     const childAge = Math.floor(
       (new Date() - new Date(date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000)
     );
-
-    // Find suitable class for the child's age
     const classResult = await client.query(
       'SELECT id FROM classes WHERE $1 BETWEEN min_age AND max_age LIMIT 1',
       [childAge]
@@ -62,8 +58,6 @@ router.post('/', authenticateToken, async (req, res) => {
         details: null,
       });
     }
-
-    // Assign child to the class
     await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
       classResult.rows[0].id,
       childResult.rows[0].id,

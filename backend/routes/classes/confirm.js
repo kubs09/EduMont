@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Confirm a child's class assignment
 router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
@@ -21,7 +20,6 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
       [req.params.classId, req.params.childId]
     );
 
-    // Fetch updated class data
     const result = await client.query(
       `
       SELECT 

@@ -4,12 +4,10 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Get next scheduled activities for children in a class
 router.get('/:id/next-activities', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if user has access to this class
     if (req.user.role === 'teacher') {
       const teacherClassResult = await pool.query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
@@ -28,7 +26,6 @@ router.get('/:id/next-activities', auth, async (req, res) => {
         [id, req.user.id]
       );
       if (parentChildResult.rows.length === 0) {
-        // Return empty array instead of 403 - parent has no children in this class yet
         return res.json([]);
       }
     } else if (req.user.role !== 'admin') {
@@ -55,7 +52,6 @@ router.get('/:id/next-activities', auth, async (req, res) => {
 
     const params = [id];
 
-    // For parents, only show their children's next activities
     if (req.user.role === 'parent') {
       query += ` AND EXISTS (
         SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2

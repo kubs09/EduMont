@@ -17,7 +17,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { firstname, surname, date_of_birth, parent_ids, notes } = req.body;
 
-    // Validate input
     const validationErrors = validateChildUpdate(req.body);
     if (validationErrors.length > 0) {
       return res.status(400).json({ errors: validationErrors });

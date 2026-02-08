@@ -13,10 +13,6 @@ import {
   Textarea,
   FormErrorMessage,
   useToast,
-  Box,
-  Checkbox,
-  CheckboxGroup,
-  Stack,
 } from '@chakra-ui/react';
 import { useState, useEffect, useMemo } from 'react';
 import { texts } from '@frontend/texts';
@@ -25,6 +21,7 @@ import { editChildSchema } from '@frontend/profile/schemas/childSchema';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { getUsers } from '@frontend/services/api/user';
 import { User } from '@frontend/types/shared';
+import { Combobox } from '@frontend/shared/components/Combobox';
 
 interface EditChildModalProps {
   isOpen: boolean;
@@ -155,24 +152,21 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
           {isAdmin && (
             <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
               <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
-              <Box maxH="180px" overflowY="auto" borderWidth="1px" borderRadius="md" p={2}>
-                <CheckboxGroup
-                  value={selectedParentIds.map((id) => id.toString())}
-                  onChange={(values) => setSelectedParentIds(values.map((value) => Number(value)))}
-                >
-                  <Stack spacing={2}>
-                    {parentOptions.map((parent) => (
-                      <Checkbox
-                        key={parent.id}
-                        value={parent.id.toString()}
-                        isDisabled={isLoadingParents}
-                      >
-                        {parent.label}
-                      </Checkbox>
-                    ))}
-                  </Stack>
-                </CheckboxGroup>
-              </Box>
+              <Combobox
+                options={parentOptions.map((parent) => ({
+                  label: parent.label,
+                  value: parent.id,
+                }))}
+                value={selectedParentIds}
+                onChange={(values) =>
+                  setSelectedParentIds(
+                    Array.isArray(values) ? values.map((value) => Number(value)) : []
+                  )
+                }
+                placeholder={texts.childrenTable.parent[language]}
+                isMulti
+                isDisabled={isLoadingParents}
+              />
               <FormErrorMessage>{errors.parent_ids}</FormErrorMessage>
             </FormControl>
           )}

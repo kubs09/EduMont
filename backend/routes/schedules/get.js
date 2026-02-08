@@ -5,7 +5,6 @@ const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
 const { canAccessChildSchedule } = require('./validation');
 
-// Get all schedules (admin/teacher)
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
@@ -70,7 +69,6 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific child
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const { childId } = req.params;
@@ -124,7 +122,6 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific class
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const { classId } = req.params;
@@ -205,7 +202,6 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
 
 module.exports = router;
 
-// Get schedules for a specific child
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const { childId } = req.params;
@@ -266,7 +262,6 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   }
 });
 
-// Get schedules for a specific class
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const { classId } = req.params;

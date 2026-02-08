@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Get class history
 router.get('/:id/history', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher' && req.user.role !== 'parent') {
     return res.status(403).json({ error: 'Unauthorized to view class history' });
@@ -13,7 +12,6 @@ router.get('/:id/history', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // For parents, check if they have a child in this class
     if (req.user.role === 'parent') {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc
@@ -44,7 +42,6 @@ router.get('/:id/history', auth, async (req, res) => {
   }
 });
 
-// Add class history entry
 router.post('/:id/history', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
@@ -64,7 +61,6 @@ router.post('/:id/history', auth, async (req, res) => {
   }
 });
 
-// Delete class history entry
 router.delete('/:classId/history/:historyId', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
