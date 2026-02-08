@@ -7,6 +7,14 @@ export const classes = {
     cs: 'Třídy',
     en: 'Classes',
   },
+  teacherClassMenuItem: {
+    cs: 'Moje třída',
+    en: 'My Class',
+  },
+  teacherMenuItem: {
+    cs: 'Moji studenti',
+    en: 'My Students',
+  },
   title: {
     cs: 'Seznam tříd',
     en: 'Class List',
@@ -27,9 +35,17 @@ export const classes = {
     cs: 'Učitelé',
     en: 'Teachers',
   },
-  children: {
-    cs: 'Děti',
-    en: 'Children',
+  teacher: {
+    cs: 'Učitel',
+    en: 'Teacher',
+  },
+  assistant: {
+    cs: 'Asistent',
+    en: 'Assistant',
+  },
+  students: {
+    cs: 'Studenti',
+    en: 'Students',
   },
   manageClass: {
     cs: 'Správa třídy',
@@ -64,6 +80,10 @@ export const classes = {
       cs: 'Třída musí mít alespoň jednoho učitele',
       en: 'Class must have at least one teacher',
     },
+    assistantSameAsTeacher: {
+      cs: 'Asistent nesmí být stejný jako učitel',
+      en: 'Assistant cannot be the same as the main teacher',
+    },
     childRequired: {
       cs: 'Třída musí mít alespoň jedno dítě',
       en: 'Class must have at least one child',
@@ -82,9 +102,9 @@ export const classes = {
       cs: 'Informace o třídě',
       en: 'Class Information',
     },
-    teachers: {
-      cs: 'Učitelé',
-      en: 'Teachers',
+    teacher: {
+      cs: 'Učitel',
+      en: 'Teacher',
     },
     students: {
       cs: 'Studenti',

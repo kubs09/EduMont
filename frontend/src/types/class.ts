@@ -1,8 +1,14 @@
-import { Teacher } from './shared';
 import { Child } from './child';
 
 export interface ClassChild extends Child {
   parent_names?: string;
+}
+
+export interface ClassTeacher {
+  id: number;
+  firstname: string;
+  surname: string;
+  class_role: 'teacher' | 'assistant';
 }
 
 export interface Class {
@@ -11,7 +17,7 @@ export interface Class {
   description: string;
   min_age: number;
   max_age: number;
-  teachers: Teacher[];
+  teachers: ClassTeacher[];
   children: ClassChild[];
 }
 
@@ -20,7 +26,8 @@ export interface CreateClassData {
   description: string;
   min_age: number;
   max_age: number;
-  teacherIds: number[];
+  teacherId: number;
+  assistantId?: number | null;
 }
 
 export interface UpdateClassData extends CreateClassData {

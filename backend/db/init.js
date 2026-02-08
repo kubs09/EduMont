@@ -16,7 +16,9 @@ const initDatabase = async () => {
     CREATE TABLE IF NOT EXISTS class_teachers (
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
       teacher_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      PRIMARY KEY (class_id, teacher_id)
+      role VARCHAR(20) NOT NULL CHECK (role IN ('teacher', 'assistant')),
+      PRIMARY KEY (class_id, teacher_id),
+      UNIQUE (class_id, role)
     );
   `;
 

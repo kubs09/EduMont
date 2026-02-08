@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { Teacher } from '@frontend/types/teacher';
+import { ClassTeacher } from '@frontend/types/class';
 import { classSchema } from '../schemas/classSchema';
 import { z } from 'zod';
 
@@ -27,7 +27,7 @@ interface Class {
   description: string;
   min_age: number;
   max_age: number;
-  teachers: Teacher[];
+  teachers: ClassTeacher[];
   children: Array<{ id: number; firstname: string; surname: string }>;
 }
 
@@ -40,7 +40,8 @@ interface EditClassInfoModalProps {
     description: string;
     min_age: number;
     max_age: number;
-    teacherIds?: number[];
+    teacherId: number;
+    assistantId: number | null;
   }) => Promise<void>;
   size?: ThemingProps['size'] | { base: string; md: string };
 }
@@ -68,12 +69,26 @@ export const EditClassInfoModal = ({
         maxAge,
       });
 
+      const primaryTeacher = classData.teachers.find((t) => t.class_role === 'teacher');
+      const assistantTeacher = classData.teachers.find((t) => t.class_role === 'assistant');
+
+      if (!primaryTeacher) {
+        toast({
+          title: texts.classes.validation.teacherRequired[language],
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
       await onSave({
         name: validationResult.name,
         description: validationResult.description,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
-        teacherIds: classData.teachers.map((t) => t.id),
+        teacherId: primaryTeacher.id,
+        assistantId: assistantTeacher?.id ?? null,
       });
       onClose();
     } catch (error) {

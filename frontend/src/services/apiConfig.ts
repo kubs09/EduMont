@@ -80,9 +80,14 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const isPasswordChange =
+        requestUrl.includes('/api/users/') && requestUrl.includes('/password');
+      if (!isPasswordChange) {
+        localStorage.removeItem('token');
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 

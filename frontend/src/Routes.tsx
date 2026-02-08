@@ -8,7 +8,6 @@ import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
 import ProfilePage from './profile/ProfilePage';
 import EditProfilePage from './profile/EditProfilePage';
-import ChangePasswordPage from './profile/ChangePasswordPage';
 import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
 import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
@@ -68,7 +67,6 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
-          <Route path={ROUTES.PROFILE_CHANGE_PASSWORD} element={<ChangePasswordPage />} />
         </Route>
       </Route>
 
