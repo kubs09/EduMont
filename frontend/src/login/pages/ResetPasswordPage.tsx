@@ -12,6 +12,8 @@ import {
   VStack,
   Heading,
   useToast,
+  Card,
+  CardBody,
 } from '@chakra-ui/react';
 import { resetPassword } from '@frontend/services/api/auth';
 import { texts } from '@frontend/texts';
@@ -76,39 +78,43 @@ const ResetPasswordPage = () => {
 
   return (
     <Container maxW="md">
-      <VStack spacing={8} mt={20}>
-        <Heading as="h1" size="lg">
-          {texts.auth.resetPassword.title[language]}
-        </Heading>
+      <Card p={8} mt={20} boxShadow="lg" borderRadius="md">
+        <CardBody>
+          <VStack spacing={8} mt={20}>
+            <Heading as="h1" size="lg">
+              {texts.auth.resetPassword.title[language]}
+            </Heading>
 
-        <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={4}>
-            <FormControl isInvalid={!!errors.password}>
-              <Input
-                type="password"
-                placeholder={texts.auth.resetPassword.passwordPlaceholder[language]}
-                {...register('password')}
-              />
-              <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
-            </FormControl>
+            <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
+              <VStack spacing={4}>
+                <FormControl isInvalid={!!errors.password}>
+                  <Input
+                    type="password"
+                    placeholder={texts.auth.resetPassword.passwordPlaceholder[language]}
+                    {...register('password')}
+                  />
+                  <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
+                </FormControl>
 
-            <FormControl isInvalid={!!errors.confirmPassword}>
-              <Input
-                type="password"
-                placeholder={texts.auth.resetPassword.confirmPasswordPlaceholder[language]}
-                {...register('confirmPassword')}
-              />
-              <FormErrorMessage>
-                {errors.confirmPassword && errors.confirmPassword.message}
-              </FormErrorMessage>
-            </FormControl>
+                <FormControl isInvalid={!!errors.confirmPassword}>
+                  <Input
+                    type="password"
+                    placeholder={texts.auth.resetPassword.confirmPasswordPlaceholder[language]}
+                    {...register('confirmPassword')}
+                  />
+                  <FormErrorMessage>
+                    {errors.confirmPassword && errors.confirmPassword.message}
+                  </FormErrorMessage>
+                </FormControl>
 
-            <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
-              {texts.auth.resetPassword.submitButton[language]}
-            </Button>
+                <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
+                  {texts.auth.resetPassword.submitButton[language]}
+                </Button>
+              </VStack>
+            </Box>
           </VStack>
-        </Box>
-      </VStack>
+        </CardBody>
+      </Card>
     </Container>
   );
 };

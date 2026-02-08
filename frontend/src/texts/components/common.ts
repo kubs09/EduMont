@@ -334,6 +334,10 @@ export const common = {
       cs: 'Dokončení registrace',
       en: 'Complete Registration',
     },
+    description: {
+      cs: 'Pro registraci zadejte své údaje a vytvořte si účet.',
+      en: 'For registration, enter your details and create an account.',
+    },
     success: {
       title: {
         cs: 'Registrace dokončena',

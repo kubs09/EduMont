@@ -12,7 +12,12 @@ import {
   Heading,
   Text,
   useToast,
+  Card,
+  Icon,
+  Circle,
+  useColorModeValue,
 } from '@chakra-ui/react';
+import { FaQuestionCircle } from 'react-icons/fa';
 import { requestPasswordReset } from '@frontend/services/api';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -20,12 +25,16 @@ import {
   createForgotPasswordSchema,
   ForgotPasswordFormData,
 } from '../schemas/ForgotPasswordSchema';
+import { useNavigate } from 'react-router';
 
 const ForgotPasswordPage = () => {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
+
+  const iconBg = useColorModeValue('brand.primary.900', 'brand.primary.700');
 
   const {
     register,
@@ -71,43 +80,51 @@ const ForgotPasswordPage = () => {
 
   return (
     <Container maxW="md">
-      <VStack spacing={8} mt={20}>
-        <Heading as="h1" size="lg">
-          {texts.auth.forgotPassword.title[language]}
-        </Heading>
+      <Card p={8} mt={20} boxShadow="lg" borderRadius="md">
+        <VStack spacing={8}>
+          <Circle size="40px" bg={iconBg} color="white">
+            <Icon as={FaQuestionCircle} />
+          </Circle>
+          <Heading as="h1" size="lg">
+            {texts.auth.forgotPassword.title[language]}
+          </Heading>
 
-        <Text textAlign="center">{texts.auth.forgotPassword.description[language]}</Text>
+          <Text textAlign="center">{texts.auth.forgotPassword.description[language]}</Text>
 
-        <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={4}>
-            <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
-              <Input
-                type="email"
-                placeholder={texts.auth.forgotPassword.emailPlaceholder[language]}
-                {...register('email')}
-              />
-              <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
-            </FormControl>
+          <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
+            <VStack spacing={4}>
+              <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
+                <Input
+                  type="email"
+                  placeholder={texts.auth.forgotPassword.emailPlaceholder[language]}
+                  {...register('email')}
+                />
+                <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
+              </FormControl>
 
-            <Button
-              type="submit"
-              variant="brand"
-              width="100%"
-              mt={4}
-              isLoading={loading}
-              disabled={submitted}
-            >
-              {texts.auth.forgotPassword.submitButton[language]}
-            </Button>
+              <Button
+                type="submit"
+                variant="brand"
+                width="100%"
+                mt={4}
+                isLoading={loading}
+                disabled={submitted}
+              >
+                {texts.auth.forgotPassword.submitButton[language]}
+              </Button>
 
-            {submitted && (
-              <Text color="green.500" fontSize="sm">
-                {texts.auth.forgotPassword.checkEmail[language]}
-              </Text>
-            )}
-          </VStack>
-        </Box>
-      </VStack>
+              {submitted && (
+                <Text color="green.500" fontSize="sm">
+                  {texts.auth.forgotPassword.checkEmail[language]}
+                </Text>
+              )}
+              <Button variant="secondary" width="100%" mb={4} onClick={() => navigate('/login')}>
+                {texts.auth.forgotPassword.backToLogin[language]}
+              </Button>
+            </VStack>
+          </Box>
+        </VStack>
+      </Card>
     </Container>
   );
 };

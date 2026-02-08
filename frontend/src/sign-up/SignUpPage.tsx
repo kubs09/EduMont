@@ -1,7 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Box,
   Button,
   FormControl,
   FormLabel,
@@ -12,7 +11,9 @@ import {
   CardHeader,
   Heading,
   useToast,
+  Text,
   FormErrorMessage,
+  Container,
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -63,11 +64,12 @@ const InviteSignupPage: React.FC = () => {
   };
 
   return (
-    <Box p={6}>
-      <Card>
+    <Container maxW="lg">
+      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
         <CardHeader>
           <Heading>{texts.inviteSignup.title[language]}</Heading>
         </CardHeader>
+        <Text textAlign="center">{texts.common.inviteSignup.description[language]}</Text>
         <CardBody>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <VStack spacing={4}>
@@ -91,14 +93,14 @@ const InviteSignupPage: React.FC = () => {
                 <Input type="password" {...register('confirmPassword')} />
                 <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
               </FormControl>
-              <Button type="submit" colorScheme="blue" width="full" isLoading={isLoading}>
+              <Button mt={5} type="submit" colorScheme="blue" width="full" isLoading={isLoading}>
                 {texts.inviteSignup.form.submit[language]}
               </Button>
             </VStack>
           </form>
         </CardBody>
       </Card>
-    </Box>
+    </Container>
   );
 };
 
