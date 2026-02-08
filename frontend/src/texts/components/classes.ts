@@ -27,6 +27,14 @@ export const classes = {
     cs: 'Učitelé',
     en: 'Teachers',
   },
+  teacher: {
+    cs: 'Učitel',
+    en: 'Teacher',
+  },
+  assistant: {
+    cs: 'Asistent',
+    en: 'Assistant',
+  },
   children: {
     cs: 'Děti',
     en: 'Children',
@@ -64,6 +72,10 @@ export const classes = {
       cs: 'Třída musí mít alespoň jednoho učitele',
       en: 'Class must have at least one teacher',
     },
+    assistantSameAsTeacher: {
+      cs: 'Asistent nesmí být stejný jako učitel',
+      en: 'Assistant cannot be the same as the main teacher',
+    },
     childRequired: {
       cs: 'Třída musí mít alespoň jedno dítě',
       en: 'Class must have at least one child',
@@ -82,9 +94,9 @@ export const classes = {
       cs: 'Informace o třídě',
       en: 'Class Information',
     },
-    teachers: {
-      cs: 'Učitelé',
-      en: 'Teachers',
+    teacher: {
+      cs: 'Učitel',
+      en: 'Teacher',
     },
     students: {
       cs: 'Studenti',

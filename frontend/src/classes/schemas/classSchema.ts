@@ -1,8 +1,14 @@
 import { z } from 'zod';
 
-export const classTeachersSchema = z.array(z.number()).min(1, {
-  message: 'At least one teacher must be selected',
-});
+export const classTeachersSchema = z
+  .object({
+    teacherId: z.number({ required_error: 'Teacher is required' }),
+    assistantId: z.number().nullable().optional(),
+  })
+  .refine((data) => data.assistantId === null || data.assistantId !== data.teacherId, {
+    message: 'Assistant cannot be the same as the main teacher',
+    path: ['assistantId'],
+  });
 
 export const classSchema = z
   .object({

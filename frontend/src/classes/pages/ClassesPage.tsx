@@ -18,13 +18,7 @@ import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
-
-interface Teacher {
-  id: number;
-  firstname: string;
-  surname: string;
-  role: string;
-}
+import { ClassTeacher } from '@frontend/types/class';
 
 interface Child {
   id: number;
@@ -36,7 +30,7 @@ interface Class {
   id: number;
   name: string;
   description: string;
-  teachers: Teacher[];
+  teachers: ClassTeacher[];
   children: Child[];
 }
 
@@ -69,6 +63,10 @@ const ClassesPage = () => {
   }, [toast]);
 
   const getAcceptedChildren = (cls: Class) => cls.children || [];
+  const getPrimaryTeacher = (cls: Class) =>
+    cls.teachers.find((teacher) => teacher.class_role === 'teacher');
+  const getAssistantTeacher = (cls: Class) =>
+    cls.teachers.find((teacher) => teacher.class_role === 'assistant');
 
   const totalPages = Math.ceil(classes.length / PAGE_SIZE);
   const paginatedClasses = classes.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -107,56 +105,71 @@ const ClassesPage = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {paginatedClasses.map((cls, index) => (
-                <Tr
-                  key={cls.id}
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  borderLeftWidth={{ base: '4px', md: '0' }}
-                  borderLeftColor={{
-                    base:
-                      ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
-                        ? 'blue.400'
-                        : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
-                          ? 'purple.400'
-                          : 'teal.400',
-                    md: 'transparent',
-                  }}
-                  bg={{
-                    base: ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0 ? 'gray.50' : 'white',
-                    md: 'transparent',
-                  }}
-                  _hover={{
-                    bg: { base: 'gray.100', md: 'gray.50' },
-                    transform: { base: 'translateX(2px)', md: 'none' },
-                  }}
-                  onClick={() => handleViewDetail(cls.id)}
-                >
-                  <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{cls.name}</Td>
-                  <Td display={{ base: 'none', md: 'table-cell' }}>{cls.description}</Td>
-                  <Td display={{ base: 'none', lg: 'table-cell' }}>
-                    <VStack align="start" spacing={1}>
-                      {cls.teachers.map((teacher) => (
-                        <Text key={teacher.id} fontSize={{ base: 'sm', md: 'md' }}>
-                          {teacher.firstname} {teacher.surname}
+              {paginatedClasses.map((cls, index) => {
+                const primaryTeacher = getPrimaryTeacher(cls);
+                const assistantTeacher = getAssistantTeacher(cls);
+
+                return (
+                  <Tr
+                    key={cls.id}
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    borderLeftWidth={{ base: '4px', md: '0' }}
+                    borderLeftColor={{
+                      base:
+                        ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
+                          ? 'blue.400'
+                          : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
+                            ? 'purple.400'
+                            : 'teal.400',
+                      md: 'transparent',
+                    }}
+                    bg={{
+                      base:
+                        ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0
+                          ? 'gray.50'
+                          : 'white',
+                      md: 'transparent',
+                    }}
+                    _hover={{
+                      bg: { base: 'gray.100', md: 'gray.50' },
+                      transform: { base: 'translateX(2px)', md: 'none' },
+                    }}
+                    onClick={() => handleViewDetail(cls.id)}
+                  >
+                    <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{cls.name}</Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>{cls.description}</Td>
+                    <Td display={{ base: 'none', lg: 'table-cell' }}>
+                      <VStack align="start" spacing={1}>
+                        <Text fontSize={{ base: 'sm', md: 'md' }}>
+                          {texts.classes.teacher[language]}:{' '}
+                          {primaryTeacher
+                            ? `${primaryTeacher.firstname} ${primaryTeacher.surname}`
+                            : '-'}
                         </Text>
-                      ))}
-                    </VStack>
-                  </Td>
-                  <Td display={{ base: 'none', xl: 'table-cell' }}>
-                    <VStack align="start" spacing={1}>
-                      {getAcceptedChildren(cls).map((child) => (
-                        <Text key={child.id} fontSize={{ base: 'sm', md: 'md' }}>
-                          {child.firstname} {child.surname}
+                        <Text fontSize={{ base: 'sm', md: 'md' }}>
+                          {texts.classes.assistant[language]}:{' '}
+                          {assistantTeacher
+                            ? `${assistantTeacher.firstname} ${assistantTeacher.surname}`
+                            : '-'}
                         </Text>
-                      ))}
-                    </VStack>
-                  </Td>
-                  <Td>
-                    <ChevronRightIcon boxSize={6} color="gray.500" />
-                  </Td>
-                </Tr>
-              ))}
+                      </VStack>
+                    </Td>
+                    <Td display={{ base: 'none', xl: 'table-cell' }}>
+                      <VStack align="start" spacing={1}>
+                        {getAcceptedChildren(cls).map((child) => (
+                          <Text key={child.id} fontSize={{ base: 'sm', md: 'md' }}>
+                            {child.firstname} {child.surname}
+                          </Text>
+                        ))}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <ChevronRightIcon boxSize={6} color="gray.500" />
+                    </Td>
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
           <TablePagination

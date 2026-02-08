@@ -28,6 +28,9 @@ const InfoTab: React.FC<InfoTabProps> = ({
   onEditClick,
   onEditMembersClick,
 }) => {
+  const primaryTeacher = classData.teachers.find((teacher) => teacher.class_role === 'teacher');
+  const assistantTeacher = classData.teachers.find((teacher) => teacher.class_role === 'assistant');
+
   return (
     <VStack align="stretch" spacing={6}>
       <Card>
@@ -49,12 +52,18 @@ const InfoTab: React.FC<InfoTabProps> = ({
               <Text>{`${classData.min_age} - ${classData.max_age}`}</Text>
             </Box>
             <Box>
-              <Text fontWeight="bold">{texts.classes.detail.teachers[language]}</Text>
-              {classData.teachers.map((teacher) => (
-                <Text key={teacher.id}>
-                  {teacher.firstname} {teacher.surname}
-                </Text>
-              ))}
+              <Text fontWeight="bold">{texts.classes.detail.teacher[language]}</Text>
+              <Text>
+                {primaryTeacher ? `${primaryTeacher.firstname} ${primaryTeacher.surname}` : '-'}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">{texts.classes.assistant[language]}</Text>
+              <Text>
+                {assistantTeacher
+                  ? `${assistantTeacher.firstname} ${assistantTeacher.surname}`
+                  : '-'}
+              </Text>
             </Box>
           </VStack>
           {isAdmin && (

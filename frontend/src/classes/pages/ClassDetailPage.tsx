@@ -112,7 +112,8 @@ const ClassDetailPage = () => {
     description: string;
     min_age: number;
     max_age: number;
-    teacherIds: number[];
+    teacherId: number;
+    assistantId: number | null;
   }) => {
     if (!classData || !id) return;
 
@@ -129,9 +130,12 @@ const ClassDetailPage = () => {
         isClosable: true,
       });
     } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        texts.classes.updateError[language];
       console.error('Update error:', error);
       toast({
-        title: texts.classes.updateError[language],
+        title: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -219,13 +223,14 @@ const ClassDetailPage = () => {
             onClose={() => setIsMembersModalOpen(false)}
             classData={classData}
             availableTeachers={availableTeachers}
-            onSave={(teacherIds) =>
+            onSave={({ teacherId, assistantId }) =>
               handleSaveClassInfo({
                 name: classData.name,
                 description: classData.description,
                 min_age: classData.min_age,
                 max_age: classData.max_age,
-                teacherIds,
+                teacherId,
+                assistantId,
               })
             }
             size={{ base: 'full', md: 'lg' }}

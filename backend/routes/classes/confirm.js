@@ -28,7 +28,8 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
           jsonb_agg(DISTINCT jsonb_build_object(
             'id', t.id,
             'firstname', t.firstname,
-            'surname', t.surname
+            'surname', t.surname,
+            'class_role', ct.role
           )) FILTER (WHERE t.id IS NOT NULL),
           '[]'::jsonb
         ) as teachers,
@@ -102,7 +103,8 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
           jsonb_agg(DISTINCT jsonb_build_object(
             'id', t.id,
             'firstname', t.firstname,
-            'surname', t.surname
+            'surname', t.surname,
+            'class_role', ct.role
           )) FILTER (WHERE t.id IS NOT NULL),
           '[]'::jsonb
         ) as teachers,
