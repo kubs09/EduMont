@@ -8,6 +8,7 @@ export const ROUTES = {
   HOME: '/',
   CHILDREN: '/children',
   PROFILE: '/profile',
+  PROFILE_DETAIL: '/profile/:id',
   PROFILE_EDIT: '/profile/edit',
   PROFILE_CHANGE_PASSWORD: '/profile/change-password',
   CLASSES: '/classes',

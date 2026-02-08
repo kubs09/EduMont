@@ -11,6 +11,7 @@ export const ROUTES = {
   PARENT_DASHBOARD: '/parent-dashboard',
   TEACHER_DASHBOARD: '/teacher-dashboard',
   PROFILE: '/profile',
+  PROFILE_DETAIL: '/profile/:id',
   PROFILE_EDIT: '/profile/edit',
   REGISTER_INVITE: '/register/invite/:token',
   CLASSES: '/classes',

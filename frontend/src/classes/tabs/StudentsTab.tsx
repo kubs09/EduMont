@@ -10,9 +10,12 @@ import {
   Text,
   VStack,
   Box,
+  Link as ChakraLink,
 } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
+import { ROUTES } from '@frontend/shared/route';
 
 interface StudentsTabProps {
   classData: Class;
@@ -31,6 +34,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   isParent,
   currentUserId,
 }) => {
+  const canViewParentProfile = isAdmin || isTeacher;
   const getVisibleChildren = () => {
     const allChildren = classData.children;
     if (isAdmin || isTeacher) return allChildren;
@@ -41,9 +45,6 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
     }
     return [];
   };
-
-  const formatParentNames = (parents: Class['children'][number]['parents']) =>
-    parents.map((parent) => `${parent.firstname} ${parent.surname}`);
 
   const formatParentContacts = (parents: Class['children'][number]['parents']) =>
     parents.map((parent) => parent.phone || parent.email);
@@ -70,9 +71,24 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                 {(isAdmin || isTeacher) && (
                   <Td>
                     <VStack align="start" spacing={1}>
-                      {formatParentNames(child.parents).map((name, parentIndex) => (
-                        <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
-                      ))}
+                      {child.parents.map((parent) => {
+                        const fullName = `${parent.firstname} ${parent.surname}`;
+                        return (
+                          <Text key={`${child.id}-parent-name-${parent.id}`}>
+                            {canViewParentProfile ? (
+                              <ChakraLink
+                                as={RouterLink}
+                                to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                                color="blue.600"
+                              >
+                                {fullName}
+                              </ChakraLink>
+                            ) : (
+                              fullName
+                            )}
+                          </Text>
+                        );
+                      })}
                     </VStack>
                   </Td>
                 )}

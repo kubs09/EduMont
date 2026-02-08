@@ -45,6 +45,7 @@ const ChildDetailPage = () => {
   const canEdit = isAdmin;
   const canUpload = isAdmin || isTeacher || isParent;
   const canDeleteDocuments = isAdmin;
+  const canViewParentProfile = isAdmin || isTeacher;
 
   const loadDocuments = async (childId: number) => {
     try {
@@ -155,6 +156,7 @@ const ChildDetailPage = () => {
           childData={childData}
           language={language}
           canEdit={canEdit}
+          canViewParentProfile={canViewParentProfile}
           onEditClick={() => setIsEditModalOpen(true)}
           onDeleteClick={() => setIsDeleteConfirmOpen(true)}
         />
