@@ -22,8 +22,6 @@ module.exports = {
       const isProd = env === 'production';
 
       if (isProd) {
-        process.env.FAST_REFRESH = 'false';
-
         webpackConfig.plugins = webpackConfig.plugins.filter((plugin) => {
           const name = plugin.constructor?.name || '';
           return (
@@ -31,13 +29,6 @@ module.exports = {
             !name.includes('ReactRefreshPlugin') &&
             !name.includes('ReactRefresh')
           );
-        });
-
-        webpackConfig.plugins.forEach((plugin) => {
-          if (plugin.constructor?.name === 'DefinePlugin') {
-            plugin.definitions = plugin.definitions || {};
-            plugin.definitions['process.env.FAST_REFRESH'] = 'false';
-          }
         });
       }
 
@@ -134,7 +125,9 @@ module.exports = {
   },
   jest: {
     configure: {
-      moduleNameMapping: {
+      transformIgnorePatterns: ['node_modules/(?!(axios)/)'],
+      moduleNameMapper: {
+        '^axios$': 'axios/dist/node/axios.cjs',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@frontend/(.*)$': '<rootDir>/src/$1',
         '^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -144,6 +137,7 @@ module.exports = {
         '^@assets/(.*)$': '<rootDir>/src/assets/$1',
         '^@styles/(.*)$': '<rootDir>/src/styles/$1',
         '^@services/(.*)$': '<rootDir>/src/services/$1',
+        '^@chakra-ui/utils/(.*)$': '<rootDir>/node_modules/@chakra-ui/utils/dist/cjs/$1.cjs',
       },
     },
   },

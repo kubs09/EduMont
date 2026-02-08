@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Button, useToast } from '@chakra-ui/react';
+import { Box, Button, Card, CardBody, Flex, IconButton, Text, useToast } from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -112,7 +112,8 @@ const ClassDetailPage = () => {
     description: string;
     min_age: number;
     max_age: number;
-    teacherIds: number[];
+    teacherId: number;
+    assistantId: number | null;
   }) => {
     if (!classData || !id) return;
 
@@ -129,9 +130,12 @@ const ClassDetailPage = () => {
         isClosable: true,
       });
     } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        texts.classes.updateError[language];
       console.error('Update error:', error);
       toast({
-        title: texts.classes.updateError[language],
+        title: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -194,16 +198,54 @@ const ClassDetailPage = () => {
 
   return (
     <Box p={{ base: 2, md: 4 }}>
-      <Button
-        leftIcon={<ChevronLeftIcon />}
-        mb={4}
-        onClick={() => navigate(ROUTES.CLASSES)}
-        size="md"
-      >
-        {texts.classes.detail.backToList[language]}
-      </Button>
-
-      <Tabs tabs={classDetailTabs} variant="line" colorScheme="blue" />
+      <Card>
+        <CardBody>
+          <Flex align="center" mb={4} wrap="wrap" gap={3}>
+            <Box display={{ base: 'block', md: 'none' }}>
+              <IconButton
+                aria-label={texts.classes.detail.backToList[language]}
+                icon={<ChevronLeftIcon />}
+                onClick={() => navigate(ROUTES.CLASSES)}
+                size="md"
+              />
+            </Box>
+            <Box display={{ base: 'none', md: 'block' }}>
+              <Button
+                leftIcon={<ChevronLeftIcon />}
+                onClick={() => navigate(ROUTES.CLASSES)}
+                size="md"
+                px={4}
+                minW="auto"
+              >
+                {texts.classes.detail.backToList[language]}
+              </Button>
+            </Box>
+            <Text flex={1} textAlign="center" fontSize="2xl" fontWeight="bold">
+              {classData.name}
+            </Text>
+            <Box display={{ base: 'block', md: 'none' }}>
+              <IconButton
+                aria-label={texts.classes.detail.backToList[language]}
+                icon={<ChevronLeftIcon />}
+                size="md"
+                visibility="hidden"
+              />
+            </Box>
+            <Box display={{ base: 'none', md: 'block' }}>
+              <Button
+                leftIcon={<ChevronLeftIcon />}
+                size="md"
+                px={4}
+                minW="auto"
+                visibility="hidden"
+              >
+                {texts.classes.detail.backToList[language]}
+              </Button>
+            </Box>
+          </Flex>
+          <Tabs tabs={classDetailTabs} variant="line" colorScheme="blue" />
+        </CardBody>
+      </Card>
 
       {isAdmin && classData && (
         <>
@@ -219,13 +261,14 @@ const ClassDetailPage = () => {
             onClose={() => setIsMembersModalOpen(false)}
             classData={classData}
             availableTeachers={availableTeachers}
-            onSave={(teacherIds) =>
+            onSave={({ teacherId, assistantId }) =>
               handleSaveClassInfo({
                 name: classData.name,
                 description: classData.description,
                 min_age: classData.min_age,
                 max_age: classData.max_age,
-                teacherIds,
+                teacherId,
+                assistantId,
               })
             }
             size={{ base: 'full', md: 'lg' }}

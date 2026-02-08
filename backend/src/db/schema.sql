@@ -54,8 +54,12 @@ CREATE TABLE classes (
 CREATE TABLE class_teachers (
     class_id INTEGER REFERENCES classes(id),
     teacher_id INTEGER REFERENCES users(id),
-    PRIMARY KEY (class_id, teacher_id)
+    role VARCHAR(20) NOT NULL CHECK (role IN ('teacher', 'assistant')),
+    PRIMARY KEY (class_id, teacher_id),
+    UNIQUE (class_id, role)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_class_teachers_teacher_id_unique ON class_teachers(teacher_id);
 
 CREATE TABLE class_children (
     class_id INTEGER REFERENCES classes(id),
@@ -168,14 +172,12 @@ INSERT INTO classes (name, description, min_age, max_age) VALUES
 WITH teacher_ids AS (
   SELECT id, email FROM users WHERE role = 'teacher'
 )
-INSERT INTO class_teachers (class_id, teacher_id)
-SELECT 1, id FROM teacher_ids WHERE email = 'jana.kralova@example.com'
+INSERT INTO class_teachers (class_id, teacher_id, role)
+SELECT 1, id, 'teacher' FROM teacher_ids WHERE email = 'jana.kralova@example.com'
 UNION ALL
-SELECT 1, id FROM teacher_ids WHERE email = 'martin.novotny@example.com'
+SELECT 2, id, 'teacher' FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
 UNION ALL
-SELECT 2, id FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
-UNION ALL
-SELECT 3, id FROM teacher_ids WHERE email = 'martin.novotny@example.com';
+SELECT 3, id, 'teacher' FROM teacher_ids WHERE email = 'martin.novotny@example.com';
 
 INSERT INTO class_children (class_id, child_id)
 SELECT 

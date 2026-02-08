@@ -20,6 +20,7 @@ import { ROUTES } from '@frontend/shared/route';
 import icon from './icon.png';
 import { useState, useEffect } from 'react';
 import { getMessages } from '@frontend/services/api';
+import { getClasses } from '@frontend/services/api/class';
 import { useAtomColors, useMenuColors } from '@frontend/design/colorModeUtils';
 
 const POLL_INTERVAL = 5000;
@@ -33,6 +34,7 @@ const Header = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
+  const isTeacher = userRole === 'teacher';
   const isParent = userRole === 'parent';
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -50,9 +52,9 @@ const Header = () => {
     };
 
     if (isAuthenticated) {
-      fetchUnreadCount(); // Initial fetch
+      fetchUnreadCount();
       const interval = setInterval(fetchUnreadCount, POLL_INTERVAL);
-      return () => clearInterval(interval); // Cleanup on unmount
+      return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
 
@@ -75,7 +77,22 @@ const Header = () => {
     navigate(ROUTES.USER_DASHBOARD);
   };
 
-  const handleClasses = () => {
+  const handleClasses = async () => {
+    if (!isTeacher) {
+      navigate(ROUTES.CLASSES);
+      return;
+    }
+
+    try {
+      const classes = await getClasses();
+      if (classes.length === 1) {
+        navigate(ROUTES.CLASS_DETAIL.replace(':id', classes[0].id.toString()));
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to fetch classes:', error);
+    }
+
     navigate(ROUTES.CLASSES);
   };
 
@@ -181,11 +198,13 @@ const Header = () => {
                 {texts.profile.menuItem[language]}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleClasses}>
-                {texts.classes.menuItem[language]}
+                {isTeacher && <>{texts.classes.teacherClassMenuItem[language]}</>}
+                {!isTeacher && <>{texts.classes.menuItem[language]}</>}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
                 {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
-                {!isParent && <>{texts.children[language]}</>}
+                {isAdmin && <>{texts.students[language]}</>}
+                {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleSchedule}>
                 {texts.schedule.menuItem[language]}

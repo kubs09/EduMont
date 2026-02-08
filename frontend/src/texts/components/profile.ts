@@ -7,6 +7,14 @@ export const profile = {
     cs: 'Můj profil',
     en: 'My Profile',
   },
+  contactInfo: {
+    cs: 'Kontaktní informace',
+    en: 'Contact Info',
+  },
+  settingsMenu: {
+    cs: 'Nastavení',
+    en: 'Settings',
+  },
   email: {
     cs: 'Emailová adresa',
     en: 'Email Address',
@@ -46,6 +54,10 @@ export const profile = {
   error: {
     cs: 'Nepodařilo se aktualizovat profil',
     en: 'Failed to update profile',
+  },
+  password: {
+    cs: 'Heslo',
+    en: 'Password',
   },
   changePassword: {
     cs: 'Změnit heslo',

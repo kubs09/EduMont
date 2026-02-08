@@ -23,24 +23,69 @@ router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { name, description, min_age, max_age, teacherIds } = req.body;
+    const { name, description, min_age, max_age, teacherId, assistantId } = req.body;
     const classResult = await client.query(
       'INSERT INTO classes (name, description, min_age, max_age) VALUES ($1, $2, $3, $4) RETURNING id',
       [name, description, min_age, max_age]
     );
     const classId = classResult.rows[0].id;
 
-    if (Array.isArray(teacherIds) && teacherIds.length > 0) {
-      const values = teacherIds.map((_, idx) => `($1, $${idx + 2})`).join(',');
-      const params = [classId, ...teacherIds];
-      const query = `INSERT INTO class_teachers (class_id, teacher_id) VALUES ${values}`;
-      await client.query(query, params);
+    if (!teacherId) {
+      throw new Error('Missing required field: teacherId is required');
+    }
+
+    if (assistantId && assistantId === teacherId) {
+      throw new Error('Assistant cannot be the same as the main teacher');
+    }
+
+    const assignedTeacher = await client.query(
+      'SELECT class_id FROM class_teachers WHERE teacher_id = $1 LIMIT 1',
+      [teacherId]
+    );
+
+    if (assignedTeacher.rows.length > 0) {
+      throw new Error('Selected teacher is already assigned to another class');
+    }
+
+    if (assistantId) {
+      const assignedAssistant = await client.query(
+        'SELECT class_id FROM class_teachers WHERE teacher_id = $1 LIMIT 1',
+        [assistantId]
+      );
+
+      if (assignedAssistant.rows.length > 0) {
+        throw new Error('Selected assistant is already assigned to another class');
+      }
+    }
+
+    const teacherParams = [classId, teacherId];
+    await client.query(
+      'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
+      [...teacherParams, 'teacher']
+    );
+
+    if (assistantId) {
+      await client.query(
+        'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
+        [classId, assistantId, 'assistant']
+      );
     }
 
     await client.query('COMMIT');
     res.status(201).json({ id: classId });
   } catch (error) {
     await client.query('ROLLBACK');
+    if (
+      error.message.includes('Selected teacher is already assigned') ||
+      error.message.includes('Selected assistant is already assigned') ||
+      error.message.includes('Assistant cannot be the same') ||
+      error.message.includes('Missing required field')
+    ) {
+      return res.status(400).json({
+        error: error.message,
+      });
+    }
+
     res.status(500).json({
       error: 'Failed to create class',
       details: error.message,
