@@ -1,30 +1,31 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  Box,
-  Card,
-  CardBody,
-  Heading,
-  VStack,
+  Button,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
-  Button,
+  Stack,
+  Switch,
+  VStack,
   useToast,
-  FormErrorMessage,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { ROUTES } from '@frontend/shared/route';
+import { Section } from '@frontend/shared/components';
 import { changePassword } from '@frontend/services/api';
-import { createPasswordChangeSchema, PasswordChangeSchema } from './schemas/passwordSchema';
+import { createPasswordChangeSchema, PasswordChangeSchema } from '../schemas/passwordSchema';
 
-const ChangePasswordPage = () => {
+interface SettingsSectionProps {
+  messageNotifications: boolean;
+  onToggleNotifications: () => void;
+}
+
+const SettingsSection = ({ messageNotifications, onToggleNotifications }: SettingsSectionProps) => {
   const { language } = useLanguage();
-  const navigate = useNavigate();
   const toast = useToast();
   const userId = Number(localStorage.getItem('userId'));
-
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formData, setFormData] = useState<PasswordChangeSchema>({
     currentPassword: '',
     newPassword: '',
@@ -36,10 +37,14 @@ const ChangePasswordPage = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const resetForm = () => {
+    setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setErrors({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,14 +54,14 @@ const ChangePasswordPage = () => {
       const schema = createPasswordChangeSchema(language);
       schema.parse(formData);
       setErrors({});
-
       setIsSubmitting(true);
       await changePassword(userId, formData.currentPassword, formData.newPassword);
       toast({
         title: texts.profile.passwordChanged[language],
         status: 'success',
       });
-      navigate(ROUTES.PROFILE);
+      resetForm();
+      setShowPasswordForm(false);
     } catch (error) {
       if (error.errors) {
         const validationErrors: Record<string, string> = {};
@@ -72,10 +77,11 @@ const ChangePasswordPage = () => {
       }
       if (error instanceof Error) {
         if (error.message === 'Current password is incorrect') {
-          toast({
-            title: texts.profile.incorrectCurrentPassword[language],
-            status: 'error',
-          });
+          setErrors((prev) => ({
+            ...prev,
+            currentPassword: texts.profile.incorrectCurrentPassword[language],
+          }));
+          return;
         } else {
           toast({
             title: texts.profile.passwordError[language],
@@ -89,12 +95,27 @@ const ChangePasswordPage = () => {
   };
 
   return (
-    <Box maxW="container.md" mx="auto" py={8} px={4}>
-      <Heading mb={6}>{texts.profile.changePassword[language]}</Heading>
-      <Card>
-        <CardBody>
+    <Stack spacing={6}>
+      <Section title={texts.profile.notifications.title[language]}>
+        <FormControl display="flex" alignItems="center">
+          <FormLabel htmlFor="message-notifications" mb="0">
+            {texts.profile.notifications.messages[language]}
+          </FormLabel>
+          <Switch
+            id="message-notifications"
+            isChecked={messageNotifications}
+            onChange={onToggleNotifications}
+          />
+        </FormControl>
+      </Section>
+      <Section title={texts.profile.password[language]}>
+        {!showPasswordForm ? (
+          <Button variant="brand" onClick={() => setShowPasswordForm(true)}>
+            {texts.profile.changePassword[language]}
+          </Button>
+        ) : (
           <form onSubmit={handleSubmit}>
-            <VStack spacing={4}>
+            <VStack spacing={4} align="stretch">
               <FormControl isInvalid={!!errors.currentPassword}>
                 <FormLabel>{texts.profile.currentPassword[language]}</FormLabel>
                 <Input
@@ -128,19 +149,24 @@ const ChangePasswordPage = () => {
                 />
                 <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
               </FormControl>
-              <Button type="submit" colorScheme="blue" isLoading={isSubmitting} w="full">
-                {' '}
+              <Button type="submit" variant="brand" isLoading={isSubmitting}>
                 {texts.profile.save[language]}
               </Button>
-              <Button variant="ghost" onClick={() => navigate(ROUTES.PROFILE)} w="full">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  resetForm();
+                  setShowPasswordForm(false);
+                }}
+              >
                 {texts.profile.cancel[language]}
               </Button>
             </VStack>
           </form>
-        </CardBody>
-      </Card>
-    </Box>
+        )}
+      </Section>
+    </Stack>
   );
 };
 
-export default ChangePasswordPage;
+export default SettingsSection;
