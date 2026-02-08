@@ -134,7 +134,9 @@ module.exports = {
   },
   jest: {
     configure: {
-      moduleNameMapping: {
+      transformIgnorePatterns: ['node_modules/(?!(axios)/)'],
+      moduleNameMapper: {
+        '^axios$': 'axios/dist/node/axios.cjs',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@frontend/(.*)$': '<rootDir>/src/$1',
         '^@components/(.*)$': '<rootDir>/src/components/$1',
@@ -144,6 +146,7 @@ module.exports = {
         '^@assets/(.*)$': '<rootDir>/src/assets/$1',
         '^@styles/(.*)$': '<rootDir>/src/styles/$1',
         '^@services/(.*)$': '<rootDir>/src/services/$1',
+        '^@chakra-ui/utils/(.*)$': '<rootDir>/node_modules/@chakra-ui/utils/dist/cjs/$1.cjs',
       },
     },
   },
