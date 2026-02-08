@@ -7,6 +7,14 @@ export const classes = {
     cs: 'Třídy',
     en: 'Classes',
   },
+  teacherClassMenuItem: {
+    cs: 'Moje třída',
+    en: 'My Class',
+  },
+  teacherMenuItem: {
+    cs: 'Moji studenti',
+    en: 'My Students',
+  },
   title: {
     cs: 'Seznam tříd',
     en: 'Class List',
