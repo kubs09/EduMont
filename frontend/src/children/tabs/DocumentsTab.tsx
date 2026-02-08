@@ -25,6 +25,7 @@ interface DocumentsTabProps {
   documents: Document[];
   language: 'cs' | 'en';
   canUpload: boolean;
+  canDelete: boolean;
   childData: Child;
   onDocumentsUpdate: () => Promise<void>;
 }
@@ -33,6 +34,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   documents,
   language,
   canUpload,
+  canDelete,
   childData,
   onDocumentsUpdate,
 }) => {
@@ -86,7 +88,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                     </Text>
                   </Td>
                   <Td>
-                    {canUpload && (
+                    {canDelete && (
                       <HStack spacing={2}>
                         <IconButton
                           aria-label="delete"
@@ -126,7 +128,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
         onDocumentsUpdate={onDocumentsUpdate}
       />
 
-      {selectedDocument && (
+      {canDelete && selectedDocument && (
         <DeleteDocumentDialog
           isOpen={deleteDialogOpen}
           onClose={() => {

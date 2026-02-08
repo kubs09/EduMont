@@ -4,7 +4,7 @@ const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
 const { executeQuery } = require('../../utils/dbQuery');
-const { validateDocument, canEditDocumentByIds, ensureChildInClass } = require('./validation');
+const { validateDocument, canAccessDocumentByIds, ensureChildInClass } = require('./validation');
 
 // Create a new document
 router.post('/', authenticateToken, async (req, res) => {
@@ -19,8 +19,13 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    const canEdit = await canEditDocumentByIds(req.user.id, req.user.role, child_id, class_id);
-    if (!canEdit) {
+    const canUpload = await canAccessDocumentByIds(
+      req.user.id,
+      req.user.role,
+      child_id,
+      class_id
+    );
+    if (!canUpload) {
       return res.status(403).json({ error: 'Access denied' });
     }
 

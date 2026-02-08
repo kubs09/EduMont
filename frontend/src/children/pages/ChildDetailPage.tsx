@@ -38,16 +38,13 @@ const ChildDetailPage = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
   const userRole = localStorage.getItem('userRole');
-  const currentUserId = localStorage.getItem('userId');
-  const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
+  const isParent = userRole === 'parent';
 
-  const canEdit =
-    isAdmin ||
-    (isParent &&
-      !!childData?.parents?.some((parent) => parent.id === parseInt(currentUserId || '0')));
-  const canUpload = isAdmin || isTeacher;
+  const canEdit = isAdmin;
+  const canUpload = isAdmin || isTeacher || isParent;
+  const canDeleteDocuments = isAdmin;
 
   const loadDocuments = async (childId: number) => {
     try {
@@ -180,6 +177,7 @@ const ChildDetailPage = () => {
           documents={documents}
           language={language}
           canUpload={canUpload}
+          canDelete={canDeleteDocuments}
           childData={childData}
           onDocumentsUpdate={async () => {
             if (id) await loadDocuments(parseInt(id));
