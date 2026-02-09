@@ -52,8 +52,8 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                 <Th>{texts.document.title[language]}</Th>
                 <Th>{texts.document.file[language]}</Th>
                 <Th>{texts.document.type[language]}</Th>
-                <Th>{texts.document.createdAt?.[language]}</Th>
-                <Th>{texts.common?.actions?.[language] || 'Actions'}</Th>
+                <Th>{texts.document.createdAt[language]}</Th>
+                <Th>{texts.common.actions[language]}</Th>
               </Tr>
             </Thead>
             <Tbody>
