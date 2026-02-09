@@ -20,6 +20,7 @@ import {
   AlertDialogOverlay,
   Button,
   Link as ChakraLink,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
 import { Link as RouterLink } from 'react-router-dom';
@@ -46,6 +47,7 @@ interface UserTableProps {
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const linkColor = useColorModeValue('blue.600', 'blue.300');
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -108,7 +110,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
                   <ChakraLink
                     as={RouterLink}
                     to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}
-                    color="blue.600"
+                    color={linkColor}
                   >
                     {`${user.firstname} ${user.surname}`}
                   </ChakraLink>

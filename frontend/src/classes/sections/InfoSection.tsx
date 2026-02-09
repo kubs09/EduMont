@@ -8,6 +8,7 @@ import {
   Stack,
   Text,
   VStack,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -31,6 +32,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
 }) => {
   const primaryTeacher = classData.teachers.find((teacher) => teacher.class_role === 'teacher');
   const assistantTeacher = classData.teachers.find((teacher) => teacher.class_role === 'assistant');
+  const linkColor = useColorModeValue('blue.600', 'blue.300');
 
   const renderTeacherName = (teacher?: Class['teachers'][number]) => {
     if (!teacher) return '-';
@@ -39,7 +41,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
       <ChakraLink
         as={RouterLink}
         to={ROUTES.PROFILE_DETAIL.replace(':id', teacher.id.toString())}
-        color="blue.600"
+        color={linkColor}
       >
         {fullName}
       </ChakraLink>

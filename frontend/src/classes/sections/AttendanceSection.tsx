@@ -15,7 +15,12 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
-import { Combobox, DatePicker } from '@frontend/shared/components';
+import {
+  Combobox,
+  DatePicker,
+  DEFAULT_PAGE_SIZE,
+  TablePagination,
+} from '@frontend/shared/components';
 import {
   checkInChild,
   checkOutChild,
@@ -45,6 +50,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [actionChildId, setActionChildId] = useState<number | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [attendanceDate, setAttendanceDate] = useState(today);
   const effectiveDate = attendanceDate || today;
@@ -77,6 +83,18 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const showActionColumn =
     effectiveDate === today &&
     (isAdmin || isTeacher || (isParent && getVisibleChildren().length > 0));
+
+  const filteredRows = useMemo(() => {
+    if (!selectedChildId) return rows;
+    return rows.filter((row) => row.id === selectedChildId);
+  }, [rows, selectedChildId]);
+
+  const totalPages = Math.ceil(filteredRows.length / DEFAULT_PAGE_SIZE);
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
+  const paginatedRows = filteredRows.slice(
+    (safeCurrentPage - 1) * DEFAULT_PAGE_SIZE,
+    safeCurrentPage * DEFAULT_PAGE_SIZE
+  );
 
   const loadAttendance = useCallback(async () => {
     setIsLoading(true);
@@ -134,6 +152,16 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   React.useEffect(() => {
     loadAttendance();
   }, [loadAttendance]);
+
+  React.useEffect(() => {
+    if (currentPage !== safeCurrentPage) {
+      setCurrentPage(safeCurrentPage);
+    }
+  }, [currentPage, safeCurrentPage]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [attendanceDate, selectedChildId]);
 
   const formatTime = (value: string | null) => {
     if (!value) return '';
@@ -222,10 +250,8 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   if (value) {
                     const childId = Number(value);
                     setSelectedChildId(childId);
-                    setRows((prevRows) => prevRows.filter((row) => row.id === childId));
                   } else {
                     setSelectedChildId(null);
-                    loadAttendance();
                   }
                 }}
                 isClearable
@@ -272,7 +298,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
               </Tr>
             </Thead>
             <Tbody>
-              {rows.map((row) => {
+              {paginatedRows.map((row) => {
                 const checkInText = row.check_in_at
                   ? formatTime(row.check_in_at)
                   : texts.classes.detail.notCheckedIn[language];
@@ -356,6 +382,15 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
             </Tbody>
           </Table>
         </TableContainer>
+      )}
+      {!isLoading && filteredRows.length > 0 && (
+        <TablePagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={DEFAULT_PAGE_SIZE}
+          totalCount={filteredRows.length}
+        />
       )}
     </Box>
   );

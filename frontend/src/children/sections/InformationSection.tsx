@@ -8,6 +8,7 @@ import {
   HStack,
   IconButton,
   Link as ChakraLink,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -35,6 +36,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
 }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
+  const linkColor = useColorModeValue('blue.600', 'blue.300');
 
   return (
     <VStack align="stretch" spacing={{ base: 4, md: 6 }} overflowX="hidden">
@@ -95,7 +97,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
                       <ChakraLink
                         as={RouterLink}
                         to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
-                        color="blue.600"
+                        color={linkColor}
                       >
                         {fullName}
                       </ChakraLink>
