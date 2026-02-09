@@ -244,11 +244,31 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
           <Table variant="simple" size="md" minW="max-content">
             <Thead>
               <Tr>
-                <Th>{texts.childrenTable.firstname[language]}</Th>
-                <Th>{texts.childrenTable.surname[language]}</Th>
-                <Th>{texts.classes.detail.checkIn[language]}</Th>
-                <Th>{texts.classes.detail.checkOut[language]}</Th>
-                {showActionColumn && <Th>{texts.classes.action[language]}</Th>}
+                {showActionColumn && (
+                  <Th display={{ base: 'table-cell', md: 'none' }}>
+                    {texts.classes.action[language]}
+                  </Th>
+                )}
+                <Th display={{ base: 'table-cell', md: 'none' }}>
+                  {texts.classes.student[language]}
+                </Th>
+                <Th display={{ base: 'none', md: 'table-cell' }}>
+                  {texts.childrenTable.firstname[language]}
+                </Th>
+                <Th display={{ base: 'none', md: 'table-cell' }}>
+                  {texts.childrenTable.surname[language]}
+                </Th>
+                <Th display={{ base: 'none', md: 'table-cell' }}>
+                  {texts.classes.detail.checkIn[language]}
+                </Th>
+                <Th display={{ base: 'none', md: 'table-cell' }}>
+                  {texts.classes.detail.checkOut[language]}
+                </Th>
+                {showActionColumn && (
+                  <Th display={{ base: 'none', md: 'table-cell' }}>
+                    {texts.classes.action[language]}
+                  </Th>
+                )}
               </Tr>
             </Thead>
             <Tbody>
@@ -261,21 +281,52 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   : texts.classes.detail.notCheckedOut[language];
                 return (
                   <Tr key={row.id}>
-                    <Td>{row.firstname}</Td>
-                    <Td>{row.surname}</Td>
-                    <Td>
+                    {(canManageAttendance || canParentManageChild(row.id)) && (
+                      <Td display={{ base: 'table-cell', md: 'none' }}>
+                        <HStack spacing={2} w="full" justifyContent="flex-start">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCheckIn(row.id)}
+                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
+                            isLoading={actionChildId === row.id}
+                          >
+                            {texts.classes.detail.checkInAction[language]}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCheckOut(row.id)}
+                            isDisabled={
+                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                            }
+                            isLoading={actionChildId === row.id}
+                          >
+                            {texts.classes.detail.checkOutAction[language]}
+                          </Button>
+                        </HStack>
+                      </Td>
+                    )}
+                    <Td display={{ base: 'table-cell', md: 'none' }}>
+                      <Text fontWeight="semibold">
+                        {row.firstname} {row.surname}
+                      </Text>
+                    </Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.firstname}</Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.surname}</Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckIn(row.check_in_at) ? 'red.500' : 'inherit'}>
                         {checkInText}
                       </Text>
                     </Td>
-                    <Td>
+                    <Td display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckOut(row.check_out_at) ? 'red.500' : 'inherit'}>
                         {checkOutText}
                       </Text>
                     </Td>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
-                      <Td>
-                        <HStack spacing={2}>
+                      <Td display={{ base: 'none', md: 'table-cell' }}>
+                        <HStack spacing={2} w="full" justifyContent="flex-start">
                           <Button
                             size="sm"
                             variant="outline"
