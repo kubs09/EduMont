@@ -5,9 +5,12 @@ import {
   Card,
   CardBody,
   Flex,
+  Grid,
+  GridItem,
   Heading,
   HStack,
   IconButton,
+  VStack,
   useToast,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
@@ -20,11 +23,9 @@ import { Child, UpdateChildData } from '@frontend/types/child';
 import { Schedule } from '@frontend/types/schedule';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
-import { Tabs, TabItem } from '@frontend/shared/components/Tabs';
+import { Section, SectionMenu } from '@frontend/shared/components';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
-import InformationTab from '../tabs/InformationTab';
-import SchedulesTab from '../tabs/SchedulesTab';
-import DocumentsTab from '../tabs/DocumentsTab';
+import { InformationSection, DocumentsSection, SchedulesSection } from '../sections';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
@@ -36,6 +37,7 @@ const ChildDetailPage = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState('information');
   const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
@@ -89,6 +91,17 @@ const ChildDetailPage = () => {
 
     fetchData();
   }, [id, language, toast]);
+
+  useEffect(() => {
+    const visibleSectionIds = [
+      'information',
+      ...(schedules.length > 0 ? ['schedules'] : []),
+      'documents',
+    ];
+    if (!visibleSectionIds.includes(activeSectionId)) {
+      setActiveSectionId(visibleSectionIds[0]);
+    }
+  }, [activeSectionId, schedules.length]);
 
   const handleEditSave = async (updatedData: UpdateChildData) => {
     if (!childData || !id) return;
@@ -147,12 +160,12 @@ const ChildDetailPage = () => {
     return null;
   }
 
-  const tabItems: TabItem[] = [
+  const sectionItems = [
     {
       id: 'information',
       label: texts.profile.children.title[language],
       content: (
-        <InformationTab
+        <InformationSection
           childData={childData}
           language={language}
           canEdit={canEdit}
@@ -162,20 +175,17 @@ const ChildDetailPage = () => {
         />
       ),
     },
-    ...(schedules.length > 0
-      ? [
-          {
-            id: 'schedules',
-            label: texts.schedule.title[language],
-            content: <SchedulesTab schedules={schedules} language={language} />,
-          },
-        ]
-      : []),
+    {
+      id: 'schedules',
+      label: texts.schedule.title[language],
+      content: <SchedulesSection schedules={schedules} language={language} />,
+      isVisible: schedules.length > 0,
+    },
     {
       id: 'documents',
       label: texts.document.title[language],
       content: (
-        <DocumentsTab
+        <DocumentsSection
           documents={documents}
           language={language}
           canUpload={canUpload}
@@ -188,6 +198,12 @@ const ChildDetailPage = () => {
       ),
     },
   ];
+
+  const menuSections = sectionItems.map((item) => ({
+    key: item.id,
+    label: item.label,
+    isVisible: item.isVisible,
+  }));
 
   return (
     <Box p={{ base: 2, md: 4 }} pb={{ base: 20, md: 24 }}>
@@ -249,7 +265,28 @@ const ChildDetailPage = () => {
               )}
             </Box>
           </Flex>
-          <Tabs tabs={tabItems} variant="line" colorScheme="blue" />
+          <Grid templateColumns={{ base: '1fr', md: '240px 1fr' }} gap={6} alignItems="start">
+            <GridItem>
+              <SectionMenu
+                title={texts.profile.children.title[language]}
+                sections={menuSections}
+                activeKey={activeSectionId}
+                onChange={setActiveSectionId}
+              />
+            </GridItem>
+            <GridItem minW={0}>
+              <VStack align="stretch" spacing={6}>
+                {sectionItems
+                  .filter((item) => item.isVisible !== false)
+                  .filter((item) => item.id === activeSectionId)
+                  .map((item) => (
+                    <Box key={item.id} id={item.id} scrollMarginTop={{ base: 24, md: 20 }}>
+                      <Section title={item.label}>{item.content}</Section>
+                    </Box>
+                  ))}
+              </VStack>
+            </GridItem>
+          </Grid>
         </CardBody>
       </Card>
 

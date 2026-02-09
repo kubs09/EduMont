@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { NextActivity } from '@frontend/services/api/class';
 import { Class } from '@frontend/types/class';
+import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 
 interface ActivitiesTabProps {
   classData: Class;
@@ -19,16 +20,29 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
   isAdmin,
   isTeacher,
 }) => {
-  const getFilteredActivities = () => {
-    return nextActivities.filter((activity) => {
-      const child = classData.children.find((c) => c.id === activity.child_id);
-      return child !== undefined;
-    });
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 4;
+
+  const filteredActivities = nextActivities.filter((activity) =>
+    classData.children.some((child) => child.id === activity.child_id)
+  );
+
+  const totalPages = Math.ceil(filteredActivities.length / PAGE_SIZE);
+  const safeCurrentPage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
+  const paginatedActivities = filteredActivities.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    if (currentPage !== safeCurrentPage) {
+      setCurrentPage(safeCurrentPage);
+    }
+  }, [currentPage, safeCurrentPage]);
 
   return (
     <Box>
-      {getFilteredActivities().length === 0 ? (
+      {filteredActivities.length === 0 ? (
         <Text color="gray.500" fontStyle="italic">
           {texts.classes.detail.noNextActivities[language]}
         </Text>
@@ -44,7 +58,7 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
               </Tr>
             </Thead>
             <Tbody>
-              {getFilteredActivities().map((activity) => (
+              {paginatedActivities.map((activity) => (
                 <Tr key={`${activity.child_id}-${activity.id}`}>
                   <Td>{activity.firstname}</Td>
                   <Td>{activity.surname}</Td>
@@ -55,6 +69,15 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
             </Tbody>
           </Table>
         </TableContainer>
+      )}
+      {filteredActivities.length > 0 && (
+        <TablePagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={PAGE_SIZE}
+          totalCount={filteredActivities.length}
+        />
       )}
     </Box>
   );

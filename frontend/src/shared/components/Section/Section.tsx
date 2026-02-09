@@ -15,7 +15,9 @@ const Section = ({ title, children, cardProps }: SectionProps) => {
           <Heading size="md">{title}</Heading>
         </CardHeader>
       )}
-      <CardBody>{children}</CardBody>
+      <CardBody w="full" maxW="100%" overflowX="auto">
+        {children}
+      </CardBody>
     </Card>
   );
 };

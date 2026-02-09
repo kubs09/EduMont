@@ -73,7 +73,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <Container maxW="md">
-      <Card p={8} mt={20} boxShadow="lg" borderRadius="md">
+      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
         <CardBody>
           <VStack spacing={8}>
             <Circle size="40px" bg={iconBg} color="white">
@@ -83,8 +83,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             <Heading as="h1" size="lg" color="text-primary">
               {texts.auth.signIn.title[language]}
             </Heading>
-
-            <Text textAlign="center">{texts.auth.signIn.description[language]}</Text>
 
             {error && <Text color="red.500">{error}</Text>}
 

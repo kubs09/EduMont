@@ -1,25 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Card,
-  CardBody,
-  Heading,
-  Button,
-  useToast,
-  useColorModeValue,
-  Flex,
-  VStack,
-  HStack,
-  IconButton,
-  Collapse,
-  useBreakpointValue,
-} from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { Box, useToast, useColorModeValue, Flex } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
 import { updateNotificationSettings } from '@frontend/services/api';
+import { SectionMenu } from '@frontend/shared/components';
 import { ClassSection, ContactSection, ChildrenSection, SettingsSection } from './sections';
 
 const ProfilePage = () => {
@@ -41,12 +27,6 @@ const ProfilePage = () => {
   });
   const userId = parseInt(localStorage.getItem('userId') || '0');
   const userPhone = localStorage.getItem('userPhone') || '';
-  const menuBg = useColorModeValue('bg-surface', 'bg-surface');
-  const menuActiveBg = useColorModeValue('gray.100', 'whiteAlpha.200');
-  const menuActiveColor = useColorModeValue('gray.900', 'white');
-  const menuTextColor = useColorModeValue('gray.700', 'whiteAlpha.800');
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   type SectionKey = 'contact' | 'class' | 'children' | 'settings';
   const [activeSection, setActiveSection] = useState<SectionKey>('contact');
@@ -90,11 +70,6 @@ const ProfilePage = () => {
     }
   }, [activeSection, visibleSections]);
 
-  useEffect(() => {
-    if (isMobile === undefined) return;
-    setIsMenuOpen(!isMobile);
-  }, [isMobile]);
-
   const handleNotificationToggle = async () => {
     try {
       await updateNotificationSettings(userId, { messageNotifications: !messageNotifications });
@@ -126,49 +101,12 @@ const ProfilePage = () => {
   return (
     <Box maxW={{ base: 'full', md: 'container.lg' }} mx="auto" px={{ base: 2, md: 0 }}>
       <Flex direction={{ base: 'column', md: 'row' }} gap={{ base: 4, md: 6 }} align="start">
-        <Card
-          w={{ base: 'full', md: '240px' }}
-          bg={menuBg}
-          position={{ base: 'static', md: 'sticky' }}
-          top={{ md: 6 }}
-        >
-          <CardBody p={{ base: 2, md: 4 }}>
-            <HStack justify="space-between" mb={{ base: 2, md: 4 }}>
-              <Heading size={{ base: 'sm', md: 'md' }}>{texts.profile.title[language]}</Heading>
-              {isMobile && (
-                <IconButton
-                  aria-label={texts.profile.title[language]}
-                  icon={isMenuOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsMenuOpen((open) => !open)}
-                />
-              )}
-            </HStack>
-            <Collapse in={!isMobile || isMenuOpen} animateOpacity>
-              <VStack spacing={{ base: 1, md: 2 }} align="stretch">
-                {visibleSections.map((section) => {
-                  const isActive = section.key === activeSection;
-                  return (
-                    <Button
-                      key={section.key}
-                      variant="ghost"
-                      justifyContent="flex-start"
-                      size={{ base: 'sm', md: 'md' }}
-                      onClick={() => setActiveSection(section.key)}
-                      bg={isActive ? menuActiveBg : 'transparent'}
-                      color={isActive ? menuActiveColor : menuTextColor}
-                      fontWeight={isActive ? 'semibold' : 'normal'}
-                      aria-current={isActive ? 'page' : undefined}
-                    >
-                      {section.label}
-                    </Button>
-                  );
-                })}
-              </VStack>
-            </Collapse>
-          </CardBody>
-        </Card>
+        <SectionMenu
+          title={texts.profile.title[language]}
+          sections={sections}
+          activeKey={activeSection}
+          onChange={(key) => setActiveSection(key as SectionKey)}
+        />
 
         <Box flex="1" w={{ base: 'full', md: 'auto' }}>
           {activeSection === 'contact' && (

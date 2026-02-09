@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
+DROP TABLE IF EXISTS class_history, class_attendance, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -100,6 +100,26 @@ CREATE TABLE class_history (
 
 CREATE INDEX idx_class_history_class_id ON class_history(class_id);
 CREATE INDEX idx_class_history_date ON class_history(date);
+
+CREATE TABLE class_attendance (
+    id SERIAL PRIMARY KEY,
+    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+    attendance_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    check_in_at TIMESTAMP,
+    check_out_at TIMESTAMP,
+    checked_in_by INTEGER REFERENCES users(id),
+    checked_out_by INTEGER REFERENCES users(id),
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (check_out_at IS NULL OR check_in_at IS NOT NULL),
+    CHECK (check_out_at IS NULL OR check_out_at >= check_in_at),
+    UNIQUE (class_id, child_id, attendance_date)
+);
+
+CREATE INDEX idx_class_attendance_class_date ON class_attendance(class_id, attendance_date);
+CREATE INDEX idx_class_attendance_child_date ON class_attendance(child_id, attendance_date);
 
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
@@ -229,3 +249,44 @@ CROSS JOIN (
         ('Social Skills', 'Group Activity', 'in progress', 'Share toys with friends'),
         ('Alphabet Practice', 'Language', 'not started', 'Recognize letters A-M')
 ) AS schedule_data(name_val, category_val, status_val, notes_val);
+
+WITH admin_user AS (
+    SELECT id FROM users WHERE role = 'admin' LIMIT 1
+),
+child_class_mapping AS (
+    SELECT 
+        ch.id as child_id,
+        cc.class_id
+    FROM children ch
+    JOIN class_children cc ON ch.id = cc.child_id
+),
+attendance_data AS (
+    VALUES
+        (0, TIME '08:55', TIME '15:05', 'On time'),
+        (0, TIME '09:20', TIME '15:10', 'Late arrival - traffic'),
+        (-1, TIME '08:45', TIME '14:50', 'On time'),
+        (-1, TIME '09:30', TIME '15:00', 'Late arrival - appointment')
+)
+INSERT INTO class_attendance (
+    class_id,
+    child_id,
+    attendance_date,
+    check_in_at,
+    check_out_at,
+    checked_in_by,
+    checked_out_by,
+    notes
+)
+SELECT
+    ccm.class_id,
+    ccm.child_id,
+    CURRENT_DATE + ad.column1,
+    (CURRENT_DATE + ad.column1) + ad.column2,
+    (CURRENT_DATE + ad.column1) + ad.column3,
+    au.id,
+    au.id,
+    ad.column4
+FROM child_class_mapping ccm
+CROSS JOIN admin_user au
+CROSS JOIN attendance_data ad
+ON CONFLICT (class_id, child_id, attendance_date) DO NOTHING;

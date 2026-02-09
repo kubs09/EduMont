@@ -80,7 +80,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <Container maxW="md">
-      <Card p={8} mt={20} boxShadow="lg" borderRadius="md">
+      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
         <VStack spacing={8}>
           <Circle size="40px" bg={iconBg} color="white">
             <Icon as={FaQuestionCircle} />

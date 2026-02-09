@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Button, Card, CardBody, Flex, IconButton, Text, useToast } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Flex,
+  Grid,
+  GridItem,
+  IconButton,
+  Text,
+  VStack,
+  useToast,
+} from '@chakra-ui/react';
 import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -9,10 +21,9 @@ import { getClassNextActivities, NextActivity } from '@frontend/services/api/cla
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
-import Tabs, { TabItem } from '@frontend/shared/components/Tabs/Tabs';
-import InfoTab from '../tabs/InfoTab';
-import StudentsTab from '../tabs/StudentsTab';
-import ActivitiesTab from '../tabs/ActivitiesTab';
+import Section from '@frontend/shared/components/Section/Section';
+import { SectionMenu } from '@frontend/shared/components';
+import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } from '../sections';
 
 import { Class } from '@frontend/types/class';
 
@@ -39,6 +50,7 @@ const ClassDetailPage = () => {
   const [isParent, setIsParent] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
+  const [activeSectionId, setActiveSectionId] = useState('info');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,7 +160,7 @@ const ClassDetailPage = () => {
   }
 
   const infoTabContent = (
-    <InfoTab
+    <InfoSection
       classData={classData}
       language={language}
       isAdmin={isAdmin}
@@ -158,7 +170,7 @@ const ClassDetailPage = () => {
   );
 
   const studentsTabContent = (
-    <StudentsTab
+    <StudentsSection
       classData={classData}
       language={language}
       isAdmin={isAdmin}
@@ -169,7 +181,7 @@ const ClassDetailPage = () => {
   );
 
   const activitiesTabContent = (
-    <ActivitiesTab
+    <ActivitiesSection
       classData={classData}
       nextActivities={nextActivities}
       language={language}
@@ -178,7 +190,18 @@ const ClassDetailPage = () => {
     />
   );
 
-  const classDetailTabs: TabItem[] = [
+  const attendanceTabContent = (
+    <AttendanceSection
+      classData={classData}
+      language={language}
+      isAdmin={isAdmin}
+      isTeacher={isTeacher}
+      isParent={isParent}
+      currentUserId={currentUserId}
+    />
+  );
+
+  const sectionItems = [
     {
       id: 'info',
       label: texts.classes.detail.info[language],
@@ -194,7 +217,17 @@ const ClassDetailPage = () => {
       label: texts.classes.detail.nextActivities[language],
       content: activitiesTabContent,
     },
+    {
+      id: 'attendance',
+      label: texts.classes.detail.attendance[language],
+      content: attendanceTabContent,
+    },
   ];
+
+  const menuSections = sectionItems.map((item) => ({
+    key: item.id,
+    label: item.label,
+  }));
 
   return (
     <Box p={{ base: 2, md: 4 }}>
@@ -243,7 +276,27 @@ const ClassDetailPage = () => {
               </Button>
             </Box>
           </Flex>
-          <Tabs tabs={classDetailTabs} variant="line" colorScheme="blue" />
+          <Grid templateColumns={{ base: '1fr', lg: '240px 1fr' }} gap={6} alignItems="start">
+            <GridItem>
+              <SectionMenu
+                title={texts.classes.detail.title[language]}
+                sections={menuSections}
+                activeKey={activeSectionId}
+                onChange={setActiveSectionId}
+              />
+            </GridItem>
+            <GridItem minW={0}>
+              <VStack align="stretch" spacing={6}>
+                {sectionItems
+                  .filter((item) => item.id === activeSectionId)
+                  .map((item) => (
+                    <Box key={item.id} id={item.id} scrollMarginTop={{ base: 24, md: 20 }}>
+                      <Section title={item.label}>{item.content}</Section>
+                    </Box>
+                  ))}
+              </VStack>
+            </GridItem>
+          </Grid>
         </CardBody>
       </Card>
 

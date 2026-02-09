@@ -14,9 +14,9 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({ schedules, language }) => {
       <Table variant="simple" size="md">
         <Thead>
           <Tr>
-            <Th>{texts.schedule.name?.[language] || 'Name'}</Th>
-            <Th>{texts.schedule.category?.[language] || 'Category'}</Th>
-            <Th>{texts.schedule.status?.label?.[language] || 'Status'}</Th>
+            <Th>{texts.schedule.name[language]}</Th>
+            <Th>{texts.schedule.category[language]}</Th>
+            <Th>{texts.schedule.status.label[language]}</Th>
             <Th>{texts.schedule.notes[language]}</Th>
           </Tr>
         </Thead>

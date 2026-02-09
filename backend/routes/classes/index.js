@@ -2,7 +2,13 @@
 const express = require('express');
 const router = express.Router();
 
-let getRouter, createRouter, updateRouter, deleteRouter, historyRouter, activitiesRouter;
+let getRouter,
+  createRouter,
+  updateRouter,
+  deleteRouter,
+  historyRouter,
+  activitiesRouter,
+  attendanceRouter;
 
 try {
   getRouter = require('./get');
@@ -40,12 +46,19 @@ try {
   activitiesRouter = null;
 }
 
+try {
+  attendanceRouter = require('./attendance');
+} catch (error) {
+  attendanceRouter = null;
+}
+
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
 if (updateRouter) router.use('/', updateRouter);
 if (deleteRouter) router.use('/', deleteRouter);
 if (historyRouter) router.use('/', historyRouter);
 if (activitiesRouter) router.use('/', activitiesRouter);
+if (attendanceRouter) router.use('/', attendanceRouter);
 
 router.get('/test', (req, res) => {
   res.json({
