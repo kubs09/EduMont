@@ -12,6 +12,7 @@ import {
   Tr,
   useToast,
   HStack,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
@@ -27,6 +28,7 @@ import {
   ClassAttendanceRow,
   getClassAttendance,
 } from '@frontend/services/api/class';
+import { ChildExcuse } from '@frontend/services/api/child';
 
 interface AttendanceTabProps {
   classData: Class;
@@ -35,6 +37,7 @@ interface AttendanceTabProps {
   isTeacher: boolean;
   isParent: boolean;
   currentUserId: number | null;
+  excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
 const AttendanceTab: React.FC<AttendanceTabProps> = ({
@@ -44,6 +47,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   isTeacher,
   isParent,
   currentUserId,
+  excusesByChildId,
 }) => {
   const toast = useToast();
   const [rows, setRows] = useState<ClassAttendanceRow[]>([]);
@@ -55,6 +59,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const [attendanceDate, setAttendanceDate] = useState(today);
   const effectiveDate = attendanceDate || today;
   const canManageAttendance = (isAdmin || isTeacher) && effectiveDate === today;
+  const excusedColor = useColorModeValue('orange.100', 'orange.300');
 
   const getVisibleChildren = useCallback(() => {
     const allChildren = classData.children;
@@ -78,6 +83,39 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       return child.parents.some((parent) => parent.id === currentUserId);
     },
     [classData.children, currentUserId, effectiveDate, isParent, today]
+  );
+
+  const isChildExcusedOnDate = useCallback(
+    (childId: number, dateValue: string) => {
+      const excuses = excusesByChildId[childId] || [];
+      if (!excuses.length) return false;
+
+      const target = new Date(dateValue);
+      const targetDate = Number.isNaN(target.getTime())
+        ? new Date(`${dateValue}T00:00:00`)
+        : target;
+      if (Number.isNaN(targetDate.getTime())) return false;
+      const compareDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate()
+      );
+
+      const parseDate = (value: string) => {
+        const direct = new Date(value);
+        if (!Number.isNaN(direct.getTime())) return direct;
+        const fallback = new Date(`${value}T00:00:00`);
+        return Number.isNaN(fallback.getTime()) ? null : fallback;
+      };
+
+      return excuses.some((excuse) => {
+        const fromDate = parseDate(excuse.date_from);
+        const toDate = parseDate(excuse.date_to);
+        if (!fromDate || !toDate) return false;
+        return compareDate >= fromDate && compareDate <= toDate;
+      });
+    },
+    [excusesByChildId]
   );
 
   const showActionColumn =
@@ -305,32 +343,39 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 const checkOutText = row.check_out_at
                   ? formatTime(row.check_out_at)
                   : texts.classes.detail.notCheckedOut[language];
+                const isExcused = isChildExcusedOnDate(row.id, effectiveDate);
                 return (
                   <Tr key={row.id}>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'table-cell', md: 'none' }}>
-                        <HStack spacing={2} w="full" justifyContent="flex-start">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckIn(row.id)}
-                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkInAction[language]}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckOut(row.id)}
-                            isDisabled={
-                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
-                            }
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkOutAction[language]}
-                          </Button>
-                        </HStack>
+                        {isExcused ? (
+                          <Text color={excusedColor} fontSize="sm">
+                            {texts.profile.children.excuse.status[language]}
+                          </Text>
+                        ) : (
+                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckIn(row.id)}
+                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkInAction[language]}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckOut(row.id)}
+                              isDisabled={
+                                !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                              }
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkOutAction[language]}
+                            </Button>
+                          </HStack>
+                        )}
                       </Td>
                     )}
                     <Td display={{ base: 'table-cell', md: 'none' }}>
@@ -352,28 +397,34 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     </Td>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'none', md: 'table-cell' }}>
-                        <HStack spacing={2} w="full" justifyContent="flex-start">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckIn(row.id)}
-                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkInAction[language]}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckOut(row.id)}
-                            isDisabled={
-                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
-                            }
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkOutAction[language]}
-                          </Button>
-                        </HStack>
+                        {isExcused ? (
+                          <Text color="orange.500" fontSize="sm">
+                            {texts.profile.children.excuse.status[language]}
+                          </Text>
+                        ) : (
+                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckIn(row.id)}
+                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkInAction[language]}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckOut(row.id)}
+                              isDisabled={
+                                !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                              }
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkOutAction[language]}
+                            </Button>
+                          </HStack>
+                        )}
                       </Td>
                     )}
                   </Tr>

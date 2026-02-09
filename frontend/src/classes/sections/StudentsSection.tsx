@@ -18,6 +18,8 @@ import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
+import { ChildExcuse } from '@frontend/services/api/child';
+import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 
 interface StudentsTabProps {
   classData: Class;
@@ -26,6 +28,7 @@ interface StudentsTabProps {
   isTeacher: boolean;
   isParent: boolean;
   currentUserId: number | null;
+  excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
 const StudentsTab: React.FC<StudentsTabProps> = ({
@@ -35,6 +38,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   isTeacher,
   isParent,
   currentUserId,
+  excusesByChildId,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const canViewParentProfile = isAdmin || isTeacher;
@@ -66,6 +70,37 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   const formatParentContacts = (parents: Class['children'][number]['parents']) =>
     parents.map((parent) => parent.phone || parent.email);
 
+  const getActiveExcuse = (childId: number) => {
+    const excuses = excusesByChildId[childId] || [];
+    if (!excuses.length) return null;
+
+    const today = new Date();
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const parseDate = (value: string) => {
+      const direct = new Date(value);
+      if (!Number.isNaN(direct.getTime())) return direct;
+      const fallback = new Date(`${value}T00:00:00`);
+      return Number.isNaN(fallback.getTime()) ? null : fallback;
+    };
+
+    const active = excuses.find((excuse) => {
+      const fromDate = parseDate(excuse.date_from);
+      const toDate = parseDate(excuse.date_to);
+      if (!fromDate || !toDate) return false;
+      return todayDate >= fromDate && todayDate <= toDate;
+    });
+
+    return active || null;
+  };
+
+  const formatExcuseDate = (value: string) => {
+    const direct = new Date(value);
+    if (!Number.isNaN(direct.getTime())) return formatDate(direct, language);
+    const fallback = new Date(`${value}T00:00:00`);
+    if (!Number.isNaN(fallback.getTime())) return formatDate(fallback, language);
+    return value;
+  };
+
   return (
     <Box w="full" overflowX="auto">
       <TableContainer w="full" maxW="100%" overflowX="auto">
@@ -82,7 +117,22 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
           <Tbody>
             {paginatedChildren.map((child) => (
               <Tr key={child.id}>
-                <Td>{child.firstname}</Td>
+                <Td>
+                  <VStack align="start" spacing={1}>
+                    <Text>{child.firstname}</Text>
+                    {(() => {
+                      const activeExcuse = getActiveExcuse(child.id);
+                      return activeExcuse ? (
+                        <Text fontSize="sm" color="orange.500">
+                          {texts.profile.children.excuse.status[language]} (
+                          {formatExcuseDate(activeExcuse.date_from)}
+                          {' - '}
+                          {formatExcuseDate(activeExcuse.date_to)})
+                        </Text>
+                      ) : null;
+                    })()}
+                  </VStack>
+                </Td>
                 <Td>{child.surname}</Td>
                 <Td>{child.age}</Td>
                 {(isAdmin || isTeacher) && (

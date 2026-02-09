@@ -178,6 +178,74 @@ export const profile = {
       cs: 'Zobrazit panel dětí',
       en: "View Children's Dashboard",
     },
+    excuse: {
+      button: {
+        cs: 'Omluvit',
+        en: 'Excuse',
+      },
+      cancel: {
+        cs: 'Zrusit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      title: {
+        cs: 'Omluvenka',
+        en: 'Excuse from School',
+      },
+      dateFrom: {
+        cs: 'Od',
+        en: 'From',
+      },
+      dateTo: {
+        cs: 'Do',
+        en: 'To',
+      },
+      status: {
+        cs: 'Omluven',
+        en: 'Excused',
+      },
+      reason: {
+        cs: 'Duvod',
+        en: 'Reason',
+      },
+      submit: {
+        cs: 'Odeslat omluvenku',
+        en: 'Submit Excuse',
+      },
+      success: {
+        cs: 'Omluvenka byla odeslana',
+        en: 'Excuse submitted',
+      },
+      error: {
+        cs: 'Nepodarilo se odeslat omluvenku',
+        en: 'Failed to submit excuse',
+      },
+      cancelSuccess: {
+        cs: 'Omluvenka byla zrusena',
+        en: 'Excuse cancelled',
+      },
+      cancelError: {
+        cs: 'Nepodarilo se zrusit omluvenku',
+        en: 'Failed to cancel excuse',
+      },
+      validation: {
+        dateFromRequired: {
+          cs: 'Zadejte datum od',
+          en: 'Please select a start date',
+        },
+        dateToRequired: {
+          cs: 'Zadejte datum do',
+          en: 'Please select an end date',
+        },
+        dateOrder: {
+          cs: 'Datum do musi byt po datu od',
+          en: 'End date must be on or after start date',
+        },
+        reasonRequired: {
+          cs: 'Zadejte duvod omluvenky',
+          en: 'Please provide a reason',
+        },
+      },
+    },
     titleParent: {
       cs: 'Moje děti',
       en: 'My Children',

@@ -4,6 +4,7 @@ import { texts } from '@frontend/texts';
 import { NextActivity } from '@frontend/services/api/class';
 import { Class } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
+import { ChildExcuse } from '@frontend/services/api/child';
 
 interface ActivitiesTabProps {
   classData: Class;
@@ -11,6 +12,7 @@ interface ActivitiesTabProps {
   language: 'cs' | 'en';
   isAdmin: boolean;
   isTeacher: boolean;
+  excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
 const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
@@ -19,12 +21,36 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
   language,
   isAdmin,
   isTeacher,
+  excusesByChildId,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 4;
 
+  const isChildExcusedToday = (childId: number) => {
+    const excuses = excusesByChildId[childId] || [];
+    if (!excuses.length) return false;
+
+    const today = new Date();
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const parseDate = (value: string) => {
+      const direct = new Date(value);
+      if (!Number.isNaN(direct.getTime())) return direct;
+      const fallback = new Date(`${value}T00:00:00`);
+      return Number.isNaN(fallback.getTime()) ? null : fallback;
+    };
+
+    return excuses.some((excuse) => {
+      const fromDate = parseDate(excuse.date_from);
+      const toDate = parseDate(excuse.date_to);
+      if (!fromDate || !toDate) return false;
+      return todayDate >= fromDate && todayDate <= toDate;
+    });
+  };
+
   const filteredActivities = nextActivities.filter((activity) =>
-    classData.children.some((child) => child.id === activity.child_id)
+    classData.children.some(
+      (child) => child.id === activity.child_id && !isChildExcusedToday(child.id)
+    )
   );
 
   const totalPages = Math.ceil(filteredActivities.length / PAGE_SIZE);

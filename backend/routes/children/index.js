@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-let getChildrenRouter, createChildRouter, updateChildRouter, deleteChildRouter;
+let getChildrenRouter, createChildRouter, updateChildRouter, deleteChildRouter, excusesRouter;
 
 try {
   getChildrenRouter = require('./get');
@@ -28,10 +28,17 @@ try {
   deleteChildRouter = null;
 }
 
+try {
+  excusesRouter = require('./excuses');
+} catch (error) {
+  excusesRouter = null;
+}
+
 if (getChildrenRouter) router.use('/', getChildrenRouter);
 if (createChildRouter) router.use('/', createChildRouter);
 if (updateChildRouter) router.use('/', updateChildRouter);
 if (deleteChildRouter) router.use('/', deleteChildRouter);
+if (excusesRouter) router.use('/', excusesRouter);
 
 router.get('/test', (req, res) => {
   res.json({

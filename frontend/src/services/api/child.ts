@@ -60,3 +60,64 @@ export const deleteChild = async (childId: number): Promise<void> => {
     throw error;
   }
 };
+
+export interface CreateChildExcuseData {
+  date_from: string;
+  date_to: string;
+  reason: string;
+}
+
+export interface ChildExcuse {
+  id: number;
+  child_id: number;
+  parent_id: number | null;
+  date_from: string;
+  date_to: string;
+  reason: string;
+  created_at: string;
+  parent_firstname?: string;
+  parent_surname?: string;
+}
+
+export const createChildExcuse = async (
+  childId: number,
+  excuseData: CreateChildExcuseData
+): Promise<void> => {
+  try {
+    await api.post(`/api/children/${childId}/excuses`, excuseData);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details || error.response?.data?.error || 'Failed to create excuse';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};
+
+export const getChildExcuses = async (childId: number): Promise<ChildExcuse[]> => {
+  try {
+    const response = await api.get<ChildExcuse[]>(`/api/children/${childId}/excuses`);
+    return response.data || [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details || error.response?.data?.error || 'Failed to fetch excuses';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};
+
+export const deleteChildExcuse = async (childId: number, excuseId: number): Promise<void> => {
+  try {
+    await api.delete(`/api/children/${childId}/excuses/${excuseId}`);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details || error.response?.data?.error || 'Failed to cancel excuse';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};

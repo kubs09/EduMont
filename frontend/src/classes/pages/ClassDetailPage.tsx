@@ -18,6 +18,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { getClassNextActivities, NextActivity } from '@frontend/services/api/class';
+import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -51,6 +52,7 @@ const ClassDetailPage = () => {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
   const [activeSectionId, setActiveSectionId] = useState('info');
+  const [excusesByChildId, setExcusesByChildId] = useState<Record<number, ChildExcuse[]>>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,6 +121,38 @@ const ClassDetailPage = () => {
     fetchData();
   }, [id, toast]);
 
+  useEffect(() => {
+    if (!classData?.children?.length) {
+      setExcusesByChildId({});
+      return;
+    }
+
+    let isActive = true;
+
+    const fetchExcuses = async () => {
+      const entries = await Promise.all(
+        classData.children.map(async (child) => {
+          try {
+            const excuses = await getChildExcuses(child.id);
+            return [child.id, excuses] as const;
+          } catch (error) {
+            return [child.id, []] as const;
+          }
+        })
+      );
+
+      if (isActive) {
+        setExcusesByChildId(Object.fromEntries(entries));
+      }
+    };
+
+    fetchExcuses();
+
+    return () => {
+      isActive = false;
+    };
+  }, [classData?.children]);
+
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
     description: string;
@@ -177,6 +211,7 @@ const ClassDetailPage = () => {
       isTeacher={isTeacher}
       isParent={isParent}
       currentUserId={currentUserId}
+      excusesByChildId={excusesByChildId}
     />
   );
 
@@ -187,6 +222,7 @@ const ClassDetailPage = () => {
       language={language}
       isAdmin={isAdmin}
       isTeacher={isTeacher}
+      excusesByChildId={excusesByChildId}
     />
   );
 
@@ -198,6 +234,7 @@ const ClassDetailPage = () => {
       isTeacher={isTeacher}
       isParent={isParent}
       currentUserId={currentUserId}
+      excusesByChildId={excusesByChildId}
     />
   );
 
