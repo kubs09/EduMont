@@ -43,6 +43,10 @@ export const classes = {
     cs: 'Asistent',
     en: 'Assistant',
   },
+  student: {
+    cs: 'Student',
+    en: 'Student',
+  },
   students: {
     cs: 'Studenti',
     en: 'Students',
@@ -109,6 +113,10 @@ export const classes = {
     students: {
       cs: 'Studenti',
       en: 'Students',
+    },
+    filterByChild: {
+      cs: 'Filtrovat studenty',
+      en: 'Filter Students',
     },
     history: {
       cs: 'Historie třídy',

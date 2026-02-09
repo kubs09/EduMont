@@ -115,8 +115,10 @@ router.get('/:id/attendance', auth, async (req, res) => {
 });
 
 router.post('/:id/attendance/check-in', auth, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res.status(403).json({ error: 'Only teachers and administrators can check in' });
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher' && req.user.role !== 'parent') {
+    return res
+      .status(403)
+      .json({ error: 'Only teachers, administrators, or parents can check in' });
   }
 
   const classId = parseId(req.params.id);
@@ -145,6 +147,13 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
   try {
     if (req.user.role === 'teacher') {
       const hasAccess = await isTeacherForClass(req.user.id, classId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
+    if (req.user.role === 'parent') {
+      const hasAccess = await isParentForChildInClass(req.user.id, classId, childId);
       if (!hasAccess) {
         return res.status(403).json({ error: 'Access denied' });
       }
@@ -202,8 +211,10 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
 });
 
 router.post('/:id/attendance/check-out', auth, async (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res.status(403).json({ error: 'Only teachers and administrators can check out' });
+  if (req.user.role !== 'admin' && req.user.role !== 'teacher' && req.user.role !== 'parent') {
+    return res
+      .status(403)
+      .json({ error: 'Only teachers, administrators, or parents can check out' });
   }
 
   const classId = parseId(req.params.id);
@@ -232,6 +243,13 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
   try {
     if (req.user.role === 'teacher') {
       const hasAccess = await isTeacherForClass(req.user.id, classId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
+    if (req.user.role === 'parent') {
+      const hasAccess = await isParentForChildInClass(req.user.id, classId, childId);
       if (!hasAccess) {
         return res.status(403).json({ error: 'Access denied' });
       }

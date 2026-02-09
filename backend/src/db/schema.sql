@@ -249,3 +249,44 @@ CROSS JOIN (
         ('Social Skills', 'Group Activity', 'in progress', 'Share toys with friends'),
         ('Alphabet Practice', 'Language', 'not started', 'Recognize letters A-M')
 ) AS schedule_data(name_val, category_val, status_val, notes_val);
+
+WITH admin_user AS (
+    SELECT id FROM users WHERE role = 'admin' LIMIT 1
+),
+child_class_mapping AS (
+    SELECT 
+        ch.id as child_id,
+        cc.class_id
+    FROM children ch
+    JOIN class_children cc ON ch.id = cc.child_id
+),
+attendance_data AS (
+    VALUES
+        (0, TIME '08:55', TIME '15:05', 'On time'),
+        (0, TIME '09:20', TIME '15:10', 'Late arrival - traffic'),
+        (-1, TIME '08:45', TIME '14:50', 'On time'),
+        (-1, TIME '09:30', TIME '15:00', 'Late arrival - appointment')
+)
+INSERT INTO class_attendance (
+    class_id,
+    child_id,
+    attendance_date,
+    check_in_at,
+    check_out_at,
+    checked_in_by,
+    checked_out_by,
+    notes
+)
+SELECT
+    ccm.class_id,
+    ccm.child_id,
+    CURRENT_DATE + ad.column1,
+    (CURRENT_DATE + ad.column1) + ad.column2,
+    (CURRENT_DATE + ad.column1) + ad.column3,
+    au.id,
+    au.id,
+    ad.column4
+FROM child_class_mapping ccm
+CROSS JOIN admin_user au
+CROSS JOIN attendance_data ad
+ON CONFLICT (class_id, child_id, attendance_date) DO NOTHING;

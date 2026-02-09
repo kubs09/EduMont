@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
+import { Combobox, DatePicker } from '@frontend/shared/components';
 import {
   checkInChild,
   checkOutChild,
@@ -43,8 +44,11 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const [rows, setRows] = useState<ClassAttendanceRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [actionChildId, setActionChildId] = useState<number | null>(null);
-
-  const attendanceDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const [attendanceDate, setAttendanceDate] = useState(today);
+  const effectiveDate = attendanceDate || today;
+  const canManageAttendance = (isAdmin || isTeacher) && effectiveDate === today;
 
   const getVisibleChildren = useCallback(() => {
     const allChildren = classData.children;
@@ -60,11 +64,25 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     return [];
   }, [classData.children, currentUserId, isAdmin, isParent, isTeacher]);
 
+  const canParentManageChild = useCallback(
+    (childId: number) => {
+      if (!isParent || effectiveDate !== today) return false;
+      const child = classData.children.find((item) => item.id === childId);
+      if (!child || !Array.isArray(child.parents)) return false;
+      return child.parents.some((parent) => parent.id === currentUserId);
+    },
+    [classData.children, currentUserId, effectiveDate, isParent, today]
+  );
+
+  const showActionColumn =
+    effectiveDate === today &&
+    (isAdmin || isTeacher || (isParent && getVisibleChildren().length > 0));
+
   const loadAttendance = useCallback(async () => {
     setIsLoading(true);
     try {
       if (isAdmin || isTeacher) {
-        const data = await getClassAttendance(classData.id, { date: attendanceDate });
+        const data = await getClassAttendance(classData.id, { date: effectiveDate });
         setRows(data);
         return;
       }
@@ -73,7 +91,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
         const visibleChildren = getVisibleChildren();
         const responses = await Promise.all(
           visibleChildren.map((child) =>
-            getClassAttendance(classData.id, { date: attendanceDate, childId: child.id })
+            getClassAttendance(classData.id, { date: effectiveDate, childId: child.id })
           )
         );
         const combined = responses.flat();
@@ -103,8 +121,8 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       setIsLoading(false);
     }
   }, [
-    attendanceDate,
     classData.id,
+    effectiveDate,
     getVisibleChildren,
     isAdmin,
     isParent,
@@ -123,10 +141,33 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     return new Date(value).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   };
 
+  const isLateCheckIn = (value: string | null) => {
+    if (!value) return false;
+    const time = new Date(value);
+    const minutes = time.getHours() * 60 + time.getMinutes();
+    return minutes > 7 * 60;
+  };
+
+  const isLateCheckOut = (value: string | null) => {
+    if (!value) return false;
+    const time = new Date(value);
+    const minutes = time.getHours() * 60 + time.getMinutes();
+    return minutes > 16 * 60;
+  };
+
+  const isWithinTimeWindow = (startHour: number, endHour: number) => {
+    const now = new Date();
+    const hours = now.getHours();
+    return hours >= startHour && hours <= endHour;
+  };
+
+  const isCheckInWindowOpen = isWithinTimeWindow(6, 8);
+  const isCheckOutWindowOpen = isWithinTimeWindow(15, 17);
+
   const handleCheckIn = async (childId: number) => {
     setActionChildId(childId);
     try {
-      await checkInChild(classData.id, childId, attendanceDate);
+      await checkInChild(classData.id, childId, effectiveDate);
       await loadAttendance();
     } catch (error) {
       toast({
@@ -143,7 +184,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const handleCheckOut = async (childId: number) => {
     setActionChildId(childId);
     try {
-      await checkOutChild(classData.id, childId, attendanceDate);
+      await checkOutChild(classData.id, childId, effectiveDate);
       await loadAttendance();
     } catch (error) {
       toast({
@@ -159,9 +200,41 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
 
   return (
     <Box>
-      <Text fontSize="sm" color="gray.600" mb={3}>
-        {texts.classes.detail.attendanceDate[language]}: {attendanceDate}
-      </Text>
+      <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
+        <Text color="gray.600">{texts.classes.detail.attendanceDate[language]}:</Text>
+        <DatePicker
+          viewType="day"
+          value={attendanceDate}
+          onChange={(value) => setAttendanceDate(value || today)}
+          language={language}
+        />
+        {classData.children.length > 1 && (
+          <>
+            <Text color="gray.600">{texts.classes.student[language]}:</Text>
+            <Box w={{ base: '100%', sm: '220px' }} maxW="220px">
+              <Combobox
+                options={classData.children.map((child) => ({
+                  label: `${child.firstname} ${child.surname}`,
+                  value: child.id,
+                }))}
+                placeholder={texts.classes.detail.filterByChild[language]}
+                onChange={(value: string | number | null) => {
+                  if (value) {
+                    const childId = Number(value);
+                    setSelectedChildId(childId);
+                    setRows((prevRows) => prevRows.filter((row) => row.id === childId));
+                  } else {
+                    setSelectedChildId(null);
+                    loadAttendance();
+                  }
+                }}
+                isClearable
+                value={selectedChildId}
+              />
+            </Box>
+          </>
+        )}
+      </HStack>
       {isLoading ? (
         <Text color="gray.500" fontStyle="italic">
           {texts.classes.detail.attendanceLoading[language]}
@@ -175,7 +248,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 <Th>{texts.childrenTable.surname[language]}</Th>
                 <Th>{texts.classes.detail.checkIn[language]}</Th>
                 <Th>{texts.classes.detail.checkOut[language]}</Th>
-                {(isAdmin || isTeacher) && <Th>{texts.classes.action[language]}</Th>}
+                {showActionColumn && <Th>{texts.classes.action[language]}</Th>}
               </Tr>
             </Thead>
             <Tbody>
@@ -190,16 +263,24 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   <Tr key={row.id}>
                     <Td>{row.firstname}</Td>
                     <Td>{row.surname}</Td>
-                    <Td>{checkInText}</Td>
-                    <Td>{checkOutText}</Td>
-                    {(isAdmin || isTeacher) && (
+                    <Td>
+                      <Text color={isLateCheckIn(row.check_in_at) ? 'red.500' : 'inherit'}>
+                        {checkInText}
+                      </Text>
+                    </Td>
+                    <Td>
+                      <Text color={isLateCheckOut(row.check_out_at) ? 'red.500' : 'inherit'}>
+                        {checkOutText}
+                      </Text>
+                    </Td>
+                    {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td>
                         <HStack spacing={2}>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleCheckIn(row.id)}
-                            isDisabled={!!row.check_in_at}
+                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
                             isLoading={actionChildId === row.id}
                           >
                             {texts.classes.detail.checkInAction[language]}
@@ -208,7 +289,9 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                             size="sm"
                             variant="outline"
                             onClick={() => handleCheckOut(row.id)}
-                            isDisabled={!row.check_in_at || !!row.check_out_at}
+                            isDisabled={
+                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                            }
                             isLoading={actionChildId === row.id}
                           >
                             {texts.classes.detail.checkOutAction[language]}
