@@ -199,7 +199,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   };
 
   return (
-    <Box>
+    <Box w="full" overflowX="auto">
       <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
         <Text color="gray.600">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
@@ -240,8 +240,8 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
           {texts.classes.detail.attendanceLoading[language]}
         </Text>
       ) : (
-        <TableContainer>
-          <Table variant="simple" size="md">
+        <TableContainer w="full" maxW="100%" overflowX="auto">
+          <Table variant="simple" size="md" minW="max-content">
             <Thead>
               <Tr>
                 <Th>{texts.childrenTable.firstname[language]}</Th>

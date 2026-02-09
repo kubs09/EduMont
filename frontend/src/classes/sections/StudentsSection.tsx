@@ -50,9 +50,9 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
     parents.map((parent) => parent.phone || parent.email);
 
   return (
-    <Box>
-      <TableContainer>
-        <Table variant="simple" size="md">
+    <Box w="full" overflowX="auto">
+      <TableContainer w="full" maxW="100%" overflowX="auto">
+        <Table variant="simple" size="md" minW="max-content">
           <Thead>
             <Tr>
               <Th>{texts.childrenTable.firstname[language]}</Th>
