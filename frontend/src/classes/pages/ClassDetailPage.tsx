@@ -276,7 +276,7 @@ const ClassDetailPage = () => {
               </Button>
             </Box>
           </Flex>
-          <Grid templateColumns={{ base: '1fr', md: '240px 1fr' }} gap={6} alignItems="start">
+          <Grid templateColumns={{ base: '1fr', lg: '240px 1fr' }} gap={6} alignItems="start">
             <GridItem>
               <SectionMenu
                 title={texts.classes.detail.title[language]}
