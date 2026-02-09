@@ -55,6 +55,10 @@ export const profile = {
     cs: 'Nepodařilo se aktualizovat profil',
     en: 'Failed to update profile',
   },
+  loadError: {
+    cs: 'Nepodařilo se načíst profil',
+    en: 'Failed to load profile',
+  },
   password: {
     cs: 'Heslo',
     en: 'Password',

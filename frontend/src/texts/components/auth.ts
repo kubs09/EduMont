@@ -4,6 +4,10 @@ export const auth = {
       cs: 'Přihlášení',
       en: 'Sign In',
     },
+    description: {
+      cs: 'Zadejte své přihlašovací údaje pro přístup k vašemu účtu.',
+      en: 'Enter your credentials to access your account.',
+    },
     emailPlaceholder: {
       cs: 'Emailová adresa',
       en: 'Email Address',
@@ -92,6 +96,10 @@ export const auth = {
       cs: 'Odeslat odkaz pro obnovení',
       en: 'Send Reset Link',
     },
+    backToLogin: {
+      cs: 'Zpět na přihlášení',
+      en: 'Back to Login',
+    },
     loginLink: {
       cs: 'Zpět na přihlášení',
       en: 'Back to Login',
@@ -153,6 +161,10 @@ export const auth = {
     submitButton: {
       cs: 'Změnit heslo',
       en: 'Reset Password',
+    },
+    backToLogin: {
+      cs: 'Zpět na přihlášení',
+      en: 'Back to Login',
     },
     success: {
       cs: 'Heslo bylo úspěšně změněno',

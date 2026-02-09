@@ -106,6 +106,18 @@ export interface NextActivity {
   surname: string;
 }
 
+export interface ClassAttendanceRow {
+  id: number;
+  firstname: string;
+  surname: string;
+  attendance_date: string | null;
+  check_in_at: string | null;
+  check_out_at: string | null;
+  checked_in_by: number | null;
+  checked_out_by: number | null;
+  notes: string | null;
+}
+
 export const getClassNextActivities = async (classId: number): Promise<NextActivity[]> => {
   try {
     const response = await api.get<NextActivity[]>(`/api/classes/${classId}/next-activities`);
@@ -114,6 +126,72 @@ export const getClassNextActivities = async (classId: number): Promise<NextActiv
     if (error instanceof AxiosError) {
       throw new ApiError(
         error.response?.data?.error || 'Failed to fetch next activities',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const getClassAttendance = async (
+  classId: number,
+  options?: { date?: string; childId?: number }
+): Promise<ClassAttendanceRow[]> => {
+  try {
+    const params = new URLSearchParams();
+    if (options?.date) params.append('date', options.date);
+    if (options?.childId) params.append('child_id', options.childId.toString());
+    const query = params.toString();
+    const response = await api.get<ClassAttendanceRow[]>(
+      `/api/classes/${classId}/attendance${query ? `?${query}` : ''}`
+    );
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch attendance',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const checkInChild = async (
+  classId: number,
+  childId: number,
+  attendanceDate?: string
+): Promise<void> => {
+  try {
+    await api.post(`/api/classes/${classId}/attendance/check-in`, {
+      child_id: childId,
+      attendance_date: attendanceDate,
+    });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to check in child',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const checkOutChild = async (
+  classId: number,
+  childId: number,
+  attendanceDate?: string
+): Promise<void> => {
+  try {
+    await api.post(`/api/classes/${classId}/attendance/check-out`, {
+      child_id: childId,
+      attendance_date: attendanceDate,
+    });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to check out child',
         error.response?.status
       );
     }

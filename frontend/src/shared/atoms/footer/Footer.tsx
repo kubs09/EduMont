@@ -10,7 +10,6 @@ const Footer = () => {
       as="footer"
       bg={footerBg}
       color={footerColor}
-      p={2}
       flexDirection="column"
       justifyContent="center"
       alignItems="center"

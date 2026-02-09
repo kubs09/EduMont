@@ -15,6 +15,8 @@ import {
   Circle,
   Text,
   useColorModeValue,
+  Card,
+  CardBody,
 } from '@chakra-ui/react';
 import { LockIcon } from '@chakra-ui/icons';
 import { login } from '@frontend/services/api/auth';
@@ -33,7 +35,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
 
   const iconBg = useColorModeValue('brand.primary.900', 'brand.primary.700');
-  const linkColor = useColorModeValue('brand.primary.500', 'brand.primary.300');
 
   const {
     register,
@@ -72,53 +73,57 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <Container maxW="md">
-      <VStack spacing={8} mt={20}>
-        <Circle size="40px" bg={iconBg} color="white">
-          <Icon as={LockIcon} />
-        </Circle>
+      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
+        <CardBody>
+          <VStack spacing={8}>
+            <Circle size="40px" bg={iconBg} color="white">
+              <Icon as={LockIcon} />
+            </Circle>
 
-        <Heading as="h1" size="lg" color="text-primary">
-          {texts.auth.signIn.title[language]}
-        </Heading>
+            <Heading as="h1" size="lg" color="text-primary">
+              {texts.auth.signIn.title[language]}
+            </Heading>
 
-        {error && <Text color="red.500">{error}</Text>}
+            {error && <Text color="red.500">{error}</Text>}
 
-        <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-          <VStack spacing={4}>
-            <FormControl isInvalid={!!errors.email}>
-              <Input
-                type="email"
-                placeholder={texts.auth.signIn.emailPlaceholder[language]}
-                variant="outline"
-                {...register('email')}
-              />
-              <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
-            </FormControl>
+            <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
+              <VStack spacing={4}>
+                <FormControl isInvalid={!!errors.email}>
+                  <Input
+                    type="email"
+                    placeholder={texts.auth.signIn.emailPlaceholder[language]}
+                    variant="outline"
+                    {...register('email')}
+                  />
+                  <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
+                </FormControl>
 
-            <FormControl isInvalid={!!errors.password}>
-              <Input
-                type="password"
-                placeholder={texts.auth.signIn.passwordPlaceholder[language]}
-                variant="outline"
-                {...register('password')}
-              />
-              <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
-            </FormControl>
+                <FormControl isInvalid={!!errors.password}>
+                  <Input
+                    type="password"
+                    placeholder={texts.auth.signIn.passwordPlaceholder[language]}
+                    variant="outline"
+                    {...register('password')}
+                  />
+                  <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
+                </FormControl>
 
-            <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
-              {texts.auth.signIn.loginButton[language]}
-            </Button>
+                <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
+                  {texts.auth.signIn.loginButton[language]}
+                </Button>
 
-            <Button
-              variant="link"
-              color={linkColor}
-              onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
-            >
-              {texts.auth.signIn.forgotPassword[language]}
-            </Button>
+                <Button
+                  variant="secondary"
+                  width="100%"
+                  onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
+                >
+                  {texts.auth.signIn.forgotPassword[language]}
+                </Button>
+              </VStack>
+            </Box>
           </VStack>
-        </Box>
-      </VStack>
+        </CardBody>
+      </Card>
     </Container>
   );
 };

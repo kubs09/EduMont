@@ -19,8 +19,12 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Button,
+  Link as ChakraLink,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { DeleteIcon } from '@chakra-ui/icons';
+import { Link as RouterLink } from 'react-router-dom';
+import { ROUTES } from '@frontend/shared/route';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
@@ -43,6 +47,7 @@ interface UserTableProps {
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const linkColor = useColorModeValue('blue.600', 'blue.300');
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -101,7 +106,15 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
           <Tbody>
             {paginatedUsers.map((user) => (
               <Tr key={user.id}>
-                <Td>{`${user.firstname} ${user.surname}`}</Td>
+                <Td>
+                  <ChakraLink
+                    as={RouterLink}
+                    to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}
+                    color={linkColor}
+                  >
+                    {`${user.firstname} ${user.surname}`}
+                  </ChakraLink>
+                </Td>
                 <Td>{user.email}</Td>
                 <Td>{texts.userTable.roles[user.role][language]}</Td>
                 <Td>

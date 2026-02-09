@@ -1,7 +1,17 @@
 import React from 'react';
-import { Box, Text, VStack, Grid, GridItem, HStack, IconButton } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  VStack,
+  Grid,
+  GridItem,
+  HStack,
+  IconButton,
+  Link as ChakraLink,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Child } from '@frontend/types/child';
 import { ROUTES } from '@frontend/shared/route';
@@ -11,6 +21,7 @@ interface InformationTabProps {
   childData: Child;
   language: 'cs' | 'en';
   canEdit: boolean;
+  canViewParentProfile: boolean;
   onEditClick: () => void;
   onDeleteClick: () => void;
 }
@@ -19,14 +30,13 @@ const InformationTab: React.FC<InformationTabProps> = ({
   childData,
   language,
   canEdit,
+  canViewParentProfile,
   onEditClick,
   onDeleteClick,
 }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
-  const parentContacts = childData.parents.map(
-    (parent) => `${parent.firstname} ${parent.surname} - ${parent.email}`
-  );
+  const linkColor = useColorModeValue('blue.600', 'blue.300');
 
   return (
     <VStack align="stretch" spacing={{ base: 4, md: 6 }} overflowX="hidden">
@@ -80,9 +90,20 @@ const InformationTab: React.FC<InformationTabProps> = ({
             <Box>
               <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
               <VStack align="start" spacing={1}>
-                {parentContacts.map((contact, index) => (
-                  <Text key={`${contact}-${index}`}>{contact}</Text>
-                ))}
+                {childData.parents.map((parent) => {
+                  const fullName = `${parent.firstname} ${parent.surname}`;
+                  return (
+                    <Text key={`${parent.id}`}>
+                      <ChakraLink
+                        as={RouterLink}
+                        to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                        color={linkColor}
+                      >
+                        {fullName}
+                      </ChakraLink>
+                    </Text>
+                  );
+                })}
               </VStack>
             </Box>
           </VStack>

@@ -43,6 +43,10 @@ export const classes = {
     cs: 'Asistent',
     en: 'Assistant',
   },
+  student: {
+    cs: 'Student',
+    en: 'Student',
+  },
   students: {
     cs: 'Studenti',
     en: 'Students',
@@ -110,6 +114,10 @@ export const classes = {
       cs: 'Studenti',
       en: 'Students',
     },
+    filterByChild: {
+      cs: 'Filtrovat studenty',
+      en: 'Filter Students',
+    },
     history: {
       cs: 'Historie třídy',
       en: 'Class History',
@@ -142,6 +150,10 @@ export const classes = {
       cs: 'Následující aktivity',
       en: 'Next Activities',
     },
+    attendance: {
+      cs: 'Docházka',
+      en: 'Attendance',
+    },
     noNextActivities: {
       cs: 'Žádné naplánované aktivity',
       en: 'No scheduled activities',
@@ -157,6 +169,50 @@ export const classes = {
     activity: {
       cs: 'Aktivita',
       en: 'Activity',
+    },
+    checkIn: {
+      cs: 'Příchod',
+      en: 'Check In',
+    },
+    checkOut: {
+      cs: 'Odchod',
+      en: 'Check Out',
+    },
+    checkInAction: {
+      cs: 'Příchod',
+      en: 'Check In',
+    },
+    checkOutAction: {
+      cs: 'Odchod',
+      en: 'Check Out',
+    },
+    notCheckedIn: {
+      cs: 'Nezapsáno',
+      en: 'Not checked in',
+    },
+    notCheckedOut: {
+      cs: 'Nezapsáno',
+      en: 'Not checked out',
+    },
+    attendanceDate: {
+      cs: 'Datum docházky',
+      en: 'Attendance date',
+    },
+    attendanceLoading: {
+      cs: 'Načítám docházku...',
+      en: 'Loading attendance...',
+    },
+    attendanceError: {
+      cs: 'Nepodařilo se načíst docházku',
+      en: 'Failed to load attendance',
+    },
+    checkInError: {
+      cs: 'Nepodařilo se zapsat příchod',
+      en: 'Failed to check in',
+    },
+    checkOutError: {
+      cs: 'Nepodařilo se zapsat odchod',
+      en: 'Failed to check out',
     },
   },
   editInfo: {

@@ -7,6 +7,7 @@ import HomePage from './home/HomePage';
 import UnauthorizedPage from './static-pages/UnauthorizedPage';
 import UserDashboard from './user-dashboard/pages/UserDashboard';
 import ProfilePage from './profile/ProfilePage';
+import UserProfilePage from './profile/UserProfilePage';
 import EditProfilePage from './profile/EditProfilePage';
 import InviteSignupPage from './sign-up/SignUpPage';
 import ClassesPage from './classes/pages/ClassesPage';
@@ -66,6 +67,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           <Route path={`${ROUTES.CHILDREN}/:id`} element={<ChildDetailPage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+          <Route path={ROUTES.PROFILE_DETAIL} element={<UserProfilePage />} />
           <Route path={ROUTES.PROFILE_EDIT} element={<EditProfilePage />} />
         </Route>
       </Route>

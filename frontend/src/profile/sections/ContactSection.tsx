@@ -25,25 +25,25 @@ const ContactSection = ({
   const { language } = useLanguage();
 
   return (
-    <Section title={texts.profile.contactInfo[language]} cardProps={{ mb: 6 }}>
-      <Stack spacing={4}>
-        <Box bg={subtleBg} p={3} borderRadius="md">
+    <Section title={texts.profile.contactInfo[language]} cardProps={{ mb: 6, w: 'full' }}>
+      <Stack spacing={4} w="full">
+        <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.firstName[language]}</Text>
           <Text>{firstName}</Text>
         </Box>
-        <Box bg={subtleBg} p={3} borderRadius="md">
+        <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.lastName[language]}</Text>
           <Text>{lastName}</Text>
         </Box>
-        <Box bg={subtleBg} p={3} borderRadius="md">
+        <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.email[language]}</Text>
           <Text>{userEmail}</Text>
         </Box>
-        <Box bg={subtleBg} p={3} borderRadius="md">
+        <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.phone[language]}</Text>
           <Text>{userPhone || '-'}</Text>
         </Box>
-        <Box bg={subtleBg} p={3} borderRadius="md">
+        <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.role[language]}</Text>
           <Text>
             {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}

@@ -83,6 +83,25 @@ const initDatabase = async () => {
     );
   `;
 
+  const createClassAttendanceTable = `
+    CREATE TABLE IF NOT EXISTS class_attendance (
+      id SERIAL PRIMARY KEY,
+      class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+      attendance_date DATE NOT NULL DEFAULT CURRENT_DATE,
+      check_in_at TIMESTAMP,
+      check_out_at TIMESTAMP,
+      checked_in_by INTEGER REFERENCES users(id),
+      checked_out_by INTEGER REFERENCES users(id),
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CHECK (check_out_at IS NULL OR check_in_at IS NOT NULL),
+      CHECK (check_out_at IS NULL OR check_out_at >= check_in_at),
+      UNIQUE (class_id, child_id, attendance_date)
+    );
+  `;
+
   try {
     await pool.query(createClassesTable);
     await pool.query(createClassTeachersTable);
@@ -91,6 +110,7 @@ const initDatabase = async () => {
     await pool.query(createChildrenTable);
     await pool.query(createChildParentsTable);
     await pool.query(createDocumentsTable);
+    await pool.query(createClassAttendanceTable);
     await pool.query('SELECT * FROM users');
     await pool.query('SELECT * FROM children');
     await pool.query('SELECT * FROM child_parents');
@@ -99,6 +119,7 @@ const initDatabase = async () => {
     await pool.query('SELECT * FROM class_children');
     await pool.query('SELECT * FROM messages');
     await pool.query('SELECT * FROM documents');
+    await pool.query('SELECT * FROM class_attendance');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(

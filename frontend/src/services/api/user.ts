@@ -19,6 +19,21 @@ export const getUsers = async (role?: string): Promise<User[]> => {
   }
 };
 
+export const getUserById = async (userId: number): Promise<User> => {
+  try {
+    const response = await api.get<User>(`/api/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch user profile',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
 export const updateUser = async (userId: number, userData: UpdateUserData) => {
   try {
     const response = await api.put(`/api/users/${userId}`, userData);
