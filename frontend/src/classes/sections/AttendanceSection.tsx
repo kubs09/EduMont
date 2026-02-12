@@ -61,6 +61,9 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const effectiveDate = attendanceDate || today;
   const canManageAttendance = (isAdmin || isTeacher) && effectiveDate === today;
   const excusedColor = useColorModeValue('orange.100', 'orange.300');
+  const tooltipBg = useColorModeValue('gray.50', 'gray.800');
+  const tooltipTextColor = useColorModeValue('gray.800', 'whiteAlpha.900');
+  const tooltipBorderColor = useColorModeValue('gray.200', 'gray.700');
 
   const getVisibleChildren = useCallback(() => {
     const allChildren = classData.children;
@@ -278,7 +281,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   return (
     <Box w="full" overflowX="auto">
       <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
-        <Text color="gray.600">{texts.classes.detail.attendanceDate[language]}:</Text>
+        <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"
           value={attendanceDate}
@@ -287,7 +290,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
         />
         {classData.children.length > 1 && (
           <>
-            <Text color="gray.600">{texts.classes.student[language]}:</Text>
+            <Text variant="filter">{texts.classes.student[language]}:</Text>
             <Box w={{ base: '100%', sm: '220px' }} maxW="220px">
               <Combobox
                 options={classData.children.map((child) => ({
@@ -311,7 +314,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
         )}
       </HStack>
       {isLoading ? (
-        <Text color="gray.500" fontStyle="italic">
+        <Text variant="filter" fontStyle="italic">
           {texts.classes.detail.attendanceLoading[language]}
         </Text>
       ) : (
@@ -363,19 +366,30 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                       excuseForDate.date_to
                     )}`
                   : '';
-                const excuseMeta = [parentName, excuseDateRange].filter(Boolean).join(' · ');
                 const excuseTooltip = excuseForDate ? (
                   <Box>
-                    <Text fontWeight="semibold">{excuseForDate.reason}</Text>
-                    {excuseMeta && (
-                      <Text fontSize="xs" color="gray.600">
-                        {excuseMeta}
-                      </Text>
-                    )}
+                    <Text fontWeight="semibold">
+                      {texts.profile.children.excuse.reason[language]}: {excuseForDate.reason}
+                    </Text>
+                    <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
+                      {texts.profile.children.excuse.dateRange[language]}: {excuseDateRange || '-'}
+                    </Text>
+                    <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
+                      {texts.profile.children.excuse.submittedBy[language]}: {parentName || '-'}
+                    </Text>
                   </Box>
                 ) : null;
                 const renderExcuseStatus = (color: string) => (
-                  <Tooltip label={excuseTooltip} hasArrow placement="top" openDelay={200}>
+                  <Tooltip
+                    label={excuseTooltip}
+                    hasArrow
+                    placement="top"
+                    openDelay={200}
+                    bg={tooltipBg}
+                    color={tooltipTextColor}
+                    borderWidth="1px"
+                    borderColor={tooltipBorderColor}
+                  >
                     <Text color={color} fontSize="sm">
                       {texts.profile.children.excuse.status[language]}
                     </Text>

@@ -179,6 +179,14 @@ export const profile = {
       en: "View Children's Dashboard",
     },
     excuse: {
+      historyTitle: {
+        cs: 'Omluvenky',
+        en: 'Excuses',
+      },
+      historyEmpty: {
+        cs: 'Žádné omluvenky k zobrazení.',
+        en: 'No excuses to display.',
+      },
       button: {
         cs: 'Omluvit',
         en: 'Excuse',
@@ -198,6 +206,14 @@ export const profile = {
       dateTo: {
         cs: 'Do',
         en: 'To',
+      },
+      dateRange: {
+        cs: 'Datum od - do',
+        en: 'Date From - To',
+      },
+      submittedBy: {
+        cs: 'Zadal/a',
+        en: 'Submitted by',
       },
       status: {
         cs: 'Omluven/a',

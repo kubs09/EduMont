@@ -109,6 +109,29 @@ const theme = extendTheme({
         color: 'white',
       },
     },
+    Text: {
+      variants: {
+        heading: {
+          fontSize: { base: '2xl', md: '3xl' },
+          fontWeight: 'bold',
+          color: 'text-primary',
+        },
+        empty: {
+          fontSize: 'md',
+          color: 'text-muted',
+        },
+        link: {
+          color: 'blue.500',
+          _hover: {
+            textDecoration: 'underline',
+          },
+        },
+        filter: {
+          fontSize: 'sm',
+          color: 'text-secondary',
+        },
+      },
+    },
     Button: {
       variants: {
         brand: {

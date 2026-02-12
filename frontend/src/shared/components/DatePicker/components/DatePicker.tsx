@@ -123,7 +123,6 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
               icon={<CalendarIcon />}
               size="sm"
               variant="ghost"
-              color="gray.500"
               onClick={() => setIsOpen(!isOpen)}
             />
           </PopoverTrigger>

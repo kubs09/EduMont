@@ -70,7 +70,7 @@ export interface CreateChildExcuseData {
 export interface ChildExcuse {
   id: number;
   child_id: number;
-  parent_id: number | null;
+  parent_id: number;
   date_from: string;
   date_to: string;
   reason: string;

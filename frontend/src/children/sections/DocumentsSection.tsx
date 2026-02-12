@@ -109,7 +109,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
           </Table>
         </TableContainer>
       ) : (
-        <Text color="gray.600">{texts.document.noDocuments[language]}</Text>
+        <Text variant="empty">{texts.document.noDocuments[language]}</Text>
       )}
 
       {canUpload && (
