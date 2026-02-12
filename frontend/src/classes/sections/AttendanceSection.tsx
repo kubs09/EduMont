@@ -10,8 +10,10 @@ import {
   Th,
   Thead,
   Tr,
+  Tooltip,
   useToast,
   HStack,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
@@ -27,6 +29,7 @@ import {
   ClassAttendanceRow,
   getClassAttendance,
 } from '@frontend/services/api/class';
+import { ChildExcuse } from '@frontend/services/api/child';
 
 interface AttendanceTabProps {
   classData: Class;
@@ -35,6 +38,7 @@ interface AttendanceTabProps {
   isTeacher: boolean;
   isParent: boolean;
   currentUserId: number | null;
+  excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
 const AttendanceTab: React.FC<AttendanceTabProps> = ({
@@ -44,6 +48,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   isTeacher,
   isParent,
   currentUserId,
+  excusesByChildId,
 }) => {
   const toast = useToast();
   const [rows, setRows] = useState<ClassAttendanceRow[]>([]);
@@ -55,6 +60,10 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   const [attendanceDate, setAttendanceDate] = useState(today);
   const effectiveDate = attendanceDate || today;
   const canManageAttendance = (isAdmin || isTeacher) && effectiveDate === today;
+  const excusedColor = useColorModeValue('orange.100', 'orange.300');
+  const tooltipBg = useColorModeValue('gray.50', 'gray.800');
+  const tooltipTextColor = useColorModeValue('gray.800', 'whiteAlpha.900');
+  const tooltipBorderColor = useColorModeValue('gray.200', 'gray.700');
 
   const getVisibleChildren = useCallback(() => {
     const allChildren = classData.children;
@@ -78,6 +87,49 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       return child.parents.some((parent) => parent.id === currentUserId);
     },
     [classData.children, currentUserId, effectiveDate, isParent, today]
+  );
+
+  const formatExcuseDate = (value: string) => {
+    const locale = language === 'cs' ? 'cs-CZ' : 'en-US';
+    const direct = new Date(value);
+    if (!Number.isNaN(direct.getTime())) return direct.toLocaleDateString(locale);
+    const fallback = new Date(`${value}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? value : fallback.toLocaleDateString(locale);
+  };
+
+  const getExcuseForDate = useCallback(
+    (childId: number, dateValue: string) => {
+      const excuses = excusesByChildId[childId] || [];
+      if (!excuses.length) return null;
+
+      const target = new Date(dateValue);
+      const targetDate = Number.isNaN(target.getTime())
+        ? new Date(`${dateValue}T00:00:00`)
+        : target;
+      if (Number.isNaN(targetDate.getTime())) return null;
+      const compareDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate()
+      );
+
+      const parseDate = (value: string) => {
+        const direct = new Date(value);
+        if (!Number.isNaN(direct.getTime())) return direct;
+        const fallback = new Date(`${value}T00:00:00`);
+        return Number.isNaN(fallback.getTime()) ? null : fallback;
+      };
+
+      return (
+        excuses.find((excuse) => {
+          const fromDate = parseDate(excuse.date_from);
+          const toDate = parseDate(excuse.date_to);
+          if (!fromDate || !toDate) return false;
+          return compareDate >= fromDate && compareDate <= toDate;
+        }) || null
+      );
+    },
+    [excusesByChildId]
   );
 
   const showActionColumn =
@@ -229,7 +281,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   return (
     <Box w="full" overflowX="auto">
       <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
-        <Text color="gray.600">{texts.classes.detail.attendanceDate[language]}:</Text>
+        <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"
           value={attendanceDate}
@@ -238,7 +290,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
         />
         {classData.children.length > 1 && (
           <>
-            <Text color="gray.600">{texts.classes.student[language]}:</Text>
+            <Text variant="filter">{texts.classes.student[language]}:</Text>
             <Box w={{ base: '100%', sm: '220px' }} maxW="220px">
               <Combobox
                 options={classData.children.map((child) => ({
@@ -262,7 +314,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
         )}
       </HStack>
       {isLoading ? (
-        <Text color="gray.500" fontStyle="italic">
+        <Text variant="filter" fontStyle="italic">
           {texts.classes.detail.attendanceLoading[language]}
         </Text>
       ) : (
@@ -279,10 +331,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   {texts.classes.student[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.firstname[language]}
-                </Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.surname[language]}
+                  {texts.childrenTable.name[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.detail.checkIn[language]}
@@ -305,41 +354,87 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 const checkOutText = row.check_out_at
                   ? formatTime(row.check_out_at)
                   : texts.classes.detail.notCheckedOut[language];
+                const excuseForDate = getExcuseForDate(row.id, effectiveDate);
+                const isExcused = !!excuseForDate;
+                const parentName = excuseForDate
+                  ? [excuseForDate.parent_firstname, excuseForDate.parent_surname]
+                      .filter(Boolean)
+                      .join(' ')
+                  : '';
+                const excuseDateRange = excuseForDate
+                  ? `${formatExcuseDate(excuseForDate.date_from)} - ${formatExcuseDate(
+                      excuseForDate.date_to
+                    )}`
+                  : '';
+                const excuseTooltip = excuseForDate ? (
+                  <Box>
+                    <Text fontWeight="semibold">
+                      {texts.profile.children.excuse.reason[language]}: {excuseForDate.reason}
+                    </Text>
+                    <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
+                      {texts.profile.children.excuse.dateRange[language]}: {excuseDateRange || '-'}
+                    </Text>
+                    <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
+                      {texts.profile.children.excuse.submittedBy[language]}: {parentName || '-'}
+                    </Text>
+                  </Box>
+                ) : null;
+                const renderExcuseStatus = (color: string) => (
+                  <Tooltip
+                    label={excuseTooltip}
+                    hasArrow
+                    placement="top"
+                    openDelay={200}
+                    bg={tooltipBg}
+                    color={tooltipTextColor}
+                    borderWidth="1px"
+                    borderColor={tooltipBorderColor}
+                  >
+                    <Text color={color} fontSize="sm">
+                      {texts.profile.children.excuse.status[language]}
+                    </Text>
+                  </Tooltip>
+                );
                 return (
                   <Tr key={row.id}>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'table-cell', md: 'none' }}>
-                        <HStack spacing={2} w="full" justifyContent="flex-start">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckIn(row.id)}
-                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkInAction[language]}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckOut(row.id)}
-                            isDisabled={
-                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
-                            }
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkOutAction[language]}
-                          </Button>
-                        </HStack>
+                        {isExcused ? (
+                          renderExcuseStatus(excusedColor)
+                        ) : (
+                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckIn(row.id)}
+                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkInAction[language]}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckOut(row.id)}
+                              isDisabled={
+                                !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                              }
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkOutAction[language]}
+                            </Button>
+                          </HStack>
+                        )}
                       </Td>
                     )}
-                    <Td display={{ base: 'table-cell', md: 'none' }}>
-                      <Text fontWeight="semibold">
-                        {row.firstname} {row.surname}
-                      </Text>
+                    <Td>
+                      <HStack spacing={2} align="center" flexWrap="wrap">
+                        <Text>
+                          {row.firstname} {row.surname}
+                        </Text>
+                        {isExcused && renderExcuseStatus('orange.500')}
+                      </HStack>
                     </Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.firstname}</Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.surname}</Td>
                     <Td display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckIn(row.check_in_at) ? 'red.500' : 'inherit'}>
                         {checkInText}
@@ -352,28 +447,32 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     </Td>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'none', md: 'table-cell' }}>
-                        <HStack spacing={2} w="full" justifyContent="flex-start">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckIn(row.id)}
-                            isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkInAction[language]}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleCheckOut(row.id)}
-                            isDisabled={
-                              !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
-                            }
-                            isLoading={actionChildId === row.id}
-                          >
-                            {texts.classes.detail.checkOutAction[language]}
-                          </Button>
-                        </HStack>
+                        {isExcused ? (
+                          renderExcuseStatus('orange.500')
+                        ) : (
+                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckIn(row.id)}
+                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkInAction[language]}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleCheckOut(row.id)}
+                              isDisabled={
+                                !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
+                              }
+                              isLoading={actionChildId === row.id}
+                            >
+                              {texts.classes.detail.checkOutAction[language]}
+                            </Button>
+                          </HStack>
+                        )}
                       </Td>
                     )}
                   </Tr>

@@ -6,3 +6,4 @@ export { Combobox, type ComboboxProps, type ComboboxOption } from './Combobox';
 export { TablePagination, DEFAULT_PAGE_SIZE, type TablePaginationProps } from './TablePagination';
 export { Section } from './Section';
 export { SectionMenu, type SectionMenuItem, type SectionMenuProps } from './SectionMenu';
+export { ChildExcuseAction } from './ChildExcuseAction';

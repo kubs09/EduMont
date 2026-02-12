@@ -178,6 +178,90 @@ export const profile = {
       cs: 'Zobrazit panel dětí',
       en: "View Children's Dashboard",
     },
+    excuse: {
+      historyTitle: {
+        cs: 'Omluvenky',
+        en: 'Excuses',
+      },
+      historyEmpty: {
+        cs: 'Žádné omluvenky k zobrazení.',
+        en: 'No excuses to display.',
+      },
+      button: {
+        cs: 'Omluvit',
+        en: 'Excuse',
+      },
+      cancel: {
+        cs: 'Zrušit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      title: {
+        cs: 'Omluvenka',
+        en: 'Excuse from School',
+      },
+      dateFrom: {
+        cs: 'Od',
+        en: 'From',
+      },
+      dateTo: {
+        cs: 'Do',
+        en: 'To',
+      },
+      dateRange: {
+        cs: 'Datum od - do',
+        en: 'Date From - To',
+      },
+      submittedBy: {
+        cs: 'Zadal/a',
+        en: 'Submitted by',
+      },
+      status: {
+        cs: 'Omluven/a',
+        en: 'Excused',
+      },
+      reason: {
+        cs: 'Důvod',
+        en: 'Reason',
+      },
+      submit: {
+        cs: 'Odeslat omluvenku',
+        en: 'Submit Excuse',
+      },
+      success: {
+        cs: 'Omluvenka byla odeslána',
+        en: 'Excuse submitted',
+      },
+      error: {
+        cs: 'Nepodařilo se odeslat omluvenku',
+        en: 'Failed to submit excuse',
+      },
+      cancelSuccess: {
+        cs: 'Omluvenka byla zrušena',
+        en: 'Excuse cancelled',
+      },
+      cancelError: {
+        cs: 'Nepodařilo se zrušit omluvenku',
+        en: 'Failed to cancel excuse',
+      },
+      validation: {
+        dateFromRequired: {
+          cs: 'Zadejte datum od',
+          en: 'Please select a start date',
+        },
+        dateToRequired: {
+          cs: 'Zadejte datum do',
+          en: 'Please select an end date',
+        },
+        dateOrder: {
+          cs: 'Datum do musí být po datu od',
+          en: 'End date must be on or after start date',
+        },
+        reasonRequired: {
+          cs: 'Zadejte důvod omluvenky',
+          en: 'Please provide a reason',
+        },
+      },
+    },
     titleParent: {
       cs: 'Moje děti',
       en: 'My Children',
