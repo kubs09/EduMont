@@ -206,13 +206,15 @@ const Header = () => {
                 {isAdmin && <>{texts.students[language]}</>}
                 {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
               </MenuItem>
-              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleSchedule}>
-                {texts.schedule.menuItem[language]}
-              </MenuItem>
               {isAdmin && (
-                <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
-                  {texts.userDashboard.menuItem[language]}
-                </MenuItem>
+                <>
+                  <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleSchedule}>
+                    {texts.schedule.menuItem[language]}
+                  </MenuItem>
+                  <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
+                    {texts.userDashboard.menuItem[language]}
+                  </MenuItem>
+                </>
               )}
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleLogout}>
                 {texts.auth.signIn.logout[language]}
