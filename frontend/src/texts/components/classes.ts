@@ -146,29 +146,29 @@ export const classes = {
       cs: 'Moje děti',
       en: 'My Children',
     },
-    nextActivities: {
-      cs: 'Následující aktivity',
-      en: 'Next Activities',
+    nextPresentations: {
+      cs: 'Následující prezentace',
+      en: 'Next Presentations',
     },
     attendance: {
       cs: 'Docházka',
       en: 'Attendance',
     },
-    noNextActivities: {
-      cs: 'Žádné naplánované aktivity',
-      en: 'No scheduled activities',
-    },
-    nextActivity: {
-      cs: 'Další aktivita',
-      en: 'Next Activity',
+    noNextPresentations: {
+      cs: 'Žádné naplánované prezentace',
+      en: 'No scheduled presentations',
     },
     time: {
       cs: 'Čas',
       en: 'Time',
     },
-    activity: {
-      cs: 'Aktivita',
-      en: 'Activity',
+    presentation: {
+      cs: 'Prezentace',
+      en: 'Presentation',
+    },
+    category: {
+      cs: 'Kategorie',
+      en: 'Category',
     },
     checkIn: {
       cs: 'Příchod',

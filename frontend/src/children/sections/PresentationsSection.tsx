@@ -9,6 +9,42 @@ interface SchedulesTabProps {
 }
 
 const SchedulesTab: React.FC<SchedulesTabProps> = ({ schedules, language }) => {
+  const getStatusColor = (status: string): string => {
+    switch (status) {
+      case 'prerequisites not met':
+        return 'red';
+      case 'to be presented':
+        return 'orange';
+      case 'presented':
+        return 'blue';
+      case 'practiced':
+        return 'teal';
+      case 'mastered':
+        return 'green';
+      default:
+        return 'gray';
+    }
+  };
+
+  const getStatusText = (status: string): string => {
+    switch (status) {
+      case 'prerequisites not met':
+        return (
+          texts.schedule.status?.options.prerequisitesNotMet[language] || 'Prerequisites Not Met'
+        );
+      case 'to be presented':
+        return texts.schedule.status?.options.toBePresented[language] || 'To Be Presented';
+      case 'presented':
+        return texts.schedule.status?.options.presented[language] || 'Presented';
+      case 'practiced':
+        return texts.schedule.status?.options.practiced[language] || 'Practiced';
+      case 'mastered':
+        return texts.schedule.status?.options.mastered[language] || 'Mastered';
+      default:
+        return status || '-';
+    }
+  };
+
   return (
     <TableContainer>
       <Table variant="simple" size="md">
@@ -30,17 +66,8 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({ schedules, language }) => {
                 <Text>{schedule.category || '-'}</Text>
               </Td>
               <Td>
-                <Badge
-                  colorScheme={
-                    schedule.status === 'done'
-                      ? 'green'
-                      : schedule.status === 'in progress'
-                        ? 'blue'
-                        : 'gray'
-                  }
-                  variant="subtle"
-                >
-                  {schedule.status || '-'}
+                <Badge colorScheme={getStatusColor(schedule.status)} variant="subtle">
+                  {getStatusText(schedule.status)}
                 </Badge>
               </Td>
               <Td>

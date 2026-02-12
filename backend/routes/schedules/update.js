@@ -3,7 +3,11 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
-const { validateSchedule, canEditChildSchedule } = require('./validation');
+const {
+  validateSchedule,
+  canEditChildSchedule,
+  normalizeCategoryOrdering,
+} = require('./validation');
 
 // Update a schedule entry
 router.put('/:id', authenticateToken, async (req, res) => {
@@ -19,11 +23,17 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     await client.query('BEGIN');
 
-    const scheduleResult = await client.query('SELECT child_id FROM schedules WHERE id = $1', [id]);
+    const scheduleResult = await client.query(
+      'SELECT child_id, category FROM schedules WHERE id = $1',
+      [id]
+    );
     if (scheduleResult.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Schedule not found' });
     }
+
+    const previousChildId = scheduleResult.rows[0].child_id;
+    const previousCategory = scheduleResult.rows[0].category;
 
     const canEdit = await canEditChildSchedule(req.user.id, req.user.role, child_id);
     if (!canEdit) {
@@ -53,6 +63,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
     `,
       [child_id, class_id, name, category, status, notes, req.user.id, id]
     );
+
+    await normalizeCategoryOrdering(client, child_id, category);
+    if (previousChildId !== child_id || previousCategory !== category) {
+      await normalizeCategoryOrdering(client, previousChildId, previousCategory);
+    }
 
     await client.query('COMMIT');
     res.json(result.rows[0]);

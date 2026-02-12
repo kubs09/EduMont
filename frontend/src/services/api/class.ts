@@ -95,10 +95,10 @@ export const autoAssignClasses = async (): Promise<void> => {
   }
 };
 
-export interface NextActivity {
+export interface NextPresentation {
   id: number;
   child_id: number;
-  activity: string;
+  presentation: string;
   category?: string;
   status: string;
   notes?: string;
@@ -118,14 +118,16 @@ export interface ClassAttendanceRow {
   notes: string | null;
 }
 
-export const getClassNextActivities = async (classId: number): Promise<NextActivity[]> => {
+export const getClassNextPresentations = async (classId: number): Promise<NextPresentation[]> => {
   try {
-    const response = await api.get<NextActivity[]>(`/api/classes/${classId}/next-activities`);
+    const response = await api.get<NextPresentation[]>(
+      `/api/classes/${classId}/next-presentations`
+    );
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       throw new ApiError(
-        error.response?.data?.error || 'Failed to fetch next activities',
+        error.response?.data?.error || 'Failed to fetch next presentations',
         error.response?.status
       );
     }

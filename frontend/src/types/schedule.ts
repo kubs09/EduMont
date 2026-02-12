@@ -4,7 +4,7 @@ export interface Schedule {
   class_id: number;
   name: string;
   category?: string;
-  status: 'not started' | 'in progress' | 'done';
+  status: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -22,7 +22,7 @@ export interface CreateScheduleData {
   class_id: number;
   name: string;
   category?: string;
-  status?: 'not started' | 'in progress' | 'done';
+  status?: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
   notes?: string;
 }
 

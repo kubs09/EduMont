@@ -29,17 +29,25 @@ export const schedule = {
       en: 'Status',
     },
     options: {
-      notStarted: {
-        cs: 'Nezačato',
-        en: 'Not Started',
+      prerequisitesNotMet: {
+        cs: 'Nesplněné předpoklady',
+        en: 'Prerequisites Not Met',
       },
-      inProgress: {
-        cs: 'Probíhá',
-        en: 'In Progress',
+      toBePresented: {
+        cs: 'K představení',
+        en: 'To Be Presented',
       },
-      done: {
-        cs: 'Dokončeno',
-        en: 'Done',
+      presented: {
+        cs: 'Představeno',
+        en: 'Presented',
+      },
+      practiced: {
+        cs: 'Procvičováno',
+        en: 'Practiced',
+      },
+      mastered: {
+        cs: 'Zvládnuto',
+        en: 'Mastered',
       },
     },
   },
@@ -91,9 +99,9 @@ export const schedule = {
     cs: 'hodiny',
     en: 'hours',
   },
-  activity: {
-    cs: 'Aktivita',
-    en: 'Activity',
+  presentation: {
+    cs: 'Prezentace',
+    en: 'Presentation',
   },
   notes: {
     cs: 'Poznámky',
@@ -155,12 +163,12 @@ export const schedule = {
   },
   validation: {
     nameRequired: {
-      cs: 'Zadejte název aktivity',
-      en: 'Please enter the activity name',
+      cs: 'Zadejte název prezentace',
+      en: 'Please enter the presentation name',
     },
     nameTooLong: {
-      cs: 'Název aktivity je příliš dlouhý',
-      en: 'Activity name is too long',
+      cs: 'Název prezentace je příliš dlouhý',
+      en: 'Presentation name is too long',
     },
     categoryTooLong: {
       cs: 'Kategorie je příliš dlouhá',
@@ -234,17 +242,17 @@ export const schedule = {
     },
   },
   placeholders: {
-    activity: {
+    presentation: {
       cs: 'např. Matematika, Čtení, Kreativní činnost...',
       en: 'e.g. Math, Reading, Creative Activity...',
     },
     notes: {
-      cs: 'Volitelné poznámky k této aktivitě...',
-      en: 'Optional notes for this activity...',
+      cs: 'Volitelné poznámky k této prezentaci...',
+      en: 'Optional notes for this presentation...',
     },
     name: {
-      cs: 'Zadejte název aktivity',
-      en: 'Enter activity name',
+      cs: 'Zadejte název prezentace',
+      en: 'Enter presentation name',
     },
     category: {
       cs: 'Zadejte kategorii (např. Předmět, Volný čas...)',

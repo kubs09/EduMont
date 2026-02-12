@@ -143,7 +143,9 @@ CREATE TABLE schedules (
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
     category VARCHAR(100),
-    status VARCHAR(20) DEFAULT 'not started' CHECK (status IN ('not started', 'in progress', 'done')),
+        status VARCHAR(30) DEFAULT 'prerequisites not met' CHECK (
+            status IN ('prerequisites not met', 'to be presented', 'presented', 'practiced', 'mastered')
+        ),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(id),
@@ -254,16 +256,16 @@ FROM child_class_mapping ccm
 CROSS JOIN admin_user au
 CROSS JOIN (
     VALUES 
-        ('Complete Drawing Project', 'Arts and Crafts', 'in progress', 'Draw a picture of your family'),
-        ('Learn New Song', 'Music', 'done', 'Learned "Twinkle Twinkle Little Star"'),
-        ('Nature Collection', 'Science', 'not started', 'Collect 5 different types of leaves'),
-        ('Practice Counting', 'Mathematics', 'done', 'Count to 20'),
-        ('Build Block Tower', 'Construction Play', 'in progress', 'Build a tower taller than yourself'),
-        ('Read Storybook', 'Reading', 'done', 'Finished "The Very Hungry Caterpillar"'),
-        ('Color Recognition', 'Learning', 'not started', 'Identify 8 basic colors'),
-        ('Physical Exercise', 'PE', 'done', 'Completed obstacle course'),
-        ('Social Skills', 'Group Activity', 'in progress', 'Share toys with friends'),
-        ('Alphabet Practice', 'Language', 'not started', 'Recognize letters A-M')
+        ('Complete Drawing Project', 'Arts and Crafts', 'practiced', 'Draw a picture of your family'),
+        ('Learn New Song', 'Music', 'mastered', 'Learned "Twinkle Twinkle Little Star"'),
+        ('Nature Collection', 'Science', 'to be presented', 'Collect 5 different types of leaves'),
+        ('Practice Counting', 'Mathematics', 'mastered', 'Count to 20'),
+        ('Build Block Tower', 'Construction Play', 'practiced', 'Build a tower taller than yourself'),
+        ('Read Storybook', 'Reading', 'mastered', 'Finished "The Very Hungry Caterpillar"'),
+        ('Color Recognition', 'Learning', 'to be presented', 'Identify 8 basic colors'),
+        ('Physical Exercise', 'PE', 'mastered', 'Completed obstacle course'),
+        ('Social Skills', 'Group Activity', 'practiced', 'Share toys with friends'),
+        ('Alphabet Practice', 'Language', 'to be presented', 'Recognize letters A-M')
 ) AS schedule_data(name_val, category_val, status_val, notes_val);
 
 WITH admin_user AS (

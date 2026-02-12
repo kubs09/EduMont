@@ -47,7 +47,7 @@ router.get('/:id/next-activities', auth, async (req, res) => {
       JOIN children ch ON s.child_id = ch.id
       JOIN class_children cc ON ch.id = cc.child_id
       WHERE cc.class_id = $1 
-        AND s.status = 'in progress'
+        AND s.status = 'to be presented'
     `;
 
     const params = [id];
