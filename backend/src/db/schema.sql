@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, class_attendance, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
+DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -120,6 +120,22 @@ CREATE TABLE class_attendance (
 
 CREATE INDEX idx_class_attendance_class_date ON class_attendance(class_id, attendance_date);
 CREATE INDEX idx_class_attendance_child_date ON class_attendance(child_id, attendance_date);
+
+CREATE TABLE child_excuses (
+    id SERIAL PRIMARY KEY,
+    child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+    parent_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    date_from DATE NOT NULL,
+    date_to DATE NOT NULL,
+    reason TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (date_to >= date_from)
+);
+
+CREATE INDEX idx_child_excuses_child_id ON child_excuses(child_id);
+CREATE INDEX idx_child_excuses_parent_id ON child_excuses(parent_id);
+CREATE INDEX idx_child_excuses_date_from ON child_excuses(date_from);
 
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,

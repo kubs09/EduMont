@@ -18,14 +18,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { Document, getChildDocuments } from '@frontend/services/api';
+import { ChildExcuse, Document, getChildDocuments, getChildExcuses } from '@frontend/services/api';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { Schedule } from '@frontend/types/schedule';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
 import { Section, SectionMenu } from '@frontend/shared/components';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
-import { InformationSection, DocumentsSection, SchedulesSection } from '../sections';
+import {
+  InformationSection,
+  DocumentsSection,
+  SchedulesSection,
+  ExcusesSection,
+} from '../sections';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
@@ -35,6 +40,7 @@ const ChildDetailPage = () => {
   const [childData, setChildData] = useState<Child | null>(null);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [excuses, setExcuses] = useState<ChildExcuse[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('information');
@@ -58,6 +64,15 @@ const ChildDetailPage = () => {
     }
   };
 
+  const loadExcuses = async (childId: number) => {
+    try {
+      const excusesResponse = await getChildExcuses(childId);
+      setExcuses(excusesResponse || []);
+    } catch (err) {
+      setExcuses([]);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -78,6 +93,12 @@ const ChildDetailPage = () => {
         } catch (err) {
           setDocuments([]);
         }
+
+        try {
+          await loadExcuses(parseInt(id));
+        } catch (err) {
+          setExcuses([]);
+        }
       } catch (error) {
         toast({
           title: texts.profile.error[language],
@@ -96,6 +117,7 @@ const ChildDetailPage = () => {
     const visibleSectionIds = [
       'information',
       ...(schedules.length > 0 ? ['schedules'] : []),
+      'excuses',
       'documents',
     ];
     if (!visibleSectionIds.includes(activeSectionId)) {
@@ -180,6 +202,17 @@ const ChildDetailPage = () => {
       label: texts.schedule.title[language],
       content: <SchedulesSection schedules={schedules} language={language} />,
       isVisible: schedules.length > 0,
+    },
+    {
+      id: 'excuses',
+      label: texts.profile.children.excuse.historyTitle[language],
+      content: (
+        <ExcusesSection
+          excuses={excuses}
+          language={language}
+          canViewParentProfile={canViewParentProfile}
+        />
+      ),
     },
     {
       id: 'documents',

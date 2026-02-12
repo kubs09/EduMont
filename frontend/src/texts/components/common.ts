@@ -66,6 +66,10 @@ export const common = {
       cs: 'Příjmení',
       en: 'Surname',
     },
+    name: {
+      cs: 'Jméno a příjmení',
+      en: 'Name',
+    },
     age: {
       cs: 'Věk',
       en: 'Age',
