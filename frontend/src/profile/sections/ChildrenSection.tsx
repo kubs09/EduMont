@@ -1,35 +1,10 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Stack,
-  Text,
-  Textarea,
-  VStack,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Button, HStack, Stack, Text, VStack } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { DatePicker, Section } from '@frontend/shared/components';
+import { ChildExcuseAction, Section } from '@frontend/shared/components';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
-import {
-  ChildExcuse,
-  createChildExcuse,
-  deleteChildExcuse,
-  getChildExcuses,
-  getChildren,
-} from '@frontend/services/api';
+import { ChildExcuse, getChildExcuses, getChildren } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
@@ -42,17 +17,7 @@ interface ChildrenSectionProps {
 const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const toast = useToast();
   const [children, setChildren] = useState<Child[]>([]);
-  const [isExcuseOpen, setIsExcuseOpen] = useState(false);
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
-  const [excuseData, setExcuseData] = useState({
-    date_from: '',
-    date_to: '',
-    reason: '',
-  });
-  const [excuseErrors, setExcuseErrors] = useState<Record<string, string>>({});
-  const [isSubmittingExcuse, setIsSubmittingExcuse] = useState(false);
   const [excusesByChildId, setExcusesByChildId] = useState<Record<number, ChildExcuse[]>>({});
 
   useEffect(() => {
@@ -155,102 +120,6 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
     return value;
   };
 
-  const openExcuseModal = (child: Child) => {
-    setSelectedChild(child);
-    setExcuseData({ date_from: '', date_to: '', reason: '' });
-    setExcuseErrors({});
-    setIsExcuseOpen(true);
-  };
-
-  const closeExcuseModal = () => {
-    setIsExcuseOpen(false);
-    setSelectedChild(null);
-    setExcuseData({ date_from: '', date_to: '', reason: '' });
-    setExcuseErrors({});
-  };
-
-  const validateExcuse = () => {
-    const errors: Record<string, string> = {};
-
-    if (!excuseData.date_from) {
-      errors.date_from = texts.profile.children.excuse.validation.dateFromRequired[language];
-    }
-
-    if (!excuseData.date_to) {
-      errors.date_to = texts.profile.children.excuse.validation.dateToRequired[language];
-    }
-
-    if (excuseData.date_from && excuseData.date_to) {
-      const fromDate = new Date(excuseData.date_from);
-      const toDate = new Date(excuseData.date_to);
-      if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
-        if (toDate < fromDate) {
-          errors.date_to = texts.profile.children.excuse.validation.dateOrder[language];
-        }
-      }
-    }
-
-    if (!excuseData.reason.trim()) {
-      errors.reason = texts.profile.children.excuse.validation.reasonRequired[language];
-    }
-
-    setExcuseErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleExcuseSubmit = async () => {
-    if (!selectedChild) return;
-    if (!validateExcuse()) return;
-
-    try {
-      setIsSubmittingExcuse(true);
-      await createChildExcuse(selectedChild.id, {
-        date_from: excuseData.date_from,
-        date_to: excuseData.date_to,
-        reason: excuseData.reason.trim(),
-      });
-      await refreshExcusesForChild(selectedChild.id);
-      toast({
-        title: texts.profile.children.excuse.success[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-      closeExcuseModal();
-    } catch (error) {
-      toast({
-        title: texts.profile.children.excuse.error[language],
-        description: error.message || texts.profile.children.excuse.error[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsSubmittingExcuse(false);
-    }
-  };
-
-  const handleExcuseCancel = async (childId: number, excuseId: number) => {
-    try {
-      await deleteChildExcuse(childId, excuseId);
-      await refreshExcusesForChild(childId);
-      toast({
-        title: texts.profile.children.excuse.cancelSuccess[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: texts.profile.children.excuse.cancelError[language],
-        description: error.message || texts.profile.children.excuse.cancelError[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
   return (
     <Section title={texts.profile.children.titleParent[language]} cardProps={{ mb: 6 }}>
       <Stack spacing={4}>
@@ -279,19 +148,15 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
                           </Text>
                         )}
                       </HStack>
-                      {activeExcuse ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleExcuseCancel(child.id, activeExcuse.id)}
-                        >
-                          {texts.profile.children.excuse.cancel[language]}
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="outline" onClick={() => openExcuseModal(child)}>
-                          {texts.profile.children.excuse.button[language]}
-                        </Button>
-                      )}
+                      <ChildExcuseAction
+                        childId={child.id}
+                        childName={`${child.firstname} ${child.surname}`}
+                        language={language}
+                        excuse={activeExcuse}
+                        onRefreshExcuses={refreshExcusesForChild}
+                        size="sm"
+                        variant="outline"
+                      />
                     </HStack>
                   );
                 })()}
@@ -307,71 +172,6 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
           </Button>
         </HStack>
       </Stack>
-      <Modal isOpen={isExcuseOpen} onClose={closeExcuseModal}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {texts.profile.children.excuse.title[language]}
-            {selectedChild ? ` - ${selectedChild.firstname} ${selectedChild.surname}` : ''}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Stack spacing={4}>
-              <FormControl isRequired isInvalid={!!excuseErrors.date_from}>
-                <FormLabel>{texts.profile.children.excuse.dateFrom[language]}</FormLabel>
-                <DatePicker
-                  viewType="day"
-                  value={excuseData.date_from}
-                  onChange={(date) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      date_from: date,
-                    }))
-                  }
-                  language={language}
-                />
-                <FormErrorMessage>{excuseErrors.date_from}</FormErrorMessage>
-              </FormControl>
-              <FormControl isRequired isInvalid={!!excuseErrors.date_to}>
-                <FormLabel>{texts.profile.children.excuse.dateTo[language]}</FormLabel>
-                <DatePicker
-                  viewType="day"
-                  value={excuseData.date_to}
-                  onChange={(date) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      date_to: date,
-                    }))
-                  }
-                  language={language}
-                />
-                <FormErrorMessage>{excuseErrors.date_to}</FormErrorMessage>
-              </FormControl>
-              <FormControl isRequired isInvalid={!!excuseErrors.reason}>
-                <FormLabel>{texts.profile.children.excuse.reason[language]}</FormLabel>
-                <Textarea
-                  value={excuseData.reason}
-                  onChange={(event) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      reason: event.target.value,
-                    }))
-                  }
-                />
-                <FormErrorMessage>{excuseErrors.reason}</FormErrorMessage>
-              </FormControl>
-            </Stack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={closeExcuseModal} mr={3}>
-              {texts.profile.cancel[language]}
-            </Button>
-            <Button variant="brand" onClick={handleExcuseSubmit} isLoading={isSubmittingExcuse}>
-              {texts.profile.children.excuse.submit[language]}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </Section>
   );
 };

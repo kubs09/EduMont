@@ -184,7 +184,7 @@ export const profile = {
         en: 'Excuse',
       },
       cancel: {
-        cs: 'Zrusit omluvenku',
+        cs: 'Zrušit omluvenku',
         en: 'Cancel Excuse',
       },
       title: {
@@ -200,11 +200,11 @@ export const profile = {
         en: 'To',
       },
       status: {
-        cs: 'Omluven',
+        cs: 'Omluven/a',
         en: 'Excused',
       },
       reason: {
-        cs: 'Duvod',
+        cs: 'Důvod',
         en: 'Reason',
       },
       submit: {
@@ -212,19 +212,19 @@ export const profile = {
         en: 'Submit Excuse',
       },
       success: {
-        cs: 'Omluvenka byla odeslana',
+        cs: 'Omluvenka byla odeslána',
         en: 'Excuse submitted',
       },
       error: {
-        cs: 'Nepodarilo se odeslat omluvenku',
+        cs: 'Nepodařilo se odeslat omluvenku',
         en: 'Failed to submit excuse',
       },
       cancelSuccess: {
-        cs: 'Omluvenka byla zrusena',
+        cs: 'Omluvenka byla zrušena',
         en: 'Excuse cancelled',
       },
       cancelError: {
-        cs: 'Nepodarilo se zrusit omluvenku',
+        cs: 'Nepodařilo se zrušit omluvenku',
         en: 'Failed to cancel excuse',
       },
       validation: {
@@ -237,11 +237,11 @@ export const profile = {
           en: 'Please select an end date',
         },
         dateOrder: {
-          cs: 'Datum do musi byt po datu od',
+          cs: 'Datum do musí být po datu od',
           en: 'End date must be on or after start date',
         },
         reasonRequired: {
-          cs: 'Zadejte duvod omluvenky',
+          cs: 'Zadejte důvod omluvenky',
           en: 'Please provide a reason',
         },
       },

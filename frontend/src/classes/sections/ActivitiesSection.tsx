@@ -77,8 +77,7 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
           <Table variant="simple" size="md">
             <Thead>
               <Tr>
-                <Th>{texts.childrenTable.firstname[language]}</Th>
-                <Th>{texts.childrenTable.surname[language]}</Th>
+                <Th>{texts.childrenTable.name[language]}</Th>
                 <Th>{texts.classes.detail.activity[language]}</Th>
                 {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
               </Tr>
@@ -86,8 +85,9 @@ const ActivitiesTab: React.FC<ActivitiesTabProps> = ({
             <Tbody>
               {paginatedActivities.map((activity) => (
                 <Tr key={`${activity.child_id}-${activity.id}`}>
-                  <Td>{activity.firstname}</Td>
-                  <Td>{activity.surname}</Td>
+                  <Td>
+                    {activity.firstname} {activity.surname}
+                  </Td>
                   <Td>{activity.activity || '-'}</Td>
                   {(isAdmin || isTeacher) && <Td>{activity.notes || '-'}</Td>}
                 </Tr>

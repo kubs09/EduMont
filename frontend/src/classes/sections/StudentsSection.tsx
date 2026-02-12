@@ -17,7 +17,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
-import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
+import { ChildExcuseAction, DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 import { ChildExcuse } from '@frontend/services/api/child';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 
@@ -29,6 +29,7 @@ interface StudentsTabProps {
   isParent: boolean;
   currentUserId: number | null;
   excusesByChildId: Record<number, ChildExcuse[]>;
+  onRefreshExcuses: (childId: number) => Promise<void>;
 }
 
 const StudentsTab: React.FC<StudentsTabProps> = ({
@@ -39,6 +40,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   isParent,
   currentUserId,
   excusesByChildId,
+  onRefreshExcuses,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const canViewParentProfile = isAdmin || isTeacher;
@@ -66,9 +68,6 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
       setCurrentPage(safeCurrentPage);
     }
   }, [currentPage, safeCurrentPage]);
-
-  const formatParentContacts = (parents: Class['children'][number]['parents']) =>
-    parents.map((parent) => parent.phone || parent.email);
 
   const getActiveExcuse = (childId: number) => {
     const excuses = excusesByChildId[childId] || [];
@@ -107,69 +106,81 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
         <Table variant="simple" size="md" minW="max-content">
           <Thead>
             <Tr>
-              <Th>{texts.childrenTable.firstname[language]}</Th>
-              <Th>{texts.childrenTable.surname[language]}</Th>
+              <Th>{texts.childrenTable.name[language]}</Th>
               <Th>{texts.childrenTable.age[language]}</Th>
               {(isAdmin || isTeacher) && <Th>{texts.childrenTable.parent[language]}</Th>}
-              {(isAdmin || isTeacher) && <Th>{texts.childrenTable.contact[language]}</Th>}
+              <Th>{texts.children.excuse.status[language]}</Th>
+              {isParent && <Th>{texts.common.actions[language]}</Th>}
             </Tr>
           </Thead>
           <Tbody>
-            {paginatedChildren.map((child) => (
-              <Tr key={child.id}>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text>{child.firstname}</Text>
-                    {(() => {
-                      const activeExcuse = getActiveExcuse(child.id);
-                      return activeExcuse ? (
-                        <Text fontSize="sm" color="orange.500">
-                          {texts.profile.children.excuse.status[language]} (
-                          {formatExcuseDate(activeExcuse.date_from)}
-                          {' - '}
-                          {formatExcuseDate(activeExcuse.date_to)})
-                        </Text>
-                      ) : null;
-                    })()}
-                  </VStack>
-                </Td>
-                <Td>{child.surname}</Td>
-                <Td>{child.age}</Td>
-                {(isAdmin || isTeacher) && (
+            {paginatedChildren.map((child) => {
+              const activeExcuse = getActiveExcuse(child.id);
+              const childName = `${child.firstname} ${child.surname}`;
+              return (
+                <Tr key={child.id}>
                   <Td>
-                    <VStack align="start" spacing={1}>
-                      {child.parents.map((parent) => {
-                        const fullName = `${parent.firstname} ${parent.surname}`;
-                        return (
-                          <Text key={`${child.id}-parent-name-${parent.id}`}>
-                            {canViewParentProfile ? (
-                              <ChakraLink
-                                as={RouterLink}
-                                to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
-                                color={linkColor}
-                              >
-                                {fullName}
-                              </ChakraLink>
-                            ) : (
-                              fullName
-                            )}
-                          </Text>
-                        );
-                      })}
-                    </VStack>
+                    <Text>
+                      {child.firstname} {child.surname}
+                    </Text>
                   </Td>
-                )}
-                {(isAdmin || isTeacher) && (
-                  <Td>
-                    <VStack align="start" spacing={1}>
-                      {formatParentContacts(child.parents).map((contact, parentIndex) => (
-                        <Text key={`${child.id}-parent-contact-${parentIndex}`}>{contact}</Text>
-                      ))}
-                    </VStack>
-                  </Td>
-                )}
-              </Tr>
-            ))}
+                  <Td>{child.age}</Td>
+                  {(isAdmin || isTeacher) && (
+                    <Td>
+                      <VStack align="start" spacing={1}>
+                        {child.parents.map((parent) => {
+                          const fullName = `${parent.firstname} ${parent.surname}`;
+                          return (
+                            <Text key={`${child.id}-parent-name-${parent.id}`}>
+                              {canViewParentProfile ? (
+                                <ChakraLink
+                                  as={RouterLink}
+                                  to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                                  color={linkColor}
+                                >
+                                  {fullName}
+                                </ChakraLink>
+                              ) : (
+                                fullName
+                              )}
+                            </Text>
+                          );
+                        })}
+                      </VStack>
+                    </Td>
+                  )}
+                  {activeExcuse ? (
+                    <Td>
+                      <Text fontSize="sm" color="orange.500">
+                        {texts.profile.children.excuse.status[language]} (
+                        {formatExcuseDate(activeExcuse.date_from)}
+                        {' - '}
+                        {formatExcuseDate(activeExcuse.date_to)})
+                      </Text>
+                    </Td>
+                  ) : (
+                    <Td>
+                      <Text fontSize="sm" color="gray.500">
+                        -
+                      </Text>
+                    </Td>
+                  )}
+                  {isParent && (
+                    <Td>
+                      <ChildExcuseAction
+                        childId={child.id}
+                        childName={childName}
+                        language={language}
+                        excuse={activeExcuse}
+                        onRefreshExcuses={onRefreshExcuses}
+                        size="xs"
+                        variant="outline"
+                      />
+                    </Td>
+                  )}
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
       </TableContainer>

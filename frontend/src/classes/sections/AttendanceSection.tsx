@@ -10,6 +10,7 @@ import {
   Th,
   Thead,
   Tr,
+  Tooltip,
   useToast,
   HStack,
   useColorModeValue,
@@ -83,6 +84,49 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       return child.parents.some((parent) => parent.id === currentUserId);
     },
     [classData.children, currentUserId, effectiveDate, isParent, today]
+  );
+
+  const formatExcuseDate = (value: string) => {
+    const locale = language === 'cs' ? 'cs-CZ' : 'en-US';
+    const direct = new Date(value);
+    if (!Number.isNaN(direct.getTime())) return direct.toLocaleDateString(locale);
+    const fallback = new Date(`${value}T00:00:00`);
+    return Number.isNaN(fallback.getTime()) ? value : fallback.toLocaleDateString(locale);
+  };
+
+  const getExcuseForDate = useCallback(
+    (childId: number, dateValue: string) => {
+      const excuses = excusesByChildId[childId] || [];
+      if (!excuses.length) return null;
+
+      const target = new Date(dateValue);
+      const targetDate = Number.isNaN(target.getTime())
+        ? new Date(`${dateValue}T00:00:00`)
+        : target;
+      if (Number.isNaN(targetDate.getTime())) return null;
+      const compareDate = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth(),
+        targetDate.getDate()
+      );
+
+      const parseDate = (value: string) => {
+        const direct = new Date(value);
+        if (!Number.isNaN(direct.getTime())) return direct;
+        const fallback = new Date(`${value}T00:00:00`);
+        return Number.isNaN(fallback.getTime()) ? null : fallback;
+      };
+
+      return (
+        excuses.find((excuse) => {
+          const fromDate = parseDate(excuse.date_from);
+          const toDate = parseDate(excuse.date_to);
+          if (!fromDate || !toDate) return false;
+          return compareDate >= fromDate && compareDate <= toDate;
+        }) || null
+      );
+    },
+    [excusesByChildId]
   );
 
   const isChildExcusedOnDate = useCallback(
@@ -317,10 +361,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   {texts.classes.student[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.firstname[language]}
-                </Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.surname[language]}
+                  {texts.childrenTable.name[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.detail.checkIn[language]}
@@ -343,15 +384,42 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 const checkOutText = row.check_out_at
                   ? formatTime(row.check_out_at)
                   : texts.classes.detail.notCheckedOut[language];
-                const isExcused = isChildExcusedOnDate(row.id, effectiveDate);
+                const excuseForDate = getExcuseForDate(row.id, effectiveDate);
+                const isExcused = !!excuseForDate;
+                const parentName = excuseForDate
+                  ? [excuseForDate.parent_firstname, excuseForDate.parent_surname]
+                      .filter(Boolean)
+                      .join(' ')
+                  : '';
+                const excuseDateRange = excuseForDate
+                  ? `${formatExcuseDate(excuseForDate.date_from)} - ${formatExcuseDate(
+                      excuseForDate.date_to
+                    )}`
+                  : '';
+                const excuseMeta = [parentName, excuseDateRange].filter(Boolean).join(' · ');
+                const excuseTooltip = excuseForDate ? (
+                  <Box>
+                    <Text fontWeight="semibold">{excuseForDate.reason}</Text>
+                    {excuseMeta && (
+                      <Text fontSize="xs" color="gray.600">
+                        {excuseMeta}
+                      </Text>
+                    )}
+                  </Box>
+                ) : null;
+                const renderExcuseStatus = (color: string) => (
+                  <Tooltip label={excuseTooltip} hasArrow placement="top" openDelay={200}>
+                    <Text color={color} fontSize="sm">
+                      {texts.profile.children.excuse.status[language]}
+                    </Text>
+                  </Tooltip>
+                );
                 return (
                   <Tr key={row.id}>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'table-cell', md: 'none' }}>
                         {isExcused ? (
-                          <Text color={excusedColor} fontSize="sm">
-                            {texts.profile.children.excuse.status[language]}
-                          </Text>
+                          renderExcuseStatus(excusedColor)
                         ) : (
                           <HStack spacing={2} w="full" justifyContent="flex-start">
                             <Button
@@ -378,13 +446,14 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                         )}
                       </Td>
                     )}
-                    <Td display={{ base: 'table-cell', md: 'none' }}>
-                      <Text fontWeight="semibold">
-                        {row.firstname} {row.surname}
-                      </Text>
+                    <Td>
+                      <HStack spacing={2} align="center" flexWrap="wrap">
+                        <Text>
+                          {row.firstname} {row.surname}
+                        </Text>
+                        {isExcused && renderExcuseStatus('orange.500')}
+                      </HStack>
                     </Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.firstname}</Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>{row.surname}</Td>
                     <Td display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckIn(row.check_in_at) ? 'red.500' : 'inherit'}>
                         {checkInText}
@@ -398,9 +467,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     {(canManageAttendance || canParentManageChild(row.id)) && (
                       <Td display={{ base: 'none', md: 'table-cell' }}>
                         {isExcused ? (
-                          <Text color="orange.500" fontSize="sm">
-                            {texts.profile.children.excuse.status[language]}
-                          </Text>
+                          renderExcuseStatus('orange.500')
                         ) : (
                           <HStack spacing={2} w="full" justifyContent="flex-start">
                             <Button

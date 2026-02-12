@@ -153,6 +153,21 @@ const ClassDetailPage = () => {
     };
   }, [classData?.children]);
 
+  const refreshExcusesForChild = async (childId: number) => {
+    try {
+      const excuses = await getChildExcuses(childId);
+      setExcusesByChildId((prev) => ({
+        ...prev,
+        [childId]: excuses,
+      }));
+    } catch (error) {
+      setExcusesByChildId((prev) => ({
+        ...prev,
+        [childId]: [],
+      }));
+    }
+  };
+
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
     description: string;
@@ -212,6 +227,7 @@ const ClassDetailPage = () => {
       isParent={isParent}
       currentUserId={currentUserId}
       excusesByChildId={excusesByChildId}
+      onRefreshExcuses={refreshExcusesForChild}
     />
   );
 
