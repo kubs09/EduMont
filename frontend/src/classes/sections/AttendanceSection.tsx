@@ -129,39 +129,6 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     [excusesByChildId]
   );
 
-  const isChildExcusedOnDate = useCallback(
-    (childId: number, dateValue: string) => {
-      const excuses = excusesByChildId[childId] || [];
-      if (!excuses.length) return false;
-
-      const target = new Date(dateValue);
-      const targetDate = Number.isNaN(target.getTime())
-        ? new Date(`${dateValue}T00:00:00`)
-        : target;
-      if (Number.isNaN(targetDate.getTime())) return false;
-      const compareDate = new Date(
-        targetDate.getFullYear(),
-        targetDate.getMonth(),
-        targetDate.getDate()
-      );
-
-      const parseDate = (value: string) => {
-        const direct = new Date(value);
-        if (!Number.isNaN(direct.getTime())) return direct;
-        const fallback = new Date(`${value}T00:00:00`);
-        return Number.isNaN(fallback.getTime()) ? null : fallback;
-      };
-
-      return excuses.some((excuse) => {
-        const fromDate = parseDate(excuse.date_from);
-        const toDate = parseDate(excuse.date_to);
-        if (!fromDate || !toDate) return false;
-        return compareDate >= fromDate && compareDate <= toDate;
-      });
-    },
-    [excusesByChildId]
-  );
-
   const showActionColumn =
     effectiveDate === today &&
     (isAdmin || isTeacher || (isParent && getVisibleChildren().length > 0));
