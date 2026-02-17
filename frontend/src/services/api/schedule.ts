@@ -6,6 +6,7 @@ export interface Schedule {
   class_id: number;
   name: string;
   category?: string;
+  display_order?: number;
   status: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
   notes?: string;
   created_at: string;
@@ -24,6 +25,7 @@ export interface CreateScheduleData {
   class_id: number;
   name: string;
   category?: string;
+  display_order?: number;
   status?: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
   notes?: string;
 }

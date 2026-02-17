@@ -60,6 +60,11 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({ schedules, language }) => {
           {schedules.map((schedule) => (
             <Tr key={schedule.id}>
               <Td>
+                <Text fontWeight="medium">
+                  {schedule.child_firstname} {schedule.child_surname}
+                </Text>
+              </Td>
+              <Td>
                 <Text fontWeight="medium">{schedule.name}</Text>
               </Td>
               <Td>

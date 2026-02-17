@@ -14,7 +14,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const { child_id, class_id, name, category, status, notes } = req.body;
+    const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
     const validationErrors = validateSchedule(req.body);
     if (validationErrors.length > 0) {
@@ -56,12 +56,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const result = await client.query(
       `
       UPDATE schedules 
-      SET child_id = $1, class_id = $2, name = $3, category = $4, status = $5, 
-          notes = $6, updated_at = CURRENT_TIMESTAMP, updated_by = $7
-      WHERE id = $8
+      SET child_id = $1, class_id = $2, name = $3, category = $4, display_order = $5, status = $6, 
+          notes = $7, updated_at = CURRENT_TIMESTAMP, updated_by = $8
+      WHERE id = $9
       RETURNING *
     `,
-      [child_id, class_id, name, category, status, notes, req.user.id, id]
+      [child_id, class_id, name, category, display_order || 0, status, notes, req.user.id, id]
     );
 
     await normalizeCategoryOrdering(client, child_id, category);

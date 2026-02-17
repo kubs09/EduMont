@@ -52,10 +52,10 @@ const normalizeCategoryOrdering = async (client, childId, category) => {
 
   const result = await client.query(
     `
-    SELECT id, status
+    SELECT id, status, display_order
     FROM schedules
     WHERE child_id = $1 AND category = $2
-    ORDER BY created_at ASC, id ASC
+    ORDER BY display_order ASC, id ASC
   `,
     [childId, category]
   );

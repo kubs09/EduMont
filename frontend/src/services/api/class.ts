@@ -98,12 +98,18 @@ export const autoAssignClasses = async (): Promise<void> => {
 export interface NextPresentation {
   id: number;
   child_id: number;
-  presentation: string;
+  class_id: number;
+  name: string;
   category?: string;
   status: string;
   notes?: string;
-  firstname: string;
-  surname: string;
+  class_name: string;
+  child_firstname: string;
+  child_surname: string;
+  created_by_firstname?: string;
+  created_by_surname?: string;
+  updated_by_firstname?: string;
+  updated_by_surname?: string;
 }
 
 export interface ClassAttendanceRow {

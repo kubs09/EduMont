@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents CASCADE;
+DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents, category_presentations CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -137,15 +137,29 @@ CREATE INDEX idx_child_excuses_child_id ON child_excuses(child_id);
 CREATE INDEX idx_child_excuses_parent_id ON child_excuses(parent_id);
 CREATE INDEX idx_child_excuses_date_from ON child_excuses(date_from);
 
+-- Category presentations template - defines the order of presentations for each category
+CREATE TABLE category_presentations (
+    id SERIAL PRIMARY KEY,
+    category VARCHAR(100) NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    display_order INTEGER NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (category, display_order)
+);
+
+CREATE INDEX idx_category_presentations_category ON category_presentations(category);
+
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
     child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
     category VARCHAR(100),
-        status VARCHAR(30) DEFAULT 'prerequisites not met' CHECK (
-            status IN ('prerequisites not met', 'to be presented', 'presented', 'practiced', 'mastered')
-        ),
+    display_order INTEGER DEFAULT 0,
+    status VARCHAR(30) DEFAULT 'prerequisites not met' CHECK (
+        status IN ('prerequisites not met', 'to be presented', 'presented', 'practiced', 'mastered')
+    ),
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(id),
@@ -156,6 +170,8 @@ CREATE TABLE schedules (
 CREATE INDEX idx_schedules_child_id ON schedules(child_id);
 CREATE INDEX idx_schedules_class_id ON schedules(class_id);
 CREATE INDEX idx_schedules_status ON schedules(status);
+CREATE INDEX idx_schedules_category_status ON schedules(category, status);
+CREATE INDEX idx_schedules_child_category ON schedules(child_id, category);
 
 CREATE TABLE documents (
     id SERIAL PRIMARY KEY,
@@ -229,6 +245,40 @@ CROSS JOIN LATERAL (
     LIMIT 1
 ) c;
 
+INSERT INTO category_presentations (category, name, display_order, notes)
+VALUES 
+    ('Arts and Crafts', 'Complete Drawing Project', 1, 'Draw a picture of your family'),
+    ('Arts and Crafts', 'Create Collage', 2, 'Create a collage with various materials'),
+    ('Arts and Crafts', 'Paint with Watercolors', 3, 'Learn basic watercolor techniques'),
+    ('Music', 'Learn New Song', 1, 'Learned "Twinkle Twinkle Little Star"'),
+    ('Music', 'Play Simple Instrument', 2, 'Learn to play a recorder or xylophone'),
+    ('Music', 'Sing in Group', 3, 'Participate in group singing'),
+    ('Science', 'Nature Collection', 1, 'Collect 5 different types of leaves'),
+    ('Science', 'Plant Growth Observation', 2, 'Observe and record plant growth'),
+    ('Science', 'Simple Experiment', 3, 'Conduct a basic science experiment'),
+    ('Mathematics', 'Practice Counting', 1, 'Count to 20'),
+    ('Mathematics', 'Number Recognition', 2, 'Recognize numbers 1-20'),
+    ('Mathematics', 'Basic Addition', 3, 'Learn basic addition with objects'),
+    ('Construction Play', 'Build Block Tower', 1, 'Build a tower taller than yourself'),
+    ('Construction Play', 'Create Block Structure', 2, 'Design and build a complex structure'),
+    ('Construction Play', 'Lego Creation', 3, 'Build with LEGO following instructions'),
+    ('Reading', 'Read Storybook', 1, 'Finished "The Very Hungry Caterpillar"'),
+    ('Reading', 'Read Picture Book', 2, 'Read simple picture stories'),
+    ('Reading', 'Read Chapter Book', 3, 'Read early chapter books'),
+    ('Learning', 'Color Recognition', 1, 'Identify 8 basic colors'),
+    ('Learning', 'Shape Recognition', 2, 'Identify basic shapes'),
+    ('Learning', 'Letter Recognition', 3, 'Recognize alphabet letters'),
+    ('PE', 'Physical Exercise', 1, 'Completed obstacle course'),
+    ('PE', 'Ball Games', 2, 'Participate in ball throwing and catching'),
+    ('PE', 'Team Sports', 3, 'Join in team sports activities'),
+    ('Group Activity', 'Social Skills', 1, 'Share toys with friends'),
+    ('Group Activity', 'Teamwork Game', 2, 'Participate in group games'),
+    ('Group Activity', 'Community Activity', 3, 'Contribute to class community'),
+    ('Language', 'Alphabet Practice', 1, 'Recognize letters A-M'),
+    ('Language', 'Letter Writing', 2, 'Write basic letters'),
+    ('Language', 'Word Building', 3, 'Build words from letters')
+ON CONFLICT (category, display_order) DO NOTHING;
+
 WITH admin_user AS (
     SELECT id FROM users WHERE role = 'admin' LIMIT 1
 ),
@@ -242,31 +292,28 @@ child_class_mapping AS (
     FROM children ch
     JOIN class_children cc ON ch.id = cc.child_id
     JOIN classes cl ON cc.class_id = cl.id
+),
+all_categories AS (
+    SELECT DISTINCT category FROM category_presentations
+),
+child_categories AS (
+    SELECT ccm.child_id, ccm.class_id, ac.category, au.id as admin_id
+    FROM child_class_mapping ccm
+    CROSS JOIN all_categories ac
+    CROSS JOIN admin_user au
 )
-INSERT INTO schedules (child_id, class_id, name, category, status, notes, created_by)
+INSERT INTO schedules (child_id, class_id, name, category, display_order, status, notes, created_by)
 SELECT 
-    ccm.child_id,
-    ccm.class_id,
-    name_val,
-    category_val,
-    status_val,
-    notes_val,
-    au.id
-FROM child_class_mapping ccm
-CROSS JOIN admin_user au
-CROSS JOIN (
-    VALUES 
-        ('Complete Drawing Project', 'Arts and Crafts', 'practiced', 'Draw a picture of your family'),
-        ('Learn New Song', 'Music', 'mastered', 'Learned "Twinkle Twinkle Little Star"'),
-        ('Nature Collection', 'Science', 'to be presented', 'Collect 5 different types of leaves'),
-        ('Practice Counting', 'Mathematics', 'mastered', 'Count to 20'),
-        ('Build Block Tower', 'Construction Play', 'practiced', 'Build a tower taller than yourself'),
-        ('Read Storybook', 'Reading', 'mastered', 'Finished "The Very Hungry Caterpillar"'),
-        ('Color Recognition', 'Learning', 'to be presented', 'Identify 8 basic colors'),
-        ('Physical Exercise', 'PE', 'mastered', 'Completed obstacle course'),
-        ('Social Skills', 'Group Activity', 'practiced', 'Share toys with friends'),
-        ('Alphabet Practice', 'Language', 'to be presented', 'Recognize letters A-M')
-) AS schedule_data(name_val, category_val, status_val, notes_val);
+    cc.child_id,
+    cc.class_id,
+    cp.name,
+    cp.category,
+    cp.display_order,
+    CASE WHEN cp.display_order = 1 THEN 'to be presented' ELSE 'prerequisites not met' END as status,
+    cp.notes,
+    cc.admin_id
+FROM child_categories cc
+JOIN category_presentations cp ON cc.category = cp.category;
 
 WITH admin_user AS (
     SELECT id FROM users WHERE role = 'admin' LIMIT 1

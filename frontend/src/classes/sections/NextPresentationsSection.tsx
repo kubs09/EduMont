@@ -173,10 +173,10 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
                 {paginatedPresentations.map((presentation) => (
                   <Tr key={`${presentation.child_id}-${presentation.id}`}>
                     <Td>
-                      {presentation.firstname} {presentation.surname}
+                      {presentation.child_firstname} {presentation.child_surname}
                     </Td>
-                    <Td>{presentation.category?.trim() || uncategorizedLabel}</Td>
-                    <Td>{presentation.presentation || '-'}</Td>
+                    <Td>{presentation.category}</Td>
+                    <Td>{presentation.name}</Td>
                     {(isAdmin || isTeacher) && <Td>{presentation.notes || '-'}</Td>}
                   </Tr>
                 ))}
