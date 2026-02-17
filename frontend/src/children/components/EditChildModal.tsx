@@ -13,14 +13,18 @@ import {
   Textarea,
   FormErrorMessage,
   useToast,
+  Box,
+  Select,
 } from '@chakra-ui/react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { editChildSchema } from '@frontend/profile/schemas/childSchema';
+import { editChildSchema } from '@frontend/shared/validation/childSchema';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { getUsers } from '@frontend/services/api/user';
+import { getClassesByAge } from '@frontend/services/api/class';
 import { User } from '@frontend/types/shared';
+import { Class } from '@frontend/types/class';
 import { Combobox } from '@frontend/shared/components/Combobox';
 
 interface EditChildModalProps {
@@ -50,9 +54,43 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
   const [selectedParentIds, setSelectedParentIds] = useState<number[]>(
     childData.parents?.map((parent) => parent.id) || []
   );
+  const [availableClasses, setAvailableClasses] = useState<Class[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(childData.class_id || null);
   const [isLoadingParents, setIsLoadingParents] = useState(false);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const calculateAge = (dateOfBirth: string): number | null => {
+    if (!dateOfBirth) return null;
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const fetchAvailableClasses = useCallback(async (dateOfBirth: string) => {
+    try {
+      const age = calculateAge(dateOfBirth);
+      if (age === null || age < 0) {
+        setAvailableClasses([]);
+        return;
+      }
+
+      setIsLoadingClasses(true);
+      const classes = await getClassesByAge(age);
+      setAvailableClasses(classes);
+    } catch (error) {
+      console.error('Error fetching classes:', error);
+      setAvailableClasses([]);
+    } finally {
+      setIsLoadingClasses(false);
+    }
+  }, []);
 
   useEffect(() => {
     setFormData({
@@ -61,7 +99,13 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
       notes: childData.notes || '',
     });
     setSelectedParentIds(childData.parents?.map((parent) => parent.id) || []);
-  }, [childData]);
+    setSelectedClassId(childData.class_id || null);
+
+    // Fetch available classes for the child's current age
+    if (childData.date_of_birth) {
+      fetchAvailableClasses(childData.date_of_birth);
+    }
+  }, [childData, fetchAvailableClasses]);
 
   useEffect(() => {
     if (!isAdmin || !isOpen) return;
@@ -106,19 +150,18 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
       setIsSubmitting(true);
       setErrors({});
 
-      const schema = editChildSchema(language);
-      schema.parse(formData);
-
-      if (isAdmin && selectedParentIds.length === 0) {
-        setErrors({ parent_ids: texts.profile.error[language] });
-        setIsSubmitting(false);
-        return;
-      }
+      const schema = editChildSchema(language, { requireParentIds: isAdmin });
+      schema.parse({
+        ...formData,
+        parent_ids: selectedParentIds,
+        class_id: selectedClassId,
+      });
 
       await onSave({
         id: childData.id,
         ...formData,
         parent_ids: isAdmin ? selectedParentIds : undefined,
+        class_id: selectedClassId || undefined,
       });
       onClose();
     } catch (error) {
@@ -129,9 +172,12 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
         });
         setErrors(validationErrors);
       } else {
+        const isSelectedClassNotSuitable =
+          error.message === 'selectedClassNotSuitable' || error.message.includes('not suitable');
+
         toast({
-          title: texts.profile.error[language],
-          description: error.message || 'Failed to update child',
+          title: isSelectedClassNotSuitable ? 'Class not suitable' : texts.profile.error[language],
+          description: error.message,
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -184,6 +230,30 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
             <FormLabel>{texts.childrenTable.notes[language]}</FormLabel>
             <Textarea name="notes" value={formData.notes} onChange={handleChange} />
             <FormErrorMessage>{errors.notes}</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={!!errors.class_id} mb={4}>
+            <FormLabel>Class</FormLabel>
+            {isLoadingClasses ? (
+              <Box p={2}>Loading available classes...</Box>
+            ) : availableClasses.length > 0 ? (
+              <Select
+                value={selectedClassId ? selectedClassId.toString() : ''}
+                onChange={(e) => setSelectedClassId(e.target.value ? Number(e.target.value) : null)}
+                placeholder="Select a class"
+                isDisabled={isLoadingClasses}
+              >
+                {availableClasses.map((cls) => (
+                  <option key={cls.id} value={cls.id}>
+                    {cls.name} (Ages {cls.min_age}-{cls.max_age})
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              <Box p={2} color="red.500">
+                No suitable classes found for this age.
+              </Box>
+            )}
+            <FormErrorMessage>{errors.class_id}</FormErrorMessage>
           </FormControl>
         </ModalBody>
         <ModalFooter>

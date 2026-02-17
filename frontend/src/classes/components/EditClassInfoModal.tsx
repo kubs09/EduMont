@@ -10,21 +10,24 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Select,
   Textarea,
-  useToast,
   ThemingProps,
+  FormErrorMessage,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ClassTeacher } from '@frontend/types/class';
-import { classSchema } from '../schemas/classSchema';
+import { classInfoSchema } from '../../shared/validation/classSchema';
+import { classAgeGroups } from '../utils/ageGroups';
 import { z } from 'zod';
 
 interface Class {
   id: number;
   name: string;
   description: string;
+  age_group: string;
   min_age: number;
   max_age: number;
   teachers: ClassTeacher[];
@@ -38,12 +41,20 @@ interface EditClassInfoModalProps {
   onSave: (updatedInfo: {
     name: string;
     description: string;
+    age_group: string;
     min_age: number;
     max_age: number;
     teacherId: number;
-    assistantId: number | null;
+    assistantId: number;
   }) => Promise<void>;
   size?: ThemingProps['size'] | { base: string; md: string };
+}
+
+interface FormErrors {
+  name?: string;
+  description?: string;
+  minAge?: string;
+  maxAge?: string;
 }
 
 export const EditClassInfoModal = ({
@@ -54,56 +65,74 @@ export const EditClassInfoModal = ({
   size = { base: 'full', md: 'lg' },
 }: EditClassInfoModalProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
   const [name, setName] = useState(classData.name);
   const [description, setDescription] = useState(classData.description);
-  const [minAge, setMinAge] = useState(classData.min_age);
-  const [maxAge, setMaxAge] = useState(classData.max_age);
+  const initialGroup =
+    classAgeGroups.find(
+      (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
+    ) ?? classAgeGroups[0];
+  const [selectedGroup, setSelectedGroup] = useState(initialGroup);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setName(classData.name);
+    setDescription(classData.description);
+    const nextGroup =
+      classAgeGroups.find(
+        (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
+      ) ?? classAgeGroups[0];
+    setSelectedGroup(nextGroup);
+    setErrors({});
+  }, [isOpen, classData]);
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+  };
 
   const handleSave = async () => {
     try {
-      const validationResult = classSchema.parse({
+      setIsSubmitting(true);
+      const validationResult = classInfoSchema(language).parse({
         name,
         description,
-        minAge,
-        maxAge,
+        minAge: selectedGroup.minAge,
+        maxAge: selectedGroup.maxAge,
       });
-
-      const primaryTeacher = classData.teachers.find((t) => t.class_role === 'teacher');
-      const assistantTeacher = classData.teachers.find((t) => t.class_role === 'assistant');
-
-      if (!primaryTeacher) {
-        toast({
-          title: texts.classes.validation.teacherRequired[language],
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
 
       await onSave({
         name: validationResult.name,
         description: validationResult.description,
+        age_group: selectedGroup.ageGroup,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
-        teacherId: primaryTeacher.id,
-        assistantId: assistantTeacher?.id ?? null,
+        teacherId: classData.teachers.find((t) => t.class_role === 'teacher')?.id ?? 0,
+        assistantId: classData.teachers.find((t) => t.class_role === 'assistant')?.id ?? 0,
       });
       onClose();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: error.errors[0].message,
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
+        const newErrors: FormErrors = {};
+        error.errors.forEach((err) => {
+          const path = err.path[0] as string;
+          newErrors[path as keyof FormErrors] = err.message;
         });
+        setErrors(newErrors);
       } else {
         console.error('Error saving class:', error);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const isFormValid = name && description;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={size}>
@@ -112,35 +141,53 @@ export const EditClassInfoModal = ({
         <ModalHeader>{texts.classes.editClassTitle[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl>
+          <FormControl isInvalid={!!errors.name} isRequired>
             <FormLabel>{texts.classes.name[language]}</FormLabel>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
+            {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
           </FormControl>
-          <FormControl mt={4}>
+          <FormControl mt={4} isInvalid={!!errors.description} isRequired>
             <FormLabel>{texts.classes.description[language]}</FormLabel>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>{texts.classes.minAge[language]}</FormLabel>
-            <Input
-              type="number"
-              value={minAge}
-              onChange={(e) => setMinAge(parseInt(e.target.value))}
-              min={0}
+            <Textarea
+              value={description}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
             />
+            {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
           </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>{texts.classes.maxAge[language]}</FormLabel>
-            <Input
-              type="number"
-              value={maxAge}
-              onChange={(e) => setMaxAge(parseInt(e.target.value))}
-              min={minAge}
-            />
+          <FormControl mt={4} isRequired>
+            <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
+            <Select
+              value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+              onChange={(e) => {
+                const [minAgeValue, maxAgeValue] = e.target.value
+                  .split('-')
+                  .map((value) => Number(value));
+                const matchedGroup = classAgeGroups.find(
+                  (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
+                );
+                if (matchedGroup) {
+                  setSelectedGroup(matchedGroup);
+                  setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+                }
+              }}
+            >
+              {classAgeGroups.map((group) => (
+                <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
+                  {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
+                  {texts.classes.years[language]}
+                </option>
+              ))}
+            </Select>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleSave}>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={handleSave}
+            isLoading={isSubmitting}
+            isDisabled={!isFormValid && !isSubmitting}
+          >
             {texts.common.save[language]}
           </Button>
           <Button onClick={onClose}>{texts.common.cancel[language]}</Button>

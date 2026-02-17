@@ -17,7 +17,7 @@ import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { getClassNextActivities, NextActivity } from '@frontend/services/api/class';
+import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
 import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
@@ -43,7 +43,7 @@ const ClassDetailPage = () => {
   const { language } = useLanguage();
   const toast = useToast();
   const [classData, setClassData] = useState<Class | null>(null);
-  const [nextActivities, setNextActivities] = useState<NextActivity[]>([]);
+  const [nextPresentations, setNextPresentations] = useState<NextPresentation[]>([]);
   const [isEditInfoModalOpen, setIsEditInfoModalOpen] = useState(false);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -82,15 +82,15 @@ const ClassDetailPage = () => {
           }
         };
 
-        const fetchNextActivities = async () => {
+        const fetchNextPresentations = async () => {
           try {
             if (!id) return;
-            const activities = await getClassNextActivities(parseInt(id));
-            setNextActivities(activities);
+            const presentations = await getClassNextPresentations(parseInt(id));
+            setNextPresentations(presentations);
           } catch (error) {
             toast({
               title: 'Error',
-              description: 'Failed to load next activities',
+              description: 'Failed to load next presentations',
               status: 'error',
               duration: 5000,
               isClosable: true,
@@ -100,7 +100,7 @@ const ClassDetailPage = () => {
 
         fetchClassData();
         if (id) {
-          fetchNextActivities();
+          fetchNextPresentations();
         }
 
         if (isUserAdmin) {
@@ -204,6 +204,20 @@ const ClassDetailPage = () => {
     }
   };
 
+  const canViewPresentations =
+    !!currentUserId &&
+    !!classData?.teachers?.some(
+      (teacher) =>
+        teacher.id === currentUserId &&
+        (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
+    );
+
+  useEffect(() => {
+    if (!canViewPresentations && activeSectionId === 'presentations') {
+      setActiveSectionId('info');
+    }
+  }, [activeSectionId, canViewPresentations]);
+
   if (!classData) {
     return null;
   }
@@ -231,16 +245,16 @@ const ClassDetailPage = () => {
     />
   );
 
-  const activitiesTabContent = (
+  const activitiesTabContent = canViewPresentations ? (
     <ActivitiesSection
       classData={classData}
-      nextActivities={nextActivities}
+      nextPresentations={nextPresentations}
       language={language}
       isAdmin={isAdmin}
       isTeacher={isTeacher}
       excusesByChildId={excusesByChildId}
     />
-  );
+  ) : null;
 
   const attendanceTabContent = (
     <AttendanceSection
@@ -265,11 +279,15 @@ const ClassDetailPage = () => {
       label: texts.classes.detail.students[language],
       content: studentsTabContent,
     },
-    {
-      id: 'activities',
-      label: texts.classes.detail.nextActivities[language],
-      content: activitiesTabContent,
-    },
+    ...(canViewPresentations
+      ? [
+          {
+            id: 'presentations',
+            label: texts.classes.detail.nextPresentations[language],
+            content: activitiesTabContent,
+          },
+        ]
+      : []),
     {
       id: 'attendance',
       label: texts.classes.detail.attendance[language],

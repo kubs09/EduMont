@@ -351,6 +351,10 @@ export const profile = {
         cs: 'Poznámky nesmí být delší než 1000 znaků',
         en: 'Notes must not exceed 1000 characters',
       },
+      parentRequired: {
+        cs: 'Vyberte alespoň jednoho rodiče',
+        en: 'Please select at least one parent',
+      },
     },
     noSuitableClass: {
       title: {

@@ -1,6 +1,16 @@
 /* eslint-disable */
 const pool = require('../../config/database');
 
+const STATUS_VALUES = [
+  'prerequisites not met',
+  'to be presented',
+  'presented',
+  'practiced',
+  'mastered',
+];
+
+const PRESENTED_STATUSES = new Set(['presented', 'practiced', 'mastered']);
+
 const validateSchedule = (data) => {
   const errors = [];
 
@@ -24,8 +34,10 @@ const validateSchedule = (data) => {
     errors.push('Category must not exceed 100 characters');
   }
 
-  if (data.status && !['not started', 'in progress', 'done'].includes(data.status)) {
-    errors.push('Status must be "not started", "in progress", or "done"');
+  if (data.status && !STATUS_VALUES.includes(data.status)) {
+    errors.push(
+      'Status must be "prerequisites not met", "to be presented", "presented", "practiced", or "mastered"'
+    );
   }
 
   if (data.notes && data.notes.length > 1000) {
@@ -33,6 +45,55 @@ const validateSchedule = (data) => {
   }
 
   return errors;
+};
+
+const normalizeCategoryOrdering = async (client, childId, category) => {
+  if (!category) return;
+
+  const result = await client.query(
+    `
+    SELECT id, status, display_order
+    FROM schedules
+    WHERE child_id = $1 AND category = $2
+    ORDER BY display_order ASC, id ASC
+  `,
+    [childId, category]
+  );
+
+  if (result.rows.length === 0) return;
+
+  const firstNotPresentedIndex = result.rows.findIndex(
+    (row) => !PRESENTED_STATUSES.has(row.status)
+  );
+
+  if (firstNotPresentedIndex === -1) return;
+
+  const updates = [];
+
+  result.rows.forEach((row, index) => {
+    let desiredStatus = row.status;
+
+    if (index === firstNotPresentedIndex) {
+      desiredStatus = 'to be presented';
+    } else if (index > firstNotPresentedIndex) {
+      desiredStatus = 'prerequisites not met';
+    }
+
+    if (desiredStatus !== row.status) {
+      updates.push({ id: row.id, status: desiredStatus });
+    }
+  });
+
+  for (const update of updates) {
+    await client.query(
+      `
+      UPDATE schedules
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `,
+      [update.status, update.id]
+    );
+  }
 };
 
 const canAccessChildSchedule = async (userId, userRole, childId) => {
@@ -79,4 +140,10 @@ const canEditChildSchedule = async (userId, userRole, childId) => {
   return false;
 };
 
-module.exports = { validateSchedule, canAccessChildSchedule, canEditChildSchedule };
+module.exports = {
+  validateSchedule,
+  canAccessChildSchedule,
+  canEditChildSchedule,
+  normalizeCategoryOrdering,
+  STATUS_VALUES,
+};

@@ -54,11 +54,15 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   const getStatusColor = (status: string): string => {
     switch (status) {
-      case 'not started':
-        return 'gray';
-      case 'in progress':
+      case 'prerequisites not met':
+        return 'red';
+      case 'to be presented':
+        return 'orange';
+      case 'presented':
         return 'blue';
-      case 'done':
+      case 'practiced':
+        return 'teal';
+      case 'mastered':
         return 'green';
       default:
         return 'gray';
@@ -67,12 +71,18 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   const getStatusText = (status: string): string => {
     switch (status) {
-      case 'not started':
-        return texts.schedule.status?.options.notStarted[language] || 'Not Started';
-      case 'in progress':
-        return texts.schedule.status?.options.inProgress[language] || 'In Progress';
-      case 'done':
-        return texts.schedule.status?.options.done[language] || 'Done';
+      case 'prerequisites not met':
+        return (
+          texts.schedule.status?.options.prerequisitesNotMet[language] || 'Prerequisites Not Met'
+        );
+      case 'to be presented':
+        return texts.schedule.status?.options.toBePresented[language] || 'To Be Presented';
+      case 'presented':
+        return texts.schedule.status?.options.presented[language] || 'Presented';
+      case 'practiced':
+        return texts.schedule.status?.options.practiced[language] || 'Practiced';
+      case 'mastered':
+        return texts.schedule.status?.options.mastered[language] || 'Mastered';
       default:
         return status;
     }

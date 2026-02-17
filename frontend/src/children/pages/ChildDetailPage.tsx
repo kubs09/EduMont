@@ -134,6 +134,7 @@ const ChildDetailPage = () => {
         surname: updatedData.surname || childData.surname,
         parent_ids: updatedData.parent_ids,
         notes: updatedData.notes || childData.notes,
+        class_id: updatedData.class_id,
       });
 
       setChildData(response.data);

@@ -19,7 +19,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
 import { updateUser } from '@frontend/services/api';
-import { createProfileSchema, type ProfileSchema } from './schemas/profileSchema';
+import { createProfileSchema, type ProfileSchema } from '../shared/validation/profileSchema';
 
 const EditProfilePage = () => {
   const navigate = useNavigate();

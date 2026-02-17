@@ -164,7 +164,7 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
             ))}
           </VStack>
         ) : (
-          <Text color="gray.500">{texts.profile.children.noChildren[language]}</Text>
+          <Text variant="empty">{texts.profile.children.noChildren[language]}</Text>
         )}
         <HStack justify="flex-start">
           <Button variant="brand" onClick={onOpenChildren}>

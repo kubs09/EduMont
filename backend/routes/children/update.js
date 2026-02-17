@@ -15,7 +15,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
     const { id } = req.params;
-    const { firstname, surname, date_of_birth, parent_ids, notes } = req.body;
+    const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
     const validationErrors = validateChildUpdate(req.body);
     if (validationErrors.length > 0) {
@@ -76,6 +76,34 @@ router.put('/:id', authenticateToken, async (req, res) => {
          SELECT $1, unnest($2::int[])`,
         [id, parent_ids]
       );
+    }
+
+    if (class_id) {
+      const childAge = Math.floor(
+        (new Date() - new Date(actualDateOfBirth || result.rows[0].date_of_birth)) /
+          (365.25 * 24 * 60 * 60 * 1000)
+      );
+
+      // Verify the provided class exists and the age is appropriate
+      const classResult = await client.query(
+        'SELECT id FROM classes WHERE id = $1 AND $2 BETWEEN min_age AND max_age',
+        [class_id, childAge]
+      );
+
+      if (classResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'selectedClassNotSuitable',
+          details: "The selected class is not suitable for the child's age",
+        });
+      }
+
+      // Update the class assignment
+      await client.query('DELETE FROM class_children WHERE child_id = $1', [id]);
+      await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
+        class_id,
+        id,
+      ]);
     }
 
     const updatedChild = await client.query(
