@@ -83,7 +83,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
         name: formData.name,
         age_group: formData.age_group,
         display_order: formData.display_order,
-        notes: formData.notes,
+        notes: formData.notes || undefined,
       });
 
       if (validatedData.display_order < 1) {
@@ -215,7 +215,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
               {errors.display_order && <FormErrorMessage>{errors.display_order}</FormErrorMessage>}
             </FormControl>
 
-            <FormControl isInvalid={!!errors.notes}>
+            <FormControl>
               <FormLabel>{texts.schedule.notes[language]}</FormLabel>
               <Textarea
                 placeholder={texts.schedule.placeholders.notes[language]}
@@ -228,7 +228,6 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                 }}
                 rows={4}
               />
-              {errors.notes && <FormErrorMessage>{errors.notes}</FormErrorMessage>}
             </FormControl>
           </VStack>
         </ModalBody>
