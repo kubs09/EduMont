@@ -150,14 +150,12 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
       setIsSubmitting(true);
       setErrors({});
 
-      const schema = editChildSchema(language);
-      schema.parse(formData);
-
-      if (isAdmin && selectedParentIds.length === 0) {
-        setErrors({ parent_ids: texts.profile.error[language] });
-        setIsSubmitting(false);
-        return;
-      }
+      const schema = editChildSchema(language, { requireParentIds: isAdmin });
+      schema.parse({
+        ...formData,
+        parent_ids: selectedParentIds,
+        class_id: selectedClassId,
+      });
 
       await onSave({
         id: childData.id,

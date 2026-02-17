@@ -153,28 +153,25 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
       setIsSubmitting(true);
       setErrors({});
 
-      if (isAdmin && selectedParentIds.length === 0) {
-        setErrors({ parent_ids: texts.profile.error[language] });
-        setIsSubmitting(false);
-        return;
-      }
-
-      const schema = createChildSchema(language);
-      schema.parse(formData);
-
-      if (!selectedClassId) {
-        setErrors({ class_id: 'Please select a class' });
-        setIsSubmitting(false);
-        return;
-      }
-
       const userId = parseInt(localStorage.getItem('userId') || '0');
-      if (!userId) throw new Error('No user ID found');
+      if (!isAdmin && !userId) throw new Error('No user ID found');
+
+      const parentIds = isAdmin ? selectedParentIds : [userId];
+
+      const schema = createChildSchema(language, {
+        requireParentIds: isAdmin,
+        requireClassId: true,
+      });
+      schema.parse({
+        ...formData,
+        parent_ids: parentIds,
+        class_id: selectedClassId,
+      });
 
       await createChild({
         ...formData,
-        parent_ids: isAdmin ? selectedParentIds : [userId],
-        class_id: selectedClassId,
+        parent_ids: parentIds,
+        class_id: selectedClassId || undefined,
       });
 
       onSuccess();
