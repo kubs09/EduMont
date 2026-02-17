@@ -11,49 +11,59 @@ import {
   Center,
   Card,
   CardBody,
+  Text,
+  Select,
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
-  getAllSchedules,
-  createSchedule,
-  updateSchedule,
-  deleteSchedule,
-} from '@frontend/services/api/schedule';
-import { getChildren } from '@frontend/services/api/child';
-import { getClasses } from '@frontend/services/api/class';
-import { Schedule, CreateScheduleData, UpdateScheduleData } from '@frontend/types/schedule';
-import { Child } from '@frontend/types/child';
-import { Class } from '@frontend/types/class';
-import ScheduleModal from '@frontend/schedule/components/ScheduleModal';
-import ScheduleTable from '@frontend/schedule/components/ScheduleTable';
+  getAllCategoryPresentations,
+  createCategoryPresentation,
+  updateCategoryPresentation,
+  CategoryPresentation,
+  CreateCategoryPresentationData,
+} from '@frontend/services/api/categoryPresentation';
+import AddEditPresentationModal from '../components/AddEditPresentationModal';
+import SchedulePresentationsAccordion from '../components/SchedulePresentationsAccordion';
+import DeletePresentationDialog from '../components/DeletePresentationDialog';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [childrenList, setChildrenList] = useState<Child[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
+  const [presentations, setPresentations] = useState<CategoryPresentation[]>([]);
+  const [selectedPresentation, setPresentation] = useState<CategoryPresentation | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [loading, setLoading] = useState(true);
-  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [editingPresentation, setEditingPresentation] = useState<CategoryPresentation | null>(null);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
+  const [maxOrder, setMaxOrder] = useState<number>(1);
+  const [formData, setFormData] = useState<Partial<CreateCategoryPresentationData>>({
+    category: '',
+    name: '',
+    display_order: 0,
+    notes: '',
+  });
 
   const userRole = localStorage.getItem('userRole') || '';
   const isAdmin = userRole === 'admin';
-  const isTeacher = userRole === 'teacher';
-  const isParent = userRole === 'parent';
-  const canEdit = isAdmin || isTeacher;
 
-  const loadSchedules = useCallback(async () => {
+  useEffect(() => {
+    if (!isAdmin) {
+      window.location.href = '/';
+    }
+  }, [isAdmin]);
+
+  const loadPresentations = useCallback(async () => {
     try {
       setLoading(true);
-      const scheduleData = await getAllSchedules();
-      setSchedules(scheduleData);
+      const data = await getAllCategoryPresentations();
+      setPresentations(data);
     } catch (error) {
       toast({
-        title: texts.schedule.messages.fetchError[language],
+        title: 'Error loading presentations',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -61,112 +71,200 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [language, toast]);
+  }, [toast]);
 
-  const loadInitialData = useCallback(async () => {
+  useEffect(() => {
+    loadPresentations();
+  }, [loadPresentations]);
+
+  useEffect(() => {
+    if (presentations.length > 0 && !selectedAgeGroup) {
+      const ageGroups = Array.from(
+        new Set(presentations.map((p) => p.age_group).filter((ageGroup) => ageGroup))
+      ).sort();
+      if (ageGroups.length > 0) {
+        setSelectedAgeGroup(ageGroups[0]);
+      }
+    }
+  }, [presentations, selectedAgeGroup]);
+
+  // Recalculate maxOrder when form data changes (category or age_group selection)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let maxOrderValue = 1;
+    const category = formData.category || '';
+    const ageGroup = formData.age_group || '';
+
+    if (category && ageGroup) {
+      const relevantPresentations = presentations.filter(
+        (p) => p.category === category && p.age_group === ageGroup
+      );
+      maxOrderValue = editingPresentation
+        ? relevantPresentations.length
+        : relevantPresentations.length + 1;
+    } else if (ageGroup && !category) {
+      // If age group is selected but category is not yet, only allow order 1
+      // This forces the user to select a category before setting an order
+      maxOrderValue = 1;
+    }
+
+    setMaxOrder(maxOrderValue);
+  }, [formData.category, formData.age_group, isOpen, presentations, editingPresentation]);
+
+  const handleOpenModal = (presentation?: CategoryPresentation) => {
+    if (presentation) {
+      setEditingPresentation(presentation);
+      setFormData({
+        category: presentation.category,
+        name: presentation.name,
+        age_group: presentation.age_group,
+        display_order: presentation.display_order,
+        notes: presentation.notes,
+      });
+    } else {
+      setEditingPresentation(null);
+      setFormData({
+        category: '',
+        name: '',
+        age_group: selectedAgeGroup,
+        display_order: 0,
+        notes: '',
+      });
+    }
+    onOpen();
+  };
+
+  const handleSavePresentation = async () => {
     try {
-      setLoading(true);
-      const [childrenData, classesData] = await Promise.all([getChildren(), getClasses()]);
-      setChildrenList(childrenData);
-      setClasses(classesData);
-    } catch (error) {
+      const category = formData.category || '';
+      const name = formData.name || '';
+      const age_group = formData.age_group || '';
+      const display_order = formData.display_order || 0;
+
+      if (editingPresentation) {
+        await updateCategoryPresentation({
+          id: editingPresentation.id,
+          category,
+          name,
+          age_group,
+          display_order,
+          notes: formData.notes,
+        });
+        toast({
+          title: texts.schedule.messages.updateSuccess[language],
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        await createCategoryPresentation({
+          category,
+          name,
+          age_group,
+          display_order,
+          notes: formData.notes,
+        });
+        toast({
+          title: texts.schedule.messages.createSuccess[language],
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+
+      onClose();
+      await loadPresentations();
+    } catch (error: unknown) {
+      let errorMessage = texts.schedule.messages.createError[language];
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        typeof (error as Record<string, unknown>).response === 'object'
+      ) {
+        const response = (error as Record<string, unknown>).response as Record<string, unknown>;
+        if ('data' in response && typeof response.data === 'object' && response.data !== null) {
+          const data = response.data as Record<string, unknown>;
+          if ('error' in data && typeof data.error === 'string') {
+            errorMessage = data.error;
+          }
+        }
+      }
       toast({
-        title: texts.schedule.messages.fetchError[language],
+        title: texts.schedule.messages.createError[language],
+        description: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-    } finally {
-      setLoading(false);
     }
-  }, [language, toast]);
+  };
 
-  const refreshData = useCallback(async () => {
+  const handleReorder = async (presentation: CategoryPresentation, direction: 'up' | 'down') => {
     try {
-      await loadSchedules();
+      const newOrder =
+        direction === 'up' ? presentation.display_order - 1 : presentation.display_order + 1;
+
+      const categoryPresentations = presentations.filter(
+        (p) => p.category === presentation.category && p.age_group === presentation.age_group
+      );
+      if (newOrder < 1 || newOrder > categoryPresentations.length) {
+        toast({
+          title: 'Cannot reorder beyond limits',
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const swapPresentation = categoryPresentations.find((p) => p.display_order === newOrder);
+
+      if (!swapPresentation) return;
+
+      const updates = [
+        { id: presentation.id, display_order: newOrder },
+        { id: swapPresentation.id, display_order: presentation.display_order },
+      ].sort((a, b) => a.id - b.id);
+
+      for (const update of updates) {
+        await updateCategoryPresentation(update);
+      }
+
+      await loadPresentations();
       toast({
-        title: texts.schedule.messages.refreshSuccess[language],
+        title: 'Order updated successfully',
         status: 'success',
         duration: 2000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: texts.schedule.messages.refreshError[language],
+        title: 'Error updating order',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
     }
-  }, [loadSchedules, toast, language]);
-
-  useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
-
-  useEffect(() => {
-    if (childrenList.length > 0 || classes.length > 0) {
-      loadSchedules();
-    }
-  }, [childrenList.length, classes.length, loadSchedules]);
-
-  const handleCreateSchedule = async (scheduleData: CreateScheduleData) => {
-    await createSchedule(scheduleData);
-    await loadSchedules();
   };
 
-  const handleUpdateSchedule = async (scheduleData: UpdateScheduleData) => {
-    await updateSchedule(scheduleData);
-    await loadSchedules();
-  };
+  const ageGroups = Array.from(
+    new Set(presentations.map((p) => p.age_group).filter((ageGroup) => ageGroup))
+  ).sort();
 
-  const handleSaveSchedule = async (scheduleData: CreateScheduleData | UpdateScheduleData) => {
-    if ('id' in scheduleData) {
-      await handleUpdateSchedule(scheduleData);
-    } else {
-      await handleCreateSchedule(scheduleData);
-    }
-    setEditingSchedule(null);
-  };
+  const filteredPresentations = presentations.filter((p) => p.age_group === selectedAgeGroup);
 
-  const handleEditSchedule = (schedule: Schedule) => {
-    setEditingSchedule(schedule);
-    onOpen();
-  };
+  const categories = Array.from(new Set(filteredPresentations.map((p) => p.category))).sort();
+  const getPresentationsByCategory = (category: string) =>
+    filteredPresentations
+      .filter((p) => p.category === category)
+      .sort((a, b) => a.display_order - b.display_order);
 
-  const handleDeleteSchedule = async (schedule: Schedule) => {
-    if (window.confirm(texts.schedule.confirmDelete[language])) {
-      try {
-        await deleteSchedule(schedule.id);
-        await loadSchedules();
-        toast({
-          title: texts.schedule.messages.deleteSuccess[language],
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-      } catch (error) {
-        toast({
-          title: texts.schedule.messages.deleteError[language],
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    }
-  };
-
-  const handleAddSchedule = () => {
-    setEditingSchedule(null);
-    onOpen();
-  };
-
-  const getDefaultChildId = (): number | undefined => {
-    if (isParent && childrenList.length > 0) return childrenList[0].id;
-    return undefined;
-  };
-
-  if (loading && schedules.length === 0) {
+  if (loading) {
     return (
       <Center p={8}>
         <Spinner size="lg" />
@@ -179,48 +277,86 @@ const SchedulePage: React.FC = () => {
       <VStack spacing={6} align="stretch">
         <Card>
           <CardBody>
-            <HStack justify="space-between" wrap="wrap" spacing={4} mb={2}>
-              <Heading size={{ base: 'md', md: 'lg' }}>{texts.schedule.title[language]}</Heading>
-              <HStack spacing={2}>
-                <Button
-                  leftIcon={<RepeatIcon />}
-                  variant="outline"
-                  onClick={refreshData}
-                  size={{ base: 'sm', md: 'md' }}
-                >
-                  {texts.schedule.refresh[language]}
-                </Button>
-                {canEdit && (
+            <VStack spacing={4} mb={6} align="stretch">
+              <HStack justify="space-between" spacing={2}>
+                <Heading size={{ base: 'md', md: 'lg' }}>
+                  {texts.schedule.curriculum.curriculumManagement[language]}
+                </Heading>
+                <HStack spacing={2}>
+                  <Button
+                    leftIcon={<RepeatIcon />}
+                    variant="outline"
+                    onClick={loadPresentations}
+                    size={{ base: 'sm', md: 'md' }}
+                    px={{ base: '8px', md: 'auto' }}
+                  >
+                    <Box display={{ base: 'none', md: 'inline' }}>
+                      {texts.schedule.refresh[language]}
+                    </Box>
+                  </Button>
                   <Button
                     leftIcon={<AddIcon />}
                     colorScheme="blue"
-                    onClick={handleAddSchedule}
+                    onClick={() => handleOpenModal()}
                     size={{ base: 'sm', md: 'md' }}
+                    px={{ base: '8px', md: 'auto' }}
                   >
-                    {texts.schedule.addEntry[language]}
+                    <Box display={{ base: 'none', md: 'inline' }}>
+                      {texts.schedule.addEntry[language]}
+                    </Box>
                   </Button>
-                )}
+                </HStack>
               </HStack>
-            </HStack>
-            <ScheduleTable
-              schedules={schedules}
-              onEdit={canEdit ? handleEditSchedule : undefined}
-              onDelete={canEdit ? handleDeleteSchedule : undefined}
-              canEdit={canEdit}
-              showChild={true}
-              showClass={true}
+              <HStack spacing={2}>
+                <Text variant="filter">{texts.schedule.ageGroup[language]}:</Text>
+                <Select
+                  size="sm"
+                  value={selectedAgeGroup}
+                  borderRadius="md"
+                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  w="fit-content"
+                >
+                  {ageGroups.map((ageGroup) => (
+                    <option key={ageGroup} value={ageGroup}>
+                      {ageGroup}
+                    </option>
+                  ))}
+                </Select>
+              </HStack>
+            </VStack>
+
+            <SchedulePresentationsAccordion
+              categories={categories}
+              getPresentationsByCategory={getPresentationsByCategory}
+              onReorder={handleReorder}
+              onEdit={handleOpenModal}
+              onDelete={(presentationId) => {
+                setPresentation(presentations.find((p) => p.id === presentationId) || null);
+                setDeleteDialogOpen(true);
+              }}
+              language={language}
             />
           </CardBody>
         </Card>
       </VStack>
 
-      <ScheduleModal
+      <AddEditPresentationModal
         isOpen={isOpen}
         onClose={onClose}
-        onSave={handleSaveSchedule}
-        schedule={editingSchedule}
-        childrenData={childrenList}
-        defaultChildId={getDefaultChildId()}
+        categories={categories}
+        editingPresentation={editingPresentation}
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSave={handleSavePresentation}
+        language={language}
+        maxOrder={maxOrder}
+      />
+      <DeletePresentationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        presentationId={selectedPresentation?.id || 0}
+        language={language}
+        onPresentationDeleted={loadPresentations}
       />
     </Box>
   );

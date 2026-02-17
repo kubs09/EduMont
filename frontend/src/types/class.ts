@@ -15,6 +15,7 @@ export interface Class {
   id: number;
   name: string;
   description: string;
+  age_group: string;
   min_age: number;
   max_age: number;
   teachers: ClassTeacher[];
@@ -24,6 +25,7 @@ export interface Class {
 export interface CreateClassData {
   name: string;
   description: string;
+  age_group: string;
   min_age: number;
   max_age: number;
   teacherId: number;

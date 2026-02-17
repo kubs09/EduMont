@@ -29,17 +29,25 @@ export const schedule = {
       en: 'Status',
     },
     options: {
-      notStarted: {
-        cs: 'Nezačato',
-        en: 'Not Started',
+      prerequisitesNotMet: {
+        cs: 'Nesplněné předpoklady',
+        en: 'Prerequisites Not Met',
       },
-      inProgress: {
-        cs: 'Probíhá',
-        en: 'In Progress',
+      toBePresented: {
+        cs: 'K představení',
+        en: 'To Be Presented',
       },
-      done: {
-        cs: 'Dokončeno',
-        en: 'Done',
+      presented: {
+        cs: 'Představeno',
+        en: 'Presented',
+      },
+      practiced: {
+        cs: 'Procvičováno',
+        en: 'Practiced',
+      },
+      mastered: {
+        cs: 'Zvládnuto',
+        en: 'Mastered',
       },
     },
   },
@@ -91,9 +99,9 @@ export const schedule = {
     cs: 'hodiny',
     en: 'hours',
   },
-  activity: {
-    cs: 'Aktivita',
-    en: 'Activity',
+  presentation: {
+    cs: 'Prezentace',
+    en: 'Presentation',
   },
   notes: {
     cs: 'Poznámky',
@@ -106,6 +114,14 @@ export const schedule = {
   class: {
     cs: 'Třída',
     en: 'Class',
+  },
+  ageGroup: {
+    cs: 'Věková skupina',
+    en: 'Age Group',
+  },
+  order: {
+    cs: 'Pořadí',
+    en: 'Order',
   },
   noChildrenFound: {
     cs: 'Nenalezeny žádné děti',
@@ -131,6 +147,24 @@ export const schedule = {
     cs: 'Měsíční rozvrh',
     en: 'Monthly Schedule',
   },
+  curriculum: {
+    curriculumManagement: {
+      cs: 'Správa kurikula',
+      en: 'Curriculum Management',
+    },
+    addPresentation: {
+      cs: 'Přidat prezentaci',
+      en: 'Add Presentation',
+    },
+    editPresentation: {
+      cs: 'Upravit prezentaci',
+      en: 'Edit Presentation',
+    },
+    deletePresentation: {
+      cs: 'Smazat prezentaci',
+      en: 'Delete Presentation',
+    },
+  },
   viewOptions: {
     hour: {
       cs: 'Hodina',
@@ -154,13 +188,57 @@ export const schedule = {
     },
   },
   validation: {
+    presentationCategoryRequired: {
+      cs: 'Vyberte kategorii',
+      en: 'Please select a category',
+    },
+    presentationCategoryValid: {
+      cs: 'Kategorie musí být text',
+      en: 'Category must be text',
+    },
+    presentationNameRequired: {
+      cs: 'Zadejte název prezentace',
+      en: 'Please enter the presentation name',
+    },
+    presentationNameMin: {
+      cs: 'Název prezentace musí obsahovat alespoň 2 znaky',
+      en: 'Presentation name must be at least 2 characters',
+    },
+    presentationNameMax: {
+      cs: 'Název prezentace nesmí překročit 100 znaků',
+      en: 'Presentation name cannot exceed 100 characters',
+    },
+    presentationAgeGroupRequired: {
+      cs: 'Vyberte věkovou skupinu',
+      en: 'Please select an age group',
+    },
+    presentationAgeGroupValid: {
+      cs: 'Věková skupina musí být vybrána',
+      en: 'Age group must be a valid option',
+    },
+    presentationOrderRequired: {
+      cs: 'Zadejte pořadí prezentace',
+      en: 'Please enter the presentation order',
+    },
+    presentationOrderValid: {
+      cs: 'Pořadí musí být kladné číslo',
+      en: 'Order must be a positive number',
+    },
+    selectCategoryFirst: {
+      cs: 'Nejdříve vyberte kategorii',
+      en: 'Please select a category first',
+    },
+    presentationNotesMax: {
+      cs: 'Poznámky nesmí překročit 500 znaků',
+      en: 'Notes cannot exceed 500 characters',
+    },
     nameRequired: {
-      cs: 'Zadejte název aktivity',
-      en: 'Please enter the activity name',
+      cs: 'Zadejte název prezentace',
+      en: 'Please enter the presentation name',
     },
     nameTooLong: {
-      cs: 'Název aktivity je příliš dlouhý',
-      en: 'Activity name is too long',
+      cs: 'Název prezentace je příliš dlouhý',
+      en: 'Presentation name is too long',
     },
     categoryTooLong: {
       cs: 'Kategorie je příliš dlouhá',
@@ -212,6 +290,10 @@ export const schedule = {
       cs: 'Položka rozvrhu byla úspěšně aktualizována',
       en: 'Schedule entry updated successfully',
     },
+    deleteConfirmation: {
+      cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
+      en: 'Are you sure you want to delete this schedule entry?',
+    },
     deleteSuccess: {
       cs: 'Položka rozvrhu byla úspěšně smazána',
       en: 'Schedule entry deleted successfully',
@@ -234,17 +316,17 @@ export const schedule = {
     },
   },
   placeholders: {
-    activity: {
+    presentation: {
       cs: 'např. Matematika, Čtení, Kreativní činnost...',
       en: 'e.g. Math, Reading, Creative Activity...',
     },
     notes: {
-      cs: 'Volitelné poznámky k této aktivitě...',
-      en: 'Optional notes for this activity...',
+      cs: 'Volitelné poznámky k této prezentaci...',
+      en: 'Optional notes for this presentation...',
     },
     name: {
-      cs: 'Zadejte název aktivity',
-      en: 'Enter activity name',
+      cs: 'Zadejte název prezentace',
+      en: 'Enter presentation name',
     },
     category: {
       cs: 'Zadejte kategorii (např. Předmět, Volný čas...)',

@@ -14,7 +14,10 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { Section } from '@frontend/shared/components';
 import { changePassword } from '@frontend/services/api';
-import { createPasswordChangeSchema, PasswordChangeSchema } from '../schemas/passwordSchema';
+import {
+  createPasswordChangeSchema,
+  PasswordChangeSchema,
+} from '../../shared/validation/passwordSchema';
 
 interface SettingsSectionProps {
   messageNotifications: boolean;

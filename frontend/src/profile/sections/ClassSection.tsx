@@ -49,7 +49,7 @@ const ClassSection = ({ onOpenClasses, subtleBg }: ClassSectionProps) => {
             ))}
           </VStack>
         ) : (
-          <Text color="gray.500">{texts.classes.noClasses[language]}</Text>
+          <Text variant="empty">{texts.classes.noClasses[language]}</Text>
         )}
       </Stack>
     </Section>

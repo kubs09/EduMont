@@ -62,7 +62,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
     child_id: '',
     name: '',
     category: '',
-    status: 'not started',
+    status: 'to be presented',
     notes: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -82,7 +82,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
           child_id: defaultChildId?.toString() || '',
           name: '',
           category: '',
-          status: 'not started',
+          status: 'to be presented',
           notes: '',
         });
       }
@@ -134,7 +134,12 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
         class_id: selectedChild.class_id,
         name: formData.name.trim(),
         category: formData.category.trim() || undefined,
-        status: formData.status as 'not started' | 'in progress' | 'done',
+        status: formData.status as
+          | 'prerequisites not met'
+          | 'to be presented'
+          | 'presented'
+          | 'practiced'
+          | 'mastered',
         notes: formData.notes.trim() || undefined,
         ...(schedule && { id: schedule.id }),
       };
@@ -233,14 +238,21 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
               >
-                <option value="not started">
-                  {texts.schedule.status?.options?.notStarted?.[language] || 'Not Started'}
+                <option value="prerequisites not met">
+                  {texts.schedule.status?.options?.prerequisitesNotMet?.[language] ||
+                    'Prerequisites Not Met'}
                 </option>
-                <option value="in progress">
-                  {texts.schedule.status?.options?.inProgress?.[language] || 'In Progress'}
+                <option value="to be presented">
+                  {texts.schedule.status?.options?.toBePresented?.[language] || 'To Be Presented'}
                 </option>
-                <option value="done">
-                  {texts.schedule.status?.options?.done?.[language] || 'Done'}
+                <option value="presented">
+                  {texts.schedule.status?.options?.presented?.[language] || 'Presented'}
+                </option>
+                <option value="practiced">
+                  {texts.schedule.status?.options?.practiced?.[language] || 'Practiced'}
+                </option>
+                <option value="mastered">
+                  {texts.schedule.status?.options?.mastered?.[language] || 'Mastered'}
                 </option>
               </Select>
               <FormErrorMessage>{errors.status}</FormErrorMessage>

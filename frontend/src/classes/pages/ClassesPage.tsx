@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box,
+  Button,
+  Flex,
   Heading,
   Table,
   Thead,
@@ -19,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 import { ClassTeacher } from '@frontend/types/class';
+import CreateClassModal from '../components/CreateClassModal';
 
 interface Child {
   id: number;
@@ -39,28 +42,36 @@ const ClassesPage = () => {
   const { language } = useLanguage();
   const [classes, setClasses] = useState<Class[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const toast = useToast();
   const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const classesResponse = await api.get('/api/classes');
-        setClasses(classesResponse.data);
-        setCurrentPage(1);
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load data',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
+    const userJson = localStorage.getItem('user');
+    const userRole = userJson ? JSON.parse(userJson).role : localStorage.getItem('userRole') || '';
+    setIsAdmin(userRole === 'admin');
+  }, []);
 
-    fetchData();
+  const fetchClasses = useCallback(async () => {
+    try {
+      const classesResponse = await api.get('/api/classes');
+      setClasses(classesResponse.data);
+      setCurrentPage(1);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load data',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   }, [toast]);
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
 
   const getAcceptedChildren = (cls: Class) => cls.children || [];
   const getPrimaryTeacher = (cls: Class) =>
@@ -83,7 +94,20 @@ const ClassesPage = () => {
 
   return (
     <Box p={4}>
-      <Heading mb={6}>{texts.classes.title[language]}</Heading>
+      <Flex
+        direction={{ base: 'column', md: 'row' }}
+        align={{ base: 'flex-start', md: 'center' }}
+        justify="space-between"
+        gap={4}
+        mb={6}
+      >
+        <Heading>{texts.classes.title[language]}</Heading>
+        {isAdmin && (
+          <Button colorScheme="blue" onClick={() => setIsCreateModalOpen(true)}>
+            {texts.classes.addClass[language]}
+          </Button>
+        )}
+      </Flex>
       {classes.length === 0 ? (
         <Text>{texts.classes.noClasses[language]}</Text>
       ) : (
@@ -177,6 +201,13 @@ const ClassesPage = () => {
             totalCount={classes.length}
           />
         </Box>
+      )}
+      {isAdmin && (
+        <CreateClassModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={fetchClasses}
+        />
       )}
     </Box>
   );

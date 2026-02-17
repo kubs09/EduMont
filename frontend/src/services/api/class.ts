@@ -18,6 +18,21 @@ export const getClasses = async (): Promise<Class[]> => {
   }
 };
 
+export const getClassesByAge = async (age: number): Promise<Class[]> => {
+  try {
+    const response = await api.get<Class[]>(`/api/classes/by-age/${age}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch classes by age',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
 export const getClass = async (id: number): Promise<Class> => {
   try {
     const response = await api.get<Class>(`/api/classes/${id}`);
@@ -95,15 +110,21 @@ export const autoAssignClasses = async (): Promise<void> => {
   }
 };
 
-export interface NextActivity {
+export interface NextPresentation {
   id: number;
   child_id: number;
-  activity: string;
+  class_id: number;
+  name: string;
   category?: string;
   status: string;
   notes?: string;
-  firstname: string;
-  surname: string;
+  class_name: string;
+  child_firstname: string;
+  child_surname: string;
+  created_by_firstname?: string;
+  created_by_surname?: string;
+  updated_by_firstname?: string;
+  updated_by_surname?: string;
 }
 
 export interface ClassAttendanceRow {
@@ -118,14 +139,16 @@ export interface ClassAttendanceRow {
   notes: string | null;
 }
 
-export const getClassNextActivities = async (classId: number): Promise<NextActivity[]> => {
+export const getClassNextPresentations = async (classId: number): Promise<NextPresentation[]> => {
   try {
-    const response = await api.get<NextActivity[]>(`/api/classes/${classId}/next-activities`);
+    const response = await api.get<NextPresentation[]>(
+      `/api/classes/${classId}/next-presentations`
+    );
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       throw new ApiError(
-        error.response?.data?.error || 'Failed to fetch next activities',
+        error.response?.data?.error || 'Failed to fetch next presentations',
         error.response?.status
       );
     }

@@ -16,6 +16,7 @@ router.get('/', auth, async (req, res) => {
           c.id,
           c.name,
           c.description,
+          c.age_group,
           c.min_age,
           c.max_age,
           COALESCE(
@@ -74,6 +75,7 @@ router.get('/', auth, async (req, res) => {
           c.id,
           c.name,
           c.description,
+          c.age_group,
           c.min_age,
           c.max_age,
           COALESCE(
@@ -207,6 +209,85 @@ router.get('/:id', auth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching class details:', error);
     res.status(500).json({ error: 'Failed to fetch class details' });
+  }
+});
+
+// Get next presentations (schedules with status 'to be presented') for a class
+router.get('/:id/next-presentations', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check access permissions
+    if (req.user.role === 'parent') {
+      const parentChildCheck = await pool.query(
+        `SELECT 1 FROM class_children cc
+         JOIN children ch ON cc.child_id = ch.id
+         WHERE cc.class_id = $1 AND EXISTS (
+           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+         )`,
+        [id, req.user.id]
+      );
+      if (parentChildCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+
+    const query = `
+      SELECT 
+        s.id,
+        s.child_id,
+        s.class_id,
+        s.name,
+        s.category,
+        s.status,
+        s.notes,
+        s.created_at,
+        s.updated_at,
+        c.name as class_name,
+        ch.firstname as child_firstname,
+        ch.surname as child_surname,
+        cu.firstname as created_by_firstname,
+        cu.surname as created_by_surname,
+        uu.firstname as updated_by_firstname,
+        uu.surname as updated_by_surname
+      FROM schedules s
+      JOIN classes c ON s.class_id = c.id
+      JOIN children ch ON s.child_id = ch.id
+      LEFT JOIN users cu ON s.created_by = cu.id
+      LEFT JOIN users uu ON s.updated_by = uu.id
+      WHERE s.class_id = $1 AND s.status = 'to be presented'
+      ORDER BY s.created_at DESC`;
+
+    const result = await pool.query(query, [id]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching next presentations:', error);
+    res.status(500).json({ error: 'Failed to fetch next presentations' });
+  }
+});
+
+// Get available classes by age
+router.get('/by-age/:age', auth, async (req, res) => {
+  try {
+    const { age } = req.params;
+    const ageNumber = parseInt(age, 10);
+
+    if (isNaN(ageNumber) || ageNumber < 0) {
+      return res.status(400).json({ error: 'Invalid age provided' });
+    }
+
+    const result = await pool.query(
+      `SELECT id, name, description, min_age, max_age 
+       FROM classes 
+       WHERE $1 BETWEEN min_age AND max_age 
+       ORDER BY name ASC`,
+      [ageNumber]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching classes by age:', error);
+    res.status(500).json({ error: 'Failed to fetch classes' });
   }
 });
 

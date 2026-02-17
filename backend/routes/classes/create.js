@@ -23,10 +23,10 @@ router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { name, description, min_age, max_age, teacherId, assistantId } = req.body;
+    const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
     const classResult = await client.query(
-      'INSERT INTO classes (name, description, min_age, max_age) VALUES ($1, $2, $3, $4) RETURNING id',
-      [name, description, min_age, max_age]
+      'INSERT INTO classes (name, description, age_group, min_age, max_age) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [name, description, age_group, min_age, max_age]
     );
     const classId = classResult.rows[0].id;
 
