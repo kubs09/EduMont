@@ -45,10 +45,12 @@ CREATE TABLE classes (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
+    age_group VARCHAR(50) NOT NULL,
     min_age INTEGER NOT NULL,
     max_age INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (min_age >= 0 AND max_age >= min_age)
+    CHECK (min_age >= 0 AND max_age >= min_age),
+    CHECK (age_group IN ('Infant', 'Toddler', 'Early Childhood', 'Lower Elementary', 'Upper Elementary', 'Middle School'))
 );
 
 CREATE TABLE class_teachers (
@@ -137,18 +139,22 @@ CREATE INDEX idx_child_excuses_child_id ON child_excuses(child_id);
 CREATE INDEX idx_child_excuses_parent_id ON child_excuses(parent_id);
 CREATE INDEX idx_child_excuses_date_from ON child_excuses(date_from);
 
--- Category presentations template - defines the order of presentations for each category
+-- Category presentations template - defines the order of presentations for each category and age range
 CREATE TABLE category_presentations (
     id SERIAL PRIMARY KEY,
     category VARCHAR(100) NOT NULL,
     name VARCHAR(200) NOT NULL,
+    age_group VARCHAR(50) NOT NULL,
     display_order INTEGER NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (category, display_order)
+    CHECK (age_group IN ('Infant', 'Toddler', 'Early Childhood', 'Lower Elementary', 'Upper Elementary', 'Middle School')),
+    UNIQUE (category, age_group, display_order)
 );
 
 CREATE INDEX idx_category_presentations_category ON category_presentations(category);
+CREATE INDEX idx_category_presentations_age_group ON category_presentations(age_group);
+CREATE INDEX idx_category_presentations_category_age ON category_presentations(category, age_group);
 
 CREATE TABLE schedules (
     id SERIAL PRIMARY KEY,
@@ -213,7 +219,25 @@ INSERT INTO users (email, firstname, surname, password, role) VALUES
 ('klara.benesova@example.com', 'Klara', 'Benesova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
 ('daniel.kolar@example.com', 'Daniel', 'Kolar', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
 ('martina.vackova@example.com', 'Martina', 'Vackova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
-('veronika.krizova@example.com', 'Veronika', 'Krizova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher')
+('veronika.krizova@example.com', 'Veronika', 'Krizova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('tomas.novak@example.com', 'Tomas', 'Novak', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('katerina.cerna@example.com', 'Katerina', 'Cerna', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('jakub.dvorak@example.com', 'Jakub', 'Dvorak', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('petra.holubova@example.com', 'Petra', 'Holubova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('milan.pesek@example.com', 'Milan', 'Pesek', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('zuzana.bartova@example.com', 'Zuzana', 'Bartova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('david.maly@example.com', 'David', 'Maly', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('lenka.novotna@example.com', 'Lenka', 'Novotna', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('michal.cerny@example.com', 'Michal', 'Cerny', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('hana.pokorova@example.com', 'Hana', 'Pokorova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('pavel.vesely@example.com', 'Pavel', 'Vesely', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('barbora.mrazova@example.com', 'Barbora', 'Mrazova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('jan.svoboda@example.com', 'Jan', 'Svoboda', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('tereza.adamova@example.com', 'Tereza', 'Adamova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('lukas.nemec@example.com', 'Lukas', 'Nemec', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('anna.vlkova@example.com', 'Anna', 'Vlkova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('radek.moravec@example.com', 'Radek', 'Moravec', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('ivana.fiala@example.com', 'Ivana', 'Fiala', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO children (firstname, surname, date_of_birth, notes) VALUES
@@ -242,18 +266,33 @@ JOIN users u ON (
     (ch.firstname = 'Nina' AND u.email = 'michal.rehak@example.com')
 );
 
-INSERT INTO classes (name, description, min_age, max_age) VALUES
-('Early Childhood - Sunflowers', 'Early Childhood group for children aged 3-6', 3, 6),
-('Early Childhood - Bumblebees', 'Early Childhood group for children aged 3-6', 3, 6),
-('Lower Elementary - Explorers', 'Lower Elementary group for children aged 6-9', 6, 9),
-('Lower Elementary - Inventors', 'Lower Elementary group for children aged 6-9', 6, 9),
-('Upper Elementary - Trailblazers', 'Upper Elementary group for children aged 9-12', 9, 12),
-('Upper Elementary - Navigators', 'Upper Elementary group for children aged 9-12', 9, 12);
+INSERT INTO classes (name, description, age_group, min_age, max_age) VALUES
+-- Infant/Toddler Classes (0-3 years)
+('Nido - Butterflies', 'Nido environment for infants', 'Infant', 0, 1),
+('Nido - Ladybugs', 'Nido environment for infants', 'Infant', 0, 1),
+('Toddler - Caterpillars', 'Toddler community for young children', 'Toddler', 1, 3),
+('Toddler - Fireflies', 'Toddler community for young children', 'Toddler', 1, 3),
+-- Early Childhood Classes (3-6 years)
+('Early Childhood - Sunflowers', 'Early Childhood group focusing on practical life and sensorial work', 'Early Childhood', 3, 6),
+('Early Childhood - Bumblebees', 'Early Childhood group with emphasis on language and mathematics', 'Early Childhood', 3, 6),
+('Early Childhood - Daisies', 'Early Childhood group for mixed-age learning', 'Early Childhood', 3, 6),
+-- Lower Elementary Classes (6-9 years)
+('Lower Elementary - Explorers', 'Lower Elementary group for cosmic education and research', 'Lower Elementary', 6, 9),
+('Lower Elementary - Inventors', 'Lower Elementary group focusing on science and mathematics', 'Lower Elementary', 6, 9),
+('Lower Elementary - Discoverers', 'Lower Elementary group with arts integration', 'Lower Elementary', 6, 9),
+-- Upper Elementary Classes (9-12 years)
+('Upper Elementary - Trailblazers', 'Upper Elementary group for advanced studies', 'Upper Elementary', 9, 12),
+('Upper Elementary - Navigators', 'Upper Elementary group with STEM focus', 'Upper Elementary', 9, 12),
+('Upper Elementary - Pioneers', 'Upper Elementary group emphasizing leadership', 'Upper Elementary', 9, 12),
+-- Middle School Classes (12-15 years)
+('Middle School - Scholars', 'Middle School community for adolescent program', 'Middle School', 12, 15),
+('Middle School - Innovators', 'Middle School community with entrepreneurship focus', 'Middle School', 12, 15);
 
 WITH teacher_ids AS (
   SELECT id, email FROM users WHERE role = 'teacher'
 )
 INSERT INTO class_teachers (class_id, teacher_id, role)
+-- Infant Classes (1-2)
 SELECT 1, id, 'teacher' FROM teacher_ids WHERE email = 'jana.kralova@example.com'
 UNION ALL
 SELECT 1, id, 'assistant' FROM teacher_ids WHERE email = 'alena.malikova@example.com'
@@ -262,6 +301,7 @@ SELECT 2, id, 'teacher' FROM teacher_ids WHERE email = 'martin.novotny@example.c
 UNION ALL
 SELECT 2, id, 'assistant' FROM teacher_ids WHERE email = 'ondrej.kucera@example.com'
 UNION ALL
+-- Toddler Classes (3-4)
 SELECT 3, id, 'teacher' FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
 UNION ALL
 SELECT 3, id, 'assistant' FROM teacher_ids WHERE email = 'lucas.prochazka@example.com'
@@ -270,13 +310,53 @@ SELECT 4, id, 'teacher' FROM teacher_ids WHERE email = 'simona.havlova@example.c
 UNION ALL
 SELECT 4, id, 'assistant' FROM teacher_ids WHERE email = 'petr.horak@example.com'
 UNION ALL
+-- Early Childhood Classes (5-7)
 SELECT 5, id, 'teacher' FROM teacher_ids WHERE email = 'klara.benesova@example.com'
 UNION ALL
 SELECT 5, id, 'assistant' FROM teacher_ids WHERE email = 'daniel.kolar@example.com'
 UNION ALL
 SELECT 6, id, 'teacher' FROM teacher_ids WHERE email = 'martina.vackova@example.com'
 UNION ALL
-SELECT 6, id, 'assistant' FROM teacher_ids WHERE email = 'veronika.krizova@example.com';
+SELECT 6, id, 'assistant' FROM teacher_ids WHERE email = 'veronika.krizova@example.com'
+UNION ALL
+SELECT 7, id, 'teacher' FROM teacher_ids WHERE email = 'tomas.novak@example.com'
+UNION ALL
+SELECT 7, id, 'assistant' FROM teacher_ids WHERE email = 'katerina.cerna@example.com'
+UNION ALL
+-- Lower Elementary Classes (8-10)
+SELECT 8, id, 'teacher' FROM teacher_ids WHERE email = 'jakub.dvorak@example.com'
+UNION ALL
+SELECT 8, id, 'assistant' FROM teacher_ids WHERE email = 'petra.holubova@example.com'
+UNION ALL
+SELECT 9, id, 'teacher' FROM teacher_ids WHERE email = 'milan.pesek@example.com'
+UNION ALL
+SELECT 9, id, 'assistant' FROM teacher_ids WHERE email = 'zuzana.bartova@example.com'
+UNION ALL
+SELECT 10, id, 'teacher' FROM teacher_ids WHERE email = 'david.maly@example.com'
+UNION ALL
+SELECT 10, id, 'assistant' FROM teacher_ids WHERE email = 'lenka.novotna@example.com'
+UNION ALL
+-- Upper Elementary Classes (11-13)
+SELECT 11, id, 'teacher' FROM teacher_ids WHERE email = 'michal.cerny@example.com'
+UNION ALL
+SELECT 11, id, 'assistant' FROM teacher_ids WHERE email = 'hana.pokorova@example.com'
+UNION ALL
+SELECT 12, id, 'teacher' FROM teacher_ids WHERE email = 'pavel.vesely@example.com'
+UNION ALL
+SELECT 12, id, 'assistant' FROM teacher_ids WHERE email = 'barbora.mrazova@example.com'
+UNION ALL
+SELECT 13, id, 'teacher' FROM teacher_ids WHERE email = 'jan.svoboda@example.com'
+UNION ALL
+SELECT 13, id, 'assistant' FROM teacher_ids WHERE email = 'tereza.adamova@example.com'
+UNION ALL
+-- Middle School Classes (14-15)
+SELECT 14, id, 'teacher' FROM teacher_ids WHERE email = 'lukas.nemec@example.com'
+UNION ALL
+SELECT 14, id, 'assistant' FROM teacher_ids WHERE email = 'anna.vlkova@example.com'
+UNION ALL
+SELECT 15, id, 'teacher' FROM teacher_ids WHERE email = 'radek.moravec@example.com'
+UNION ALL
+SELECT 15, id, 'assistant' FROM teacher_ids WHERE email = 'ivana.fiala@example.com';
 
 INSERT INTO class_children (class_id, child_id)
 SELECT 
@@ -290,24 +370,111 @@ CROSS JOIN LATERAL (
     LIMIT 1
 ) c;
 
-INSERT INTO category_presentations (category, name, display_order, notes)
+INSERT INTO category_presentations (category, name, age_group, display_order, notes)
 VALUES 
-    ('Practical Life', 'Complete Drawing Project', 1, 'Draw a picture of your family'),
-    ('Practical Life', 'Create Collage', 2, 'Create a collage with various materials'),
-    ('Practical Life', 'Paint with Watercolors', 3, 'Learn basic watercolor techniques'),
-    ('Sensorial', 'Learn New Song', 1, 'Learned "Twinkle Twinkle Little Star"'),
-    ('Sensorial', 'Play Simple Instrument', 2, 'Learn to play a recorder or xylophone'),
-    ('Sensorial', 'Sing in Group', 3, 'Participate in group singing'),
-    ('Mathematics', 'Practice Counting', 1, 'Count to 20'),
-    ('Mathematics', 'Number Recognition', 2, 'Recognize numbers 1-20'),
-    ('Mathematics', 'Basic Addition', 3, 'Learn basic addition with objects'),
-    ('Culture', 'Build Block Tower', 1, 'Build a tower taller than yourself'),
-    ('Culture', 'Create Block Structure', 2, 'Design and build a complex structure'),
-    ('Culture', 'Lego Creation', 3, 'Build with LEGO following instructions'),
-    ('Language', 'Alphabet Practice', 1, 'Recognize letters A-M'),
-    ('Language', 'Letter Writing', 2, 'Write basic letters'),
-    ('Language', 'Word Building', 3, 'Build words from letters')
-ON CONFLICT (category, display_order) DO NOTHING;
+    -- Infant (0-1 years) - Fundamental Categories
+    ('Practical Life', 'Grasping Objects', 'Infant', 1, 'Practice reaching and grasping'),
+    ('Practical Life', 'Assisted Sitting', 'Infant', 2, 'Work on sitting balance'),
+    ('Sensorial', 'Visual Tracking', 'Infant', 1, 'Track moving objects with eyes'),
+    ('Sensorial', 'Tactile Exploration', 'Infant', 2, 'Explore textures with hands'),
+    ('Language', 'Sound Awareness', 'Infant', 1, 'Respond to sounds and voices'),
+    ('Language', 'Babbling', 'Infant', 2, 'Practice vocal sounds'),
+    ('Mathematics', 'Object Permanence', 'Infant', 1, 'Understanding objects exist when hidden'),
+    ('Culture', 'Face Recognition', 'Infant', 1, 'Recognize familiar faces'),
+    
+    -- Toddler (1-3 years) - Same categories, age-appropriate content
+    ('Practical Life', 'Pouring Water', 'Toddler', 1, 'Pour from pitcher to cup'),
+    ('Practical Life', 'Buttoning Frames', 'Toddler', 2, 'Practice buttoning clothing'),
+    ('Practical Life', 'Hand Washing', 'Toddler', 3, 'Independent hand washing routine'),
+    ('Sensorial', 'Size Sorting', 'Toddler', 1, 'Sort objects by size'),
+    ('Sensorial', 'Color Matching', 'Toddler', 2, 'Match primary colors'),
+    ('Sensorial', 'Texture Cards', 'Toddler', 3, 'Match rough and smooth textures'),
+    ('Mathematics', 'Counting 1-5', 'Toddler', 1, 'Count objects up to 5'),
+    ('Mathematics', 'Shape Recognition', 'Toddler', 2, 'Identify circle, square, triangle'),
+    ('Culture', 'Animal Recognition', 'Toddler', 1, 'Identify common animals'),
+    ('Culture', 'Simple Songs', 'Toddler', 2, 'Learn nursery rhymes'),
+    ('Language', 'Vocabulary Building', 'Toddler', 1, 'Learn names of familiar objects'),
+    ('Language', 'Two-Word Phrases', 'Toddler', 2, 'Combine two words in speech'),
+    
+    -- Early Childhood (3-6 years) - Same categories, more complex
+    ('Practical Life', 'Pouring and Transferring', 'Early Childhood', 1, 'Transfer beans using spoon'),
+    ('Practical Life', 'Buttoning and Zipping', 'Early Childhood', 2, 'Complete dressing frames'),
+    ('Practical Life', 'Table Setting', 'Early Childhood', 3, 'Set table for snack'),
+    ('Practical Life', 'Grace and Courtesy', 'Early Childhood', 4, 'Practice polite interactions'),
+    ('Sensorial', 'Pink Tower', 'Early Childhood', 1, 'Build tower by size'),
+    ('Sensorial', 'Brown Stair', 'Early Childhood', 2, 'Order blocks by width'),
+    ('Sensorial', 'Color Tablets Box 1', 'Early Childhood', 3, 'Match primary colors'),
+    ('Sensorial', 'Sound Cylinders', 'Early Childhood', 4, 'Match sounds by volume'),
+    ('Mathematics', 'Number Rods', 'Early Childhood', 1, 'Understand quantity 1-10'),
+    ('Mathematics', 'Sandpaper Numbers', 'Early Childhood', 2, 'Trace and recognize numerals 0-9'),
+    ('Mathematics', 'Spindle Box', 'Early Childhood', 3, 'Associate quantity with numeral'),
+    ('Mathematics', 'Golden Beads', 'Early Childhood', 4, 'Introduction to decimal system'),
+    ('Culture', 'Land and Water Forms', 'Early Childhood', 1, 'Recognize geographic landforms'),
+    ('Culture', 'Puzzle Maps', 'Early Childhood', 2, 'Identify continents'),
+    ('Culture', 'Botany Cabinet', 'Early Childhood', 3, 'Learn leaf shapes'),
+    ('Culture', 'Zoology Puzzles', 'Early Childhood', 4, 'Study animal parts'),
+    ('Language', 'Sandpaper Letters', 'Early Childhood', 1, 'Learn letter sounds'),
+    ('Language', 'Moveable Alphabet', 'Early Childhood', 2, 'Build simple words'),
+    ('Language', 'Object Box', 'Early Childhood', 3, 'Match objects to words'),
+    ('Language', 'Reading Classification', 'Early Childhood', 4, 'Read and classify words'),
+    
+    -- Lower Elementary (6-9 years) - Same categories, elementary level
+    ('Practical Life', 'Community Building', 'Lower Elementary', 1, 'Organize class meetings'),
+    ('Practical Life', 'Time Management', 'Lower Elementary', 2, 'Plan daily work schedule'),
+    ('Practical Life', 'Research Skills', 'Lower Elementary', 3, 'Use reference materials'),
+    ('Sensorial', 'Geometric Solids', 'Lower Elementary', 1, 'Identify 3D shapes'),
+    ('Sensorial', 'Sensorial Extensions', 'Lower Elementary', 2, 'Advanced sensorial discrimination'),
+    ('Mathematics', 'Multiplication Board', 'Lower Elementary', 1, 'Memorize multiplication facts'),
+    ('Mathematics', 'Division Board', 'Lower Elementary', 2, 'Understand division concept'),
+    ('Mathematics', 'Fraction Circles', 'Lower Elementary', 3, 'Introduction to fractions'),
+    ('Mathematics', 'Decimal Board', 'Lower Elementary', 4, 'Work with decimal numbers'),
+    ('Culture', 'Timeline of Life', 'Lower Elementary', 1, 'Study evolution of life'),
+    ('Culture', 'Parts of Plants', 'Lower Elementary', 2, 'Detailed plant anatomy'),
+    ('Culture', 'Solar System', 'Lower Elementary', 3, 'Learn planets and their properties'),
+    ('Culture', 'Ancient Civilizations', 'Lower Elementary', 4, 'Study early human societies'),
+    ('Language', 'Word Study', 'Lower Elementary', 1, 'Analyze word structure'),
+    ('Language', 'Grammar Boxes', 'Lower Elementary', 2, 'Study parts of speech'),
+    ('Language', 'Sentence Analysis', 'Lower Elementary', 3, 'Diagram sentences'),
+    ('Language', 'Reading Comprehension', 'Lower Elementary', 4, 'Analyze texts for meaning'),
+    
+    -- Upper Elementary (9-12 years) - Same categories, advanced content
+    ('Practical Life', 'Project Management', 'Upper Elementary', 1, 'Plan and execute long-term projects'),
+    ('Practical Life', 'Leadership Skills', 'Upper Elementary', 2, 'Lead group activities'),
+    ('Practical Life', 'Business Basics', 'Upper Elementary', 3, 'Understand micro-economy'),
+    ('Sensorial', 'Advanced Measurement', 'Upper Elementary', 1, 'Precise measurement and estimation'),
+    ('Sensorial', 'Scientific Observation', 'Upper Elementary', 2, 'Detailed observation and recording'),
+    ('Mathematics', 'Algebraic Thinking', 'Upper Elementary', 1, 'Introduction to variables'),
+    ('Mathematics', 'Geometric Theorems', 'Upper Elementary', 2, 'Understand basic proofs'),
+    ('Mathematics', 'Ratio and Proportion', 'Upper Elementary', 3, 'Solve ratio problems'),
+    ('Mathematics', 'Statistical Analysis', 'Upper Elementary', 4, 'Collect and interpret data'),
+    ('Culture', 'World Geography', 'Upper Elementary', 1, 'Study political and physical geography'),
+    ('Culture', 'Chemistry Basics', 'Upper Elementary', 2, 'Understand atomic structure'),
+    ('Culture', 'Human Body Systems', 'Upper Elementary', 3, 'Study anatomy and physiology'),
+    ('Culture', 'World History', 'Upper Elementary', 4, 'Explore major historical events'),
+    ('Language', 'Literary Analysis', 'Upper Elementary', 1, 'Analyze themes and symbolism'),
+    ('Language', 'Research Papers', 'Upper Elementary', 2, 'Write documented research'),
+    ('Language', 'Public Speaking', 'Upper Elementary', 3, 'Prepare and deliver presentations'),
+    ('Language', 'Creative Writing', 'Upper Elementary', 4, 'Develop original narratives'),
+    
+    -- Middle School (12-15 years) - Same categories, adolescent level
+    ('Practical Life', 'Entrepreneurship', 'Middle School', 1, 'Develop business plan'),
+    ('Practical Life', 'Community Service', 'Middle School', 2, 'Organize service projects'),
+    ('Practical Life', 'Career Exploration', 'Middle School', 3, 'Research career paths'),
+    ('Sensorial', 'Design Thinking', 'Middle School', 1, 'Apply design process to problems'),
+    ('Sensorial', 'Aesthetic Appreciation', 'Middle School', 2, 'Analyze art and design'),
+    ('Mathematics', 'Algebra I', 'Middle School', 1, 'Solve linear equations'),
+    ('Mathematics', 'Geometry', 'Middle School', 2, 'Geometric proofs and theorems'),
+    ('Mathematics', 'Pre-Calculus Concepts', 'Middle School', 3, 'Introduction to functions'),
+    ('Mathematics', 'Applied Mathematics', 'Middle School', 4, 'Use math in real-world contexts'),
+    ('Culture', 'Global Issues', 'Middle School', 1, 'Study contemporary world challenges'),
+    ('Culture', 'Environmental Science', 'Middle School', 2, 'Understand ecosystems and conservation'),
+    ('Culture', 'Physics Principles', 'Middle School', 3, 'Study motion, energy, and forces'),
+    ('Culture', 'Cultural Anthropology', 'Middle School', 4, 'Compare human cultures'),
+    ('Language', 'Advanced Composition', 'Middle School', 1, 'Write argumentative essays'),
+    ('Language', 'World Literature', 'Middle School', 2, 'Study global literary traditions'),
+    ('Language', 'Debate and Rhetoric', 'Middle School', 3, 'Construct logical arguments'),
+    ('Language', 'Media Literacy', 'Middle School', 4, 'Analyze media messages critically')
+ON CONFLICT (category, age_group, display_order) DO NOTHING;
 
 WITH admin_user AS (
     SELECT id FROM users WHERE role = 'admin' LIMIT 1

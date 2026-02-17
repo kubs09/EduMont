@@ -46,6 +46,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
   const [description, setDescription] = useState('');
   const [selectedRange, setSelectedRange] = useState<{
     key: ClassAgeRangeKey;
+    ageGroup: string;
     minAge: number;
     maxAge: number;
   }>(classAgeRanges[0]);
@@ -170,6 +171,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
       await createClass({
         name,
         description,
+        age_group: selectedRange.ageGroup,
         min_age: selectedRange.minAge,
         max_age: selectedRange.maxAge,
         teacherId: teacherId as number,

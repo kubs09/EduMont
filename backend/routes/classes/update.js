@@ -12,16 +12,19 @@ router.put('/:id', auth, async (req, res) => {
   try {
     await client.query('BEGIN');
     const { id } = req.params;
-    const { name, description, min_age, max_age, teacherId, assistantId } = req.body;
+    const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
 
     if (
       !name ||
+      !age_group ||
       min_age === undefined ||
       min_age === null ||
       max_age === undefined ||
       max_age === null
     ) {
-      throw new Error('Missing required fields: name, min_age, and max_age are required');
+      throw new Error(
+        'Missing required fields: name, age_group, min_age, and max_age are required'
+      );
     }
 
     const minAge = Number(min_age);
@@ -32,8 +35,8 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await client.query(
-      'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
-      [name, description, minAge, maxAge, id]
+      'UPDATE classes SET name = $1, description = $2, age_group = $3, min_age = $4, max_age = $5 WHERE id = $6',
+      [name, description, age_group, minAge, maxAge, id]
     );
 
     if (!teacherId) {

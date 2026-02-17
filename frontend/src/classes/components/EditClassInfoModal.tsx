@@ -27,6 +27,7 @@ interface Class {
   id: number;
   name: string;
   description: string;
+  age_group: string;
   min_age: number;
   max_age: number;
   teachers: ClassTeacher[];
@@ -40,6 +41,7 @@ interface EditClassInfoModalProps {
   onSave: (updatedInfo: {
     name: string;
     description: string;
+    age_group: string;
     min_age: number;
     max_age: number;
     teacherId: number;
@@ -107,6 +109,7 @@ export const EditClassInfoModal = ({
       await onSave({
         name: validationResult.name,
         description: validationResult.description,
+        age_group: selectedRange.ageGroup,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
         teacherId: classData.teachers.find((t) => t.class_role === 'teacher')?.id ?? 0,

@@ -11,13 +11,13 @@ router.post('/', auth, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const { category, name, display_order, notes } = req.body;
+    const { category, name, age_group, display_order, notes } = req.body;
 
     // Validate required fields
-    if (!category || !name || display_order === undefined) {
+    if (!category || !name || !age_group || display_order === undefined) {
       return res
         .status(400)
-        .json({ error: 'Missing required fields: category, name, display_order' });
+        .json({ error: 'Missing required fields: category, name, age_group, display_order' });
     }
 
     // Validate category and name are strings
@@ -31,12 +31,18 @@ router.post('/', auth, async (req, res) => {
     }
 
     const query = `
-      INSERT INTO category_presentations (category, name, display_order, notes)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, category, name, display_order, notes, created_at
+      INSERT INTO category_presentations (category, name, age_group, display_order, notes)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, category, name, age_group, display_order, notes, created_at
     `;
 
-    const result = await pool.query(query, [category, name, display_order, notes || null]);
+    const result = await pool.query(query, [
+      category,
+      name,
+      age_group,
+      display_order,
+      notes || null,
+    ]);
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') {

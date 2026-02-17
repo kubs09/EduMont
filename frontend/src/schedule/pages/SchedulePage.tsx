@@ -11,42 +11,10 @@ import {
   Center,
   Card,
   CardBody,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  IconButton,
   Text,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  NumberInput,
-  NumberInputField,
+  Select,
 } from '@chakra-ui/react';
-import {
-  AddIcon,
-  RepeatIcon,
-  DeleteIcon,
-  EditIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-} from '@chakra-ui/icons';
+import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
@@ -57,6 +25,8 @@ import {
   CategoryPresentation,
   CreateCategoryPresentationData,
 } from '@frontend/services/api/categoryPresentation';
+import AddEditPresentationModal from '../components/AddEditPresentationModal';
+import SchedulePresentationsAccordion from '../components/SchedulePresentationsAccordion';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
@@ -66,6 +36,7 @@ const SchedulePage: React.FC = () => {
   const [presentations, setPresentations] = useState<CategoryPresentation[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingPresentation, setEditingPresentation] = useState<CategoryPresentation | null>(null);
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
   const [formData, setFormData] = useState<Partial<CreateCategoryPresentationData>>({
     category: '',
     name: '',
@@ -76,7 +47,6 @@ const SchedulePage: React.FC = () => {
   const userRole = localStorage.getItem('userRole') || '';
   const isAdmin = userRole === 'admin';
 
-  // Redirect non-admin users
   useEffect(() => {
     if (!isAdmin) {
       window.location.href = '/';
@@ -104,12 +74,24 @@ const SchedulePage: React.FC = () => {
     loadPresentations();
   }, [loadPresentations]);
 
+  useEffect(() => {
+    if (presentations.length > 0 && !selectedAgeGroup) {
+      const ageGroups = Array.from(
+        new Set(presentations.map((p) => p.age_group).filter((ageGroup) => ageGroup))
+      ).sort();
+      if (ageGroups.length > 0) {
+        setSelectedAgeGroup(ageGroups[0]);
+      }
+    }
+  }, [presentations, selectedAgeGroup]);
+
   const handleOpenModal = (presentation?: CategoryPresentation) => {
     if (presentation) {
       setEditingPresentation(presentation);
       setFormData({
         category: presentation.category,
         name: presentation.name,
+        age_group: presentation.age_group,
         display_order: presentation.display_order,
         notes: presentation.notes,
       });
@@ -118,6 +100,7 @@ const SchedulePage: React.FC = () => {
       setFormData({
         category: '',
         name: '',
+        age_group: '',
         display_order: 0,
         notes: '',
       });
@@ -127,7 +110,12 @@ const SchedulePage: React.FC = () => {
 
   const handleSavePresentation = async () => {
     try {
-      if (!formData.category || !formData.name || formData.display_order === undefined) {
+      if (
+        !formData.category ||
+        !formData.name ||
+        !formData.age_group ||
+        formData.display_order === undefined
+      ) {
         toast({
           title: 'Please fill in all required fields',
           status: 'warning',
@@ -142,6 +130,7 @@ const SchedulePage: React.FC = () => {
           id: editingPresentation.id,
           category: formData.category,
           name: formData.name,
+          age_group: formData.age_group,
           display_order: formData.display_order,
           notes: formData.notes,
         });
@@ -155,6 +144,7 @@ const SchedulePage: React.FC = () => {
         await createCategoryPresentation({
           category: formData.category,
           name: formData.name,
+          age_group: formData.age_group,
           display_order: formData.display_order,
           notes: formData.notes,
         });
@@ -224,9 +214,8 @@ const SchedulePage: React.FC = () => {
       const newOrder =
         direction === 'up' ? presentation.display_order - 1 : presentation.display_order + 1;
 
-      // Check if order is valid
       const categoryPresentations = presentations.filter(
-        (p) => p.category === presentation.category
+        (p) => p.category === presentation.category && p.age_group === presentation.age_group
       );
       if (newOrder < 1 || newOrder > categoryPresentations.length) {
         toast({
@@ -238,13 +227,10 @@ const SchedulePage: React.FC = () => {
         return;
       }
 
-      // Find the presentation that will be swapped
       const swapPresentation = categoryPresentations.find((p) => p.display_order === newOrder);
 
       if (!swapPresentation) return;
 
-      // Update presentations sequentially to avoid deadlock
-      // Update in ID order to ensure consistent transaction order
       const updates = [
         { id: presentation.id, display_order: newOrder },
         { id: swapPresentation.id, display_order: presentation.display_order },
@@ -271,10 +257,15 @@ const SchedulePage: React.FC = () => {
     }
   };
 
-  // Group presentations by category
-  const categories = Array.from(new Set(presentations.map((p) => p.category))).sort();
+  const ageGroups = Array.from(
+    new Set(presentations.map((p) => p.age_group).filter((ageGroup) => ageGroup))
+  ).sort();
+
+  const filteredPresentations = presentations.filter((p) => p.age_group === selectedAgeGroup);
+
+  const categories = Array.from(new Set(filteredPresentations.map((p) => p.category))).sort();
   const getPresentationsByCategory = (category: string) =>
-    presentations
+    filteredPresentations
       .filter((p) => p.category === category)
       .sort((a, b) => a.display_order - b.display_order);
 
@@ -291,179 +282,75 @@ const SchedulePage: React.FC = () => {
       <VStack spacing={6} align="stretch">
         <Card>
           <CardBody>
-            <HStack justify="space-between" wrap="wrap" spacing={4} mb={6}>
-              <Heading size={{ base: 'md', md: 'lg' }}>
-                {language === 'cs' ? 'Správa kurikula' : 'Curriculum Management'}
-              </Heading>
-              <HStack spacing={2}>
-                <Button
-                  leftIcon={<RepeatIcon />}
-                  variant="outline"
-                  onClick={loadPresentations}
-                  size={{ base: 'sm', md: 'md' }}
-                >
-                  {texts.schedule.refresh[language]}
-                </Button>
-                <Button
-                  leftIcon={<AddIcon />}
-                  colorScheme="blue"
-                  onClick={() => handleOpenModal()}
-                  size={{ base: 'sm', md: 'md' }}
-                >
-                  {language === 'cs' ? 'Přidat prezentaci' : 'Add Presentation'}
-                </Button>
+            <VStack spacing={4} mb={6} align="stretch">
+              <HStack justify="space-between" spacing={2}>
+                <Heading size={{ base: 'md', md: 'lg' }}>
+                  {texts.schedule.curriculum.curriculumManagement[language]}
+                </Heading>
+                <HStack spacing={2}>
+                  <Button
+                    leftIcon={<RepeatIcon />}
+                    variant="outline"
+                    onClick={loadPresentations}
+                    size={{ base: 'sm', md: 'md' }}
+                    px={{ base: '8px', md: 'auto' }}
+                  >
+                    <Box display={{ base: 'none', md: 'inline' }}>
+                      {texts.schedule.refresh[language]}
+                    </Box>
+                  </Button>
+                  <Button
+                    leftIcon={<AddIcon />}
+                    colorScheme="blue"
+                    onClick={() => handleOpenModal()}
+                    size={{ base: 'sm', md: 'md' }}
+                    px={{ base: '8px', md: 'auto' }}
+                  >
+                    <Box display={{ base: 'none', md: 'inline' }}>
+                      {texts.schedule.addEntry[language]}
+                    </Box>
+                  </Button>
+                </HStack>
               </HStack>
-            </HStack>
+              <HStack spacing={2}>
+                <Text variant="filter">{texts.schedule.ageGroup[language]}:</Text>
+                <Select
+                  size="sm"
+                  value={selectedAgeGroup}
+                  borderRadius="md"
+                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  w="fit-content"
+                >
+                  {ageGroups.map((ageGroup) => (
+                    <option key={ageGroup} value={ageGroup}>
+                      {ageGroup}
+                    </option>
+                  ))}
+                </Select>
+              </HStack>
+            </VStack>
 
-            {categories.length === 0 ? (
-              <Text variant="empty">{language === 'cs' ? 'Žádné kategorie' : 'No categories'}</Text>
-            ) : (
-              <Accordion allowMultiple defaultIndex={[0]}>
-                {categories.map((category) => {
-                  const categoryPresentations = getPresentationsByCategory(category);
-                  return (
-                    <AccordionItem key={category}>
-                      <AccordionButton>
-                        <Box flex="1" textAlign="left">
-                          <Heading size="sm">
-                            {category} ({categoryPresentations.length})
-                          </Heading>
-                        </Box>
-                        <AccordionIcon />
-                      </AccordionButton>
-                      <AccordionPanel pb={4}>
-                        <TableContainer>
-                          <Table variant="simple" size="sm">
-                            <Thead>
-                              <Tr>
-                                <Th>{language === 'cs' ? 'Pořadí' : 'Order'}</Th>
-                                <Th>{language === 'cs' ? 'Název' : 'Name'}</Th>
-                                <Th>{language === 'cs' ? 'Poznámky' : 'Notes'}</Th>
-                                <Th>{language === 'cs' ? 'Akce' : 'Actions'}</Th>
-                              </Tr>
-                            </Thead>
-                            <Tbody>
-                              {categoryPresentations.map((presentation, index) => (
-                                <Tr key={presentation.id}>
-                                  <Td>{presentation.display_order}</Td>
-                                  <Td>{presentation.name}</Td>
-                                  <Td>{presentation.notes || '-'}</Td>
-                                  <Td>
-                                    <HStack spacing={2}>
-                                      <IconButton
-                                        aria-label="Move up"
-                                        icon={<ArrowUpIcon />}
-                                        size="sm"
-                                        isDisabled={index === 0}
-                                        onClick={() => handleReorder(presentation, 'up')}
-                                      />
-                                      <IconButton
-                                        aria-label="Move down"
-                                        icon={<ArrowDownIcon />}
-                                        size="sm"
-                                        isDisabled={index === categoryPresentations.length - 1}
-                                        onClick={() => handleReorder(presentation, 'down')}
-                                      />
-                                      <IconButton
-                                        aria-label="Edit"
-                                        icon={<EditIcon />}
-                                        size="sm"
-                                        onClick={() => handleOpenModal(presentation)}
-                                      />
-                                      <IconButton
-                                        aria-label="Delete"
-                                        icon={<DeleteIcon />}
-                                        size="sm"
-                                        colorScheme="red"
-                                        onClick={() => handleDeletePresentation(presentation.id)}
-                                      />
-                                    </HStack>
-                                  </Td>
-                                </Tr>
-                              ))}
-                            </Tbody>
-                          </Table>
-                        </TableContainer>
-                      </AccordionPanel>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            )}
+            <SchedulePresentationsAccordion
+              categories={categories}
+              getPresentationsByCategory={getPresentationsByCategory}
+              onReorder={handleReorder}
+              onEdit={handleOpenModal}
+              onDelete={handleDeletePresentation}
+              language={language}
+            />
           </CardBody>
         </Card>
       </VStack>
 
-      {/* Modal for adding/editing presentation */}
-      <Modal isOpen={isOpen} onClose={onClose} size="md">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {editingPresentation
-              ? language === 'cs'
-                ? 'Upravit prezentaci'
-                : 'Edit Presentation'
-              : language === 'cs'
-                ? 'Přidat prezentaci'
-                : 'Add Presentation'}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4}>
-              <FormControl isRequired>
-                <FormLabel>{language === 'cs' ? 'Kategorie' : 'Category'}</FormLabel>
-                <Input
-                  placeholder={language === 'cs' ? 'np. Umění a řemesla' : 'e.g. Arts and Crafts'}
-                  value={formData.category || ''}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  isReadOnly={!!editingPresentation}
-                />
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>{language === 'cs' ? 'Název' : 'Name'}</FormLabel>
-                <Input
-                  placeholder={language === 'cs' ? 'np. Kreslení obrázků' : 'e.g. Draw Pictures'}
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </FormControl>
-
-              <FormControl isRequired>
-                <FormLabel>{language === 'cs' ? 'Pořadí' : 'Display Order'}</FormLabel>
-                <NumberInput
-                  min={1}
-                  value={formData.display_order || 0}
-                  onChange={(val) =>
-                    setFormData({ ...formData, display_order: parseInt(val) || 0 })
-                  }
-                >
-                  <NumberInputField />
-                </NumberInput>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>{language === 'cs' ? 'Poznámky' : 'Notes'}</FormLabel>
-                <Textarea
-                  placeholder={language === 'cs' ? 'Volitelné poznámky' : 'Optional notes'}
-                  value={formData.notes || ''}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={4}
-                />
-              </FormControl>
-            </VStack>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
-              {language === 'cs' ? 'Zrušit' : 'Cancel'}
-            </Button>
-            <Button colorScheme="blue" onClick={handleSavePresentation}>
-              {language === 'cs' ? 'Uložit' : 'Save'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <AddEditPresentationModal
+        isOpen={isOpen}
+        onClose={onClose}
+        editingPresentation={editingPresentation}
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSave={handleSavePresentation}
+        language={language}
+      />
     </Box>
   );
 };

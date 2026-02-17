@@ -300,6 +300,14 @@ export const classes = {
     en: 'Age Range',
   },
   ageRanges: {
+    infant: {
+      cs: 'Kojenec',
+      en: 'Infant',
+    },
+    toddler: {
+      cs: 'Batole',
+      en: 'Toddler',
+    },
     earlyChildhood: {
       cs: 'Rané dětství',
       en: 'Early Childhood',
@@ -311,6 +319,10 @@ export const classes = {
     upperElementary: {
       cs: 'Vyšší elementární',
       en: 'Upper Elementary',
+    },
+    middleSchool: {
+      cs: 'Střední škola',
+      en: 'Middle School',
     },
   },
   minAge: {

@@ -16,11 +16,12 @@ router.get('/', auth, async (req, res) => {
         id,
         category,
         name,
+        age_group,
         display_order,
         notes,
         created_at
       FROM category_presentations
-      ORDER BY category ASC, display_order ASC
+      ORDER BY age_group ASC, category ASC, display_order ASC
     `;
 
     const result = await pool.query(query);
@@ -45,12 +46,13 @@ router.get('/category/:category', auth, async (req, res) => {
         id,
         category,
         name,
+        age_group,
         display_order,
         notes,
         created_at
       FROM category_presentations
       WHERE category = $1
-      ORDER BY display_order ASC
+      ORDER BY age_group ASC, display_order ASC
     `;
 
     const result = await pool.query(query, [category]);

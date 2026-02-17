@@ -13,7 +13,7 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { category, name, display_order, notes } = req.body;
+    const { category, name, age_group, display_order, notes } = req.body;
 
     // Validate ID
     if (!id || isNaN(id)) {
@@ -22,7 +22,7 @@ router.put('/:id', auth, async (req, res) => {
 
     // Check if presentation exists
     const existsQuery =
-      'SELECT id, category, display_order FROM category_presentations WHERE id = $1';
+      'SELECT id, category, age_group, display_order FROM category_presentations WHERE id = $1';
     const existsResult = await client.query(existsQuery, [id]);
     if (existsResult.rows.length === 0) {
       return res.status(404).json({ error: 'Category presentation not found' });
@@ -37,6 +37,7 @@ router.put('/:id', auth, async (req, res) => {
     // If reordering within same category or changing category
     if (isReordering) {
       const newCategory = category !== undefined ? category : currentPresentation.category;
+      const newAgeGroup = age_group !== undefined ? age_group : currentPresentation.age_group;
 
       // Use a temporary high value to avoid unique constraint violations
       const tempOrder = 999999;
@@ -50,10 +51,15 @@ router.put('/:id', auth, async (req, res) => {
       // Step 2: Update the presentation that will be displaced (if any)
       const conflictQuery = `
         SELECT id FROM category_presentations 
-        WHERE category = $1 AND display_order = $2 AND id != $3
+        WHERE category = $1 AND age_group = $2 AND display_order = $3 AND id != $4
         LIMIT 1
       `;
-      const conflictResult = await client.query(conflictQuery, [newCategory, display_order, id]);
+      const conflictResult = await client.query(conflictQuery, [
+        newCategory,
+        newAgeGroup,
+        display_order,
+        id,
+      ]);
 
       if (conflictResult.rows.length > 0) {
         const conflictId = conflictResult.rows[0].id;
@@ -86,6 +92,16 @@ router.put('/:id', auth, async (req, res) => {
       paramCount++;
     }
 
+    if (age_group !== undefined) {
+      if (typeof age_group !== 'string') {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Age group must be a string' });
+      }
+      updates.push(`age_group = $${paramCount}`);
+      values.push(age_group);
+      paramCount++;
+    }
+
     if (name !== undefined) {
       if (typeof name !== 'string') {
         await client.query('ROLLBACK');
@@ -115,7 +131,7 @@ router.put('/:id', auth, async (req, res) => {
 
     // Fetch and return updated record
     const resultQuery = `
-      SELECT id, category, name, display_order, notes, created_at
+      SELECT id, category, name, age_group, display_order, notes, created_at
       FROM category_presentations
       WHERE id = $1
     `;

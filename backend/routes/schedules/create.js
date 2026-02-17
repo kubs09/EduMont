@@ -42,12 +42,20 @@ router.post('/', authenticateToken, async (req, res) => {
     // Get display_order from category_presentations if not provided
     let finalDisplayOrder = display_order || 0;
     if (category && !display_order) {
-      const orderResult = await client.query(
-        'SELECT display_order FROM category_presentations WHERE category = $1 ORDER BY display_order ASC LIMIT 1',
-        [category]
-      );
-      if (orderResult.rows.length > 0) {
-        finalDisplayOrder = orderResult.rows[0].display_order;
+      // Get the class's age_group to lookup correct category presentations
+      const classResult = await client.query('SELECT age_group FROM classes WHERE id = $1', [
+        class_id,
+      ]);
+
+      if (classResult.rows.length > 0) {
+        const ageGroup = classResult.rows[0].age_group;
+        const orderResult = await client.query(
+          'SELECT display_order FROM category_presentations WHERE category = $1 AND age_group = $2 ORDER BY display_order ASC LIMIT 1',
+          [category, ageGroup]
+        );
+        if (orderResult.rows.length > 0) {
+          finalDisplayOrder = orderResult.rows[0].display_order;
+        }
       }
     }
 

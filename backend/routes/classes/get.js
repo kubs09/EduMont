@@ -16,6 +16,7 @@ router.get('/', auth, async (req, res) => {
           c.id,
           c.name,
           c.description,
+          c.age_group,
           c.min_age,
           c.max_age,
           COALESCE(
@@ -74,6 +75,7 @@ router.get('/', auth, async (req, res) => {
           c.id,
           c.name,
           c.description,
+          c.age_group,
           c.min_age,
           c.max_age,
           COALESCE(

@@ -115,6 +115,14 @@ export const schedule = {
     cs: 'Třída',
     en: 'Class',
   },
+  ageGroup: {
+    cs: 'Věková skupina',
+    en: 'Age Group',
+  },
+  order: {
+    cs: 'Pořadí',
+    en: 'Order',
+  },
   noChildrenFound: {
     cs: 'Nenalezeny žádné děti',
     en: 'No children found',
@@ -138,6 +146,20 @@ export const schedule = {
   monthSchedule: {
     cs: 'Měsíční rozvrh',
     en: 'Monthly Schedule',
+  },
+  curriculum: {
+    curriculumManagement: {
+      cs: 'Správa kurikula',
+      en: 'Curriculum Management',
+    },
+    addPresentation: {
+      cs: 'Přidat prezentaci',
+      en: 'Add Presentation',
+    },
+    editPresentation: {
+      cs: 'Upravit prezentaci',
+      en: 'Edit Presentation',
+    },
   },
   viewOptions: {
     hour: {
