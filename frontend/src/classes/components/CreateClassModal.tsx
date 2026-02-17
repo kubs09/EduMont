@@ -12,17 +12,18 @@ import {
   Input,
   Textarea,
   Select,
-  useToast,
+  FormErrorMessage,
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { getUsers } from '@frontend/services/api/user';
-import { createClass } from '@frontend/services/api/class';
+import { createClass, getClasses } from '@frontend/services/api/class';
 import { User } from '@frontend/types/shared';
+import { Class as ClassType } from '@frontend/types/class';
 import { classAgeRanges, type ClassAgeRangeKey } from '../utils/ageRanges';
-import { classSchema, classTeachersSchema } from '../schemas/classSchema';
+import { classInfoSchema, classTeachersSchema } from '../schemas/classSchema';
 
 interface CreateClassModalProps {
   isOpen: boolean;
@@ -30,9 +31,17 @@ interface CreateClassModalProps {
   onSuccess: () => void;
 }
 
+interface FormErrors {
+  name?: string;
+  description?: string;
+  minAge?: string;
+  maxAge?: string;
+  teacherId?: string;
+  assistantId?: string;
+}
+
 const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [selectedRange, setSelectedRange] = useState<{
@@ -44,6 +53,8 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
   const [assistantId, setAssistantId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [allClasses, setAllClasses] = useState<ClassType[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -53,6 +64,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
     setSelectedRange(classAgeRanges[0]);
     setTeacherId(null);
     setAssistantId(null);
+    setErrors({});
   }, [isOpen]);
 
   useEffect(() => {
@@ -63,18 +75,22 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
         const data = await getUsers('teacher');
         setAvailableTeachers(data);
       } catch (error) {
-        toast({
-          title: texts.common.userDashboard.errorTitle[language],
-          description: error.message || texts.classes.createError[language],
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
+        console.error(texts.classes.error.errorFetchTeachers[language], error);
+      }
+    };
+
+    const fetchAllClasses = async () => {
+      try {
+        const classes = await getClasses();
+        setAllClasses(classes);
+      } catch (error) {
+        console.error(texts.classes.error.errorFetchClass[language], error);
       }
     };
 
     fetchTeachers();
-  }, [isOpen, language, toast]);
+    fetchAllClasses();
+  }, [isOpen, language]);
 
   const rangeOptions = useMemo(
     () =>
@@ -87,16 +103,69 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
     [language]
   );
 
+  const handleNameChange = (value: string) => {
+    setName(value);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+  };
+
+  const handleTeacherChange = (value: number | null) => {
+    setTeacherId(value);
+    if (value && assistantId === value) {
+      setAssistantId(null);
+    }
+  };
+
+  const handleAssistantChange = (value: number | null) => {
+    setAssistantId(value);
+  };
+
+  const isTeacherAssignedToAnotherClass = (
+    newTeacherId: number | null,
+    newAssistantId: number | null
+  ) => {
+    return allClasses.some((cls) => {
+      return cls.teachers.some((teacher) => {
+        if (newTeacherId && teacher.id === newTeacherId) return true;
+        if (newAssistantId && teacher.id === newAssistantId) return true;
+        return false;
+      });
+    });
+  };
+
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      classSchema.parse({
+      setErrors({});
+
+      const data = {
         name,
         description,
         minAge: selectedRange.minAge,
         maxAge: selectedRange.maxAge,
+        teacherId,
+        assistantId,
+      };
+
+      classInfoSchema(language).parse({
+        name: data.name,
+        description: data.description,
+        minAge: data.minAge,
+        maxAge: data.maxAge,
       });
-      classTeachersSchema.parse({ teacherId, assistantId });
+      classTeachersSchema(language).parse({
+        teacherId: data.teacherId,
+        assistantId: data.assistantId,
+      });
+
+      if (isTeacherAssignedToAnotherClass(teacherId, assistantId)) {
+        setErrors({
+          teacherId: texts.classes.validation.teacherAlreadyAssigned[language],
+        });
+        return;
+      }
 
       await createClass({
         name,
@@ -107,34 +176,21 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
         assistantId,
       });
 
-      toast({
-        title: texts.classes.createSuccess[language],
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-
       onSuccess();
       onClose();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast({
-          title: error.errors[0].message,
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
+        const newErrors: FormErrors = {};
+        error.errors.forEach((err) => {
+          const path = err.path[0] as string;
+          newErrors[path as keyof FormErrors] = err.message;
         });
+        setErrors(newErrors);
         return;
       }
 
-      const apiError = error as { message?: string };
-      toast({
-        title: texts.classes.createError[language],
-        description: apiError.message || texts.classes.createError[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      const apiError = error as { message?: string } | null | undefined;
+      console.error(texts.classes.error.errorCreateClass[language], apiError);
     } finally {
       setIsSubmitting(false);
     }
@@ -147,15 +203,20 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
         <ModalHeader>{texts.classes.createClassTitle[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl>
+          <FormControl isInvalid={!!errors.name} isRequired>
             <FormLabel>{texts.classes.name[language]}</FormLabel>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
+            {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
           </FormControl>
-          <FormControl mt={4}>
+          <FormControl mt={4} isInvalid={!!errors.description} isRequired>
             <FormLabel>{texts.classes.description[language]}</FormLabel>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea
+              value={description}
+              onChange={(e) => handleDescriptionChange(e.target.value)}
+            />
+            {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
           </FormControl>
-          <FormControl mt={4}>
+          <FormControl mt={4} isRequired>
             <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
             <Select
               value={`${selectedRange.minAge}-${selectedRange.maxAge}`}
@@ -169,6 +230,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
 
                 if (matchedRange) {
                   setSelectedRange(matchedRange);
+                  setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
                 }
               }}
             >
@@ -179,17 +241,14 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
               ))}
             </Select>
           </FormControl>
-          <FormControl mt={4}>
+          <FormControl mt={4} isInvalid={!!errors.teacherId} isRequired>
             <FormLabel>{texts.classes.teacher[language]}</FormLabel>
             <Select
-              placeholder={texts.classes.selectTeachers[language]}
+              placeholder={texts.classes.selectTeacher[language]}
               value={teacherId ?? ''}
               onChange={(e) => {
                 const value = e.target.value ? Number(e.target.value) : null;
-                setTeacherId(value);
-                if (value && assistantId === value) {
-                  setAssistantId(null);
-                }
+                handleTeacherChange(value);
               }}
             >
               {availableTeachers.map((teacher) => (
@@ -198,15 +257,16 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
                 </option>
               ))}
             </Select>
+            {errors.teacherId && <FormErrorMessage>{errors.teacherId}</FormErrorMessage>}
           </FormControl>
-          <FormControl mt={4}>
+          <FormControl mt={4} isInvalid={!!errors.assistantId}>
             <FormLabel>{texts.classes.assistant[language]}</FormLabel>
             <Select
-              placeholder={texts.classes.selectTeachers[language]}
+              placeholder={texts.classes.SelectAssistant[language]}
               value={assistantId ?? ''}
               onChange={(e) => {
                 const value = e.target.value ? Number(e.target.value) : null;
-                setAssistantId(value);
+                handleAssistantChange(value);
               }}
             >
               {availableTeachers.map((teacher) => (
@@ -215,6 +275,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
                 </option>
               ))}
             </Select>
+            {errors.assistantId && <FormErrorMessage>{errors.assistantId}</FormErrorMessage>}
           </FormControl>
         </ModalBody>
         <ModalFooter>

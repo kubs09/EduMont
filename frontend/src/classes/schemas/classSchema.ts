@@ -1,43 +1,53 @@
 import { z } from 'zod';
-import { classAgeRanges } from '../utils/ageRanges';
+import texts from '@frontend/texts';
 
-export const classTeachersSchema = z
-  .object({
-    teacherId: z.number({ required_error: 'Teacher is required' }),
-    assistantId: z.number().nullable().optional(),
-  })
-  .refine((data) => data.assistantId === null || data.assistantId !== data.teacherId, {
-    message: 'Assistant cannot be the same as the main teacher',
-    path: ['assistantId'],
+export const classTeachersSchema = (language: 'en' | 'cs') =>
+  z
+    .object({
+      teacherId: z
+        .number({
+          invalid_type_error: texts.classes.validation.teacherValid[language],
+        })
+        .int({ message: texts.classes.validation.teacherValid[language] })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: texts.classes.validation.teacherRequired[language],
+        }),
+
+      assistantId: z
+        .number({
+          invalid_type_error: texts.classes.validation.assistantValid[language],
+        })
+        .int({ message: texts.classes.validation.assistantValid[language] })
+        .nullable()
+        .refine((val) => val !== null, {
+          message: texts.classes.validation.assistantRequired[language],
+        }),
+    })
+    .refine((data) => data.assistantId === null || data.assistantId !== data.teacherId, {
+      message: texts.classes.validation.teacherAlreadyAssigned[language],
+      path: ['assistantId'],
+    });
+
+export const classInfoSchema = (language: 'en' | 'cs') =>
+  z.object({
+    name: z
+      .string()
+      .min(1, { message: texts.classes.validation.classNameRequired[language] })
+      .min(2, { message: texts.classes.validation.classNameMin[language] })
+      .max(100, { message: texts.classes.validation.classNameMax[language] }),
+    description: z
+      .string()
+      .min(1, { message: texts.classes.validation.classDescriptionRequired[language] })
+      .min(5, { message: texts.classes.validation.classDescriptionMin[language] })
+      .max(500, { message: texts.classes.validation.classDescriptionMax[language] }),
+    minAge: z.number(),
+    maxAge: z.number(),
   });
 
-const isAllowedAgeRange = (minAge: number, maxAge: number) =>
-  classAgeRanges.some((range) => range.minAge === minAge && range.maxAge === maxAge);
+export const classSchema = classInfoSchema;
 
-export const classSchema = z
-  .object({
-    name: z.string().min(2, 'Class name must be at least 2 characters'),
-    description: z.string().min(5, 'Description must be at least 5 characters'),
-    minAge: z
-      .number({
-        required_error: 'Minimum age is required',
-      })
-      .min(3, 'Minimum age must be at least 3')
-      .max(9, 'Minimum age cannot exceed 9'),
-    maxAge: z
-      .number({
-        required_error: 'Maximum age is required',
-      })
-      .min(6, 'Maximum age must be at least 6')
-      .max(12, 'Maximum age cannot exceed 12'),
-  })
-  .refine((data) => data.maxAge >= data.minAge, {
-    message: 'Maximum age must be greater than or equal to minimum age',
-    path: ['maxAge'],
-  })
-  .refine((data) => isAllowedAgeRange(data.minAge, data.maxAge), {
-    message: 'Age range must match one of the predefined class groups',
-    path: ['minAge'],
-  });
+export const createClassSchema = (language: 'en' | 'cs') =>
+  classInfoSchema(language).and(classTeachersSchema(language));
 
 export const classManagementSchema = z.object({});
