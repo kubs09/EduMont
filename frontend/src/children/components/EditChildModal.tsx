@@ -19,7 +19,7 @@ import {
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { editChildSchema } from '@frontend/profile/schemas/childSchema';
+import { editChildSchema } from '@frontend/shared/validation/childSchema';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { getUsers } from '@frontend/services/api/user';
 import { getClassesByAge } from '@frontend/services/api/class';

@@ -22,7 +22,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { Teacher } from '@frontend/types/teacher';
 import { ClassTeacher, Class as ClassType } from '@frontend/types/class';
-import { classTeachersSchema } from '../schemas/classSchema';
+import { classTeachersSchema } from '../../shared/validation/classSchema';
 import { getClasses } from '@frontend/services/api/class';
 
 interface Class {

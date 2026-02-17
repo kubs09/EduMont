@@ -23,7 +23,7 @@ import { createClass, getClasses } from '@frontend/services/api/class';
 import { User } from '@frontend/types/shared';
 import { Class as ClassType } from '@frontend/types/class';
 import { classAgeRanges, type ClassAgeRangeKey } from '../utils/ageRanges';
-import { classInfoSchema, classTeachersSchema } from '../schemas/classSchema';
+import { classInfoSchema, classTeachersSchema } from '../../shared/validation/classSchema';
 
 interface CreateClassModalProps {
   isOpen: boolean;

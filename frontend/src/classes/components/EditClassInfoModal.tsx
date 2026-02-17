@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ClassTeacher } from '@frontend/types/class';
-import { classInfoSchema } from '../schemas/classSchema';
+import { classInfoSchema } from '../../shared/validation/classSchema';
 import { classAgeRanges } from '../utils/ageRanges';
 import { z } from 'zod';
 

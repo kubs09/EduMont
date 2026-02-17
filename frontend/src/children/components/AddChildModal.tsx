@@ -21,7 +21,7 @@ import { createChild } from '@frontend/services/api';
 import { getClassesByAge } from '@frontend/services/api/class';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { createChildSchema } from '@frontend/profile/schemas/childSchema';
+import { createChildSchema } from '@frontend/shared/validation/childSchema';
 import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 import { getUsers } from '@frontend/services/api/user';
 import { User } from '@frontend/types/shared';
