@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Update a category presentation
 router.put('/:id', auth, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -15,12 +14,10 @@ router.put('/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { category, name, age_group, display_order, notes } = req.body;
 
-    // Validate ID
     if (!id || isNaN(id)) {
       return res.status(400).json({ error: 'Invalid presentation ID' });
     }
 
-    // Check if presentation exists
     const existsQuery =
       'SELECT id, category, age_group, display_order FROM category_presentations WHERE id = $1';
     const existsResult = await client.query(existsQuery, [id]);
@@ -34,7 +31,6 @@ router.put('/:id', auth, async (req, res) => {
 
     await client.query('BEGIN');
 
-    // If reordering within same category or changing category
     if (isReordering) {
       const newCategory = category !== undefined ? category : currentPresentation.category;
       const newAgeGroup = age_group !== undefined ? age_group : currentPresentation.age_group;
@@ -43,10 +39,7 @@ router.put('/:id', auth, async (req, res) => {
       const oldOrder = currentPresentation.display_order;
       const newOrder = display_order;
 
-      // Case 1: Changing category or age_group - remove from old position and insert in new
       if (newCategory !== oldCategory || newAgeGroup !== oldAgeGroup) {
-        // Step 1: Remove from old position (shift down items that were after it)
-        // Convert to temp negative values first
         await client.query(
           `UPDATE category_presentations
            SET display_order = -(display_order - 1)
@@ -54,7 +47,6 @@ router.put('/:id', auth, async (req, res) => {
           [oldCategory, oldAgeGroup, oldOrder, id]
         );
 
-        // Step 2: Convert back to positive
         await client.query(
           `UPDATE category_presentations
            SET display_order = -display_order
@@ -62,8 +54,6 @@ router.put('/:id', auth, async (req, res) => {
           [oldCategory, oldAgeGroup, id]
         );
 
-        // Step 3: Insert into new position (shift up items at and after new position)
-        // Convert to temp negative values first
         await client.query(
           `UPDATE category_presentations
            SET display_order = -(display_order + 1)
@@ -71,7 +61,6 @@ router.put('/:id', auth, async (req, res) => {
           [newCategory, newAgeGroup, newOrder, id]
         );
 
-        // Step 4: Convert back to positive
         await client.query(
           `UPDATE category_presentations
            SET display_order = -display_order
@@ -79,10 +68,14 @@ router.put('/:id', auth, async (req, res) => {
           [newCategory, newAgeGroup, id]
         );
       } else {
-        // Case 2: Reordering within same category/age_group
+        await client.query(
+          `UPDATE category_presentations
+           SET display_order = -999999
+           WHERE id = $1`,
+          [id]
+        );
+
         if (newOrder > oldOrder) {
-          // Moving down: shift items between old and new positions up
-          // Convert to temp negative values first
           await client.query(
             `UPDATE category_presentations
              SET display_order = -(display_order - 1)
@@ -90,7 +83,6 @@ router.put('/:id', auth, async (req, res) => {
             [newCategory, newAgeGroup, oldOrder, newOrder, id]
           );
 
-          // Convert back to positive
           await client.query(
             `UPDATE category_presentations
              SET display_order = -display_order
@@ -98,8 +90,6 @@ router.put('/:id', auth, async (req, res) => {
             [newCategory, newAgeGroup, id]
           );
         } else if (newOrder < oldOrder) {
-          // Moving up: shift items between new and old positions down
-          // Convert to temp negative values first
           await client.query(
             `UPDATE category_presentations
              SET display_order = -(display_order + 1)
@@ -107,7 +97,6 @@ router.put('/:id', auth, async (req, res) => {
             [newCategory, newAgeGroup, newOrder, oldOrder, id]
           );
 
-          // Convert back to positive
           await client.query(
             `UPDATE category_presentations
              SET display_order = -display_order
@@ -115,11 +104,9 @@ router.put('/:id', auth, async (req, res) => {
             [newCategory, newAgeGroup, id]
           );
         }
-        // If newOrder === oldOrder, no need to shift anything
       }
     }
 
-    // Build update query for other fields
     const updates = [];
     const values = [];
     let paramCount = 1;
@@ -160,7 +147,16 @@ router.put('/:id', auth, async (req, res) => {
       paramCount++;
     }
 
-    // Execute updates for other fields
+    if (display_order !== undefined) {
+      if (typeof display_order !== 'number' || display_order < 1) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Display order must be a positive number' });
+      }
+      updates.push(`display_order = $${paramCount}`);
+      values.push(display_order);
+      paramCount++;
+    }
+
     if (updates.length > 0) {
       values.push(id);
       const query = `
@@ -171,7 +167,6 @@ router.put('/:id', auth, async (req, res) => {
       await client.query(query, values);
     }
 
-    // Fetch and return updated record
     const resultQuery = `
       SELECT id, category, name, age_group, display_order, notes, created_at
       FROM category_presentations
@@ -185,7 +180,6 @@ router.put('/:id', auth, async (req, res) => {
     await client.query('ROLLBACK').catch(() => {});
 
     if (error.code === '23505') {
-      // Unique constraint violation
       return res.status(400).json({
         error: 'A presentation with this category and display order already exists',
       });

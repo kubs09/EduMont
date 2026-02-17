@@ -224,6 +224,10 @@ export const schedule = {
       cs: 'Pořadí musí být kladné číslo',
       en: 'Order must be a positive number',
     },
+    selectCategoryFirst: {
+      cs: 'Nejdříve vyberte kategorii',
+      en: 'Please select a category first',
+    },
     presentationNotesMax: {
       cs: 'Poznámky nesmí překročit 500 znaků',
       en: 'Notes cannot exceed 500 characters',

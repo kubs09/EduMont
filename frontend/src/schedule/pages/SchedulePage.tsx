@@ -88,15 +88,33 @@ const SchedulePage: React.FC = () => {
     }
   }, [presentations, selectedAgeGroup]);
 
-  const handleOpenModal = (presentation?: CategoryPresentation) => {
-    let category = '';
-    let ageGroup = '';
-    let maxOrderValue = 1;
+  // Recalculate maxOrder when form data changes (category or age_group selection)
+  useEffect(() => {
+    if (!isOpen) return;
 
+    let maxOrderValue = 1;
+    const category = formData.category || '';
+    const ageGroup = formData.age_group || '';
+
+    if (category && ageGroup) {
+      const relevantPresentations = presentations.filter(
+        (p) => p.category === category && p.age_group === ageGroup
+      );
+      maxOrderValue = editingPresentation
+        ? relevantPresentations.length
+        : relevantPresentations.length + 1;
+    } else if (ageGroup && !category) {
+      // If age group is selected but category is not yet, only allow order 1
+      // This forces the user to select a category before setting an order
+      maxOrderValue = 1;
+    }
+
+    setMaxOrder(maxOrderValue);
+  }, [formData.category, formData.age_group, isOpen, presentations, editingPresentation]);
+
+  const handleOpenModal = (presentation?: CategoryPresentation) => {
     if (presentation) {
       setEditingPresentation(presentation);
-      category = presentation.category;
-      ageGroup = presentation.age_group;
       setFormData({
         category: presentation.category,
         name: presentation.name,
@@ -106,8 +124,6 @@ const SchedulePage: React.FC = () => {
       });
     } else {
       setEditingPresentation(null);
-      category = '';
-      ageGroup = selectedAgeGroup;
       setFormData({
         category: '',
         name: '',
@@ -116,22 +132,6 @@ const SchedulePage: React.FC = () => {
         notes: '',
       });
     }
-
-    if (category && ageGroup) {
-      const relevantPresentations = presentations.filter(
-        (p) => p.category === category && p.age_group === ageGroup
-      );
-      maxOrderValue = presentation
-        ? relevantPresentations.length
-        : relevantPresentations.length + 1;
-    } else if (ageGroup) {
-      const ageGroupPresentations = presentations.filter((p) => p.age_group === ageGroup);
-      maxOrderValue = ageGroupPresentations.length + 1;
-    } else {
-      maxOrderValue = 1;
-    }
-
-    setMaxOrder(maxOrderValue);
     onOpen();
   };
 

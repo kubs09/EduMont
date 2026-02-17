@@ -65,6 +65,12 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (formData.display_order && formData.display_order > maxOrder) {
+      onFormDataChange({ ...formData, display_order: maxOrder });
+    }
+  }, [maxOrder, formData, onFormDataChange]);
+
   const handleSaveWithValidation = () => {
     try {
       const schema = presentationSchema(language);
@@ -77,11 +83,10 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
         notes: formData.notes,
       });
 
-      // Validate order range
-      if (validatedData.display_order < 1 || validatedData.display_order > maxOrder) {
+      if (validatedData.display_order < 1) {
         setErrors((prev) => ({
           ...prev,
-          display_order: `${texts.schedule.validation.presentationOrderValid[language]} (1-${maxOrder})`,
+          display_order: texts.schedule.validation.presentationOrderValid[language],
         }));
         return;
       }
@@ -183,9 +188,15 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                     setErrors((prev) => ({ ...prev, display_order: undefined }));
                   }
                 }}
+                isDisabled={!formData.category}
               >
                 <NumberInputField />
               </NumberInput>
+              {!formData.category && (
+                <FormErrorMessage>
+                  {texts.schedule.validation.selectCategoryFirst[language]}
+                </FormErrorMessage>
+              )}
               {errors.display_order && <FormErrorMessage>{errors.display_order}</FormErrorMessage>}
             </FormControl>
 
