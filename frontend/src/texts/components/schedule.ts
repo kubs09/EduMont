@@ -160,6 +160,10 @@ export const schedule = {
       cs: 'Upravit prezentaci',
       en: 'Edit Presentation',
     },
+    deletePresentation: {
+      cs: 'Smazat prezentaci',
+      en: 'Delete Presentation',
+    },
   },
   viewOptions: {
     hour: {
@@ -184,6 +188,46 @@ export const schedule = {
     },
   },
   validation: {
+    presentationCategoryRequired: {
+      cs: 'Vyberte kategorii',
+      en: 'Please select a category',
+    },
+    presentationCategoryValid: {
+      cs: 'Kategorie musí být text',
+      en: 'Category must be text',
+    },
+    presentationNameRequired: {
+      cs: 'Zadejte název prezentace',
+      en: 'Please enter the presentation name',
+    },
+    presentationNameMin: {
+      cs: 'Název prezentace musí obsahovat alespoň 2 znaky',
+      en: 'Presentation name must be at least 2 characters',
+    },
+    presentationNameMax: {
+      cs: 'Název prezentace nesmí překročit 100 znaků',
+      en: 'Presentation name cannot exceed 100 characters',
+    },
+    presentationAgeGroupRequired: {
+      cs: 'Vyberte věkovou skupinu',
+      en: 'Please select an age group',
+    },
+    presentationAgeGroupValid: {
+      cs: 'Věková skupina musí být vybrána',
+      en: 'Age group must be a valid option',
+    },
+    presentationOrderRequired: {
+      cs: 'Zadejte pořadí prezentace',
+      en: 'Please enter the presentation order',
+    },
+    presentationOrderValid: {
+      cs: 'Pořadí musí být kladné číslo',
+      en: 'Order must be a positive number',
+    },
+    presentationNotesMax: {
+      cs: 'Poznámky nesmí překročit 500 znaků',
+      en: 'Notes cannot exceed 500 characters',
+    },
     nameRequired: {
       cs: 'Zadejte název prezentace',
       en: 'Please enter the presentation name',
@@ -241,6 +285,10 @@ export const schedule = {
     updateSuccess: {
       cs: 'Položka rozvrhu byla úspěšně aktualizována',
       en: 'Schedule entry updated successfully',
+    },
+    deleteConfirmation: {
+      cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
+      en: 'Are you sure you want to delete this schedule entry?',
     },
     deleteSuccess: {
       cs: 'Položka rozvrhu byla úspěšně smazána',

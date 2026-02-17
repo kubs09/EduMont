@@ -21,12 +21,12 @@ import {
   getAllCategoryPresentations,
   createCategoryPresentation,
   updateCategoryPresentation,
-  deleteCategoryPresentation,
   CategoryPresentation,
   CreateCategoryPresentationData,
 } from '@frontend/services/api/categoryPresentation';
 import AddEditPresentationModal from '../components/AddEditPresentationModal';
 import SchedulePresentationsAccordion from '../components/SchedulePresentationsAccordion';
+import DeletePresentationDialog from '../components/DeletePresentationDialog';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
@@ -34,9 +34,12 @@ const SchedulePage: React.FC = () => {
   const toast = useToast();
 
   const [presentations, setPresentations] = useState<CategoryPresentation[]>([]);
+  const [selectedPresentation, setPresentation] = useState<CategoryPresentation | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [loading, setLoading] = useState(true);
   const [editingPresentation, setEditingPresentation] = useState<CategoryPresentation | null>(null);
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>('');
+  const [maxOrder, setMaxOrder] = useState<number>(1);
   const [formData, setFormData] = useState<Partial<CreateCategoryPresentationData>>({
     category: '',
     name: '',
@@ -86,8 +89,14 @@ const SchedulePage: React.FC = () => {
   }, [presentations, selectedAgeGroup]);
 
   const handleOpenModal = (presentation?: CategoryPresentation) => {
+    let category = '';
+    let ageGroup = '';
+    let maxOrderValue = 1;
+
     if (presentation) {
       setEditingPresentation(presentation);
+      category = presentation.category;
+      ageGroup = presentation.age_group;
       setFormData({
         category: presentation.category,
         name: presentation.name,
@@ -97,59 +106,67 @@ const SchedulePage: React.FC = () => {
       });
     } else {
       setEditingPresentation(null);
+      category = '';
+      ageGroup = selectedAgeGroup;
       setFormData({
         category: '',
         name: '',
-        age_group: '',
+        age_group: selectedAgeGroup,
         display_order: 0,
         notes: '',
       });
     }
+
+    if (category && ageGroup) {
+      const relevantPresentations = presentations.filter(
+        (p) => p.category === category && p.age_group === ageGroup
+      );
+      maxOrderValue = presentation
+        ? relevantPresentations.length
+        : relevantPresentations.length + 1;
+    } else if (ageGroup) {
+      const ageGroupPresentations = presentations.filter((p) => p.age_group === ageGroup);
+      maxOrderValue = ageGroupPresentations.length + 1;
+    } else {
+      maxOrderValue = 1;
+    }
+
+    setMaxOrder(maxOrderValue);
     onOpen();
   };
 
   const handleSavePresentation = async () => {
     try {
-      if (
-        !formData.category ||
-        !formData.name ||
-        !formData.age_group ||
-        formData.display_order === undefined
-      ) {
-        toast({
-          title: 'Please fill in all required fields',
-          status: 'warning',
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
+      const category = formData.category || '';
+      const name = formData.name || '';
+      const age_group = formData.age_group || '';
+      const display_order = formData.display_order || 0;
 
       if (editingPresentation) {
         await updateCategoryPresentation({
           id: editingPresentation.id,
-          category: formData.category,
-          name: formData.name,
-          age_group: formData.age_group,
-          display_order: formData.display_order,
+          category,
+          name,
+          age_group,
+          display_order,
           notes: formData.notes,
         });
         toast({
-          title: 'Presentation updated successfully',
+          title: texts.schedule.messages.updateSuccess[language],
           status: 'success',
           duration: 3000,
           isClosable: true,
         });
       } else {
         await createCategoryPresentation({
-          category: formData.category,
-          name: formData.name,
-          age_group: formData.age_group,
-          display_order: formData.display_order,
+          category,
+          name,
+          age_group,
+          display_order,
           notes: formData.notes,
         });
         toast({
-          title: 'Presentation created successfully',
+          title: texts.schedule.messages.createSuccess[language],
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -159,10 +176,11 @@ const SchedulePage: React.FC = () => {
       onClose();
       await loadPresentations();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save';
-      let description = errorMessage;
+      let errorMessage = texts.schedule.messages.createError[language];
 
-      if (
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
         error &&
         typeof error === 'object' &&
         'response' in error &&
@@ -172,40 +190,17 @@ const SchedulePage: React.FC = () => {
         if ('data' in response && typeof response.data === 'object' && response.data !== null) {
           const data = response.data as Record<string, unknown>;
           if ('error' in data && typeof data.error === 'string') {
-            description = data.error;
+            errorMessage = data.error;
           }
         }
       }
-
       toast({
-        title: 'Error saving presentation',
-        description,
+        title: texts.schedule.messages.createError[language],
+        description: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-    }
-  };
-
-  const handleDeletePresentation = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this presentation?')) {
-      try {
-        await deleteCategoryPresentation(id);
-        toast({
-          title: 'Presentation deleted successfully',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-        await loadPresentations();
-      } catch (error) {
-        toast({
-          title: 'Error deleting presentation',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
     }
   };
 
@@ -335,7 +330,10 @@ const SchedulePage: React.FC = () => {
               getPresentationsByCategory={getPresentationsByCategory}
               onReorder={handleReorder}
               onEdit={handleOpenModal}
-              onDelete={handleDeletePresentation}
+              onDelete={(presentationId) => {
+                setPresentation(presentations.find((p) => p.id === presentationId) || null);
+                setDeleteDialogOpen(true);
+              }}
               language={language}
             />
           </CardBody>
@@ -345,11 +343,20 @@ const SchedulePage: React.FC = () => {
       <AddEditPresentationModal
         isOpen={isOpen}
         onClose={onClose}
+        categories={categories}
         editingPresentation={editingPresentation}
         formData={formData}
         onFormDataChange={setFormData}
         onSave={handleSavePresentation}
         language={language}
+        maxOrder={maxOrder}
+      />
+      <DeletePresentationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        presentationId={selectedPresentation?.id || 0}
+        language={language}
+        onPresentationDeleted={loadPresentations}
       />
     </Box>
   );

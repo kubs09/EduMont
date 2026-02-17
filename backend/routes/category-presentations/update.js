@@ -38,43 +38,85 @@ router.put('/:id', auth, async (req, res) => {
     if (isReordering) {
       const newCategory = category !== undefined ? category : currentPresentation.category;
       const newAgeGroup = age_group !== undefined ? age_group : currentPresentation.age_group;
+      const oldCategory = currentPresentation.category;
+      const oldAgeGroup = currentPresentation.age_group;
+      const oldOrder = currentPresentation.display_order;
+      const newOrder = display_order;
 
-      // Use a temporary high value to avoid unique constraint violations
-      const tempOrder = 999999;
+      // Case 1: Changing category or age_group - remove from old position and insert in new
+      if (newCategory !== oldCategory || newAgeGroup !== oldAgeGroup) {
+        // Step 1: Remove from old position (shift down items that were after it)
+        // Convert to temp negative values first
+        await client.query(
+          `UPDATE category_presentations
+           SET display_order = -(display_order - 1)
+           WHERE category = $1 AND age_group = $2 AND display_order > $3 AND id != $4`,
+          [oldCategory, oldAgeGroup, oldOrder, id]
+        );
 
-      // Step 1: Update the current presentation to temp order
-      await client.query('UPDATE category_presentations SET display_order = $1 WHERE id = $2', [
-        tempOrder,
-        id,
-      ]);
+        // Step 2: Convert back to positive
+        await client.query(
+          `UPDATE category_presentations
+           SET display_order = -display_order
+           WHERE category = $1 AND age_group = $2 AND display_order < 0 AND id != $3`,
+          [oldCategory, oldAgeGroup, id]
+        );
 
-      // Step 2: Update the presentation that will be displaced (if any)
-      const conflictQuery = `
-        SELECT id FROM category_presentations 
-        WHERE category = $1 AND age_group = $2 AND display_order = $3 AND id != $4
-        LIMIT 1
-      `;
-      const conflictResult = await client.query(conflictQuery, [
-        newCategory,
-        newAgeGroup,
-        display_order,
-        id,
-      ]);
+        // Step 3: Insert into new position (shift up items at and after new position)
+        // Convert to temp negative values first
+        await client.query(
+          `UPDATE category_presentations
+           SET display_order = -(display_order + 1)
+           WHERE category = $1 AND age_group = $2 AND display_order >= $3 AND id != $4`,
+          [newCategory, newAgeGroup, newOrder, id]
+        );
 
-      if (conflictResult.rows.length > 0) {
-        const conflictId = conflictResult.rows[0].id;
-        // Move the conflicting presentation to the old order
-        await client.query('UPDATE category_presentations SET display_order = $1 WHERE id = $2', [
-          currentPresentation.display_order,
-          conflictId,
-        ]);
+        // Step 4: Convert back to positive
+        await client.query(
+          `UPDATE category_presentations
+           SET display_order = -display_order
+           WHERE category = $1 AND age_group = $2 AND display_order < 0 AND id != $3`,
+          [newCategory, newAgeGroup, id]
+        );
+      } else {
+        // Case 2: Reordering within same category/age_group
+        if (newOrder > oldOrder) {
+          // Moving down: shift items between old and new positions up
+          // Convert to temp negative values first
+          await client.query(
+            `UPDATE category_presentations
+             SET display_order = -(display_order - 1)
+             WHERE category = $1 AND age_group = $2 AND display_order > $3 AND display_order <= $4 AND id != $5`,
+            [newCategory, newAgeGroup, oldOrder, newOrder, id]
+          );
+
+          // Convert back to positive
+          await client.query(
+            `UPDATE category_presentations
+             SET display_order = -display_order
+             WHERE category = $1 AND age_group = $2 AND display_order < 0 AND id != $3`,
+            [newCategory, newAgeGroup, id]
+          );
+        } else if (newOrder < oldOrder) {
+          // Moving up: shift items between new and old positions down
+          // Convert to temp negative values first
+          await client.query(
+            `UPDATE category_presentations
+             SET display_order = -(display_order + 1)
+             WHERE category = $1 AND age_group = $2 AND display_order >= $3 AND display_order < $4 AND id != $5`,
+            [newCategory, newAgeGroup, newOrder, oldOrder, id]
+          );
+
+          // Convert back to positive
+          await client.query(
+            `UPDATE category_presentations
+             SET display_order = -display_order
+             WHERE category = $1 AND age_group = $2 AND display_order < 0 AND id != $3`,
+            [newCategory, newAgeGroup, id]
+          );
+        }
+        // If newOrder === oldOrder, no need to shift anything
       }
-
-      // Step 3: Update the current presentation to final order
-      await client.query('UPDATE category_presentations SET display_order = $1 WHERE id = $2', [
-        display_order,
-        id,
-      ]);
     }
 
     // Build update query for other fields
