@@ -264,4 +264,29 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
   }
 });
 
+// Get available classes by age
+router.get('/by-age/:age', auth, async (req, res) => {
+  try {
+    const { age } = req.params;
+    const ageNumber = parseInt(age, 10);
+
+    if (isNaN(ageNumber) || ageNumber < 0) {
+      return res.status(400).json({ error: 'Invalid age provided' });
+    }
+
+    const result = await pool.query(
+      `SELECT id, name, description, min_age, max_age 
+       FROM classes 
+       WHERE $1 BETWEEN min_age AND max_age 
+       ORDER BY name ASC`,
+      [ageNumber]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching classes by age:', error);
+    res.status(500).json({ error: 'Failed to fetch classes' });
+  }
+});
+
 module.exports = router;

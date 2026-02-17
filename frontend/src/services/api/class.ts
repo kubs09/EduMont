@@ -18,6 +18,21 @@ export const getClasses = async (): Promise<Class[]> => {
   }
 };
 
+export const getClassesByAge = async (age: number): Promise<Class[]> => {
+  try {
+    const response = await api.get<Class[]>(`/api/classes/by-age/${age}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to fetch classes by age',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
 export const getClass = async (id: number): Promise<Class> => {
   try {
     const response = await api.get<Class>(`/api/classes/${id}`);

@@ -67,6 +67,10 @@ export const classes = {
     cs: 'Zrušit',
     en: 'Cancel',
   },
+  selectClass: {
+    cs: 'Vyberte třídu',
+    en: 'Select Class',
+  },
   selectTeachers: {
     cs: 'Vybrat učitele',
     en: 'Select Teachers',

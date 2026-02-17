@@ -8,7 +8,7 @@ const { validateChild, validateParentIds } = require('./validation');
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { firstname, surname, date_of_birth, parent_ids, notes } = req.body;
+    const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
     // Validate input
     const validationErrors = validateChild(req.body);
@@ -46,20 +46,42 @@ router.post('/', authenticateToken, async (req, res) => {
     const childAge = Math.floor(
       (new Date() - new Date(date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000)
     );
-    const classResult = await client.query(
-      'SELECT id FROM classes WHERE $1 BETWEEN min_age AND max_age LIMIT 1',
-      [childAge]
-    );
 
-    if (classResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        error: 'noSuitableClass',
-        details: null,
-      });
+    let assignedClassId;
+    if (class_id) {
+      // Verify the provided class exists and the age is appropriate
+      const classResult = await client.query(
+        'SELECT id FROM classes WHERE id = $1 AND $2 BETWEEN min_age AND max_age',
+        [class_id, childAge]
+      );
+
+      if (classResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'selectedClassNotSuitable',
+          details: "The selected class is not suitable for the child's age",
+        });
+      }
+      assignedClassId = class_id;
+    } else {
+      // Auto-assign class based on age
+      const classResult = await client.query(
+        'SELECT id FROM classes WHERE $1 BETWEEN min_age AND max_age LIMIT 1',
+        [childAge]
+      );
+
+      if (classResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({
+          error: 'noSuitableClass',
+          details: null,
+        });
+      }
+      assignedClassId = classResult.rows[0].id;
     }
+
     await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
-      classResult.rows[0].id,
+      assignedClassId,
       childResult.rows[0].id,
     ]);
 

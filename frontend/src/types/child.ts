@@ -24,6 +24,7 @@ export interface CreateChildData {
   date_of_birth: string;
   parent_ids: number[];
   notes?: string;
+  class_id?: number;
 }
 
 export interface UpdateChildData {
@@ -33,4 +34,5 @@ export interface UpdateChildData {
   date_of_birth?: string;
   parent_ids?: number[];
   notes?: string;
+  class_id?: number;
 }
