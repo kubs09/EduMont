@@ -299,7 +299,7 @@ export const classes = {
     cs: 'Věkové rozmezí',
     en: 'Age Range',
   },
-  ageRanges: {
+  ageGroups: {
     infant: {
       cs: 'Kojenec',
       en: 'Infant',

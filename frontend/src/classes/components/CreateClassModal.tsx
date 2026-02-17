@@ -22,7 +22,7 @@ import { getUsers } from '@frontend/services/api/user';
 import { createClass, getClasses } from '@frontend/services/api/class';
 import { User } from '@frontend/types/shared';
 import { Class as ClassType } from '@frontend/types/class';
-import { classAgeRanges, type ClassAgeRangeKey } from '../utils/ageRanges';
+import { classAgeGroups, type ClassAgeGroupKey } from '../utils/ageGroups';
 import { classInfoSchema, classTeachersSchema } from '../../shared/validation/classSchema';
 
 interface CreateClassModalProps {
@@ -44,12 +44,12 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
   const { language } = useLanguage();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedRange, setSelectedRange] = useState<{
-    key: ClassAgeRangeKey;
+  const [selectedGroup, setSelectedGroup] = useState<{
+    key: ClassAgeGroupKey;
     ageGroup: string;
     minAge: number;
     maxAge: number;
-  }>(classAgeRanges[0]);
+  }>(classAgeGroups[0]);
   const [teacherId, setTeacherId] = useState<number | null>(null);
   const [assistantId, setAssistantId] = useState<number | null>(null);
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
@@ -62,7 +62,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
 
     setName('');
     setDescription('');
-    setSelectedRange(classAgeRanges[0]);
+    setSelectedGroup(classAgeGroups[0]);
     setTeacherId(null);
     setAssistantId(null);
     setErrors({});
@@ -93,13 +93,13 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
     fetchAllClasses();
   }, [isOpen, language]);
 
-  const rangeOptions = useMemo(
+  const groupOptions = useMemo(
     () =>
-      classAgeRanges.map((range) => ({
-        value: `${range.minAge}-${range.maxAge}`,
-        label: `${texts.classes.ageRanges[range.key][language]} - ${range.minAge} - ${range.maxAge} ${texts.classes.years[language]}`,
-        minAge: range.minAge,
-        maxAge: range.maxAge,
+      classAgeGroups.map((group) => ({
+        value: `${group.minAge}-${group.maxAge}`,
+        label: `${texts.classes.ageGroups[group.key][language]} - ${group.minAge} - ${group.maxAge} ${texts.classes.years[language]}`,
+        minAge: group.minAge,
+        maxAge: group.maxAge,
       })),
     [language]
   );
@@ -144,8 +144,8 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
       const data = {
         name,
         description,
-        minAge: selectedRange.minAge,
-        maxAge: selectedRange.maxAge,
+        minAge: selectedGroup.minAge,
+        maxAge: selectedGroup.maxAge,
         teacherId,
         assistantId,
       };
@@ -171,9 +171,9 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
       await createClass({
         name,
         description,
-        age_group: selectedRange.ageGroup,
-        min_age: selectedRange.minAge,
-        max_age: selectedRange.maxAge,
+        age_group: selectedGroup.ageGroup,
+        min_age: selectedGroup.minAge,
+        max_age: selectedGroup.maxAge,
         teacherId: teacherId as number,
         assistantId,
       });
@@ -221,24 +221,24 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
           <FormControl mt={4} isRequired>
             <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
             <Select
-              value={`${selectedRange.minAge}-${selectedRange.maxAge}`}
+              value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
               onChange={(e) => {
-                const option = rangeOptions.find((range) => range.value === e.target.value);
+                const option = groupOptions.find((group) => group.value === e.target.value);
                 if (!option) return;
 
-                const matchedRange = classAgeRanges.find(
-                  (range) => range.minAge === option.minAge && range.maxAge === option.maxAge
+                const matchedGroup = classAgeGroups.find(
+                  (group) => group.minAge === option.minAge && group.maxAge === option.maxAge
                 );
 
-                if (matchedRange) {
-                  setSelectedRange(matchedRange);
+                if (matchedGroup) {
+                  setSelectedGroup(matchedGroup);
                   setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
                 }
               }}
             >
-              {rangeOptions.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
+              {groupOptions.map((group) => (
+                <option key={group.value} value={group.value}>
+                  {group.label}
                 </option>
               ))}
             </Select>

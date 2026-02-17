@@ -8,13 +8,12 @@ import {
   Stack,
   Text,
   VStack,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
-import { classAgeRanges } from '../utils/ageRanges';
+import { classAgeGroups } from '../utils/ageGroups';
 
 interface InfoTabProps {
   classData: Class;
@@ -33,12 +32,11 @@ const InfoTab: React.FC<InfoTabProps> = ({
 }) => {
   const primaryTeacher = classData.teachers.find((teacher) => teacher.class_role === 'teacher');
   const assistantTeacher = classData.teachers.find((teacher) => teacher.class_role === 'assistant');
-  const linkColor = useColorModeValue('blue.600', 'blue.300');
-  const ageRange = classAgeRanges.find(
-    (range) => range.minAge === classData.min_age && range.maxAge === classData.max_age
+  const ageGroup = classAgeGroups.find(
+    (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
   );
-  const ageRangeLabel = ageRange
-    ? `${texts.classes.ageRanges[ageRange.key][language]} - ${classData.min_age} - ${classData.max_age} ${texts.classes.years[language]}`
+  const ageGroupsLabel = ageGroup
+    ? `${texts.classes.ageGroups[ageGroup.key][language]} - ${classData.min_age} - ${classData.max_age} ${texts.classes.years[language]}`
     : `${classData.min_age} - ${classData.max_age}`;
 
   const renderTeacherName = (teacher?: Class['teachers'][number]) => {
@@ -48,7 +46,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
       <ChakraLink
         as={RouterLink}
         to={ROUTES.PROFILE_DETAIL.replace(':id', teacher.id.toString())}
-        color={linkColor}
+        variant="link"
       >
         {fullName}
       </ChakraLink>
@@ -70,7 +68,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
             </Box>
             <Box>
               <Text fontWeight="bold">{texts.classes.ageRange[language]}</Text>
-              <Text>{ageRangeLabel}</Text>
+              <Text>{ageGroupsLabel}</Text>
             </Box>
           </VStack>
         </GridItem>

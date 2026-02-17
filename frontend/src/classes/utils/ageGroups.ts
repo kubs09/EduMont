@@ -1,4 +1,4 @@
-export const classAgeRanges = [
+export const classAgeGroups = [
   { key: 'infant', ageGroup: 'Infant', minAge: 0, maxAge: 1 },
   { key: 'toddler', ageGroup: 'Toddler', minAge: 1, maxAge: 3 },
   { key: 'earlyChildhood', ageGroup: 'Early Childhood', minAge: 3, maxAge: 6 },
@@ -7,7 +7,7 @@ export const classAgeRanges = [
   { key: 'middleSchool', ageGroup: 'Middle School', minAge: 12, maxAge: 15 },
 ] as const;
 
-export type ClassAgeRangeKey = (typeof classAgeRanges)[number]['key'];
+export type ClassAgeGroupKey = (typeof classAgeGroups)[number]['key'];
 
-export const resolveAgeRangeKey = (minAge: number, maxAge: number) =>
-  classAgeRanges.find((range) => range.minAge === minAge && range.maxAge === maxAge)?.key;
+export const resolveAgeGroupKey = (minAge: number, maxAge: number) =>
+  classAgeGroups.find((group) => group.minAge === minAge && group.maxAge === maxAge)?.key;

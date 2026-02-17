@@ -17,6 +17,9 @@ import {
   NumberInputField,
   VStack,
   FormErrorMessage,
+  NumberInputStepper,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
 } from '@chakra-ui/react';
 import {
   CategoryPresentation,
@@ -149,12 +152,20 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                 }}
               >
                 <option value="">-- {texts.schedule.select[language]} --</option>
-                <option value="Infant">Infant (0-1)</option>
-                <option value="Toddler">Toddler (1-3)</option>
-                <option value="Early Childhood">Early Childhood (3-6)</option>
-                <option value="Lower Elementary">Lower Elementary (6-9)</option>
-                <option value="Upper Elementary">Upper Elementary (9-12)</option>
-                <option value="Middle School">Middle School (12-15)</option>
+                <option value="Infant">{texts.classes.ageGroups.infant[language]} (0-1)</option>
+                <option value="Toddler">{texts.classes.ageGroups.toddler[language]} (1-3)</option>
+                <option value="Early Childhood">
+                  {texts.classes.ageGroups.earlyChildhood[language]} (3-6)
+                </option>
+                <option value="Lower Elementary">
+                  {texts.classes.ageGroups.lowerElementary[language]} (6-9)
+                </option>
+                <option value="Upper Elementary">
+                  {texts.classes.ageGroups.upperElementary[language]} (9-12)
+                </option>
+                <option value="Middle School">
+                  {texts.classes.ageGroups.middleSchool[language]} (12-15)
+                </option>
               </Select>
               {errors.age_group && <FormErrorMessage>{errors.age_group}</FormErrorMessage>}
             </FormControl>
@@ -191,6 +202,10 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                 isDisabled={!formData.category}
               >
                 <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
               </NumberInput>
               {!formData.category && (
                 <FormErrorMessage>

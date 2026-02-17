@@ -20,7 +20,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ClassTeacher } from '@frontend/types/class';
 import { classInfoSchema } from '../../shared/validation/classSchema';
-import { classAgeRanges } from '../utils/ageRanges';
+import { classAgeGroups } from '../utils/ageGroups';
 import { z } from 'zod';
 
 interface Class {
@@ -67,11 +67,11 @@ export const EditClassInfoModal = ({
   const { language } = useLanguage();
   const [name, setName] = useState(classData.name);
   const [description, setDescription] = useState(classData.description);
-  const initialRange =
-    classAgeRanges.find(
-      (range) => range.minAge === classData.min_age && range.maxAge === classData.max_age
-    ) ?? classAgeRanges[0];
-  const [selectedRange, setSelectedRange] = useState(initialRange);
+  const initialGroup =
+    classAgeGroups.find(
+      (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
+    ) ?? classAgeGroups[0];
+  const [selectedGroup, setSelectedGroup] = useState(initialGroup);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -80,11 +80,11 @@ export const EditClassInfoModal = ({
 
     setName(classData.name);
     setDescription(classData.description);
-    const nextRange =
-      classAgeRanges.find(
-        (range) => range.minAge === classData.min_age && range.maxAge === classData.max_age
-      ) ?? classAgeRanges[0];
-    setSelectedRange(nextRange);
+    const nextGroup =
+      classAgeGroups.find(
+        (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
+      ) ?? classAgeGroups[0];
+    setSelectedGroup(nextGroup);
     setErrors({});
   }, [isOpen, classData]);
 
@@ -102,14 +102,14 @@ export const EditClassInfoModal = ({
       const validationResult = classInfoSchema(language).parse({
         name,
         description,
-        minAge: selectedRange.minAge,
-        maxAge: selectedRange.maxAge,
+        minAge: selectedGroup.minAge,
+        maxAge: selectedGroup.maxAge,
       });
 
       await onSave({
         name: validationResult.name,
         description: validationResult.description,
-        age_group: selectedRange.ageGroup,
+        age_group: selectedGroup.ageGroup,
         min_age: validationResult.minAge,
         max_age: validationResult.maxAge,
         teacherId: classData.teachers.find((t) => t.class_role === 'teacher')?.id ?? 0,
@@ -157,23 +157,23 @@ export const EditClassInfoModal = ({
           <FormControl mt={4} isRequired>
             <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
             <Select
-              value={`${selectedRange.minAge}-${selectedRange.maxAge}`}
+              value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
               onChange={(e) => {
                 const [minAgeValue, maxAgeValue] = e.target.value
                   .split('-')
                   .map((value) => Number(value));
-                const matchedRange = classAgeRanges.find(
-                  (range) => range.minAge === minAgeValue && range.maxAge === maxAgeValue
+                const matchedGroup = classAgeGroups.find(
+                  (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
                 );
-                if (matchedRange) {
-                  setSelectedRange(matchedRange);
+                if (matchedGroup) {
+                  setSelectedGroup(matchedGroup);
                   setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
                 }
               }}
             >
-              {classAgeRanges.map((range) => (
-                <option key={range.key} value={`${range.minAge}-${range.maxAge}`}>
-                  {texts.classes.ageRanges[range.key][language]} - {range.minAge} - {range.maxAge}{' '}
+              {classAgeGroups.map((group) => (
+                <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
+                  {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
                   {texts.classes.years[language]}
                 </option>
               ))}
