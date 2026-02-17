@@ -199,15 +199,33 @@ INSERT INTO users (email, firstname, surname, password, role) VALUES
 ('petr.novak@example.com', 'Petr', 'Novák', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
 ('lucie.dvorakova@example.com', 'Lucie', 'Dvořáková', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
 ('karel.svoboda@example.com', 'Karel', 'Svoboda', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
+('radek.jelinek@example.com', 'Radek', 'Jelinek', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
+('lenka.stankova@example.com', 'Lenka', 'Stankova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
+('michal.rehak@example.com', 'Michal', 'Rehak', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'parent'),
 ('jana.kralova@example.com', 'Jana', 'Králová', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
 ('martin.novotny@example.com', 'Martin', 'Novotný', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
-('eva.svobodova@example.com', 'Eva', 'Svobodová', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher')
+('eva.svobodova@example.com', 'Eva', 'Svobodová', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('alena.malikova@example.com', 'Alena', 'Malikova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('ondrej.kucera@example.com', 'Ondrej', 'Kucera', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('lucas.prochazka@example.com', 'Lucas', 'Prochazka', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('simona.havlova@example.com', 'Simona', 'Havlova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('petr.horak@example.com', 'Petr', 'Horak', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('klara.benesova@example.com', 'Klara', 'Benesova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('daniel.kolar@example.com', 'Daniel', 'Kolar', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('martina.vackova@example.com', 'Martina', 'Vackova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher'),
+('veronika.krizova@example.com', 'Veronika', 'Krizova', '$2b$10$HRnchh4S3QItDIRHLUIrYOhbdFunDrQWP.rygwqqS3Kgt1QeHa1Pm', 'teacher')
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO children (firstname, surname, date_of_birth, notes) VALUES
 ('Jakub', 'Novák', DATE '2022-01-01', 'Alergie na ořechy'),
 ('Ema', 'Dvořáková', DATE '2020-01-01', 'Bez speciálních požadavků'),
-('Tereza', 'Svobodová', DATE '2017-01-01', 'Vegetariánská strava');
+('Tereza', 'Svobodová', DATE '2017-01-01', 'Vegetariánská strava'),
+('Filip', 'Jelinek', DATE '2021-05-15', 'Bez speciálních požadavků'),
+('Sofie', 'Stankova', DATE '2019-03-10', 'Alergie na laktózu'),
+('Adam', 'Rehak', DATE '2014-09-22', 'Bez speciálních požadavků'),
+('Klara', 'Vesela', DATE '2018-11-02', 'Vegetariánská strava'),
+('Matej', 'Kubik', DATE '2016-07-08', 'Alergie na ořechy'),
+('Nina', 'Urbanova', DATE '2013-02-19', 'Bez speciálních požadavků');
 
 INSERT INTO child_parents (child_id, parent_id)
 SELECT ch.id, u.id
@@ -215,13 +233,22 @@ FROM children ch
 JOIN users u ON (
   (ch.firstname = 'Jakub' AND u.email = 'petr.novak@example.com') OR
   (ch.firstname = 'Ema' AND u.email = 'lucie.dvorakova@example.com') OR
-  (ch.firstname = 'Tereza' AND u.email = 'karel.svoboda@example.com')
+    (ch.firstname = 'Tereza' AND u.email = 'karel.svoboda@example.com') OR
+    (ch.firstname = 'Filip' AND u.email = 'radek.jelinek@example.com') OR
+    (ch.firstname = 'Sofie' AND u.email = 'lenka.stankova@example.com') OR
+    (ch.firstname = 'Adam' AND u.email = 'michal.rehak@example.com') OR
+    (ch.firstname = 'Klara' AND u.email = 'lenka.stankova@example.com') OR
+    (ch.firstname = 'Matej' AND u.email = 'radek.jelinek@example.com') OR
+    (ch.firstname = 'Nina' AND u.email = 'michal.rehak@example.com')
 );
 
 INSERT INTO classes (name, description, min_age, max_age) VALUES
-('Morning Stars', 'Morning group for children aged 3-4', 3, 4),
-('Afternoon Explorers', 'Afternoon group for children aged 4-5', 4, 5),
-('Evening warriors', 'Evening group for children aged 6-10', 6, 10);
+('Early Childhood - Sunflowers', 'Early Childhood group for children aged 3-6', 3, 6),
+('Early Childhood - Bumblebees', 'Early Childhood group for children aged 3-6', 3, 6),
+('Lower Elementary - Explorers', 'Lower Elementary group for children aged 6-9', 6, 9),
+('Lower Elementary - Inventors', 'Lower Elementary group for children aged 6-9', 6, 9),
+('Upper Elementary - Trailblazers', 'Upper Elementary group for children aged 9-12', 9, 12),
+('Upper Elementary - Navigators', 'Upper Elementary group for children aged 9-12', 9, 12);
 
 WITH teacher_ids AS (
   SELECT id, email FROM users WHERE role = 'teacher'
@@ -229,9 +256,27 @@ WITH teacher_ids AS (
 INSERT INTO class_teachers (class_id, teacher_id, role)
 SELECT 1, id, 'teacher' FROM teacher_ids WHERE email = 'jana.kralova@example.com'
 UNION ALL
-SELECT 2, id, 'teacher' FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
+SELECT 1, id, 'assistant' FROM teacher_ids WHERE email = 'alena.malikova@example.com'
 UNION ALL
-SELECT 3, id, 'teacher' FROM teacher_ids WHERE email = 'martin.novotny@example.com';
+SELECT 2, id, 'teacher' FROM teacher_ids WHERE email = 'martin.novotny@example.com'
+UNION ALL
+SELECT 2, id, 'assistant' FROM teacher_ids WHERE email = 'ondrej.kucera@example.com'
+UNION ALL
+SELECT 3, id, 'teacher' FROM teacher_ids WHERE email = 'eva.svobodova@example.com'
+UNION ALL
+SELECT 3, id, 'assistant' FROM teacher_ids WHERE email = 'lucas.prochazka@example.com'
+UNION ALL
+SELECT 4, id, 'teacher' FROM teacher_ids WHERE email = 'simona.havlova@example.com'
+UNION ALL
+SELECT 4, id, 'assistant' FROM teacher_ids WHERE email = 'petr.horak@example.com'
+UNION ALL
+SELECT 5, id, 'teacher' FROM teacher_ids WHERE email = 'klara.benesova@example.com'
+UNION ALL
+SELECT 5, id, 'assistant' FROM teacher_ids WHERE email = 'daniel.kolar@example.com'
+UNION ALL
+SELECT 6, id, 'teacher' FROM teacher_ids WHERE email = 'martina.vackova@example.com'
+UNION ALL
+SELECT 6, id, 'assistant' FROM teacher_ids WHERE email = 'veronika.krizova@example.com';
 
 INSERT INTO class_children (class_id, child_id)
 SELECT 
@@ -247,33 +292,18 @@ CROSS JOIN LATERAL (
 
 INSERT INTO category_presentations (category, name, display_order, notes)
 VALUES 
-    ('Arts and Crafts', 'Complete Drawing Project', 1, 'Draw a picture of your family'),
-    ('Arts and Crafts', 'Create Collage', 2, 'Create a collage with various materials'),
-    ('Arts and Crafts', 'Paint with Watercolors', 3, 'Learn basic watercolor techniques'),
-    ('Music', 'Learn New Song', 1, 'Learned "Twinkle Twinkle Little Star"'),
-    ('Music', 'Play Simple Instrument', 2, 'Learn to play a recorder or xylophone'),
-    ('Music', 'Sing in Group', 3, 'Participate in group singing'),
-    ('Science', 'Nature Collection', 1, 'Collect 5 different types of leaves'),
-    ('Science', 'Plant Growth Observation', 2, 'Observe and record plant growth'),
-    ('Science', 'Simple Experiment', 3, 'Conduct a basic science experiment'),
+    ('Practical Life', 'Complete Drawing Project', 1, 'Draw a picture of your family'),
+    ('Practical Life', 'Create Collage', 2, 'Create a collage with various materials'),
+    ('Practical Life', 'Paint with Watercolors', 3, 'Learn basic watercolor techniques'),
+    ('Sensorial', 'Learn New Song', 1, 'Learned "Twinkle Twinkle Little Star"'),
+    ('Sensorial', 'Play Simple Instrument', 2, 'Learn to play a recorder or xylophone'),
+    ('Sensorial', 'Sing in Group', 3, 'Participate in group singing'),
     ('Mathematics', 'Practice Counting', 1, 'Count to 20'),
     ('Mathematics', 'Number Recognition', 2, 'Recognize numbers 1-20'),
     ('Mathematics', 'Basic Addition', 3, 'Learn basic addition with objects'),
-    ('Construction Play', 'Build Block Tower', 1, 'Build a tower taller than yourself'),
-    ('Construction Play', 'Create Block Structure', 2, 'Design and build a complex structure'),
-    ('Construction Play', 'Lego Creation', 3, 'Build with LEGO following instructions'),
-    ('Reading', 'Read Storybook', 1, 'Finished "The Very Hungry Caterpillar"'),
-    ('Reading', 'Read Picture Book', 2, 'Read simple picture stories'),
-    ('Reading', 'Read Chapter Book', 3, 'Read early chapter books'),
-    ('Learning', 'Color Recognition', 1, 'Identify 8 basic colors'),
-    ('Learning', 'Shape Recognition', 2, 'Identify basic shapes'),
-    ('Learning', 'Letter Recognition', 3, 'Recognize alphabet letters'),
-    ('PE', 'Physical Exercise', 1, 'Completed obstacle course'),
-    ('PE', 'Ball Games', 2, 'Participate in ball throwing and catching'),
-    ('PE', 'Team Sports', 3, 'Join in team sports activities'),
-    ('Group Activity', 'Social Skills', 1, 'Share toys with friends'),
-    ('Group Activity', 'Teamwork Game', 2, 'Participate in group games'),
-    ('Group Activity', 'Community Activity', 3, 'Contribute to class community'),
+    ('Culture', 'Build Block Tower', 1, 'Build a tower taller than yourself'),
+    ('Culture', 'Create Block Structure', 2, 'Design and build a complex structure'),
+    ('Culture', 'Lego Creation', 3, 'Build with LEGO following instructions'),
     ('Language', 'Alphabet Practice', 1, 'Recognize letters A-M'),
     ('Language', 'Letter Writing', 2, 'Write basic letters'),
     ('Language', 'Word Building', 3, 'Build words from letters')

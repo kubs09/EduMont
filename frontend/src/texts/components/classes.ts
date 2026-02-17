@@ -19,6 +19,10 @@ export const classes = {
     cs: 'Seznam tříd',
     en: 'Class List',
   },
+  addClass: {
+    cs: 'Přidat třídu',
+    en: 'Add Class',
+  },
   noClasses: {
     cs: 'Žádné třídy k zobrazení',
     en: 'No classes to display',
@@ -78,6 +82,22 @@ export const classes = {
   updateError: {
     cs: 'Nepodařilo se aktualizovat třídu',
     en: 'Failed to update class',
+  },
+  createClassTitle: {
+    cs: 'Vytvořit třídu',
+    en: 'Create Class',
+  },
+  createClass: {
+    cs: 'Vytvořit',
+    en: 'Create',
+  },
+  createSuccess: {
+    cs: 'Třída byla úspěšně vytvořena',
+    en: 'Class created successfully',
+  },
+  createError: {
+    cs: 'Nepodařilo se vytvořit třídu',
+    en: 'Failed to create class',
   },
   validation: {
     teacherRequired: {
@@ -231,6 +251,20 @@ export const classes = {
     cs: 'Věkové rozmezí',
     en: 'Age Range',
   },
+  ageRanges: {
+    earlyChildhood: {
+      cs: 'Rané dětství',
+      en: 'Early Childhood',
+    },
+    lowerElementary: {
+      cs: 'Nižší elementární',
+      en: 'Lower Elementary',
+    },
+    upperElementary: {
+      cs: 'Vyšší elementární',
+      en: 'Upper Elementary',
+    },
+  },
   minAge: {
     cs: 'Minimální věk',
     en: 'Minimum Age',
@@ -238,6 +272,10 @@ export const classes = {
   maxAge: {
     cs: 'Maximální věk',
     en: 'Maximum Age',
+  },
+  years: {
+    cs: 'let',
+    en: 'years',
   },
   manageTeachersTitle: {
     cs: 'Správa učitelů třídy',

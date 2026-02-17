@@ -10,15 +10,17 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Select,
   Textarea,
   useToast,
   ThemingProps,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ClassTeacher } from '@frontend/types/class';
 import { classSchema } from '../schemas/classSchema';
+import { classAgeRanges } from '../utils/ageRanges';
 import { z } from 'zod';
 
 interface Class {
@@ -57,16 +59,31 @@ export const EditClassInfoModal = ({
   const toast = useToast();
   const [name, setName] = useState(classData.name);
   const [description, setDescription] = useState(classData.description);
-  const [minAge, setMinAge] = useState(classData.min_age);
-  const [maxAge, setMaxAge] = useState(classData.max_age);
+  const initialRange =
+    classAgeRanges.find(
+      (range) => range.minAge === classData.min_age && range.maxAge === classData.max_age
+    ) ?? classAgeRanges[0];
+  const [selectedRange, setSelectedRange] = useState(initialRange);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setName(classData.name);
+    setDescription(classData.description);
+    const nextRange =
+      classAgeRanges.find(
+        (range) => range.minAge === classData.min_age && range.maxAge === classData.max_age
+      ) ?? classAgeRanges[0];
+    setSelectedRange(nextRange);
+  }, [isOpen, classData]);
 
   const handleSave = async () => {
     try {
       const validationResult = classSchema.parse({
         name,
         description,
-        minAge,
-        maxAge,
+        minAge: selectedRange.minAge,
+        maxAge: selectedRange.maxAge,
       });
 
       const primaryTeacher = classData.teachers.find((t) => t.class_role === 'teacher');
@@ -121,22 +138,28 @@ export const EditClassInfoModal = ({
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
           </FormControl>
           <FormControl mt={4}>
-            <FormLabel>{texts.classes.minAge[language]}</FormLabel>
-            <Input
-              type="number"
-              value={minAge}
-              onChange={(e) => setMinAge(parseInt(e.target.value))}
-              min={0}
-            />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>{texts.classes.maxAge[language]}</FormLabel>
-            <Input
-              type="number"
-              value={maxAge}
-              onChange={(e) => setMaxAge(parseInt(e.target.value))}
-              min={minAge}
-            />
+            <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
+            <Select
+              value={`${selectedRange.minAge}-${selectedRange.maxAge}`}
+              onChange={(e) => {
+                const [minAgeValue, maxAgeValue] = e.target.value
+                  .split('-')
+                  .map((value) => Number(value));
+                const matchedRange = classAgeRanges.find(
+                  (range) => range.minAge === minAgeValue && range.maxAge === maxAgeValue
+                );
+                if (matchedRange) {
+                  setSelectedRange(matchedRange);
+                }
+              }}
+            >
+              {classAgeRanges.map((range) => (
+                <option key={range.key} value={`${range.minAge}-${range.maxAge}`}>
+                  {texts.classes.ageRanges[range.key][language]} - {range.minAge} - {range.maxAge}{' '}
+                  {texts.classes.years[language]}
+                </option>
+              ))}
+            </Select>
           </FormControl>
         </ModalBody>
         <ModalFooter>
