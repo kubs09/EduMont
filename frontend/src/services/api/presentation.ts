@@ -128,19 +128,16 @@ export interface UpdateCategoryPresentationData {
   notes?: string;
 }
 
-// Get all category presentations
 export const getAllCategoryPresentations = async (): Promise<CategoryPresentation[]> => {
   const response = await api.get('/api/presentations/categories');
   return response.data;
 };
 
-// Get categories list
 export const getCategories = async (): Promise<string[]> => {
   const response = await api.get('/api/presentations/categories/list/categories');
   return response.data;
 };
 
-// Get presentations by category
 export const getPresentationsByCategory = async (
   category: string
 ): Promise<CategoryPresentation[]> => {
@@ -150,7 +147,6 @@ export const getPresentationsByCategory = async (
   return response.data;
 };
 
-// Create a new category presentation
 export const createCategoryPresentation = async (
   data: CreateCategoryPresentationData
 ): Promise<CategoryPresentation> => {
@@ -158,7 +154,6 @@ export const createCategoryPresentation = async (
   return response.data;
 };
 
-// Update a category presentation
 export const updateCategoryPresentation = async (
   data: UpdateCategoryPresentationData
 ): Promise<CategoryPresentation> => {
@@ -167,7 +162,6 @@ export const updateCategoryPresentation = async (
   return response.data;
 };
 
-// Delete a category presentation
 export const deleteCategoryPresentation = async (id: number): Promise<void> => {
   await api.delete(`/api/presentations/categories/${id}`);
 };
