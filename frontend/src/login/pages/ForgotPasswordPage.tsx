@@ -83,7 +83,9 @@ const ForgotPasswordPage = () => {
       <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
         <VStack spacing={8}>
           <Circle size="40px" bg={iconBg} color="white">
-            <Icon as={FaQuestionCircle} />
+            <Box>
+              <Icon as={FaQuestionCircle as React.ElementType} w={12} h={12} />
+            </Box>
           </Circle>
           <Heading as="h1" size="lg">
             {texts.auth.forgotPassword.title[language]}

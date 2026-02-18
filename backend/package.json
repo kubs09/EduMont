@@ -18,6 +18,7 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "edumont-react": "file:..",
     "express": "^4.21.2",
     "js": "^0.1.0",
     "jsonwebtoken": "^9.0.2",

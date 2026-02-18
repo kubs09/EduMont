@@ -270,7 +270,9 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                 />
                 {!uploadFile ? (
                   <VStack spacing={2}>
-                    <FiUploadCloud size={48} style={{ color: 'var(--chakra-colors-gray-500)' }} />
+                    <Box w={12} h={12} color="gray.500">
+                      <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
+                    </Box>
                     <Text fontWeight="medium" color="text-primary">
                       {texts.document.placeholder?.dragDrop?.[language]}
                     </Text>
@@ -289,7 +291,9 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                     borderRadius="md"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <Icon as={FiFile} boxSize={6} color="brand.primary.500" />
+                    <Box boxSize={6} color="brand.primary.500">
+                      <Icon as={FiFile as React.ElementType} w={6} h={6} />
+                    </Box>
                     <VStack align="start" flex={1} spacing={0}>
                       <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
                         {uploadFile.name}
@@ -299,7 +303,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                       </Text>
                     </VStack>
                     <Button size="sm" variant="ghost" colorScheme="red" onClick={handleRemoveFile}>
-                      <Icon as={FiX} />
+                      <Icon as={FiX as React.ElementType} />
                     </Button>
                   </HStack>
                 )}
