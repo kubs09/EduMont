@@ -15,7 +15,7 @@ import ForgotPasswordPage from './login/pages/ForgotPasswordPage';
 import ResetPasswordPage from './login/pages/ResetPasswordPage';
 import Messages from './messages/pages/MessagePage';
 import ClassDetailPage from './classes/pages/ClassDetailPage';
-import SchedulePage from './schedule/pages/SchedulePage';
+import SchedulePage from './schedule/pages/CurriculumPage';
 import ChildrenPage from './children/pages/ChildrenPage';
 import ChildDetailPage from './children/pages/ChildDetailPage';
 
@@ -62,7 +62,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
           <Route path={ROUTES.MESSAGES} element={<Messages />} />
           <Route path={ROUTES.CLASSES} element={<ClassesPage />} />
           <Route path={ROUTES.CLASS_DETAIL} element={<ClassDetailPage />} />
-          <Route path={ROUTES.SCHEDULE} element={<SchedulePage />} />
+          <Route path={ROUTES.presentation} element={<SchedulePage />} />
           <Route path={ROUTES.CHILDREN} element={<ChildrenPage />} />
           <Route path={`${ROUTES.CHILDREN}/:id`} element={<ChildDetailPage />} />
           {isAdmin && <Route path={ROUTES.USER_DASHBOARD} element={<UserDashboard />} />}

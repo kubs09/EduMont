@@ -153,7 +153,7 @@ router.get('/:id/classes', authenticateToken, async (req, res) => {
   }
 });
 
-router.get('/:id/schedules', authenticateToken, async (req, res) => {
+router.get('/:id/presentations', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -167,7 +167,7 @@ router.get('/:id/schedules', authenticateToken, async (req, res) => {
         s.notes,
         s.child_id,
         s.class_id
-      FROM schedules s
+      FROM presentations s
       WHERE s.child_id = $1
       ORDER BY s.category ASC, s.display_order ASC
     `;
@@ -176,7 +176,7 @@ router.get('/:id/schedules', authenticateToken, async (req, res) => {
     res.json(result.rows || []);
   } catch (err) {
     res.status(500).json({
-      error: 'Failed to fetch child schedules',
+      error: 'Failed to fetch child presentations',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   }

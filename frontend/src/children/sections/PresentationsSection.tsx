@@ -17,20 +17,20 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
-import { Schedule } from '@frontend/types/schedule';
-import { updateChildPresentationStatus } from '@frontend/services/api/child';
+import { Presentation } from '@frontend/types/presentation';
+import { updateChildPresentationStatus } from '@frontend/services/api/presentation';
 
-interface SchedulesTabProps {
-  schedules: Schedule[];
+interface PresentationsSectionProps {
+  presentations: Presentation[];
   language: 'cs' | 'en';
   childId: number;
   display_order: number;
   canUpdateStatus?: boolean;
-  onStatusUpdated?: (scheduleId: number, newStatus: Schedule['status']) => void;
+  onStatusUpdated?: (presentationId: number, newStatus: Presentation['status']) => void;
 }
 
-const SchedulesTab: React.FC<SchedulesTabProps> = ({
-  schedules,
+const PresentationsSection: React.FC<PresentationsSectionProps> = ({
+  presentations,
   language,
   childId,
   display_order,
@@ -38,7 +38,7 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
   onStatusUpdated,
 }) => {
   const toast = useToast();
-  const [updatingScheduleId, setUpdatingScheduleId] = useState<number | null>(null);
+  const [updatingpresentationId, setUpdatingpresentationId] = useState<number | null>(null);
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'prerequisites not met':
@@ -60,22 +60,23 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     switch (status) {
       case 'prerequisites not met':
         return (
-          texts.schedule.status?.options.prerequisitesNotMet[language] || 'Prerequisites Not Met'
+          texts.presentation.status?.options.prerequisitesNotMet[language] ||
+          'Prerequisites Not Met'
         );
       case 'to be presented':
-        return texts.schedule.status?.options.toBePresented[language] || 'To Be Presented';
+        return texts.presentation.status?.options.toBePresented[language] || 'To Be Presented';
       case 'presented':
-        return texts.schedule.status?.options.presented[language] || 'Presented';
+        return texts.presentation.status?.options.presented[language] || 'Presented';
       case 'practiced':
-        return texts.schedule.status?.options.practiced[language] || 'Practiced';
+        return texts.presentation.status?.options.practiced[language] || 'Practiced';
       case 'mastered':
-        return texts.schedule.status?.options.mastered[language] || 'Mastered';
+        return texts.presentation.status?.options.mastered[language] || 'Mastered';
       default:
         return status || '-';
     }
   };
 
-  const statusOptions: Schedule['status'][] = [
+  const statusOptions: Presentation['status'][] = [
     'prerequisites not met',
     'to be presented',
     'presented',
@@ -85,17 +86,17 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
 
   const categories = useMemo(() => {
     const unique = new Set(
-      schedules.map((schedule) => schedule.category).filter((category) => category)
+      presentations.map((presentation) => presentation.category).filter((category) => category)
     );
     return Array.from(unique).sort();
-  }, [schedules]);
+  }, [presentations]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const visibleSchedules = useMemo(() => {
+  const visiblepresentations = useMemo(() => {
     const filtered = selectedCategory
-      ? schedules.filter((schedule) => schedule.category === selectedCategory)
-      : schedules;
+      ? presentations.filter((presentation) => presentation.category === selectedCategory)
+      : presentations;
 
     return [...filtered].sort((a, b) => {
       const aOrder =
@@ -107,10 +108,10 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
       }
       return a.name.localeCompare(b.name);
     });
-  }, [schedules, selectedCategory]);
+  }, [presentations, selectedCategory]);
 
-  const getStatusRank = (status: Schedule['status']): number => {
-    const ranks: Record<Schedule['status'], number> = {
+  const getStatusRank = (status: Presentation['status']): number => {
+    const ranks: Record<Presentation['status'], number> = {
       'prerequisites not met': 0,
       'to be presented': 1,
       presented: 2,
@@ -120,56 +121,58 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     return ranks[status] || 0;
   };
 
-  const getNextStatus = (currentStatus: Schedule['status']): Schedule['status'] | null => {
+  const getNextStatus = (currentStatus: Presentation['status']): Presentation['status'] | null => {
     const currentRank = getStatusRank(currentStatus);
     if (currentRank >= statusOptions.length - 1) return null;
     return statusOptions[currentRank + 1];
   };
 
-  const getPreviousStatus = (currentStatus: Schedule['status']): Schedule['status'] | null => {
+  const getPreviousStatus = (
+    currentStatus: Presentation['status']
+  ): Presentation['status'] | null => {
     const currentRank = getStatusRank(currentStatus);
     if (currentRank <= 0) return null;
     return statusOptions[currentRank - 1];
   };
 
-  const isScheduleDisabled = (scheduleId: number): boolean => {
-    const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
+  const isPresentationDisabled = (presentationId: number): boolean => {
+    const index = visiblepresentations.findIndex((s) => s.id === presentationId);
     if (index === 0) return false;
 
-    const previousSchedule = visibleSchedules[index - 1];
-    return getStatusRank(previousSchedule.status) < 2;
+    const previousPresentation = visiblepresentations[index - 1];
+    return getStatusRank(previousPresentation.status) < 2;
   };
 
-  const handleChangeStatus = async (scheduleId: number, newStatus: Schedule['status']) => {
+  const handleChangeStatus = async (presentationId: number, newStatus: Presentation['status']) => {
     if (!canUpdateStatus) {
       return;
     }
 
-    const schedule = schedules.find((item) => item.id === scheduleId);
-    if (!schedule || schedule.status === newStatus) {
+    const presentation = presentations.find((item) => item.id === presentationId);
+    if (!presentation || presentation.status === newStatus) {
       return;
     }
 
-    setUpdatingScheduleId(scheduleId);
+    setUpdatingpresentationId(presentationId);
     try {
-      await updateChildPresentationStatus(childId, scheduleId, newStatus);
-      onStatusUpdated?.(scheduleId, newStatus);
+      await updateChildPresentationStatus(childId, presentationId, newStatus);
+      onStatusUpdated?.(presentationId, newStatus);
 
       if (newStatus === 'to be presented') {
-        const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
+        const index = visiblepresentations.findIndex((s) => s.id === presentationId);
         if (index !== -1) {
-          for (let i = index + 1; i < visibleSchedules.length; i++) {
-            const nextSchedule = visibleSchedules[i];
-            if (nextSchedule.status === 'to be presented') {
+          for (let i = index + 1; i < visiblepresentations.length; i++) {
+            const nextpresentation = visiblepresentations[i];
+            if (nextpresentation.status === 'to be presented') {
               try {
                 await updateChildPresentationStatus(
                   childId,
-                  nextSchedule.id,
+                  nextpresentation.id,
                   'prerequisites not met'
                 );
-                onStatusUpdated?.(nextSchedule.id, 'prerequisites not met');
+                onStatusUpdated?.(nextpresentation.id, 'prerequisites not met');
               } catch (error) {
-                console.error('Failed to update subsequent schedule status:', error);
+                console.error('Failed to update subsequent presentation status:', error);
               }
             }
           }
@@ -177,42 +180,42 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
       }
 
       if (getStatusRank(newStatus) >= 2) {
-        const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
-        if (index !== -1 && index < visibleSchedules.length - 1) {
-          const nextSchedule = visibleSchedules[index + 1];
-          if (getStatusRank(nextSchedule.status) < 1) {
+        const index = visiblepresentations.findIndex((s) => s.id === presentationId);
+        if (index !== -1 && index < visiblepresentations.length - 1) {
+          const nextpresentation = visiblepresentations[index + 1];
+          if (getStatusRank(nextpresentation.status) < 1) {
             try {
-              await updateChildPresentationStatus(childId, nextSchedule.id, 'to be presented');
-              onStatusUpdated?.(nextSchedule.id, 'to be presented');
+              await updateChildPresentationStatus(childId, nextpresentation.id, 'to be presented');
+              onStatusUpdated?.(nextpresentation.id, 'to be presented');
             } catch (error) {
-              console.error('Failed to update next schedule status:', error);
+              console.error('Failed to update next presentation status:', error);
             }
           }
         }
       }
 
       toast({
-        title: texts.schedule.messages.updateSuccess[language],
+        title: texts.presentation.messages.updateSuccess[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: texts.schedule.messages.updateError[language],
+        title: texts.presentation.messages.updateError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     } finally {
-      setUpdatingScheduleId(null);
+      setUpdatingpresentationId(null);
     }
   };
 
   return (
     <Box>
       <HStack mb={3} spacing={2} align="center">
-        <Text variant="filter">{texts.schedule.category[language]}:</Text>
+        <Text variant="filter">{texts.presentation.category[language]}:</Text>
         <Select
           size="sm"
           maxW="220px"
@@ -230,31 +233,31 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
         <Table variant="simple" size="md">
           <Thead>
             <Tr>
-              <Th>{texts.schedule.name[language]}</Th>
-              <Th>{texts.schedule.order[language]}</Th>
-              <Th>{texts.schedule.category[language]}</Th>
-              <Th>{texts.schedule.status.label[language]}</Th>
-              <Th>{texts.schedule.notes[language]}</Th>
+              <Th>{texts.presentation.name[language]}</Th>
+              <Th>{texts.presentation.order[language]}</Th>
+              <Th>{texts.presentation.category[language]}</Th>
+              <Th>{texts.presentation.status.label[language]}</Th>
+              <Th>{texts.presentation.notes[language]}</Th>
               <Th>{texts.common.actions[language]}</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {visibleSchedules.map((schedule) => (
-              <Tr key={schedule.id}>
+            {visiblepresentations.map((presentation) => (
+              <Tr key={presentation.id}>
                 <Td>
-                  <Text fontWeight="medium">{schedule.name}</Text>
+                  <Text fontWeight="medium">{presentation.name}</Text>
                 </Td>
                 <Td>
                   <Badge colorScheme="blue" variant="outlined">
-                    {schedule.display_order}
+                    {presentation.display_order}
                   </Badge>
                 </Td>
                 <Td>
-                  <Text>{schedule.category || '-'}</Text>
+                  <Text>{presentation.category || '-'}</Text>
                 </Td>
                 <Td>
-                  <Badge colorScheme={getStatusColor(schedule.status)} variant="subtle">
-                    {getStatusText(schedule.status)}
+                  <Badge colorScheme={getStatusColor(presentation.status)} variant="subtle">
+                    {getStatusText(presentation.status)}
                   </Badge>
                 </Td>
                 <Td>
@@ -263,9 +266,9 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
                     overflow="hidden"
                     textOverflow="ellipsis"
                     whiteSpace="nowrap"
-                    title={schedule.notes}
+                    title={presentation.notes}
                   >
-                    {schedule.notes || '-'}
+                    {presentation.notes || '-'}
                   </Text>
                 </Td>
                 <Td>
@@ -275,14 +278,14 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
                         size="sm"
                         colorScheme="green"
                         isDisabled={
-                          updatingScheduleId === schedule.id ||
-                          isScheduleDisabled(schedule.id) ||
-                          getNextStatus(schedule.status) === null
+                          updatingpresentationId === presentation.id ||
+                          isPresentationDisabled(presentation.id) ||
+                          getNextStatus(presentation.status) === null
                         }
                         onClick={() => {
-                          const nextStatus = getNextStatus(schedule.status);
+                          const nextStatus = getNextStatus(presentation.status);
                           if (nextStatus) {
-                            handleChangeStatus(schedule.id, nextStatus);
+                            handleChangeStatus(presentation.id, nextStatus);
                           }
                         }}
                       >
@@ -292,13 +295,14 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
                         size="sm"
                         colorScheme="red"
                         isDisabled={
-                          updatingScheduleId === schedule.id ||
-                          getPreviousStatus(schedule.status) === null
+                          updatingpresentationId === presentation.id ||
+                          isPresentationDisabled(presentation.id) ||
+                          getPreviousStatus(presentation.status) === null
                         }
                         onClick={() => {
-                          const prevStatus = getPreviousStatus(schedule.status);
+                          const prevStatus = getPreviousStatus(presentation.status);
                           if (prevStatus) {
-                            handleChangeStatus(schedule.id, prevStatus);
+                            handleChangeStatus(presentation.id, prevStatus);
                           }
                         }}
                       >
@@ -318,4 +322,4 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
   );
 };
 
-export default SchedulesTab;
+export default PresentationsSection;

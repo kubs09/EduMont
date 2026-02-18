@@ -142,7 +142,7 @@ export interface ClassAttendanceRow {
 export const getClassNextPresentations = async (classId: number): Promise<NextPresentation[]> => {
   try {
     const response = await api.get<NextPresentation[]>(
-      `/api/classes/${classId}/next-presentations`
+      `/api/presentations/class/${classId}/next-presentations`
     );
     return response.data;
   } catch (error) {

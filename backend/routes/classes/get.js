@@ -212,12 +212,10 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Get next presentations (schedules with status 'to be presented') for a class
 router.get('/:id/next-presentations', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check access permissions
     if (req.user.role === 'parent') {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc
@@ -250,7 +248,7 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
         cu.surname as created_by_surname,
         uu.firstname as updated_by_firstname,
         uu.surname as updated_by_surname
-      FROM schedules s
+      FROM presentations s
       JOIN classes c ON s.class_id = c.id
       JOIN children ch ON s.child_id = ch.id
       LEFT JOIN users cu ON s.created_by = cu.id
@@ -266,7 +264,6 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
   }
 });
 
-// Get available classes by age
 router.get('/by-age/:age', auth, async (req, res) => {
   try {
     const { age } = req.params;

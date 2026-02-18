@@ -20,7 +20,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { ChildExcuse, Document, getChildDocuments, getChildExcuses } from '@frontend/services/api';
 import { Child, UpdateChildData } from '@frontend/types/child';
-import { Schedule } from '@frontend/types/schedule';
+import { Presentation } from '@frontend/types/presentation';
 import { ROUTES } from '@frontend/shared/route';
 import EditChildModal from '../components/EditChildModal';
 import { Section, SectionMenu } from '@frontend/shared/components';
@@ -28,7 +28,7 @@ import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
 import {
   InformationSection,
   DocumentsSection,
-  SchedulesSection,
+  PresentationsSection,
   ExcusesSection,
 } from '../sections';
 
@@ -38,7 +38,7 @@ const ChildDetailPage = () => {
   const { language } = useLanguage();
   const toast = useToast();
   const [childData, setChildData] = useState<Child | null>(null);
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [presentations, setPresentations] = useState<Presentation[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [excuses, setExcuses] = useState<ChildExcuse[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -82,10 +82,10 @@ const ChildDetailPage = () => {
         setChildData(childResponse.data);
 
         try {
-          const schedulesResponse = await api.get(`/api/children/${id}/schedules`);
-          setSchedules(schedulesResponse.data || []);
+          const presentationsResponse = await api.get(`/api/children/${id}/presentations`);
+          setPresentations(presentationsResponse.data || []);
         } catch (err) {
-          setSchedules([]);
+          setPresentations([]);
         }
 
         try {
@@ -116,14 +116,14 @@ const ChildDetailPage = () => {
   useEffect(() => {
     const visibleSectionIds = [
       'information',
-      ...(schedules.length > 0 ? ['schedules'] : []),
+      ...(presentations.length > 0 ? ['presentations'] : []),
       'excuses',
       'documents',
     ];
     if (!visibleSectionIds.includes(activeSectionId)) {
       setActiveSectionId(visibleSectionIds[0]);
     }
-  }, [activeSectionId, schedules.length]);
+  }, [activeSectionId, presentations.length]);
 
   const handleEditSave = async (updatedData: UpdateChildData) => {
     if (!childData || !id) return;
@@ -199,25 +199,27 @@ const ChildDetailPage = () => {
       ),
     },
     {
-      id: 'schedules',
-      label: texts.schedule.title[language],
+      id: 'presentations',
+      label: texts.presentation.title[language],
       content: (
-        <SchedulesSection
-          schedules={schedules}
+        <PresentationsSection
+          presentations={presentations}
           language={language}
           childId={id ? parseInt(id, 10) : 0}
-          display_order={schedules.length > 0 ? schedules[0].display_order || 0 : 0}
+          display_order={presentations.length > 0 ? presentations[0].display_order || 0 : 0}
           canUpdateStatus={isTeacher}
-          onStatusUpdated={(scheduleId, newStatus) => {
-            setSchedules((prev) =>
-              prev.map((schedule) =>
-                schedule.id === scheduleId ? { ...schedule, status: newStatus } : schedule
+          onStatusUpdated={(presentationId, newStatus) => {
+            setPresentations((prev) =>
+              prev.map((presentation) =>
+                presentation.id === presentationId
+                  ? { ...presentation, status: newStatus }
+                  : presentation
               )
             );
           }}
         />
       ),
-      isVisible: schedules.length > 0,
+      isVisible: presentations.length > 0,
     },
     {
       id: 'excuses',

@@ -224,7 +224,7 @@ export const classes = {
     },
     noNextPresentations: {
       cs: 'Žádné naplánované prezentace',
-      en: 'No scheduled presentations',
+      en: 'No presentationd presentations',
     },
     time: {
       cs: 'Čas',

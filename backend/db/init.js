@@ -117,6 +117,39 @@ const initDatabase = async () => {
     );
   `;
 
+  const createCategoryPresentationsTable = `
+    CREATE TABLE IF NOT EXISTS category_presentations (
+      id SERIAL PRIMARY KEY,
+      category VARCHAR(100) NOT NULL,
+      name VARCHAR(200) NOT NULL,
+      age_group VARCHAR(50) NOT NULL,
+      display_order INTEGER NOT NULL,
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CHECK (age_group IN ('Infant', 'Toddler', 'Early Childhood', 'Lower Elementary', 'Upper Elementary', 'Middle School')),
+      UNIQUE (category, age_group, display_order)
+    );
+  `;
+
+  const createPresentationsTable = `
+    CREATE TABLE IF NOT EXISTS presentations (
+      id SERIAL PRIMARY KEY,
+      child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+      class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+      name VARCHAR(200) NOT NULL,
+      category VARCHAR(100),
+      display_order INTEGER DEFAULT 0,
+      status VARCHAR(30) DEFAULT 'prerequisites not met' CHECK (
+        status IN ('prerequisites not met', 'to be presented', 'presented', 'practiced', 'mastered')
+      ),
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_by INTEGER REFERENCES users(id),
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_by INTEGER REFERENCES users(id)
+    );
+  `;
+
   try {
     await pool.query(createClassesTable);
     await pool.query(createClassTeachersTable);
@@ -127,6 +160,8 @@ const initDatabase = async () => {
     await pool.query(createDocumentsTable);
     await pool.query(createClassAttendanceTable);
     await pool.query(createChildExcusesTable);
+    await pool.query(createCategoryPresentationsTable);
+    await pool.query(createPresentationsTable);
     await pool.query('SELECT * FROM users');
     await pool.query('SELECT * FROM children');
     await pool.query('SELECT * FROM child_parents');
@@ -137,6 +172,8 @@ const initDatabase = async () => {
     await pool.query('SELECT * FROM documents');
     await pool.query('SELECT * FROM class_attendance');
     await pool.query('SELECT * FROM child_excuses');
+    await pool.query('SELECT * FROM category_presentations');
+    await pool.query('SELECT * FROM presentations');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(

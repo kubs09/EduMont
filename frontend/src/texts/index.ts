@@ -2,7 +2,7 @@ import { auth } from './components/auth';
 import { profile } from './components/profile';
 import { classes } from './components/classes';
 import { messages } from './components/messages';
-import { schedule } from './components/schedule';
+import { presentation } from './components/presentation';
 import { common } from './components/common';
 import { document } from './components/document';
 
@@ -12,14 +12,14 @@ export const texts = {
   ...profile,
   ...classes,
   ...messages,
-  ...schedule,
+  ...presentation,
   ...common,
   auth,
   document,
   profile,
   classes,
   messages,
-  schedule,
+  presentation,
   common,
 };
 

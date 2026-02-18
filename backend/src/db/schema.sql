@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, schedules, documents, category_presentations CASCADE;
+DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, presentations, documents, category_presentations CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -157,7 +157,7 @@ CREATE INDEX idx_category_presentations_category ON category_presentations(categ
 CREATE INDEX idx_category_presentations_age_group ON category_presentations(age_group);
 CREATE INDEX idx_category_presentations_category_age ON category_presentations(category, age_group);
 
-CREATE TABLE schedules (
+CREATE TABLE presentations (
     id SERIAL PRIMARY KEY,
     child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
     class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
@@ -174,11 +174,11 @@ CREATE TABLE schedules (
     updated_by INTEGER REFERENCES users(id)
 );
 
-CREATE INDEX idx_schedules_child_id ON schedules(child_id);
-CREATE INDEX idx_schedules_class_id ON schedules(class_id);
-CREATE INDEX idx_schedules_status ON schedules(status);
-CREATE INDEX idx_schedules_category_status ON schedules(category, status);
-CREATE INDEX idx_schedules_child_category ON schedules(child_id, category);
+CREATE INDEX idx_presentations_child_id ON presentations(child_id);
+CREATE INDEX idx_presentations_class_id ON presentations(class_id);
+CREATE INDEX idx_presentations_status ON presentations(status);
+CREATE INDEX idx_presentations_category_status ON presentations(category, status);
+CREATE INDEX idx_presentations_child_category ON presentations(child_id, category);
 
 CREATE TABLE documents (
     id SERIAL PRIMARY KEY,
@@ -422,7 +422,7 @@ VALUES
     
     -- Lower Elementary (6-9 years) - Same categories, elementary level
     ('Practical Life', 'Community Building', 'Lower Elementary', 1, 'Organize class meetings'),
-    ('Practical Life', 'Time Management', 'Lower Elementary', 2, 'Plan daily work schedule'),
+    ('Practical Life', 'Time Management', 'Lower Elementary', 2, 'Plan daily work presentation'),
     ('Practical Life', 'Research Skills', 'Lower Elementary', 3, 'Use reference materials'),
     ('Sensorial', 'Geometric Solids', 'Lower Elementary', 1, 'Identify 3D shapes'),
     ('Sensorial', 'Sensorial Extensions', 'Lower Elementary', 2, 'Advanced sensorial discrimination'),
@@ -502,7 +502,7 @@ child_categories AS (
     CROSS JOIN all_categories ac
     CROSS JOIN admin_user au
 )
-INSERT INTO schedules (child_id, class_id, name, category, display_order, status, notes, created_by)
+INSERT INTO presentations (child_id, class_id, name, category, display_order, status, notes, created_by)
 SELECT 
     cc.child_id,
     cc.class_id,
