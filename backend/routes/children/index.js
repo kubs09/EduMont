@@ -34,11 +34,18 @@ try {
   excusesRouter = null;
 }
 
+try {
+  presentationStatusRouter = require('./presentation-status');
+} catch (error) {
+  presentationStatusRouter = null;
+}
+
 if (getChildrenRouter) router.use('/', getChildrenRouter);
 if (createChildRouter) router.use('/', createChildRouter);
 if (updateChildRouter) router.use('/', updateChildRouter);
 if (deleteChildRouter) router.use('/', deleteChildRouter);
 if (excusesRouter) router.use('/', excusesRouter);
+if (presentationStatusRouter) router.use('/', presentationStatusRouter);
 
 router.get('/test', (req, res) => {
   res.json({

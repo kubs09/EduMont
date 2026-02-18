@@ -121,3 +121,24 @@ export const deleteChildExcuse = async (childId: number, excuseId: number): Prom
     throw error;
   }
 };
+
+export const updateChildPresentationStatus = async (
+  childId: number,
+  scheduleId: number,
+  newStatus: string,
+  notes?: string
+): Promise<void> => {
+  try {
+    await api.put(`/api/children/${childId}/presentations/${scheduleId}/status`, {
+      status: newStatus,
+      notes,
+    });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details || error.response?.data?.error || 'Failed to update status';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};

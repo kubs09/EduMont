@@ -201,7 +201,21 @@ const ChildDetailPage = () => {
     {
       id: 'schedules',
       label: texts.schedule.title[language],
-      content: <SchedulesSection schedules={schedules} language={language} />,
+      content: (
+        <SchedulesSection
+          schedules={schedules}
+          language={language}
+          childId={id ? parseInt(id, 10) : 0}
+          canUpdateStatus={isTeacher}
+          onStatusUpdated={(scheduleId, newStatus) => {
+            setSchedules((prev) =>
+              prev.map((schedule) =>
+                schedule.id === scheduleId ? { ...schedule, status: newStatus } : schedule
+              )
+            );
+          }}
+        />
+      ),
       isVisible: schedules.length > 0,
     },
     {

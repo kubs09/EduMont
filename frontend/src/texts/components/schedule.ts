@@ -28,6 +28,10 @@ export const schedule = {
       cs: 'Stav',
       en: 'Status',
     },
+    changeStatus: {
+      cs: 'Změnit stav',
+      en: 'Change Status',
+    },
     options: {
       prerequisitesNotMet: {
         cs: 'Nesplněné předpoklady',
