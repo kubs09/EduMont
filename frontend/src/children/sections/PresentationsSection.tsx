@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Box,
   HStack,
@@ -33,7 +33,6 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
   presentations,
   language,
   childId,
-  display_order,
   canUpdateStatus = false,
   onStatusUpdated,
 }) => {
@@ -92,6 +91,12 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
   }, [presentations]);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  useEffect(() => {
+    if (!selectedCategory && categories.length > 0 && categories[0]) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [categories, selectedCategory]);
 
   const visiblepresentations = useMemo(() => {
     const filtered = selectedCategory
