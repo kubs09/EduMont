@@ -20,6 +20,7 @@ router.get('/', authenticateToken, async (req, res) => {
         s.class_id,
         s.name,
         s.category,
+        s.display_order,
         s.status,
         s.notes,
         s.created_at,
@@ -59,7 +60,7 @@ router.get('/', authenticateToken, async (req, res) => {
       query += ' WHERE ' + whereConditions.join(' AND ');
     }
 
-    query += ' ORDER BY s.created_at DESC';
+    query += ' ORDER BY s.category ASC, s.display_order ASC';
 
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -86,6 +87,7 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
         s.class_id,
         s.name,
         s.category,
+        s.display_order,
         s.status,
         s.notes,
         s.created_at,
@@ -112,7 +114,7 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
       params.push(status);
     }
 
-    query += ' ORDER BY s.created_at DESC';
+    query += ' ORDER BY s.category ASC, s.display_order ASC';
 
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -158,6 +160,7 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
         s.class_id,
         s.name,
         s.category,
+        s.display_order,
         s.status,
         s.notes,
         s.created_at,
@@ -190,7 +193,7 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
       params.push(status);
     }
 
-    query += ' ORDER BY s.created_at DESC, ch.surname ASC, ch.firstname ASC';
+    query += ' ORDER BY s.category ASC, s.display_order ASC, ch.surname ASC, ch.firstname ASC';
 
     const result = await pool.query(query, params);
     res.json(result.rows);

@@ -162,13 +162,14 @@ router.get('/:id/schedules', authenticateToken, async (req, res) => {
         s.id,
         s.name,
         s.category,
+        s.display_order,
         s.status,
         s.notes,
         s.child_id,
         s.class_id
       FROM schedules s
       WHERE s.child_id = $1
-      ORDER BY s.created_at DESC
+      ORDER BY s.category ASC, s.display_order ASC
     `;
 
     const result = await pool.query(query, [id]);

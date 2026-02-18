@@ -22,6 +22,7 @@ interface SchedulesTabProps {
   schedules: Schedule[];
   language: 'cs' | 'en';
   childId: number;
+  display_order: number;
   canUpdateStatus?: boolean;
   onStatusUpdated?: (scheduleId: number, newStatus: Schedule['status']) => void;
 }
@@ -30,6 +31,7 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
   schedules,
   language,
   childId,
+  display_order,
   canUpdateStatus = false,
   onStatusUpdated,
 }) => {
@@ -105,6 +107,25 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     });
   }, [schedules, selectedCategory]);
 
+  const getStatusRank = (status: Schedule['status']): number => {
+    const ranks: Record<Schedule['status'], number> = {
+      'prerequisites not met': 0,
+      'to be presented': 1,
+      presented: 2,
+      practiced: 3,
+      mastered: 4,
+    };
+    return ranks[status] || 0;
+  };
+
+  const isScheduleDisabled = (scheduleId: number): boolean => {
+    const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
+    if (index === 0) return false;
+
+    const previousSchedule = visibleSchedules[index - 1];
+    return getStatusRank(previousSchedule.status) < 2;
+  };
+
   const handleChangeStatus = async (scheduleId: number, newStatus: Schedule['status']) => {
     if (!canUpdateStatus) {
       return;
@@ -119,6 +140,22 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     try {
       await updateChildPresentationStatus(childId, scheduleId, newStatus);
       onStatusUpdated?.(scheduleId, newStatus);
+
+      if (getStatusRank(newStatus) >= 2) {
+        const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
+        if (index !== -1 && index < visibleSchedules.length - 1) {
+          const nextSchedule = visibleSchedules[index + 1];
+          if (getStatusRank(nextSchedule.status) < 1) {
+            try {
+              await updateChildPresentationStatus(childId, nextSchedule.id, 'to be presented');
+              onStatusUpdated?.(nextSchedule.id, 'to be presented');
+            } catch (error) {
+              console.error('Failed to update next schedule status:', error);
+            }
+          }
+        }
+      }
+
       toast({
         title: texts.schedule.messages.updateSuccess[language],
         status: 'success',
@@ -140,14 +177,13 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
   return (
     <Box>
       <HStack mb={3} spacing={2} align="center">
-        <Text fontWeight="medium">{texts.schedule.category[language]}:</Text>
+        <Text variant="filter">{texts.schedule.category[language]}:</Text>
         <Select
           size="sm"
           maxW="220px"
           value={selectedCategory}
           onChange={(event) => setSelectedCategory(event.target.value)}
         >
-          <option value="">{texts.schedule.select[language]}</option>
           {categories.map((category) => (
             <option key={category} value={category}>
               {category}
@@ -160,6 +196,7 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
           <Thead>
             <Tr>
               <Th>{texts.schedule.name[language]}</Th>
+              <Th>{texts.schedule.order[language]}</Th>
               <Th>{texts.schedule.category[language]}</Th>
               <Th>{texts.schedule.status.label[language]}</Th>
               <Th>{texts.schedule.notes[language]}</Th>
@@ -171,6 +208,11 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
               <Tr key={schedule.id}>
                 <Td>
                   <Text fontWeight="medium">{schedule.name}</Text>
+                </Td>
+                <Td>
+                  <Badge colorScheme="blue" variant="outlined">
+                    {schedule.display_order}
+                  </Badge>
                 </Td>
                 <Td>
                   <Text>{schedule.category || '-'}</Text>
@@ -200,7 +242,9 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
                       onChange={(event) =>
                         handleChangeStatus(schedule.id, event.target.value as Schedule['status'])
                       }
-                      isDisabled={updatingScheduleId === schedule.id}
+                      isDisabled={
+                        updatingScheduleId === schedule.id || isScheduleDisabled(schedule.id)
+                      }
                     >
                       {statusOptions.map((status) => (
                         <option key={status} value={status}>

@@ -142,3 +142,24 @@ export const updateChildPresentationStatus = async (
     throw error;
   }
 };
+
+export const reorderChildPresentations = async (
+  childId: number,
+  scheduleId: number,
+  direction: 'up' | 'down'
+): Promise<void> => {
+  try {
+    await api.put(`/api/children/${childId}/presentations/${scheduleId}/reorder`, {
+      direction,
+    });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details ||
+        error.response?.data?.error ||
+        'Failed to reorder presentations';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};

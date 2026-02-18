@@ -206,6 +206,7 @@ const ChildDetailPage = () => {
           schedules={schedules}
           language={language}
           childId={id ? parseInt(id, 10) : 0}
+          display_order={schedules.length > 0 ? schedules[0].display_order || 0 : 0}
           canUpdateStatus={isTeacher}
           onStatusUpdated={(scheduleId, newStatus) => {
             setSchedules((prev) =>
