@@ -18,6 +18,7 @@ import {
   ModalCloseButton,
   Progress,
   HStack,
+  Icon,
 } from '@chakra-ui/react';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
