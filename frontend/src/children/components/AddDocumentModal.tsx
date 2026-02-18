@@ -17,7 +17,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Progress,
-  Icon,
   HStack,
 } from '@chakra-ui/react';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
@@ -270,7 +269,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                 />
                 {!uploadFile ? (
                   <VStack spacing={2}>
-                    <Icon as={FiUploadCloud} boxSize={12} color="text-muted" />
+                    <FiUploadCloud size={48} style={{ color: 'var(--chakra-colors-gray-500)' }} />
                     <Text fontWeight="medium" color="text-primary">
                       {texts.document.placeholder?.dragDrop?.[language]}
                     </Text>
