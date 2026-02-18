@@ -118,7 +118,8 @@ router.post('/auto-assign', auth, async (req, res) => {
     const childrenResult = await client.query(childrenQuery);
 
     // Get all classes with their age ranges
-    const classesQuery = 'SELECT id, min_age, max_age FROM classes ORDER BY min_age';
+    const classesQuery =
+      'SELECT id, min_age, max_age FROM classes ORDER BY min_age, max_age, name';
     const classesResult = await client.query(classesQuery);
 
     // For each child, find the most appropriate class based on age

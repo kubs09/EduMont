@@ -67,7 +67,8 @@ CREATE TABLE class_children (
     class_id INTEGER REFERENCES classes(id),
     child_id INTEGER REFERENCES children(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (class_id, child_id)
+    PRIMARY KEY (class_id, child_id),
+    UNIQUE (child_id)
 );
 
 CREATE TABLE messages (
@@ -367,6 +368,7 @@ CROSS JOIN LATERAL (
     SELECT id 
     FROM classes c
     WHERE EXTRACT(YEAR FROM AGE(CURRENT_DATE, ch.date_of_birth)) BETWEEN c.min_age AND c.max_age
+    ORDER BY c.min_age, c.max_age, c.name
     LIMIT 1
 ) c;
 
@@ -485,7 +487,8 @@ child_class_mapping AS (
         ch.firstname,
         ch.surname,
         cc.class_id,
-        cl.name as class_name
+        cl.name as class_name,
+        cl.age_group as age_group
     FROM children ch
     JOIN class_children cc ON ch.id = cc.child_id
     JOIN classes cl ON cc.class_id = cl.id
@@ -494,7 +497,7 @@ all_categories AS (
     SELECT DISTINCT category FROM category_presentations
 ),
 child_categories AS (
-    SELECT ccm.child_id, ccm.class_id, ac.category, au.id as admin_id
+    SELECT ccm.child_id, ccm.class_id, ccm.age_group, ac.category, au.id as admin_id
     FROM child_class_mapping ccm
     CROSS JOIN all_categories ac
     CROSS JOIN admin_user au
@@ -510,7 +513,9 @@ SELECT
     cp.notes,
     cc.admin_id
 FROM child_categories cc
-JOIN category_presentations cp ON cc.category = cp.category;
+JOIN category_presentations cp
+  ON cc.category = cp.category
+ AND cc.age_group = cp.age_group;
 
 WITH admin_user AS (
     SELECT id FROM users WHERE role = 'admin' LIMIT 1

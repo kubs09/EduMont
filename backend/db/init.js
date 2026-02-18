@@ -27,7 +27,8 @@ const initDatabase = async () => {
       class_id INTEGER REFERENCES classes(id) ON DELETE CASCADE,
       child_id INTEGER REFERENCES children(id) ON DELETE CASCADE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      PRIMARY KEY (class_id, child_id)
+      PRIMARY KEY (class_id, child_id),
+      UNIQUE (child_id)
     );
   `;
 
