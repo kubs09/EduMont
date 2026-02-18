@@ -13,6 +13,8 @@ import {
   TableContainer,
   Select,
   useToast,
+  Button,
+  VStack,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Schedule } from '@frontend/types/schedule';
@@ -118,6 +120,18 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     return ranks[status] || 0;
   };
 
+  const getNextStatus = (currentStatus: Schedule['status']): Schedule['status'] | null => {
+    const currentRank = getStatusRank(currentStatus);
+    if (currentRank >= statusOptions.length - 1) return null;
+    return statusOptions[currentRank + 1];
+  };
+
+  const getPreviousStatus = (currentStatus: Schedule['status']): Schedule['status'] | null => {
+    const currentRank = getStatusRank(currentStatus);
+    if (currentRank <= 0) return null;
+    return statusOptions[currentRank - 1];
+  };
+
   const isScheduleDisabled = (scheduleId: number): boolean => {
     const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
     if (index === 0) return false;
@@ -140,6 +154,27 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
     try {
       await updateChildPresentationStatus(childId, scheduleId, newStatus);
       onStatusUpdated?.(scheduleId, newStatus);
+
+      if (newStatus === 'to be presented') {
+        const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
+        if (index !== -1) {
+          for (let i = index + 1; i < visibleSchedules.length; i++) {
+            const nextSchedule = visibleSchedules[i];
+            if (nextSchedule.status === 'to be presented') {
+              try {
+                await updateChildPresentationStatus(
+                  childId,
+                  nextSchedule.id,
+                  'prerequisites not met'
+                );
+                onStatusUpdated?.(nextSchedule.id, 'prerequisites not met');
+              } catch (error) {
+                console.error('Failed to update subsequent schedule status:', error);
+              }
+            }
+          }
+        }
+      }
 
       if (getStatusRank(newStatus) >= 2) {
         const index = visibleSchedules.findIndex((s) => s.id === scheduleId);
@@ -235,23 +270,41 @@ const SchedulesTab: React.FC<SchedulesTabProps> = ({
                 </Td>
                 <Td>
                   {canUpdateStatus ? (
-                    <Select
-                      color="blue.500"
-                      cursor="pointer"
-                      value={schedule.status}
-                      onChange={(event) =>
-                        handleChangeStatus(schedule.id, event.target.value as Schedule['status'])
-                      }
-                      isDisabled={
-                        updatingScheduleId === schedule.id || isScheduleDisabled(schedule.id)
-                      }
-                    >
-                      {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                          {getStatusText(status)}
-                        </option>
-                      ))}
-                    </Select>
+                    <VStack spacing={1} align="stretch">
+                      <Button
+                        size="sm"
+                        colorScheme="green"
+                        isDisabled={
+                          updatingScheduleId === schedule.id ||
+                          isScheduleDisabled(schedule.id) ||
+                          getNextStatus(schedule.status) === null
+                        }
+                        onClick={() => {
+                          const nextStatus = getNextStatus(schedule.status);
+                          if (nextStatus) {
+                            handleChangeStatus(schedule.id, nextStatus);
+                          }
+                        }}
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        size="sm"
+                        colorScheme="red"
+                        isDisabled={
+                          updatingScheduleId === schedule.id ||
+                          getPreviousStatus(schedule.status) === null
+                        }
+                        onClick={() => {
+                          const prevStatus = getPreviousStatus(schedule.status);
+                          if (prevStatus) {
+                            handleChangeStatus(schedule.id, prevStatus);
+                          }
+                        }}
+                      >
+                        ↓
+                      </Button>
+                    </VStack>
                   ) : (
                     <Text color="gray.500">-</Text>
                   )}

@@ -104,6 +104,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
         class_id,
         id,
       ]);
+
+      // Update all schedules for this child to the new class
+      await client.query(
+        'UPDATE schedules SET class_id = $1, updated_at = CURRENT_TIMESTAMP WHERE child_id = $2',
+        [class_id, id]
+      );
     }
 
     const updatedChild = await client.query(

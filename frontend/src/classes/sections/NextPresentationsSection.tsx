@@ -101,16 +101,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       )
     : filteredPresentations;
 
-  const visiblePresentations = categoryFilteredPresentations.reduce<NextPresentation[]>(
-    (acc, presentation) => {
-      if (acc.some((item) => item.child_id === presentation.child_id)) {
-        return acc;
-      }
-      acc.push(presentation);
-      return acc;
-    },
-    []
-  );
+  const visiblePresentations = categoryFilteredPresentations;
 
   const totalPages = Math.ceil(visiblePresentations.length / PAGE_SIZE);
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
