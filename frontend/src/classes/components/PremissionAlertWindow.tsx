@@ -6,6 +6,7 @@ type PermissionAlertWindowProps = {
   message: string;
   onRequestPermission?: () => void;
   actionLabel?: string;
+  isLoading?: boolean;
 };
 
 export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
@@ -13,6 +14,7 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
   message,
   onRequestPermission,
   actionLabel,
+  isLoading = false,
 }) => {
   const showAction = !!onRequestPermission && !!actionLabel;
 
@@ -32,7 +34,12 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
       </Stack>
       <AlertDescription>{message}</AlertDescription>
       {showAction && (
-        <Button colorScheme="blue" onClick={onRequestPermission}>
+        <Button
+          colorScheme="blue"
+          onClick={onRequestPermission}
+          isLoading={isLoading}
+          loadingText={actionLabel}
+        >
           {actionLabel}
         </Button>
       )}

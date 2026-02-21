@@ -226,6 +226,18 @@ export const classes = {
       cs: 'Pro zobrazení prezentací dětí potřebujete oprávnění učitele nebo asistenta.',
       en: 'You can view child presentations only with teacher or assistant permission.',
     },
+    requestPermissionButton: {
+      cs: 'Požádat o oprávnění',
+      en: 'Request Permission',
+    },
+    permissionRequestSent: {
+      cs: 'Žádost o oprávnění byla odeslána',
+      en: 'Permission request has been sent',
+    },
+    permissionRequestError: {
+      cs: 'Nepodařilo se odeslat žádost o oprávnění',
+      en: 'Failed to send permission request',
+    },
     attendance: {
       cs: 'Docházka',
       en: 'Attendance',

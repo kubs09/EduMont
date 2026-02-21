@@ -12,6 +12,7 @@ import {
   Tabs,
   TabList,
   Tab,
+  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { NextPresentation } from '@frontend/services/api/class';
@@ -19,6 +20,7 @@ import { Class } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 import { ChildExcuse } from '@frontend/services/api/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
+import { requestPermission } from '@frontend/services/api/permission';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -41,7 +43,37 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const toast = useToast();
   const PAGE_SIZE = 4;
+
+  const handleRequestPermission = async () => {
+    try {
+      setIsRequestingPermission(true);
+      await requestPermission({
+        resource_type: 'class_presentations',
+        resource_id: classData.id,
+        reason: 'Admin requesting access to view class presentations',
+        language,
+      });
+
+      toast({
+        title: texts.classes.detail.permissionRequestSent[language],
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: texts.classes.detail.permissionRequestError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRequestingPermission(false);
+    }
+  };
 
   const isChildExcusedToday = (childId: number) => {
     const excuses = excusesByChildId[childId] || [];
@@ -126,6 +158,9 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       <PermissionAlertWindow
         title={texts.classes.detail.presentationsPermissionTitle[language]}
         message={texts.classes.detail.presentationsPermissionMessage[language]}
+        onRequestPermission={handleRequestPermission}
+        actionLabel={texts.classes.detail.requestPermissionButton[language]}
+        isLoading={isRequestingPermission}
       />
     );
   }

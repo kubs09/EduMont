@@ -16,7 +16,8 @@ let pool,
   presentationsRoutes,
   documentsRoutes,
   passwordResetRoutes,
-  messageRoutes;
+  messageRoutes,
+  permissionsRoutes;
 
 let modulesLoaded = false;
 let moduleError = null;
@@ -49,6 +50,7 @@ const lazyLoadModules = () => {
     documentsRoutes = requireWithFallback('@routes/documents', 'routes/documents');
     passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
     messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
+    permissionsRoutes = requireWithFallback('@routes/permissions', 'routes/permissions');
     modulesLoaded = true;
   } catch (error) {
     moduleError = error.message;
@@ -188,6 +190,7 @@ const mountRoutes = () => {
   if (classesRoutes) app.use('/api/classes', classesRoutes);
   if (messageRoutes) app.use('/api/messages', messageRoutes);
   if (presentationsRoutes) app.use('/api/presentations', presentationsRoutes);
+  if (permissionsRoutes) app.use('/api/permissions', permissionsRoutes);
   if (documentsRoutes) {
     app.use('/api/documents', documentsRoutes);
   } else {
