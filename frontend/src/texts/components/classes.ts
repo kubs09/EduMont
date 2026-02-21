@@ -218,6 +218,14 @@ export const classes = {
       cs: 'Následující prezentace',
       en: 'Next Presentations',
     },
+    presentationsPermissionTitle: {
+      cs: 'Vyžadováno oprávnění',
+      en: 'Permission Required',
+    },
+    presentationsPermissionMessage: {
+      cs: 'Pro zobrazení prezentací dětí potřebujete oprávnění učitele nebo asistenta.',
+      en: 'You can view child presentations only with teacher or assistant permission.',
+    },
     attendance: {
       cs: 'Docházka',
       en: 'Attendance',

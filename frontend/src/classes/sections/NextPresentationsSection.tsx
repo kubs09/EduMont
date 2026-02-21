@@ -18,6 +18,7 @@ import { NextPresentation } from '@frontend/services/api/class';
 import { Class } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 import { ChildExcuse } from '@frontend/services/api/child';
+import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -25,6 +26,7 @@ interface PresentationsTabProps {
   language: 'cs' | 'en';
   isAdmin: boolean;
   isTeacher: boolean;
+  hasPresentationPermission: boolean;
   excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
@@ -34,6 +36,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
   language,
   isAdmin,
   isTeacher,
+  hasPresentationPermission,
   excusesByChildId,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,6 +81,8 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
     return Array.from(new Set(options));
   }, [filteredPresentations, uncategorizedLabel]);
 
+  const showPermissionAlert = isAdmin && !hasPresentationPermission;
+
   useEffect(() => {
     if (categoryOptions.length === 0) {
       setActiveCategory(null);
@@ -115,6 +120,15 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       setCurrentPage(safeCurrentPage);
     }
   }, [currentPage, safeCurrentPage]);
+
+  if (showPermissionAlert) {
+    return (
+      <PermissionAlertWindow
+        title={texts.classes.detail.presentationsPermissionTitle[language]}
+        message={texts.classes.detail.presentationsPermissionMessage[language]}
+      />
+    );
+  }
 
   return (
     <Box>

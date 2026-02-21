@@ -212,11 +212,13 @@ const ClassDetailPage = () => {
         (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
     );
 
+  const canAccessPresentationsSection = canViewPresentations || isAdmin;
+
   useEffect(() => {
-    if (!canViewPresentations && activeSectionId === 'presentations') {
+    if (!canAccessPresentationsSection && activeSectionId === 'presentations') {
       setActiveSectionId('info');
     }
-  }, [activeSectionId, canViewPresentations]);
+  }, [activeSectionId, canAccessPresentationsSection]);
 
   if (!classData) {
     return null;
@@ -245,13 +247,14 @@ const ClassDetailPage = () => {
     />
   );
 
-  const activitiesTabContent = canViewPresentations ? (
+  const activitiesTabContent = canAccessPresentationsSection ? (
     <ActivitiesSection
       classData={classData}
       nextPresentations={nextPresentations}
       language={language}
       isAdmin={isAdmin}
       isTeacher={isTeacher}
+      hasPresentationPermission={canViewPresentations}
       excusesByChildId={excusesByChildId}
     />
   ) : null;
@@ -279,7 +282,7 @@ const ClassDetailPage = () => {
       label: texts.classes.detail.students[language],
       content: studentsTabContent,
     },
-    ...(canViewPresentations
+    ...(canAccessPresentationsSection
       ? [
           {
             id: 'presentations',
