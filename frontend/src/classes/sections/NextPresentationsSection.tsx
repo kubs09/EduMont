@@ -20,7 +20,7 @@ import { Class } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 import { ChildExcuse } from '@frontend/services/api/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
-import { requestPermission } from '@frontend/services/api/permission';
+import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -44,25 +44,46 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
   const toast = useToast();
   const PAGE_SIZE = 4;
+
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      if (isAdmin && !hasPresentationPermission) {
+        try {
+          const result = await checkPermissionRequest(classData.id);
+          setPermissionRequested(result.already_requested);
+        } catch (error) {
+          console.error('Failed to check permission request status:', error);
+        }
+      }
+    };
+
+    checkExistingRequest();
+  }, [isAdmin, hasPresentationPermission, classData.id]);
 
   const handleRequestPermission = async () => {
     try {
       setIsRequestingPermission(true);
-      await requestPermission({
+      const response = await requestPermission({
         resource_type: 'class_presentations',
         resource_id: classData.id,
         reason: 'Admin requesting access to view class presentations',
         language,
       });
 
-      toast({
-        title: texts.classes.detail.permissionRequestSent[language],
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
+      if (response.already_requested) {
+        setPermissionRequested(true);
+      } else {
+        setPermissionRequested(true);
+        toast({
+          title: texts.classes.detail.permissionRequestSent[language],
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     } catch (error) {
       toast({
         title: texts.classes.detail.permissionRequestError[language],
@@ -160,7 +181,9 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
         message={texts.classes.detail.presentationsPermissionMessage[language]}
         onRequestPermission={handleRequestPermission}
         actionLabel={texts.classes.detail.requestPermissionButton[language]}
+        submittedLabel={texts.classes.detail.requestSentButton[language]}
         isLoading={isRequestingPermission}
+        premissionSubmitted={permissionRequested}
       />
     );
   }

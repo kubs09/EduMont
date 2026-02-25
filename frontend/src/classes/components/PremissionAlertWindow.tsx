@@ -1,12 +1,16 @@
 import React from 'react';
 import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Stack } from '@chakra-ui/react';
+import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
+import texts from '@frontend/texts';
 
 type PermissionAlertWindowProps = {
   title: string;
   message: string;
   onRequestPermission?: () => void;
   actionLabel?: string;
+  submittedLabel?: string;
   isLoading?: boolean;
+  premissionSubmitted?: boolean;
 };
 
 export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
@@ -14,9 +18,16 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
   message,
   onRequestPermission,
   actionLabel,
+  premissionSubmitted = false,
   isLoading = false,
 }) => {
   const showAction = !!onRequestPermission && !!actionLabel;
+  const { language } = useLanguage();
+
+  const handleRequestPermission = () => {
+    if (premissionSubmitted) return;
+    onRequestPermission?.();
+  };
 
   return (
     <Alert
@@ -36,11 +47,14 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
       {showAction && (
         <Button
           colorScheme="blue"
-          onClick={onRequestPermission}
+          onClick={handleRequestPermission}
           isLoading={isLoading}
           loadingText={actionLabel}
+          isDisabled={premissionSubmitted}
         >
-          {actionLabel}
+          {premissionSubmitted
+            ? texts.classes.detail.requestSentButton[language]
+            : texts.classes.detail.requestPermissionButton[language]}
         </Button>
       )}
     </Alert>

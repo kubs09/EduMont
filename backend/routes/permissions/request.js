@@ -4,7 +4,54 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Admin request permission endpoint
+router.get('/check', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { resource_id } = req.query;
+    const requester_id = req.user.id;
+    const requester_role = req.user.role;
+
+    if (requester_role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can check permission requests' });
+    }
+
+    if (!resource_id) {
+      return res.status(400).json({ error: 'resource_id is required' });
+    }
+
+    const classResult = await client.query('SELECT id, name FROM classes WHERE id = $1', [
+      resource_id,
+    ]);
+
+    if (classResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    const className = classResult.rows[0].name;
+
+    const existingRequestCheck = await client.query(
+      `SELECT m.id FROM messages m
+       WHERE m.from_user_id = $1
+       AND (m.subject = 'Permission Request' OR m.subject = 'Žádost o oprávnění')
+       AND m.content LIKE $2
+       AND m.created_at > NOW() - INTERVAL '7 days'`,
+      [requester_id, `%${className}%`]
+    );
+
+    res.json({
+      already_requested: existingRequestCheck.rows.length > 0,
+    });
+  } catch (error) {
+    console.error('Permission check error:', error);
+    res.status(500).json({
+      error: 'Failed to check permission request',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  } finally {
+    client.release();
+  }
+});
+
 router.post('/request', auth, async (req, res) => {
   const client = await pool.connect();
   try {
@@ -54,9 +101,29 @@ router.post('/request', auth, async (req, res) => {
       [resource_id]
     );
 
+    const existingRequestCheck = await client.query(
+      `SELECT m.id FROM messages m
+       WHERE m.from_user_id = $1
+       AND (m.subject = 'Permission Request' OR m.subject = 'Žádost o oprávnění')
+       AND m.content LIKE $2
+       AND m.created_at > NOW() - INTERVAL '7 days'`,
+      [requester_id, `%${className}%`]
+    );
+
+    const alreadyRequested = existingRequestCheck.rows.length > 0;
+
     const subjectEn = 'Permission Request';
     const subjectCs = 'Žádost o oprávnění';
     const subject = language === 'cs' ? subjectCs : subjectEn;
+
+    if (alreadyRequested) {
+      await client.query('COMMIT');
+      return res.status(200).json({
+        message: 'Permission request already sent',
+        recipients_count: teachersResult.rows.length || 1,
+        already_requested: true,
+      });
+    }
 
     let content = '';
     if (language === 'cs') {
@@ -81,7 +148,6 @@ router.post('/request', auth, async (req, res) => {
       content += `\nRequest Time: ${new Date().toLocaleString('en-US')}`;
     }
 
-    // Send messages to all teachers and assistants of the class
     if (teachersResult.rows.length > 0) {
       for (const teacher of teachersResult.rows) {
         await client.query(
@@ -90,7 +156,6 @@ router.post('/request', auth, async (req, res) => {
         );
       }
     } else {
-      // If there are no teachers/assistants, create a system log by sending message to self
       await client.query(
         'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4)',
         [requester_id, requester_id, `[SYSTEM LOG] ${subject}`, content]
@@ -102,6 +167,7 @@ router.post('/request', auth, async (req, res) => {
     res.status(201).json({
       message: 'Permission request sent successfully',
       recipients_count: teachersResult.rows.length || 1,
+      already_requested: false,
     });
   } catch (error) {
     await client.query('ROLLBACK');

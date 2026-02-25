@@ -230,6 +230,10 @@ export const classes = {
       cs: 'Požádat o oprávnění',
       en: 'Request Permission',
     },
+    requestSentButton: {
+      cs: 'Žádost odeslána',
+      en: 'Request Sent',
+    },
     permissionRequestSent: {
       cs: 'Žádost o oprávnění byla odeslána',
       en: 'Permission request has been sent',
