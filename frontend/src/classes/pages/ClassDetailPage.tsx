@@ -19,6 +19,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
 import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
+import { acceptPermissionRequest, denyPermissionRequest } from '@frontend/services/api/permission';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -168,6 +169,10 @@ const ClassDetailPage = () => {
     }
   };
 
+  const hasPremissionRequestRecieved = classData?.teachers.some(
+    (teacher) => teacher.id === currentUserId && teacher.permission_requested === true
+  );
+
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
     description: string;
@@ -204,6 +209,59 @@ const ClassDetailPage = () => {
     }
   };
 
+  const handleAcceptPermission = async () => {
+    if (!id) return;
+
+    try {
+      await acceptPermissionRequest(parseInt(id));
+
+      // Refresh class data to update permission status
+      const updatedClass = await api.get(`/api/classes/${id}`);
+      setClassData(updatedClass.data);
+
+      toast({
+        title: texts.classes.detail.permissionAccepted[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Accept permission error:', error);
+      toast({
+        title: texts.classes.detail.permissionAcceptError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDenyPermission = async () => {
+    if (!id) return;
+
+    try {
+      await denyPermissionRequest(parseInt(id));
+
+      toast({
+        title: texts.classes.detail.permissionDenied[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      // Navigate back to classes list since the teacher was removed from the class
+      navigate(ROUTES.CLASSES);
+    } catch (error) {
+      console.error('Deny permission error:', error);
+      toast({
+        title: texts.classes.detail.permissionDenyError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const canViewPresentations =
     !!currentUserId &&
     !!classData?.teachers?.some(
@@ -229,8 +287,11 @@ const ClassDetailPage = () => {
       classData={classData}
       language={language}
       isAdmin={isAdmin}
+      premissionRequested={hasPremissionRequestRecieved || false}
       onEditClick={() => setIsEditInfoModalOpen(true)}
       onEditMembersClick={() => setIsMembersModalOpen(true)}
+      onAcceptPermission={handleAcceptPermission}
+      onDenyPermission={handleDenyPermission}
     />
   );
 

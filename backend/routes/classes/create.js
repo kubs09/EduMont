@@ -60,14 +60,14 @@ router.post('/', auth, async (req, res) => {
 
     const teacherParams = [classId, teacherId];
     await client.query(
-      'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-      [...teacherParams, 'teacher']
+      'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+      [...teacherParams, 'teacher', true]
     );
 
     if (assistantId) {
       await client.query(
-        'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-        [classId, assistantId, 'assistant']
+        'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+        [classId, assistantId, 'assistant', true]
       );
     }
 
@@ -118,8 +118,7 @@ router.post('/auto-assign', auth, async (req, res) => {
     const childrenResult = await client.query(childrenQuery);
 
     // Get all classes with their age ranges
-    const classesQuery =
-      'SELECT id, min_age, max_age FROM classes ORDER BY min_age, max_age, name';
+    const classesQuery = 'SELECT id, min_age, max_age FROM classes ORDER BY min_age, max_age, name';
     const classesResult = await client.query(classesQuery);
 
     // For each child, find the most appropriate class based on age

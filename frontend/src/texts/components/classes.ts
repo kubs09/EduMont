@@ -242,6 +242,34 @@ export const classes = {
       cs: 'Nepodařilo se odeslat žádost o oprávnění',
       en: 'Failed to send permission request',
     },
+    premissionAcceptButton: {
+      cs: 'Přijmout oprávnění',
+      en: 'Accept Permission',
+    },
+    permissionDenyButton: {
+      cs: 'Odmítnout oprávnění',
+      en: 'Deny Permission',
+    },
+    permissionRequestMessage: {
+      cs: 'Administrátor požádal o oprávnění přístupu k prezentacím dětí v této třídě. Přijměte nebo odmítněte žádost.',
+      en: 'An administrator has requested permission to access child presentations in this class. Please accept or deny the request.',
+    },
+    permissionAccepted: {
+      cs: 'Oprávnění přijato',
+      en: 'Permission accepted',
+    },
+    permissionDenied: {
+      cs: 'Oprávnění odmítnuto',
+      en: 'Permission denied',
+    },
+    permissionAcceptError: {
+      cs: 'Nepodařilo se přijmout oprávnění',
+      en: 'Failed to accept permission',
+    },
+    permissionDenyError: {
+      cs: 'Nepodařilo se odmítnout oprávnění',
+      en: 'Failed to deny permission',
+    },
     attendance: {
       cs: 'Docházka',
       en: 'Attendance',

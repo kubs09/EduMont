@@ -57,6 +57,7 @@ CREATE TABLE class_teachers (
     class_id INTEGER REFERENCES classes(id),
     teacher_id INTEGER REFERENCES users(id),
     role VARCHAR(20) NOT NULL CHECK (role IN ('teacher', 'assistant')),
+    permission_requested BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (class_id, teacher_id),
     UNIQUE (class_id, role)
 );

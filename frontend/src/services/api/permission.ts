@@ -54,3 +54,31 @@ export const requestPermission = async (
     throw error;
   }
 };
+
+export const acceptPermissionRequest = async (class_id: number): Promise<void> => {
+  try {
+    await api.post('/api/permissions/accept', { class_id });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to accept permission request',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};
+
+export const denyPermissionRequest = async (class_id: number): Promise<void> => {
+  try {
+    await api.post('/api/permissions/deny', { class_id });
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new ApiError(
+        error.response?.data?.error || 'Failed to deny permission request',
+        error.response?.status
+      );
+    }
+    throw error;
+  }
+};

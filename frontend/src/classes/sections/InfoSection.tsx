@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   Grid,
@@ -19,16 +21,22 @@ interface InfoTabProps {
   classData: Class;
   language: 'cs' | 'en';
   isAdmin: boolean;
+  premissionRequested: boolean;
   onEditClick: () => void;
   onEditMembersClick: () => void;
+  onAcceptPermission: () => void;
+  onDenyPermission: () => void;
 }
 
 const InfoTab: React.FC<InfoTabProps> = ({
   classData,
   language,
   isAdmin,
+  premissionRequested,
   onEditClick,
   onEditMembersClick,
+  onAcceptPermission,
+  onDenyPermission,
 }) => {
   const primaryTeacher = classData.teachers.find((teacher) => teacher.class_role === 'teacher');
   const assistantTeacher = classData.teachers.find((teacher) => teacher.class_role === 'assistant');
@@ -99,6 +107,33 @@ const InfoTab: React.FC<InfoTabProps> = ({
             {texts.classes.teachers[language]}
           </Button>
         </Stack>
+      )}
+      {!isAdmin && premissionRequested && (
+        <Alert status="info" borderRadius="md">
+          <AlertIcon />
+          <Box flex="1">
+            <Text>{texts.classes.detail.permissionRequestMessage[language]}</Text>
+            <Stack mt={3} direction={{ base: 'column', sm: 'row' }} spacing={3}>
+              <Button
+                colorScheme="green"
+                onClick={onAcceptPermission}
+                size="sm"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.detail.premissionAcceptButton[language]}
+              </Button>
+              <Button
+                colorScheme="red"
+                variant="outline"
+                onClick={onDenyPermission}
+                size="sm"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.detail.permissionDenyButton[language]}
+              </Button>
+            </Stack>
+          </Box>
+        </Alert>
       )}
     </VStack>
   );

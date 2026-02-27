@@ -102,12 +102,9 @@ router.post('/request', auth, async (req, res) => {
     );
 
     const existingRequestCheck = await client.query(
-      `SELECT m.id FROM messages m
-       WHERE m.from_user_id = $1
-       AND (m.subject = 'Permission Request' OR m.subject = 'Žádost o oprávnění')
-       AND m.content LIKE $2
-       AND m.created_at > NOW() - INTERVAL '7 days'`,
-      [requester_id, `%${className}%`]
+      `SELECT teacher_id FROM class_teachers
+       WHERE class_id = $1 AND permission_requested = TRUE`,
+      [resource_id]
     );
 
     const alreadyRequested = existingRequestCheck.rows.length > 0;
@@ -117,12 +114,21 @@ router.post('/request', auth, async (req, res) => {
     const subject = language === 'cs' ? subjectCs : subjectEn;
 
     if (alreadyRequested) {
-      await client.query('COMMIT');
-      return res.status(200).json({
+      res.status(200).json({
         message: 'Permission request already sent',
         recipients_count: teachersResult.rows.length || 1,
         already_requested: true,
       });
+    }
+
+    if (teachersResult.rows.length > 0) {
+      const teacherIds = teachersResult.rows.map((teacher) => teacher.id);
+      await client.query(
+        `UPDATE class_teachers
+         SET permission_requested = TRUE
+         WHERE class_id = $1 AND teacher_id = ANY($2::int[])`,
+        [resource_id, teacherIds]
+      );
     }
 
     let content = '';

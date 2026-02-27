@@ -67,17 +67,32 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
+    // Get current teacher assignments to check if they're changing
+    const currentTeachers = await client.query(
+      'SELECT teacher_id, role FROM class_teachers WHERE class_id = $1',
+      [id]
+    );
+
+    const currentTeacher = currentTeachers.rows.find((r) => r.role === 'teacher');
+    const currentAssistant = currentTeachers.rows.find((r) => r.role === 'assistant');
+
+    // Determine if permission request is needed (only if teacher/assistant is changing)
+    const teacherChanged = !currentTeacher || currentTeacher.teacher_id !== teacherId;
+    const assistantChanged = assistantId
+      ? !currentAssistant || currentAssistant.teacher_id !== assistantId
+      : !!currentAssistant; // Changed if we're removing an assistant
+
     await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
 
     await client.query(
-      'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-      [id, teacherId, 'teacher']
+      'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+      [id, teacherId, 'teacher', teacherChanged]
     );
 
     if (assistantId) {
       await client.query(
-        'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-        [id, assistantId, 'assistant']
+        'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+        [id, assistantId, 'assistant', assistantChanged]
       );
     }
 
@@ -91,7 +106,8 @@ router.put('/:id', auth, async (req, res) => {
               'id', t.id,
               'firstname', t.firstname,
               'surname', t.surname,
-              'class_role', ct.role
+              'class_role', ct.role,
+              'permission_requested', ct.permission_requested
             )
           ) FILTER (WHERE t.id IS NOT NULL), 
           '[]'

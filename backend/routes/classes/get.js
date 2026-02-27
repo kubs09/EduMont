@@ -22,7 +22,7 @@ router.get('/', auth, async (req, res) => {
           COALESCE(
             (SELECT json_agg(teacher)
             FROM (
-              SELECT u.id, u.firstname, u.surname, ct.role as class_role
+              SELECT u.id, u.firstname, u.surname, ct.role as class_role, ct.permission_requested
               FROM class_teachers ct
               JOIN users u ON ct.teacher_id = u.id
               WHERE ct.class_id = c.id
@@ -84,7 +84,8 @@ router.get('/', auth, async (req, res) => {
                 'id', u.id,
                 'firstname', u.firstname,
                 'surname', u.surname,
-                'class_role', ct.role
+                'class_role', ct.role,
+                'permission_requested', ct.permission_requested
               )
             )
             FROM class_teachers ct
@@ -156,7 +157,8 @@ router.get('/:id', auth, async (req, res) => {
             'id', t.id,
             'firstname', t.firstname,
             'surname', t.surname,
-            'class_role', ct.role
+            'class_role', ct.role,
+            'permission_requested', ct.permission_requested
           )) FILTER (WHERE t.id IS NOT NULL),
           '[]'::jsonb
         ) as teachers,
