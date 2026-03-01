@@ -4,7 +4,6 @@ const router = express.Router();
 const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
-// Get all messages for the authenticated user
 router.get('/', auth, async (req, res) => {
   try {
     const result = await pool.query(
@@ -58,7 +57,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Get a specific message by ID
 router.get('/:id', auth, async (req, res) => {
   try {
     const result = await pool.query(

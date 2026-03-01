@@ -12,12 +12,15 @@ import {
   Tabs,
   TabList,
   Tab,
+  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { NextPresentation } from '@frontend/services/api/class';
 import { Class } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 import { ChildExcuse } from '@frontend/services/api/child';
+import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
+import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -25,6 +28,7 @@ interface PresentationsTabProps {
   language: 'cs' | 'en';
   isAdmin: boolean;
   isTeacher: boolean;
+  hasPresentationPermission: boolean;
   excusesByChildId: Record<number, ChildExcuse[]>;
 }
 
@@ -34,11 +38,63 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
   language,
   isAdmin,
   isTeacher,
+  hasPresentationPermission,
   excusesByChildId,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
+  const toast = useToast();
   const PAGE_SIZE = 4;
+
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      if (isAdmin && !hasPresentationPermission) {
+        try {
+          const result = await checkPermissionRequest(classData.id);
+          setPermissionRequested(result.already_requested);
+        } catch (error) {
+          console.error('Failed to check permission request status:', error);
+        }
+      }
+    };
+
+    checkExistingRequest();
+  }, [isAdmin, hasPresentationPermission, classData.id]);
+
+  const handleRequestPermission = async () => {
+    try {
+      setIsRequestingPermission(true);
+      const response = await requestPermission({
+        resource_type: 'class_presentations',
+        resource_id: classData.id,
+        reason: 'Admin requesting access to view class presentations',
+        language,
+      });
+
+      if (response.already_requested) {
+        setPermissionRequested(true);
+      } else {
+        setPermissionRequested(true);
+        toast({
+          title: texts.classes.detail.permissionRequestSent[language],
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: texts.classes.detail.permissionRequestError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRequestingPermission(false);
+    }
+  };
 
   const isChildExcusedToday = (childId: number) => {
     const excuses = excusesByChildId[childId] || [];
@@ -78,6 +134,8 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
     return Array.from(new Set(options));
   }, [filteredPresentations, uncategorizedLabel]);
 
+  const showPermissionAlert = isAdmin && !hasPresentationPermission;
+
   useEffect(() => {
     if (categoryOptions.length === 0) {
       setActiveCategory(null);
@@ -101,16 +159,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       )
     : filteredPresentations;
 
-  const visiblePresentations = categoryFilteredPresentations.reduce<NextPresentation[]>(
-    (acc, presentation) => {
-      if (acc.some((item) => item.child_id === presentation.child_id)) {
-        return acc;
-      }
-      acc.push(presentation);
-      return acc;
-    },
-    []
-  );
+  const visiblePresentations = categoryFilteredPresentations;
 
   const totalPages = Math.ceil(visiblePresentations.length / PAGE_SIZE);
   const safeCurrentPage = Math.min(Math.max(currentPage, 1), Math.max(totalPages, 1));
@@ -124,6 +173,20 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       setCurrentPage(safeCurrentPage);
     }
   }, [currentPage, safeCurrentPage]);
+
+  if (showPermissionAlert) {
+    return (
+      <PermissionAlertWindow
+        title={texts.classes.detail.presentationsPermissionTitle[language]}
+        message={texts.classes.detail.presentationsPermissionMessage[language]}
+        onRequestPermission={handleRequestPermission}
+        actionLabel={texts.classes.detail.requestPermissionButton[language]}
+        submittedLabel={texts.classes.detail.requestSentButton[language]}
+        isLoading={isRequestingPermission}
+        premissionSubmitted={permissionRequested}
+      />
+    );
+  }
 
   return (
     <Box>

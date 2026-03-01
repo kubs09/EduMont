@@ -22,7 +22,7 @@ router.get('/', auth, async (req, res) => {
           COALESCE(
             (SELECT json_agg(teacher)
             FROM (
-              SELECT u.id, u.firstname, u.surname, ct.role as class_role
+              SELECT u.id, u.firstname, u.surname, ct.role as class_role, ct.permission_requested
               FROM class_teachers ct
               JOIN users u ON ct.teacher_id = u.id
               WHERE ct.class_id = c.id
@@ -84,7 +84,8 @@ router.get('/', auth, async (req, res) => {
                 'id', u.id,
                 'firstname', u.firstname,
                 'surname', u.surname,
-                'class_role', ct.role
+                'class_role', ct.role,
+                'permission_requested', ct.permission_requested
               )
             )
             FROM class_teachers ct
@@ -156,7 +157,8 @@ router.get('/:id', auth, async (req, res) => {
             'id', t.id,
             'firstname', t.firstname,
             'surname', t.surname,
-            'class_role', ct.role
+            'class_role', ct.role,
+            'permission_requested', ct.permission_requested
           )) FILTER (WHERE t.id IS NOT NULL),
           '[]'::jsonb
         ) as teachers,
@@ -212,12 +214,10 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-// Get next presentations (schedules with status 'to be presented') for a class
 router.get('/:id/next-presentations', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check access permissions
     if (req.user.role === 'parent') {
       const parentChildCheck = await pool.query(
         `SELECT 1 FROM class_children cc
@@ -250,7 +250,7 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
         cu.surname as created_by_surname,
         uu.firstname as updated_by_firstname,
         uu.surname as updated_by_surname
-      FROM schedules s
+      FROM presentations s
       JOIN classes c ON s.class_id = c.id
       JOIN children ch ON s.child_id = ch.id
       LEFT JOIN users cu ON s.created_by = cu.id
@@ -266,7 +266,6 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
   }
 });
 
-// Get available classes by age
 router.get('/by-age/:age', auth, async (req, res) => {
   try {
     const { age } = req.params;

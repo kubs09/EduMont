@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   Grid,
@@ -14,21 +16,32 @@ import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
 import { classAgeGroups } from '../utils/ageGroups';
+import { PendingPermissionRequest } from '@frontend/types/permission';
 
 interface InfoTabProps {
   classData: Class;
   language: 'cs' | 'en';
   isAdmin: boolean;
+  permissionRequested: boolean;
+  permissionGranted: boolean;
+  pendingPermissions: PendingPermissionRequest[];
   onEditClick: () => void;
   onEditMembersClick: () => void;
+  onAcceptPermission: () => void;
+  onDenyPermission: () => void;
 }
 
 const InfoTab: React.FC<InfoTabProps> = ({
   classData,
   language,
   isAdmin,
+  permissionRequested,
+  permissionGranted,
+  pendingPermissions,
   onEditClick,
   onEditMembersClick,
+  onAcceptPermission,
+  onDenyPermission,
 }) => {
   const primaryTeacher = classData.teachers.find((teacher) => teacher.class_role === 'teacher');
   const assistantTeacher = classData.teachers.find((teacher) => teacher.class_role === 'assistant');
@@ -38,6 +51,8 @@ const InfoTab: React.FC<InfoTabProps> = ({
   const ageGroupsLabel = ageGroup
     ? `${texts.classes.ageGroups[ageGroup.key][language]} - ${classData.min_age} - ${classData.max_age} ${texts.classes.years[language]}`
     : `${classData.min_age} - ${classData.max_age}`;
+
+  const requestingAdmin = pendingPermissions.length > 0 ? pendingPermissions[0] : null;
 
   const renderTeacherName = (teacher?: Class['teachers'][number]) => {
     if (!teacher) return '-';
@@ -99,6 +114,37 @@ const InfoTab: React.FC<InfoTabProps> = ({
             {texts.classes.teachers[language]}
           </Button>
         </Stack>
+      )}
+      {!isAdmin && permissionRequested && requestingAdmin && !permissionGranted && (
+        <Alert status="info" borderRadius="md">
+          <AlertIcon />
+          <Box flex="1">
+            <Text>
+              {language === 'cs'
+                ? `Administrátor ${requestingAdmin.firstname} ${requestingAdmin.surname} žádá o oprávnění k prezentacím.`
+                : `Administrator ${requestingAdmin.firstname} ${requestingAdmin.surname} has requested permission to access presentations.`}
+            </Text>
+            <Stack mt={3} direction={{ base: 'column', sm: 'row' }} spacing={3}>
+              <Button
+                colorScheme="green"
+                onClick={onAcceptPermission}
+                size="sm"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.detail.permissionAcceptButton[language]}
+              </Button>
+              <Button
+                colorScheme="red"
+                variant="outline"
+                onClick={onDenyPermission}
+                size="sm"
+                w={{ base: 'full', sm: 'auto' }}
+              >
+                {texts.classes.detail.permissionDenyButton[language]}
+              </Button>
+            </Stack>
+          </Box>
+        </Alert>
       )}
     </VStack>
   );

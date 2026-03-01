@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Button, Container, Heading, Text, SimpleGrid, Icon, VStack } from '@chakra-ui/react';
 import { FaGraduationCap, FaChalkboardTeacher, FaUserFriends } from 'react-icons/fa';
 import { IconType } from 'react-icons';
@@ -76,7 +77,9 @@ const FeatureCard = ({ icon, title, text }: { icon: IconType; title: string; tex
 
   return (
     <VStack p={8} bg={cardBg} borderRadius="lg" boxShadow="md" align="center" spacing={4}>
-      <Icon as={icon} w={10} h={10} color="brand.primary.900" />
+      <Box w={10} h={10} color="brand.primary.900">
+        <Icon as={icon as React.ElementType} w={10} h={10} />
+      </Box>
       <Heading size="md">{title}</Heading>
       <Text textAlign="center">{text}</Text>
     </VStack>

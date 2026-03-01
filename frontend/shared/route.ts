@@ -13,7 +13,7 @@ export const ROUTES = {
   PROFILE_CHANGE_PASSWORD: '/profile/change-password',
   CLASSES: '/classes',
   CLASS_DETAIL: '/classes/:id',
-  SCHEDULE: '/schedule',
+  presentation: '/presentation',
   MESSAGES: '/messages',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',

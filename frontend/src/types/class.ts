@@ -9,6 +9,7 @@ export interface ClassTeacher {
   firstname: string;
   surname: string;
   class_role: 'teacher' | 'assistant';
+  permission_requested?: boolean;
 }
 
 export interface Class {

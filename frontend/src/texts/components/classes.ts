@@ -218,6 +218,58 @@ export const classes = {
       cs: 'Následující prezentace',
       en: 'Next Presentations',
     },
+    presentationsPermissionTitle: {
+      cs: 'Vyžadováno oprávnění',
+      en: 'Permission Required',
+    },
+    presentationsPermissionMessage: {
+      cs: 'Pro zobrazení prezentací dětí potřebujete oprávnění učitele nebo asistenta.',
+      en: 'You can view child presentations only with teacher or assistant permission.',
+    },
+    requestPermissionButton: {
+      cs: 'Požádat o oprávnění',
+      en: 'Request Permission',
+    },
+    requestSentButton: {
+      cs: 'Žádost odeslána',
+      en: 'Request Sent',
+    },
+    permissionRequestSent: {
+      cs: 'Žádost o oprávnění byla odeslána',
+      en: 'Permission request has been sent',
+    },
+    permissionRequestError: {
+      cs: 'Nepodařilo se odeslat žádost o oprávnění',
+      en: 'Failed to send permission request',
+    },
+    permissionAcceptButton: {
+      cs: 'Přijmout oprávnění',
+      en: 'Accept Permission',
+    },
+    permissionDenyButton: {
+      cs: 'Odmítnout oprávnění',
+      en: 'Deny Permission',
+    },
+    permissionRequestMessage: {
+      cs: 'Administrátor požádal o oprávnění přístupu k prezentacím dětí v této třídě. Přijměte nebo odmítněte žádost.',
+      en: 'An administrator has requested permission to access child presentations in this class. Please accept or deny the request.',
+    },
+    permissionAccepted: {
+      cs: 'Oprávnění přijato',
+      en: 'Permission accepted',
+    },
+    permissionDenied: {
+      cs: 'Oprávnění odmítnuto',
+      en: 'Permission denied',
+    },
+    permissionAcceptError: {
+      cs: 'Nepodařilo se přijmout oprávnění',
+      en: 'Failed to accept permission',
+    },
+    permissionDenyError: {
+      cs: 'Nepodařilo se odmítnout oprávnění',
+      en: 'Failed to deny permission',
+    },
     attendance: {
       cs: 'Docházka',
       en: 'Attendance',

@@ -19,6 +19,13 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
 import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
+import {
+  acceptPermissionRequest,
+  checkPresentationPermission,
+  denyPermissionRequest,
+  getPendingPermissionRequests,
+} from '@frontend/services/api/permission';
+import { PendingPermissionRequest } from '@frontend/types/permission';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -53,6 +60,8 @@ const ClassDetailPage = () => {
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
   const [activeSectionId, setActiveSectionId] = useState('info');
   const [excusesByChildId, setExcusesByChildId] = useState<Record<number, ChildExcuse[]>>({});
+  const [pendingPermissions, setPendingPermissions] = useState<PendingPermissionRequest[]>([]);
+  const [hasGrantedPermission, setHasGrantedPermission] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,9 +107,33 @@ const ClassDetailPage = () => {
           }
         };
 
+        const fetchPendingPermissions = async () => {
+          try {
+            if (!id) return;
+            const pending = await getPendingPermissionRequests(parseInt(id));
+            setPendingPermissions(pending.requests || []);
+          } catch (error) {
+            console.error('Failed to load pending permission requests:', error);
+            setPendingPermissions([]);
+          }
+        };
+
+        const fetchGrantedPermission = async () => {
+          try {
+            if (!id || !isUserAdmin) return;
+            const result = await checkPresentationPermission(parseInt(id));
+            setHasGrantedPermission(result.has_access);
+          } catch (error) {
+            console.error('Failed to load granted permission requests:', error);
+            setHasGrantedPermission(false);
+          }
+        };
+
         fetchClassData();
         if (id) {
           fetchNextPresentations();
+          fetchPendingPermissions();
+          fetchGrantedPermission();
         }
 
         if (isUserAdmin) {
@@ -168,6 +201,16 @@ const ClassDetailPage = () => {
     }
   };
 
+  const isCurrentUserTeacherOfClass =
+    !!currentUserId &&
+    !!classData?.teachers?.some(
+      (teacher) =>
+        teacher.id === currentUserId &&
+        (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
+    );
+
+  const hasPermissionRequestReceived = isCurrentUserTeacherOfClass && pendingPermissions.length > 0;
+
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
     description: string;
@@ -204,19 +247,87 @@ const ClassDetailPage = () => {
     }
   };
 
-  const canViewPresentations =
-    !!currentUserId &&
-    !!classData?.teachers?.some(
-      (teacher) =>
-        teacher.id === currentUserId &&
-        (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
-    );
+  const refreshPermissionState = async (class_id: number) => {
+    try {
+      const pending = await getPendingPermissionRequests(class_id);
+      setPendingPermissions(pending.requests || []);
+    } catch (error) {
+      console.error('Failed to refresh pending permission requests:', error);
+      setPendingPermissions([]);
+    }
+    if (isAdmin) {
+      try {
+        const result = await checkPresentationPermission(class_id);
+        setHasGrantedPermission(result.has_access);
+      } catch (error) {
+        console.error('Failed to refresh granted permission:', error);
+        setHasGrantedPermission(false);
+      }
+    }
+  };
+
+  const handleAcceptPermission = async () => {
+    if (!id) return;
+    const class_id = parseInt(id);
+
+    try {
+      await acceptPermissionRequest(class_id, language);
+      await refreshPermissionState(class_id);
+
+      const updatedClass = await api.get(`/api/classes/${id}`);
+      setClassData(updatedClass.data);
+
+      toast({
+        title: texts.classes.detail.permissionAccepted[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Accept permission error:', error);
+      toast({
+        title: texts.classes.detail.permissionAcceptError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleDenyPermission = async () => {
+    if (!id) return;
+    const class_id = parseInt(id);
+
+    try {
+      await denyPermissionRequest(class_id, language);
+      await refreshPermissionState(class_id);
+
+      toast({
+        title: texts.classes.detail.permissionDenied[language],
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Deny permission error:', error);
+      toast({
+        title: texts.classes.detail.permissionDenyError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const canViewPresentations = isCurrentUserTeacherOfClass || (isAdmin && hasGrantedPermission);
+
+  const canAccessPresentationsSection = canViewPresentations || isAdmin;
 
   useEffect(() => {
-    if (!canViewPresentations && activeSectionId === 'presentations') {
+    if (!canAccessPresentationsSection && activeSectionId === 'presentations') {
       setActiveSectionId('info');
     }
-  }, [activeSectionId, canViewPresentations]);
+  }, [activeSectionId, canAccessPresentationsSection]);
 
   if (!classData) {
     return null;
@@ -227,8 +338,13 @@ const ClassDetailPage = () => {
       classData={classData}
       language={language}
       isAdmin={isAdmin}
+      permissionRequested={hasPermissionRequestReceived || false}
+      permissionGranted={hasGrantedPermission}
+      pendingPermissions={pendingPermissions}
       onEditClick={() => setIsEditInfoModalOpen(true)}
       onEditMembersClick={() => setIsMembersModalOpen(true)}
+      onAcceptPermission={handleAcceptPermission}
+      onDenyPermission={handleDenyPermission}
     />
   );
 
@@ -245,13 +361,14 @@ const ClassDetailPage = () => {
     />
   );
 
-  const activitiesTabContent = canViewPresentations ? (
+  const activitiesTabContent = canAccessPresentationsSection ? (
     <ActivitiesSection
       classData={classData}
       nextPresentations={nextPresentations}
       language={language}
       isAdmin={isAdmin}
       isTeacher={isTeacher}
+      hasPresentationPermission={canViewPresentations}
       excusesByChildId={excusesByChildId}
     />
   ) : null;
@@ -279,7 +396,7 @@ const ClassDetailPage = () => {
       label: texts.classes.detail.students[language],
       content: studentsTabContent,
     },
-    ...(canViewPresentations
+    ...(canAccessPresentationsSection
       ? [
           {
             id: 'presentations',

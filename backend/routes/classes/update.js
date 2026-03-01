@@ -13,18 +13,18 @@ router.put('/:id', auth, async (req, res) => {
     await client.query('BEGIN');
     const { id } = req.params;
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
+    const teacherIdNum = Number(teacherId);
+    const assistantIdNum =
+      assistantId === undefined || assistantId === null || assistantId === ''
+        ? null
+        : Number(assistantId);
 
     if (
-      !name ||
-      !age_group ||
-      min_age === undefined ||
-      min_age === null ||
-      max_age === undefined ||
-      max_age === null
+      !Number.isInteger(teacherIdNum) ||
+      teacherIdNum <= 0 ||
+      (assistantIdNum !== null && (assistantIdNum <= 0 || !Number.isInteger(assistantIdNum)))
     ) {
-      throw new Error(
-        'Missing required fields: name, age_group, min_age, and max_age are required'
-      );
+      throw new Error('Invalid teacher identifiers');
     }
 
     const minAge = Number(min_age);
@@ -67,17 +67,31 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
+    const currentTeachers = await client.query(
+      'SELECT teacher_id, role FROM class_teachers WHERE class_id = $1',
+      [id]
+    );
+
+    const currentTeacher = currentTeachers.rows.find((r) => r.role === 'teacher');
+    const currentAssistant = currentTeachers.rows.find((r) => r.role === 'assistant');
+
+    const teacherChanged = !currentTeacher || Number(currentTeacher.teacher_id) !== teacherIdNum;
+    const assistantChanged =
+      assistantIdNum !== null
+        ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNum
+        : !!currentAssistant;
+
     await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
 
     await client.query(
-      'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-      [id, teacherId, 'teacher']
+      'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+      [id, teacherIdNum, 'teacher', teacherChanged]
     );
 
-    if (assistantId) {
+    if (assistantIdNum !== null) {
       await client.query(
-        'INSERT INTO class_teachers (class_id, teacher_id, role) VALUES ($1, $2, $3)',
-        [id, assistantId, 'assistant']
+        'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
+        [id, assistantIdNum, 'assistant', assistantChanged]
       );
     }
 
@@ -91,7 +105,8 @@ router.put('/:id', auth, async (req, res) => {
               'id', t.id,
               'firstname', t.firstname,
               'surname', t.surname,
-              'class_role', ct.role
+              'class_role', ct.role,
+              'permission_requested', ct.permission_requested
             )
           ) FILTER (WHERE t.id IS NOT NULL), 
           '[]'
@@ -111,6 +126,7 @@ router.put('/:id', auth, async (req, res) => {
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
       error.message.includes('Assistant cannot be the same') ||
+      error.message.includes('Invalid teacher identifiers') ||
       error.message.includes('Missing required field') ||
       error.message.includes('Invalid age range values') ||
       error.message.includes('Missing required fields')

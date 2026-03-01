@@ -34,11 +34,11 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await api.delete(`/api/category-presentations/${presentationId}`);
+      await api.delete(`/api/presentations/categories/${presentationId}`);
 
       toast({
         title: texts.profile.success[language],
-        description: texts.schedule.messages.deleteSuccess[language],
+        description: texts.presentation.messages.deleteSuccess[language],
         status: 'success',
         duration: 3000,
       });
@@ -48,7 +48,7 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
     } catch (error) {
       toast({
         title: texts.profile.error[language],
-        description: texts.schedule.messages.deleteError[language],
+        description: texts.presentation.messages.deleteError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -63,9 +63,11 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {texts.schedule.curriculum.deletePresentation[language]}
+            {texts.presentation.curriculum.deletePresentation[language]}
           </AlertDialogHeader>
-          <AlertDialogBody>{texts.schedule.messages.deleteConfirmation[language]}</AlertDialogBody>
+          <AlertDialogBody>
+            {texts.presentation.messages.deleteConfirmation[language]}
+          </AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} variant="secondary" onClick={onClose}>
               {texts.common.cancel[language]}
