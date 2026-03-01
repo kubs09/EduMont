@@ -21,7 +21,8 @@ router.put('/:id', auth, async (req, res) => {
 
     if (
       !Number.isInteger(teacherIdNum) ||
-      (assistantIdNum !== null && !Number.isInteger(assistantIdNum))
+      teacherIdNum <= 0 ||
+      (assistantIdNum !== null && (assistantIdNum <= 0 || !Number.isInteger(assistantIdNum)))
     ) {
       throw new Error('Invalid teacher identifiers');
     }

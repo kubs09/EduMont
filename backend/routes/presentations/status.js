@@ -25,7 +25,10 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    if (notes && typeof notes === 'string' && notes.length > 1000) {
+    if (notes !== undefined && notes !== null && typeof notes !== 'string') {
+      return res.status(400).json({ error: 'Notes must be a string or null' });
+    }
+    if (typeof notes === 'string' && notes.length > 1000) {
       return res.status(400).json({ error: 'Notes must not exceed 1000 characters' });
     }
 
@@ -66,7 +69,9 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {});
+    if (client) {
+      await client.query('ROLLBACK').catch(() => {});
+    }
     console.error('Error updating presentation status:', error);
     res.status(500).json({ error: 'Failed to update presentation status' });
   } finally {
@@ -75,8 +80,9 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
 });
 
 router.put('/children/:childId/:presentationId/reorder', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const childId = Number(req.params.childId);
     const presentationId = Number(req.params.presentationId);
     const { direction } = req.body || {};
@@ -115,8 +121,6 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
     await client.query('BEGIN');
 
     if (direction === 'up') {
-      // Move up: decrease display_order
-      // Find presentation with display_order = currentOrder - 1
       const adjacentResult = await client.query(
         'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order = $3 LIMIT 1',
         [childId, currentpresentation.category, currentOrder - 1]
@@ -129,7 +133,6 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
 
       const adjacentId = adjacentResult.rows[0].id;
 
-      // Swap display_order
       await client.query(
         'UPDATE presentations SET display_order = $1, updated_at = CURRENT_TIMESTAMP, updated_by = $2 WHERE id = $3',
         [currentOrder - 1, req.user.id, presentationId]
@@ -140,8 +143,6 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
         [currentOrder, req.user.id, adjacentId]
       );
     } else {
-      // Move down: increase display_order
-      // Find presentation with display_order = currentOrder + 1
       const adjacentResult = await client.query(
         'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order = $3 LIMIT 1',
         [childId, currentpresentation.category, currentOrder + 1]
@@ -154,7 +155,6 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
 
       const adjacentId = adjacentResult.rows[0].id;
 
-      // Swap display_order
       await client.query(
         'UPDATE presentations SET display_order = $1, updated_at = CURRENT_TIMESTAMP, updated_by = $2 WHERE id = $3',
         [currentOrder + 1, req.user.id, presentationId]
@@ -169,11 +169,13 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
     await client.query('COMMIT');
     res.json({ success: true, message: `Presentation moved ${direction}` });
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {});
+    if (client) {
+      await client.query('ROLLBACK').catch(() => {});
+    }
     console.error('Error reordering presentations:', error);
     res.status(500).json({ error: 'Failed to reorder presentations' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 

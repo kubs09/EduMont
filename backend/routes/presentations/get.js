@@ -6,38 +6,51 @@ const authenticateToken = require('../../middleware/auth');
 const { canAccessChildpresentation } = require('./validation');
 
 router.get('/', authenticateToken, async (req, res) => {
+  const PRESENTATION_SELECT_QUERY = `
+    SELECT 
+      s.id,
+      s.child_id,
+      s.class_id,
+      s.name,
+      s.category,
+      s.display_order,
+      s.status,
+      s.notes,
+      s.created_at,
+      s.updated_at,
+      c.name as class_name,
+      ch.firstname as child_firstname,
+      ch.surname as child_surname,
+      creator.firstname as created_by_firstname,
+      creator.surname as created_by_surname,
+      updater.firstname as updated_by_firstname,
+      updater.surname as updated_by_surname
+    FROM presentations s
+    JOIN classes c ON s.class_id = c.id
+    JOIN children ch ON s.child_id = ch.id
+    LEFT JOIN users creator ON s.created_by = creator.id
+    LEFT JOIN users updater ON s.updated_by = updater.id
+  `;
+
   try {
     const { status } = req.query;
+    const statusValues = [
+      'prerequisites not met',
+      'to be presented',
+      'presented',
+      'practiced',
+      'mastered',
+    ];
 
     if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    let query = `
-      SELECT 
-        s.id,
-        s.child_id,
-        s.class_id,
-        s.name,
-        s.category,
-        s.display_order,
-        s.status,
-        s.notes,
-        s.created_at,
-        s.updated_at,
-        c.name as class_name,
-        ch.firstname as child_firstname,
-        ch.surname as child_surname,
-        creator.firstname as created_by_firstname,
-        creator.surname as created_by_surname,
-        updater.firstname as updated_by_firstname,
-        updater.surname as updated_by_surname
-      FROM presentations s
-      JOIN classes c ON s.class_id = c.id
-      JOIN children ch ON s.child_id = ch.id
-      LEFT JOIN users creator ON s.created_by = creator.id
-      LEFT JOIN users updater ON s.updated_by = updater.id
-    `;
+    if (status && !statusValues.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+
+    let query = PRESENTATION_SELECT_QUERY;
 
     const params = [];
     let whereConditions = [];
@@ -74,9 +87,20 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const childId = Number(req.params.childId);
     const { status } = req.query;
+    const statusValues = [
+      'prerequisites not met',
+      'to be presented',
+      'presented',
+      'practiced',
+      'mastered',
+    ];
 
     if (!Number.isInteger(childId)) {
       return res.status(400).json({ error: 'Invalid child ID' });
+    }
+
+    if (status && !statusValues.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
     }
 
     const hasAccess = await canAccessChildpresentation(req.user.id, req.user.role, childId);
@@ -84,32 +108,7 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    let query = `
-      SELECT 
-        s.id,
-        s.child_id,
-        s.class_id,
-        s.name,
-        s.category,
-        s.display_order,
-        s.status,
-        s.notes,
-        s.created_at,
-        s.updated_at,
-        c.name as class_name,
-        ch.firstname as child_firstname,
-        ch.surname as child_surname,
-        creator.firstname as created_by_firstname,
-        creator.surname as created_by_surname,
-        updater.firstname as updated_by_firstname,
-        updater.surname as updated_by_surname
-      FROM presentations s
-      JOIN classes c ON s.class_id = c.id
-      JOIN children ch ON s.child_id = ch.id
-      LEFT JOIN users creator ON s.created_by = creator.id
-      LEFT JOIN users updater ON s.updated_by = updater.id
-      WHERE s.child_id = $1
-    `;
+    let query = PRESENTATION_SELECT_QUERY + ' WHERE s.child_id = $1';
 
     const params = [childId];
 
@@ -132,12 +131,23 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const classId = Number(req.params.classId);
     const { status } = req.query;
+    const statusValues = [
+      'prerequisites not met',
+      'to be presented',
+      'presented',
+      'practiced',
+      'mastered',
+    ];
 
     if (!Number.isInteger(classId)) {
       return res.status(400).json({ error: 'Invalid class ID' });
     }
 
-    if (req.user.role === 'teacher') {
+    if (status && !statusValues.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+    if (req.user.role === 'admin') {
+    } else if (req.user.role === 'teacher') {
       const teacherClassResult = await pool.query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
         [classId, req.user.id]
@@ -159,34 +169,11 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
       if (parentChildResult.rows.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
+    } else {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    let query = `
-      SELECT 
-        s.id,
-        s.child_id,
-        s.class_id,
-        s.name,
-        s.category,
-        s.display_order,
-        s.status,
-        s.notes,
-        s.created_at,
-        s.updated_at,
-        c.name as class_name,
-        ch.firstname as child_firstname,
-        ch.surname as child_surname,
-        creator.firstname as created_by_firstname,
-        creator.surname as created_by_surname,
-        updater.firstname as updated_by_firstname,
-        updater.surname as updated_by_surname
-      FROM presentations s
-      JOIN classes c ON s.class_id = c.id
-      JOIN children ch ON s.child_id = ch.id
-      LEFT JOIN users creator ON s.created_by = creator.id
-      LEFT JOIN users updater ON s.updated_by = updater.id
-      WHERE s.class_id = $1
-    `;
+    let query = PRESENTATION_SELECT_QUERY + ' WHERE s.class_id = $1';
 
     const params = [classId];
 

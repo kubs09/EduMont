@@ -113,6 +113,7 @@ const ClassDetailPage = () => {
             const pending = await getPendingPermissionRequests(parseInt(id));
             setPendingPermissions(pending.requests || []);
           } catch (error) {
+            console.error('Failed to load pending permission requests:', error);
             setPendingPermissions([]);
           }
         };
@@ -123,6 +124,7 @@ const ClassDetailPage = () => {
             const result = await checkPresentationPermission(parseInt(id));
             setHasGrantedPermission(result.has_access);
           } catch (error) {
+            console.error('Failed to load pending permission requests:', error);
             setHasGrantedPermission(false);
           }
         };
@@ -245,9 +247,14 @@ const ClassDetailPage = () => {
     }
   };
 
-  const refreshPremissionState = async (class_id: number) => {
+  const refreshPermissionState = async (class_id: number) => {
     const pending = await getPendingPermissionRequests(class_id);
-    setPendingPermissions(pending.requests || []);
+    try {
+      setPendingPermissions(pending.requests || []);
+    } catch (error) {
+      console.error('Failed to refresh pending permission requests:', error);
+      setPendingPermissions([]);
+    }
     if (isAdmin) {
       try {
         const result = await checkPresentationPermission(class_id);
@@ -265,7 +272,7 @@ const ClassDetailPage = () => {
 
     try {
       await acceptPermissionRequest(class_id, language);
-      await refreshPremissionState(class_id);
+      await refreshPermissionState(class_id);
 
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
@@ -293,7 +300,7 @@ const ClassDetailPage = () => {
 
     try {
       await denyPermissionRequest(class_id, language);
-      await refreshPremissionState(class_id);
+      await refreshPermissionState(class_id);
 
       toast({
         title: texts.classes.detail.permissionDenied[language],

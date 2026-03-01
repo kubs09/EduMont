@@ -19,10 +19,6 @@ router.get('/check', auth, async (req, res) => {
       return res.status(403).json({ error: 'Only admins can check permission requests' });
     }
 
-    if (!resource_id) {
-      return res.status(400).json({ error: 'resource_id is required' });
-    }
-
     const classResult = await client.query('SELECT id, name FROM classes WHERE id = $1', [
       resource_id,
     ]);
@@ -64,10 +60,6 @@ router.get('/granted', auth, async (req, res) => {
 
     if (user_role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can check presentation permissions' });
-    }
-
-    if (!resource_id) {
-      return res.status(400).json({ error: 'resource_id is required' });
     }
 
     const permissionCheck = await client.query(
@@ -205,22 +197,16 @@ router.post('/request', auth, async (req, res) => {
       });
     }
 
-    const checkExisting = await client.query(
-      'SELECT * FROM presentation_permissions WHERE class_id = $1 AND admin_id = $2',
+    await client.query(
+      `INSERT INTO presentation_permissions (class_id, admin_id, permission_requested, granted)
+       VALUES ($1, $2, TRUE, FALSE)
+       ON CONFLICT (admin_id, class_id)
+       DO UPDATE SET
+         permission_requested = TRUE,
+         granted = FALSE,
+         updated_at = CURRENT_TIMESTAMP`,
       [resource_id, requester_id]
     );
-
-    if (checkExisting.rows.length > 0) {
-      await client.query(
-        'UPDATE presentation_permissions SET permission_requested = TRUE, granted = FALSE, updated_at = CURRENT_TIMESTAMP WHERE class_id = $1 AND admin_id = $2',
-        [resource_id, requester_id]
-      );
-    } else {
-      await client.query(
-        'INSERT INTO presentation_permissions (class_id, admin_id, permission_requested, granted) VALUES ($1, $2, TRUE, FALSE)',
-        [resource_id, requester_id]
-      );
-    }
 
     let content = '';
     if (language === 'cs') {

@@ -97,6 +97,8 @@ const normalizeCategoryOrdering = async (client, childId, category) => {
 };
 
 const canAccessChildpresentation = async (userId, userRole, childId) => {
+  if (userRole === 'admin') return true;
+
   if (userRole === 'teacher') {
     const result = await pool.query(
       `

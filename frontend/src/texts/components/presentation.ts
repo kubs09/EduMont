@@ -139,34 +139,34 @@ export const presentation = {
     cs: 'Žádné položky rozvrhu',
     en: 'No presentation entries',
   },
-  todayPresentation: {
+  todayPresentations: {
     cs: 'Dnešní rozvrh',
-    en: "Today's presentation",
+    en: "Today's presentations",
   },
-  weekPresentation: {
+  weekPresentations: {
     cs: 'Týdenní rozvrh',
-    en: 'Weekly presentation',
+    en: 'Weekly presentations',
   },
-  monthPresentation: {
+  monthPresentations: {
     cs: 'Měsíční rozvrh',
-    en: 'Monthly presentation',
+    en: 'Monthly presentations',
   },
   curriculum: {
     curriculumManagement: {
-      cs: 'Správa kurikula',
+      cs: 'Správa Kurikula',
       en: 'Curriculum Management',
     },
     addPresentation: {
       cs: 'Přidat prezentaci',
-      en: 'Add Presentation',
+      en: 'Add presentation',
     },
     editPresentation: {
       cs: 'Upravit prezentaci',
-      en: 'Edit Presentation',
+      en: 'Edit presentation',
     },
     deletePresentation: {
       cs: 'Smazat prezentaci',
-      en: 'Delete Presentation',
+      en: 'Delete presentation',
     },
   },
   viewOptions: {
@@ -280,7 +280,7 @@ export const presentation = {
   messages: {
     refreshSuccess: {
       cs: 'Rozvrh byl aktualizován',
-      en: 'presentation updated',
+      en: 'Presentation updated',
     },
     refreshError: {
       cs: 'Nepodařilo se aktualizovat rozvrh',
@@ -288,11 +288,11 @@ export const presentation = {
     },
     createSuccess: {
       cs: 'Položka rozvrhu byla úspěšně vytvořena',
-      en: 'presentation entry created successfully',
+      en: 'Presentation entry created successfully',
     },
     updateSuccess: {
       cs: 'Položka rozvrhu byla úspěšně aktualizována',
-      en: 'presentation entry updated successfully',
+      en: 'Presentation entry updated successfully',
     },
     deleteConfirmation: {
       cs: 'Opravdu chcete smazat tuto položku rozvrhu?',
@@ -300,7 +300,7 @@ export const presentation = {
     },
     deleteSuccess: {
       cs: 'Položka rozvrhu byla úspěšně smazána',
-      en: 'presentation entry deleted successfully',
+      en: 'Presentation entry deleted successfully',
     },
     createError: {
       cs: 'Nepodařilo se vytvořit položku rozvrhu',
