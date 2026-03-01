@@ -122,8 +122,8 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
 
     if (direction === 'up') {
       const adjacentResult = await client.query(
-        'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order = $3 LIMIT 1',
-        [childId, currentpresentation.category, currentOrder - 1]
+        'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order < $3 ORDER BY display_order DESC LIMIT 1',
+        [childId, currentpresentation.category, currentOrder]
       );
 
       if (adjacentResult.rows.length === 0) {
@@ -144,8 +144,8 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
       );
     } else {
       const adjacentResult = await client.query(
-        'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order = $3 LIMIT 1',
-        [childId, currentpresentation.category, currentOrder + 1]
+        'SELECT id FROM presentations WHERE child_id = $1 AND category = $2 AND display_order > $3 ORDER BY display_order ASC LIMIT 1',
+        [childId, currentpresentation.category, currentOrder]
       );
 
       if (adjacentResult.rows.length === 0) {

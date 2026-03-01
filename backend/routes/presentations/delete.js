@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
-const { canEditChildpresentation } = require('./validation');
+const { canEditChildpresentation, normalizeDisplayOrder } = require('./validation');
 
 // Delete a presentation entry
 router.delete('/:id', authenticateToken, async (req, res) => {
@@ -14,7 +14,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await client.query('BEGIN');
 
     const presentationResult = await client.query(
-      'SELECT child_id FROM presentations WHERE id = $1',
+      'SELECT child_id, category FROM presentations WHERE id = $1',
       [id]
     );
     if (presentationResult.rows.length === 0) {
@@ -23,6 +23,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 
     const childId = presentationResult.rows[0].child_id;
+    const category = presentationResult.rows[0].category;
 
     // Check if user can edit this child's presentation
     const canEdit = await canEditChildpresentation(req.user.id, req.user.role, childId);
@@ -35,6 +36,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     // Delete the presentation
     await client.query('DELETE FROM presentations WHERE id = $1', [id]);
+
+    await normalizeDisplayOrder(client, childId, category);
 
     await client.query('COMMIT');
     res.json({ message: 'presentation entry deleted successfully' });

@@ -124,7 +124,7 @@ const ClassDetailPage = () => {
             const result = await checkPresentationPermission(parseInt(id));
             setHasGrantedPermission(result.has_access);
           } catch (error) {
-            console.error('Failed to load pending permission requests:', error);
+            console.error('Failed to load granted permission requests:', error);
             setHasGrantedPermission(false);
           }
         };
@@ -248,8 +248,8 @@ const ClassDetailPage = () => {
   };
 
   const refreshPermissionState = async (class_id: number) => {
-    const pending = await getPendingPermissionRequests(class_id);
     try {
+      const pending = await getPendingPermissionRequests(class_id);
       setPendingPermissions(pending.requests || []);
     } catch (error) {
       console.error('Failed to refresh pending permission requests:', error);
@@ -319,14 +319,7 @@ const ClassDetailPage = () => {
     }
   };
 
-  const canViewPresentations =
-    !!currentUserId &&
-    (!!classData?.teachers?.some(
-      (teacher) =>
-        teacher.id === currentUserId &&
-        (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
-    ) ||
-      (isAdmin && hasGrantedPermission));
+  const canViewPresentations = isCurrentUserTeacherOfClass || (isAdmin && hasGrantedPermission);
 
   const canAccessPresentationsSection = canViewPresentations || isAdmin;
 

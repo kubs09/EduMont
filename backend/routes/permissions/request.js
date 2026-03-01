@@ -5,8 +5,9 @@ const pool = require('../../config/database');
 const auth = require('../../middleware/auth');
 
 router.get('/check', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const resource_id = Number(req.query.resource_id);
     const requester_id = req.user.id;
     const requester_role = req.user.role;
@@ -43,7 +44,7 @@ router.get('/check', auth, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -176,37 +177,30 @@ router.post('/request', auth, async (req, res) => {
       [resource_id]
     );
 
-    const existingRequestCheck = await client.query(
-      `SELECT id FROM presentation_permissions
-       WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE`,
-      [resource_id, requester_id]
-    );
-
-    const alreadyRequested = existingRequestCheck.rows.length > 0;
-
-    const subjectEn = 'Permission Request';
-    const subjectCs = 'Žádost o oprávnění';
-    const subject = language === 'cs' ? subjectCs : subjectEn;
-
-    if (alreadyRequested) {
-      await client.query('ROLLBACK');
-      return res.status(200).json({
-        message: 'Permission request already sent',
-        recipients_count: teachersResult.rows.length || 1,
-        already_requested: true,
-      });
-    }
-
-    await client.query(
+    const upsertResult = await client.query(
       `INSERT INTO presentation_permissions (class_id, admin_id, permission_requested, granted)
        VALUES ($1, $2, TRUE, FALSE)
        ON CONFLICT (admin_id, class_id)
        DO UPDATE SET
          permission_requested = TRUE,
          granted = FALSE,
-         updated_at = CURRENT_TIMESTAMP`,
+         updated_at = CURRENT_TIMESTAMP
+         WHERE presentation_permissions.permission_requested IS DISTINCT FROM TRUE
+         RETURNING id`,
       [resource_id, requester_id]
     );
+
+    if (upsertResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(200).json({
+        message: 'Permission request already exists and is pending',
+        already_requested: true,
+      });
+    }
+
+    const subjectEn = 'Permission Request';
+    const subjectCs = 'Žádost o oprávnění';
+    const subject = language === 'cs' ? subjectCs : subjectEn;
 
     let content = '';
     if (language === 'cs') {

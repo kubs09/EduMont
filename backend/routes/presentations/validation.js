@@ -96,6 +96,32 @@ const normalizeCategoryOrdering = async (client, childId, category) => {
   }
 };
 
+const normalizeDisplayOrder = async (client, childId, category) => {
+  if (!category) return;
+
+  const result = await client.query(
+    `
+    SELECT id
+    FROM presentations
+    WHERE child_id = $1 AND category = $2
+    ORDER BY display_order ASC, id ASC
+  `,
+    [childId, category]
+  );
+
+  for (let index = 0; index < result.rows.length; index += 1) {
+    const desiredOrder = index + 1;
+    await client.query(
+      `
+      UPDATE presentations
+      SET display_order = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `,
+      [desiredOrder, result.rows[index].id]
+    );
+  }
+};
+
 const canAccessChildpresentation = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
@@ -137,5 +163,6 @@ module.exports = {
   canAccessChildpresentation,
   canEditChildpresentation,
   normalizeCategoryOrdering,
+  normalizeDisplayOrder,
   STATUS_VALUES,
 };

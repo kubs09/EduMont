@@ -5,8 +5,7 @@ const pool = require('../../config/database');
 const authenticateToken = require('../../middleware/auth');
 const { canAccessChildpresentation } = require('./validation');
 
-router.get('/', authenticateToken, async (req, res) => {
-  const PRESENTATION_SELECT_QUERY = `
+const PRESENTATION_SELECT_QUERY = `
     SELECT 
       s.id,
       s.child_id,
@@ -32,6 +31,7 @@ router.get('/', authenticateToken, async (req, res) => {
     LEFT JOIN users updater ON s.updated_by = updater.id
   `;
 
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
     const statusValues = [
