@@ -254,10 +254,12 @@ const ClassDetailPage = () => {
       const pending = await getPendingPermissionRequests(parseInt(id));
       setPendingPermissions(pending.requests || []);
 
-      try {
-        const result = await checkPresentationPermission(parseInt(id));
-        setHasGrantedPermission(result.has_access);
-      } catch (error) {}
+      if (isAdmin) {
+        try {
+          const result = await checkPresentationPermission(parseInt(id));
+          setHasGrantedPermission(result.has_access);
+        } catch (error) {}
+      }
 
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
@@ -288,10 +290,12 @@ const ClassDetailPage = () => {
       const pending = await getPendingPermissionRequests(parseInt(id));
       setPendingPermissions(pending.requests || []);
 
-      try {
-        const result = await checkPresentationPermission(parseInt(id));
-        setHasGrantedPermission(result.has_access);
-      } catch (error) {}
+      if (isAdmin) {
+        try {
+          const result = await checkPresentationPermission(parseInt(id));
+          setHasGrantedPermission(result.has_access);
+        } catch (error) {}
+      }
 
       toast({
         title: texts.classes.detail.permissionDenied[language],
