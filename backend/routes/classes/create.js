@@ -61,13 +61,13 @@ router.post('/', auth, async (req, res) => {
     const teacherParams = [classId, teacherId];
     await client.query(
       'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-      [...teacherParams, 'teacher', true]
+      [...teacherParams, 'teacher', false]
     );
 
     if (assistantId) {
       await client.query(
         'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-        [classId, assistantId, 'assistant', true]
+        [classId, assistantId, 'assistant', false]
       );
     }
 

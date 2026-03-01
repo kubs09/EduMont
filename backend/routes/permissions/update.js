@@ -8,24 +8,55 @@ router.post('/accept', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { class_id } = req.body;
-    const teacher_id = req.user.id;
+    const { class_id, language } = req.body;
+    const approver_id = req.user.id;
 
-    // Verify that the teacher has a pending permission request for this class
+    const approverCheck = await client.query(
+      'SELECT * FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
+      [class_id, approver_id]
+    );
+
+    if (!approverCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res
+        .status(403)
+        .json({ error: 'You do not have permission to approve requests for this class' });
+    }
+
     const permissionCheck = await client.query(
-      'SELECT * FROM class_teachers WHERE class_id = $1 AND teacher_id = $2 AND permission_requested = TRUE',
-      [class_id, teacher_id]
+      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE',
+      [class_id]
     );
 
     if (!permissionCheck.rows.length) {
       await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Permission request not found or already processed' });
+      return res.status(404).json({ error: 'No pending permission request found for this class' });
     }
 
-    // Accept the permission by setting permission_requested to false
+    const requester_id = permissionCheck.rows[0].admin_id;
+
+    const classResult = await client.query('SELECT name FROM classes WHERE id = $1', [class_id]);
+    const className = classResult.rows[0]?.name || class_id;
+
     await client.query(
-      'UPDATE class_teachers SET permission_requested = FALSE WHERE class_id = $1 AND teacher_id = $2',
-      [class_id, teacher_id]
+      'UPDATE presentation_permissions SET permission_requested = FALSE, granted = TRUE, updated_at = CURRENT_TIMESTAMP WHERE class_id = $1 AND admin_id = $2',
+      [class_id, requester_id]
+    );
+
+    const subjectEn = `Your permission request for class "${className}" has been accepted`;
+    const subjectCs = `Vaše žádost o oprávnění pro třídu "${className}" byla přijata`;
+    const subject = language === 'cs' ? subjectCs : subjectEn;
+
+    let messageContent = '';
+    if (language === 'cs') {
+      messageContent = `Vaše žádost o oprávnění k prezentacím pro třídu "${className}" byla přijata. Nyní máte přístup k prezentacím.`;
+    } else {
+      messageContent = `Your permission request for presentations in class "${className}" has been accepted. You now have access to presentations.`;
+    }
+
+    await client.query(
+      'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4)',
+      [approver_id, requester_id, subject, messageContent]
     );
 
     await client.query('COMMIT');
@@ -46,25 +77,56 @@ router.post('/deny', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { class_id } = req.body;
-    const teacher_id = req.user.id;
+    const { class_id, language } = req.body;
+    const denier_id = req.user.id;
 
-    // Verify that the teacher has a pending permission request for this class
+    const denierCheck = await client.query(
+      'SELECT * FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
+      [class_id, denier_id]
+    );
+
+    if (!denierCheck.rows.length) {
+      await client.query('ROLLBACK');
+      return res
+        .status(403)
+        .json({ error: 'You do not have permission to deny requests for this class' });
+    }
+
     const permissionCheck = await client.query(
-      'SELECT * FROM class_teachers WHERE class_id = $1 AND teacher_id = $2 AND permission_requested = TRUE',
-      [class_id, teacher_id]
+      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE',
+      [class_id]
     );
 
     if (!permissionCheck.rows.length) {
       await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Permission request not found or already processed' });
+      return res.status(404).json({ error: 'No pending permission request found for this class' });
     }
 
-    // Deny the permission by removing the teacher from the class
-    await client.query('DELETE FROM class_teachers WHERE class_id = $1 AND teacher_id = $2', [
-      class_id,
-      teacher_id,
-    ]);
+    const requester_id = permissionCheck.rows[0].admin_id;
+
+    const classResult = await client.query('SELECT name FROM classes WHERE id = $1', [class_id]);
+    const className = classResult.rows[0]?.name || class_id;
+
+    await client.query(
+      'DELETE FROM presentation_permissions WHERE class_id = $1 AND admin_id = $2',
+      [class_id, requester_id]
+    );
+
+    const subjectEn = `Your permission request for class "${className}" has been denied`;
+    const subjectCs = `Vaše žádost o oprávnění pro třídu "${className}" byla zamítnuta`;
+    const subject = language === 'cs' ? subjectCs : subjectEn;
+
+    let messageContent = '';
+    if (language === 'cs') {
+      messageContent = `Vaše žádost o oprávnění k prezentacím pro třídu "${className}" byla zamítnuta.`;
+    } else {
+      messageContent = `Your permission request for presentations in class "${className}" has been denied.`;
+    }
+
+    await client.query(
+      'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4)',
+      [denier_id, requester_id, subject, messageContent]
+    );
 
     await client.query('COMMIT');
     res.json({ message: 'Permission request denied successfully' });

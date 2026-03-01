@@ -30,12 +30,9 @@ router.get('/check', auth, async (req, res) => {
     const className = classResult.rows[0].name;
 
     const existingRequestCheck = await client.query(
-      `SELECT m.id FROM messages m
-       WHERE m.from_user_id = $1
-       AND (m.subject = 'Permission Request' OR m.subject = 'Žádost o oprávnění')
-       AND m.content LIKE $2
-       AND m.created_at > NOW() - INTERVAL '7 days'`,
-      [requester_id, `%${className}%`]
+      `SELECT id FROM presentation_permissions
+       WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE`,
+      [resource_id, requester_id]
     );
 
     res.json({
@@ -45,6 +42,86 @@ router.get('/check', auth, async (req, res) => {
     console.error('Permission check error:', error);
     res.status(500).json({
       error: 'Failed to check permission request',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+router.get('/granted', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { resource_id } = req.query;
+    const user_id = req.user.id;
+    const user_role = req.user.role;
+
+    if (user_role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can check presentation permissions' });
+    }
+
+    if (!resource_id) {
+      return res.status(400).json({ error: 'resource_id is required' });
+    }
+
+    const permissionCheck = await client.query(
+      `SELECT granted FROM presentation_permissions
+       WHERE class_id = $1 AND admin_id = $2`,
+      [resource_id, user_id]
+    );
+
+    const hasAccess = permissionCheck.rows.length > 0 && permissionCheck.rows[0].granted === true;
+
+    res.json({
+      has_access: hasAccess,
+    });
+  } catch (error) {
+    console.error('Permission granted check error:', error);
+    res.status(500).json({
+      error: 'Failed to check presentation permission',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  } finally {
+    client.release();
+  }
+});
+
+router.get('/pending', auth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { class_id } = req.query;
+    const user_id = req.user.id;
+    const user_role = req.user.role;
+
+    if (!class_id) {
+      return res.status(400).json({ error: 'class_id is required' });
+    }
+
+    const teacherCheck = await client.query(
+      'SELECT * FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
+      [class_id, user_id]
+    );
+
+    if (teacherCheck.rows.length === 0 && user_role !== 'admin') {
+      return res.status(403).json({ error: 'You do not have access to this class' });
+    }
+
+    const pendingRequests = await client.query(
+      `SELECT pp.*, u.firstname, u.surname, u.email 
+       FROM presentation_permissions pp 
+       JOIN users u ON pp.admin_id = u.id 
+       WHERE pp.class_id = $1 AND pp.permission_requested = TRUE`,
+      [class_id]
+    );
+
+    res.json({
+      has_pending: pendingRequests.rows.length > 0,
+      requests: pendingRequests.rows,
+    });
+  } catch (error) {
+    console.error('Pending permission check error:', error);
+    res.status(500).json({
+      error: 'Failed to check pending permission requests',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
@@ -102,9 +179,9 @@ router.post('/request', auth, async (req, res) => {
     );
 
     const existingRequestCheck = await client.query(
-      `SELECT teacher_id FROM class_teachers
-       WHERE class_id = $1 AND permission_requested = TRUE`,
-      [resource_id]
+      `SELECT id FROM presentation_permissions
+       WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE`,
+      [resource_id, requester_id]
     );
 
     const alreadyRequested = existingRequestCheck.rows.length > 0;
@@ -114,26 +191,34 @@ router.post('/request', auth, async (req, res) => {
     const subject = language === 'cs' ? subjectCs : subjectEn;
 
     if (alreadyRequested) {
-      res.status(200).json({
+      await client.query('ROLLBACK');
+      return res.status(200).json({
         message: 'Permission request already sent',
         recipients_count: teachersResult.rows.length || 1,
         already_requested: true,
       });
     }
 
-    if (teachersResult.rows.length > 0) {
-      const teacherIds = teachersResult.rows.map((teacher) => teacher.id);
+    const checkExisting = await client.query(
+      'SELECT * FROM presentation_permissions WHERE class_id = $1 AND admin_id = $2',
+      [resource_id, requester_id]
+    );
+
+    if (checkExisting.rows.length > 0) {
       await client.query(
-        `UPDATE class_teachers
-         SET permission_requested = TRUE
-         WHERE class_id = $1 AND teacher_id = ANY($2::int[])`,
-        [resource_id, teacherIds]
+        'UPDATE presentation_permissions SET permission_requested = TRUE, granted = FALSE, updated_at = CURRENT_TIMESTAMP WHERE class_id = $1 AND admin_id = $2',
+        [resource_id, requester_id]
+      );
+    } else {
+      await client.query(
+        'INSERT INTO presentation_permissions (class_id, admin_id, permission_requested, granted) VALUES ($1, $2, TRUE, FALSE)',
+        [resource_id, requester_id]
       );
     }
 
     let content = '';
     if (language === 'cs') {
-      content = `Administrátor ${requesterName} (${requester.email}) požádal o oprávnění k přístupu.\n\n`;
+      content = `Administrátor ${requesterName} (${requester.email}) požádal o oprávnění k prezentacím.\n\n`;
       content += `Třída: ${className}\n`;
       if (resource_type) {
         content += `Typ zdroje: ${resource_type}\n`;
@@ -143,7 +228,7 @@ router.post('/request', auth, async (req, res) => {
       }
       content += `\nČas žádosti: ${new Date().toLocaleString('cs-CZ')}`;
     } else {
-      content = `Administrator ${requesterName} (${requester.email}) has requested access permission.\n\n`;
+      content = `Administrator ${requesterName} (${requester.email}) has requested permission to access presentations.\n\n`;
       content += `Class: ${className}\n`;
       if (resource_type) {
         content += `Resource Type: ${resource_type}\n`;

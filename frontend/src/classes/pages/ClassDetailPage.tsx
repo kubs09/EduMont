@@ -19,7 +19,13 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
 import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
-import { acceptPermissionRequest, denyPermissionRequest } from '@frontend/services/api/permission';
+import {
+  acceptPermissionRequest,
+  checkPresentationPermission,
+  denyPermissionRequest,
+  getPendingPermissionRequests,
+  PendingPermissionRequest,
+} from '@frontend/services/api/permission';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';
@@ -54,6 +60,8 @@ const ClassDetailPage = () => {
   const [availableTeachers, setAvailableTeachers] = useState<User[]>([]);
   const [activeSectionId, setActiveSectionId] = useState('info');
   const [excusesByChildId, setExcusesByChildId] = useState<Record<number, ChildExcuse[]>>({});
+  const [pendingPermissions, setPendingPermissions] = useState<PendingPermissionRequest[]>([]);
+  const [hasGrantedPermission, setHasGrantedPermission] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,9 +107,31 @@ const ClassDetailPage = () => {
           }
         };
 
+        const fetchPendingPermissions = async () => {
+          try {
+            if (!id) return;
+            const pending = await getPendingPermissionRequests(parseInt(id));
+            setPendingPermissions(pending.requests || []);
+          } catch (error) {
+            setPendingPermissions([]);
+          }
+        };
+
+        const fetchGrantedPermission = async () => {
+          try {
+            if (!id || !isUserAdmin) return;
+            const result = await checkPresentationPermission(parseInt(id));
+            setHasGrantedPermission(result.has_access);
+          } catch (error) {
+            setHasGrantedPermission(false);
+          }
+        };
+
         fetchClassData();
         if (id) {
           fetchNextPresentations();
+          fetchPendingPermissions();
+          fetchGrantedPermission();
         }
 
         if (isUserAdmin) {
@@ -169,9 +199,15 @@ const ClassDetailPage = () => {
     }
   };
 
-  const hasPremissionRequestRecieved = classData?.teachers.some(
-    (teacher) => teacher.id === currentUserId && teacher.permission_requested === true
-  );
+  const isCurrentUserTeacherOfClass =
+    !!currentUserId &&
+    !!classData?.teachers?.some(
+      (teacher) =>
+        teacher.id === currentUserId &&
+        (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
+    );
+
+  const hasPremissionRequestRecieved = isCurrentUserTeacherOfClass && pendingPermissions.length > 0;
 
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
@@ -213,9 +249,16 @@ const ClassDetailPage = () => {
     if (!id) return;
 
     try {
-      await acceptPermissionRequest(parseInt(id));
+      await acceptPermissionRequest(parseInt(id), language);
 
-      // Refresh class data to update permission status
+      const pending = await getPendingPermissionRequests(parseInt(id));
+      setPendingPermissions(pending.requests || []);
+
+      try {
+        const result = await checkPresentationPermission(parseInt(id));
+        setHasGrantedPermission(result.has_access);
+      } catch (error) {}
+
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
 
@@ -240,7 +283,15 @@ const ClassDetailPage = () => {
     if (!id) return;
 
     try {
-      await denyPermissionRequest(parseInt(id));
+      await denyPermissionRequest(parseInt(id), language);
+
+      const pending = await getPendingPermissionRequests(parseInt(id));
+      setPendingPermissions(pending.requests || []);
+
+      try {
+        const result = await checkPresentationPermission(parseInt(id));
+        setHasGrantedPermission(result.has_access);
+      } catch (error) {}
 
       toast({
         title: texts.classes.detail.permissionDenied[language],
@@ -248,9 +299,6 @@ const ClassDetailPage = () => {
         duration: 3000,
         isClosable: true,
       });
-
-      // Navigate back to classes list since the teacher was removed from the class
-      navigate(ROUTES.CLASSES);
     } catch (error) {
       console.error('Deny permission error:', error);
       toast({
@@ -264,11 +312,12 @@ const ClassDetailPage = () => {
 
   const canViewPresentations =
     !!currentUserId &&
-    !!classData?.teachers?.some(
+    (!!classData?.teachers?.some(
       (teacher) =>
         teacher.id === currentUserId &&
         (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
-    );
+    ) ||
+      (isAdmin && hasGrantedPermission));
 
   const canAccessPresentationsSection = canViewPresentations || isAdmin;
 
@@ -288,6 +337,7 @@ const ClassDetailPage = () => {
       language={language}
       isAdmin={isAdmin}
       premissionRequested={hasPremissionRequestRecieved || false}
+      pendingPermissions={pendingPermissions}
       onEditClick={() => setIsEditInfoModalOpen(true)}
       onEditMembersClick={() => setIsMembersModalOpen(true)}
       onAcceptPermission={handleAcceptPermission}

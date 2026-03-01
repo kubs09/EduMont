@@ -1,7 +1,7 @@
 DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
 
-DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, presentations, documents, category_presentations CASCADE;
+DROP TABLE IF EXISTS class_history, class_attendance, child_excuses, users, invitations, messages, child_parents, children, classes, class_teachers, class_children, presentations, documents, category_presentations, presentation_permissions CASCADE;
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -204,5 +204,20 @@ CREATE INDEX idx_documents_created_by ON documents(created_by);
 
 CREATE INDEX idx_premissions_class_id ON class_teachers(class_id);
 CREATE INDEX idx_premissions_teacher_id ON class_teachers(teacher_id);
+
+CREATE TABLE presentation_permissions (
+    id SERIAL PRIMARY KEY,
+    admin_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+    permission_requested BOOLEAN DEFAULT FALSE,
+    granted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (admin_id, class_id)
+);
+
+CREATE INDEX idx_presentation_permissions_admin_id ON presentation_permissions(admin_id);
+CREATE INDEX idx_presentation_permissions_class_id ON presentation_permissions(class_id);
+CREATE INDEX idx_presentation_permissions_requested ON presentation_permissions(permission_requested) WHERE permission_requested = TRUE;
 
 

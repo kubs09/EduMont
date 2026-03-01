@@ -16,12 +16,14 @@ import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
 import { classAgeGroups } from '../utils/ageGroups';
+import { PendingPermissionRequest } from '@frontend/services/api/permission';
 
 interface InfoTabProps {
   classData: Class;
   language: 'cs' | 'en';
   isAdmin: boolean;
   premissionRequested: boolean;
+  pendingPermissions: PendingPermissionRequest[];
   onEditClick: () => void;
   onEditMembersClick: () => void;
   onAcceptPermission: () => void;
@@ -33,6 +35,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
   language,
   isAdmin,
   premissionRequested,
+  pendingPermissions,
   onEditClick,
   onEditMembersClick,
   onAcceptPermission,
@@ -46,6 +49,8 @@ const InfoTab: React.FC<InfoTabProps> = ({
   const ageGroupsLabel = ageGroup
     ? `${texts.classes.ageGroups[ageGroup.key][language]} - ${classData.min_age} - ${classData.max_age} ${texts.classes.years[language]}`
     : `${classData.min_age} - ${classData.max_age}`;
+
+  const requestingAdmin = pendingPermissions.length > 0 ? pendingPermissions[0] : null;
 
   const renderTeacherName = (teacher?: Class['teachers'][number]) => {
     if (!teacher) return '-';
@@ -108,11 +113,15 @@ const InfoTab: React.FC<InfoTabProps> = ({
           </Button>
         </Stack>
       )}
-      {!isAdmin && premissionRequested && (
+      {!isAdmin && premissionRequested && requestingAdmin && (
         <Alert status="info" borderRadius="md">
           <AlertIcon />
           <Box flex="1">
-            <Text>{texts.classes.detail.permissionRequestMessage[language]}</Text>
+            <Text>
+              {language === 'cs'
+                ? `Administrátor ${requestingAdmin.firstname} ${requestingAdmin.surname} žádá o oprávnění k prezentacím.`
+                : `Administrator ${requestingAdmin.firstname} ${requestingAdmin.surname} has requested permission to access presentations.`}
+            </Text>
             <Stack mt={3} direction={{ base: 'column', sm: 'row' }} spacing={3}>
               <Button
                 colorScheme="green"
