@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { ArrowUpIcon, ArrowDownIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
-import { CategoryPresentation } from '@frontend/services/api/presentation';
+import { CategoryPresentation } from '@frontend/types/presentation-category';
 
 interface PresentationsAccordionProps {
   categories: string[];

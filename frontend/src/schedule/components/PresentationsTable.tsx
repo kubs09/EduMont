@@ -158,7 +158,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                 <Td>
                   <HStack spacing={2}>
                     <IconButton
-                      aria-label="Edit presentation"
+                      aria-label={texts.presentation.editEntry[language]}
                       icon={<EditIcon />}
                       size="sm"
                       colorScheme="blue"
@@ -166,7 +166,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                       onClick={() => onEdit?.(presentation)}
                     />
                     <IconButton
-                      aria-label="Delete presentation"
+                      aria-label={texts.presentation.editEntry[language]}
                       icon={<DeleteIcon />}
                       size="sm"
                       colorScheme="red"

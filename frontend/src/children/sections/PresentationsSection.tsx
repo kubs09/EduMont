@@ -280,6 +280,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                   {canUpdateStatus ? (
                     <VStack spacing={1} align="stretch">
                       <Button
+                        aria-label={texts.presentation.status.changeStatus[language]}
                         size="sm"
                         colorScheme="green"
                         isDisabled={
@@ -297,6 +298,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                         ↑
                       </Button>
                       <Button
+                        aria-label={texts.presentation.status.changeStatus[language]}
                         size="sm"
                         colorScheme="red"
                         isDisabled={

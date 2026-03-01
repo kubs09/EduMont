@@ -1,3 +1,9 @@
+export type PresentationStatus =
+  | 'prerequisites not met'
+  | 'to be presented'
+  | 'presented'
+  | 'practiced'
+  | 'mastered';
 export interface Presentation {
   id: number;
   child_id: number;
@@ -5,7 +11,7 @@ export interface Presentation {
   name: string;
   category?: string;
   display_order?: number;
-  status: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
+  status: PresentationStatus;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -24,7 +30,7 @@ export interface CreatePresentationData {
   name: string;
   category?: string;
   display_order?: number;
-  status?: 'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
+  status?: PresentationStatus;
   notes?: string;
 }
 

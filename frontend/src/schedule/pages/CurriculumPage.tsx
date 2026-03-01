@@ -21,9 +21,11 @@ import {
   getAllCategoryPresentations,
   createCategoryPresentation,
   updateCategoryPresentation,
+} from '@frontend/services/api/presentation';
+import {
   CategoryPresentation,
   CreateCategoryPresentationData,
-} from '@frontend/services/api/presentation';
+} from '@frontend/types/presentation-category';
 import AddEditPresentationModal from '../components/AddEditPresentationModal';
 import PresentationsAccordion from '../components/PresentationsAccordion';
 import DeletePresentationDialog from '../components/DeletePresentationDialog';

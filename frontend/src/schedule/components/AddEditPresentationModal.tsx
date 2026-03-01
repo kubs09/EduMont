@@ -24,7 +24,7 @@ import {
 import {
   CategoryPresentation,
   CreateCategoryPresentationData,
-} from '@frontend/services/api/presentation';
+} from '@frontend/types/presentation-category';
 import texts from '@frontend/texts';
 import { z } from 'zod';
 import { presentationSchema } from '@frontend/shared/validation/presentationSchema';

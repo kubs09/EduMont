@@ -1,41 +1,13 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
 import { ApiError } from '@frontend/types/shared';
-
-export interface PermissionRequestData {
-  resource_type?: string;
-  resource_id?: number;
-  reason?: string;
-  language: string;
-}
-
-export interface PermissionRequestResponse {
-  message: string;
-  recipients_count: number;
-  already_requested: boolean;
-}
-
-export interface PermissionCheckResponse {
-  already_requested: boolean;
-}
-
-export interface PresentationPermissionResponse {
-  has_access: boolean;
-}
-
-export interface PendingPermissionRequest {
-  id: number;
-  admin_id: number;
-  class_id: number;
-  firstname: string;
-  surname: string;
-  email: string;
-}
-
-export interface PendingPermissionsResponse {
-  has_pending: boolean;
-  requests: PendingPermissionRequest[];
-}
+import {
+  PermissionCheckResponse,
+  PresentationPermissionResponse,
+  PendingPermissionsResponse,
+  PermissionRequestData,
+  PermissionRequestResponse,
+} from '@frontend/types/permission';
 
 export const checkPermissionRequest = async (
   resource_id: number
@@ -113,7 +85,7 @@ export const requestPermission = async (
 
 export const acceptPermissionRequest = async (
   class_id: number,
-  language: string
+  language: 'cs' | 'en'
 ): Promise<void> => {
   try {
     await api.post('/api/permissions/accept', { class_id, language });
@@ -128,7 +100,10 @@ export const acceptPermissionRequest = async (
   }
 };
 
-export const denyPermissionRequest = async (class_id: number, language: string): Promise<void> => {
+export const denyPermissionRequest = async (
+  class_id: number,
+  language: 'cs' | 'en'
+): Promise<void> => {
   try {
     await api.post('/api/permissions/deny', { class_id, language });
   } catch (error) {

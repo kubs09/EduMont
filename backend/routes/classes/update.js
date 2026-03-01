@@ -13,18 +13,17 @@ router.put('/:id', auth, async (req, res) => {
     await client.query('BEGIN');
     const { id } = req.params;
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
+    const teacherIdNum = Number(teacherId);
+    const assistantIdNum =
+      assistantId === undefined || assistantId === null || assistantId === ''
+        ? null
+        : Number(assistantId);
 
     if (
-      !name ||
-      !age_group ||
-      min_age === undefined ||
-      min_age === null ||
-      max_age === undefined ||
-      max_age === null
+      !Number.isInteger(teacherIdNum) ||
+      (assistantIdNum !== null && !Number.isInteger(assistantIdNum))
     ) {
-      throw new Error(
-        'Missing required fields: name, age_group, min_age, and max_age are required'
-      );
+      throw new Error('Invalid teacher identifiers');
     }
 
     const minAge = Number(min_age);
@@ -67,7 +66,6 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
-    // Get current teacher assignments to check if they're changing
     const currentTeachers = await client.query(
       'SELECT teacher_id, role FROM class_teachers WHERE class_id = $1',
       [id]
@@ -76,23 +74,23 @@ router.put('/:id', auth, async (req, res) => {
     const currentTeacher = currentTeachers.rows.find((r) => r.role === 'teacher');
     const currentAssistant = currentTeachers.rows.find((r) => r.role === 'assistant');
 
-    // Determine if permission request is needed (only if teacher/assistant is changing)
-    const teacherChanged = !currentTeacher || currentTeacher.teacher_id !== teacherId;
-    const assistantChanged = assistantId
-      ? !currentAssistant || currentAssistant.teacher_id !== assistantId
-      : !!currentAssistant; // Changed if we're removing an assistant
+    const teacherChanged = !currentTeacher || Number(currentTeacher.teacher_id) !== teacherIdNum;
+    const assistantChanged =
+      assistantIdNum !== null
+        ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNu
+        : !!currentAssistant;
 
     await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
 
     await client.query(
       'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-      [id, teacherId, 'teacher', teacherChanged]
+      [id, teacherIdNum, 'teacher', teacherChanged]
     );
 
-    if (assistantId) {
+    if (assistantIdNum !== null) {
       await client.query(
         'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-        [id, assistantId, 'assistant', assistantChanged]
+        [id, assistantIdNum, 'assistant', assistantChanged]
       );
     }
 

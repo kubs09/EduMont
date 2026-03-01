@@ -139,7 +139,7 @@ const ChildDetailPage = () => {
     const fetchPresentationPermission = async () => {
       if (!isAdmin) return;
 
-      const classId = childData?.class_id || presentations[0]?.class_id;
+      const classId = childData?.class_id;
       if (!classId) {
         setHasGrantedPresentationPermission(false);
         return;
@@ -154,7 +154,7 @@ const ChildDetailPage = () => {
     };
 
     fetchPresentationPermission();
-  }, [isAdmin, childData?.class_id, presentations]);
+  }, [isAdmin, childData?.class_id]);
 
   useEffect(() => {
     const checkExistingRequest = async () => {

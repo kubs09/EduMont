@@ -16,7 +16,7 @@ import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
 import { classAgeGroups } from '../utils/ageGroups';
-import { PendingPermissionRequest } from '@frontend/services/api/permission';
+import { PendingPermissionRequest } from '@frontend/types/permission';
 
 interface InfoTabProps {
   classData: Class;
@@ -129,7 +129,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
                 size="sm"
                 w={{ base: 'full', sm: 'auto' }}
               >
-                {texts.classes.detail.premissionAcceptButton[language]}
+                {texts.classes.detail.permissionAcceptButton[language]}
               </Button>
               <Button
                 colorScheme="red"

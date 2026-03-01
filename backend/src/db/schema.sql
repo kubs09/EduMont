@@ -172,7 +172,10 @@ CREATE TABLE presentations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INTEGER REFERENCES users(id),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INTEGER REFERENCES users(id)
+    updated_by INTEGER REFERENCES users(id),
+    CONSTRAINT fk_presentations_class_child
+    FOREIGN KEY (class_id, child_id)
+    REFERENCES class_children(class_id, child_id)
 );
 
 CREATE INDEX idx_presentations_child_id ON presentations(child_id);
@@ -202,9 +205,6 @@ CREATE INDEX idx_documents_child_id ON documents(child_id);
 CREATE INDEX idx_documents_class_id ON documents(class_id);
 CREATE INDEX idx_documents_created_by ON documents(created_by);
 
-CREATE INDEX idx_premissions_class_id ON class_teachers(class_id);
-CREATE INDEX idx_premissions_teacher_id ON class_teachers(teacher_id);
-
 CREATE TABLE presentation_permissions (
     id SERIAL PRIMARY KEY,
     admin_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -213,6 +213,7 @@ CREATE TABLE presentation_permissions (
     granted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (NOT granted OR permission_requested),
     UNIQUE (admin_id, class_id)
 );
 

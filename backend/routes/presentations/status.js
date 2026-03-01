@@ -65,7 +65,7 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch(() => {});
     console.error('Error updating presentation status:', error);
     res.status(500).json({ error: 'Failed to update presentation status' });
   } finally {

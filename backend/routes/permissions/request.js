@@ -7,9 +7,13 @@ const auth = require('../../middleware/auth');
 router.get('/check', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { resource_id } = req.query;
+    const resource_id = Number(req.query.resource_id);
     const requester_id = req.user.id;
     const requester_role = req.user.role;
+
+    if (!Number.isInteger(resource_id) || resource_id <= 0) {
+      return res.status(400).json({ error: 'resource_id must be a positive integer' });
+    }
 
     if (requester_role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can check permission requests' });
@@ -132,8 +136,6 @@ router.get('/pending', auth, async (req, res) => {
 router.post('/request', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-
     const { resource_type, resource_id, reason, language } = req.body;
     const requester_id = req.user.id;
     const requester_role = req.user.role;
@@ -153,6 +155,8 @@ router.post('/request', auth, async (req, res) => {
 
     const requester = requesterResult.rows[0];
     const requesterName = `${requester.firstname} ${requester.surname}`;
+
+    await client.query('BEGIN');
 
     if (!resource_id) {
       await client.query('ROLLBACK');

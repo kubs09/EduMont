@@ -24,8 +24,8 @@ import {
   checkPresentationPermission,
   denyPermissionRequest,
   getPendingPermissionRequests,
-  PendingPermissionRequest,
 } from '@frontend/services/api/permission';
+import { PendingPermissionRequest } from '@frontend/types/permission';
 import { ROUTES } from '@frontend/shared/route';
 import { EditClassInfoModal } from '../components/EditClassInfoModal';
 import { ManageClassTeachersModal } from '../components/ManageClassTeachersModal';

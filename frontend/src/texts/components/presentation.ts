@@ -17,11 +17,11 @@ export const presentation = {
   },
   menuItem: {
     cs: 'Rozvrh',
-    en: 'presentation',
+    en: 'Presentation',
   },
   title: {
     cs: 'Rozvrh',
-    en: 'presentation',
+    en: 'Presentation',
   },
   status: {
     label: {

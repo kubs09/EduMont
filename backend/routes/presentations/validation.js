@@ -97,16 +97,6 @@ const normalizeCategoryOrdering = async (client, childId, category) => {
 };
 
 const canAccessChildpresentation = async (userId, userRole, childId) => {
-  if (userRole === 'admin') return true;
-
-  if (userRole === 'parent') {
-    const result = await pool.query(
-      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-      [childId, userId]
-    );
-    return result.rows.length > 0;
-  }
-
   if (userRole === 'teacher') {
     const result = await pool.query(
       `

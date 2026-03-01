@@ -242,7 +242,7 @@ export const classes = {
       cs: 'Nepodařilo se odeslat žádost o oprávnění',
       en: 'Failed to send permission request',
     },
-    premissionAcceptButton: {
+    permissionAcceptButton: {
       cs: 'Přijmout oprávnění',
       en: 'Accept Permission',
     },
@@ -276,7 +276,7 @@ export const classes = {
     },
     noNextPresentations: {
       cs: 'Žádné naplánované prezentace',
-      en: 'No presentationd presentations',
+      en: 'No scheduled presentations',
     },
     time: {
       cs: 'Čas',
