@@ -19,9 +19,15 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { ChildExcuse, Document, getChildDocuments, getChildExcuses } from '@frontend/services/api';
+import {
+  checkPermissionRequest,
+  checkPresentationPermission,
+  requestPermission,
+} from '@frontend/services/api/permission';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { Presentation } from '@frontend/types/presentation';
 import { ROUTES } from '@frontend/shared/route';
+import { PermissionAlertWindow } from '@frontend/classes/components/PremissionAlertWindow';
 import EditChildModal from '../components/EditChildModal';
 import { Section, SectionMenu } from '@frontend/shared/components';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
@@ -49,6 +55,9 @@ const ChildDetailPage = () => {
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
   const isParent = userRole === 'parent';
+  const [hasGrantedPresentationPermission, setHasGrantedPresentationPermission] = useState(false);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
 
   const canEdit = isAdmin;
   const canUpload = isAdmin || isTeacher || isParent;
@@ -79,11 +88,24 @@ const ChildDetailPage = () => {
 
       try {
         const childResponse = await api.get(`/api/children/${id}`);
-        setChildData(childResponse.data);
+        const child = childResponse.data;
+        setChildData(child);
 
         try {
-          const presentationsResponse = await api.get(`/api/children/${id}/presentations`);
-          setPresentations(presentationsResponse.data || []);
+          if (isAdmin && child?.class_id) {
+            const permissionResult = await checkPresentationPermission(child.class_id);
+            setHasGrantedPresentationPermission(permissionResult.has_access);
+
+            if (permissionResult.has_access) {
+              const presentationsResponse = await api.get(`/api/children/${id}/presentations`);
+              setPresentations(presentationsResponse.data || []);
+            } else {
+              setPresentations([]);
+            }
+          } else {
+            const presentationsResponse = await api.get(`/api/children/${id}/presentations`);
+            setPresentations(presentationsResponse.data || []);
+          }
         } catch (err) {
           setPresentations([]);
         }
@@ -111,19 +133,95 @@ const ChildDetailPage = () => {
     };
 
     fetchData();
-  }, [id, language, toast]);
+  }, [id, language, toast, isAdmin]);
+
+  useEffect(() => {
+    const fetchPresentationPermission = async () => {
+      if (!isAdmin) return;
+
+      const classId = childData?.class_id || presentations[0]?.class_id;
+      if (!classId) {
+        setHasGrantedPresentationPermission(false);
+        return;
+      }
+
+      try {
+        const result = await checkPresentationPermission(classId);
+        setHasGrantedPresentationPermission(result.has_access);
+      } catch (error) {
+        setHasGrantedPresentationPermission(false);
+      }
+    };
+
+    fetchPresentationPermission();
+  }, [isAdmin, childData?.class_id, presentations]);
+
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      if (!isAdmin || hasGrantedPresentationPermission || !childData?.class_id) {
+        return;
+      }
+
+      try {
+        const result = await checkPermissionRequest(childData.class_id);
+        setPermissionRequested(result.already_requested);
+      } catch (error) {
+        setPermissionRequested(false);
+      }
+    };
+
+    checkExistingRequest();
+  }, [isAdmin, hasGrantedPresentationPermission, childData?.class_id]);
+
+  const handleRequestPresentationPermission = async () => {
+    if (!childData?.class_id) return;
+
+    try {
+      setIsRequestingPermission(true);
+      const response = await requestPermission({
+        resource_type: 'class_presentations',
+        resource_id: childData.class_id,
+        reason: 'Admin requesting access to view child presentations',
+        language,
+      });
+
+      setPermissionRequested(response.already_requested || true);
+
+      if (!response.already_requested) {
+        toast({
+          title: texts.classes.detail.permissionRequestSent[language],
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: texts.classes.detail.permissionRequestError[language],
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsRequestingPermission(false);
+    }
+  };
+
+  const canUpdatePresentationStatus = isTeacher || (isAdmin && hasGrantedPresentationPermission);
+  const showPresentationPermissionAlert =
+    isAdmin && !!childData?.class_id && !hasGrantedPresentationPermission;
 
   useEffect(() => {
     const visibleSectionIds = [
       'information',
-      ...(presentations.length > 0 ? ['presentations'] : []),
+      ...(presentations.length > 0 || showPresentationPermissionAlert ? ['presentations'] : []),
       'excuses',
       'documents',
     ];
     if (!visibleSectionIds.includes(activeSectionId)) {
       setActiveSectionId(visibleSectionIds[0]);
     }
-  }, [activeSectionId, presentations.length]);
+  }, [activeSectionId, presentations.length, showPresentationPermissionAlert]);
 
   const handleEditSave = async (updatedData: UpdateChildData) => {
     if (!childData || !id) return;
@@ -201,13 +299,23 @@ const ChildDetailPage = () => {
     {
       id: 'presentations',
       label: texts.presentation.title[language],
-      content: (
+      content: showPresentationPermissionAlert ? (
+        <PermissionAlertWindow
+          title={texts.classes.detail.presentationsPermissionTitle[language]}
+          message={texts.classes.detail.presentationsPermissionMessage[language]}
+          onRequestPermission={handleRequestPresentationPermission}
+          actionLabel={texts.classes.detail.requestPermissionButton[language]}
+          submittedLabel={texts.classes.detail.requestSentButton[language]}
+          isLoading={isRequestingPermission}
+          premissionSubmitted={permissionRequested}
+        />
+      ) : (
         <PresentationsSection
           presentations={presentations}
           language={language}
           childId={id ? parseInt(id, 10) : 0}
           display_order={presentations.length > 0 ? presentations[0].display_order || 0 : 0}
-          canUpdateStatus={isTeacher}
+          canUpdateStatus={canUpdatePresentationStatus}
           onStatusUpdated={(presentationId, newStatus) => {
             setPresentations((prev) =>
               prev.map((presentation) =>
@@ -219,7 +327,7 @@ const ChildDetailPage = () => {
           }}
         />
       ),
-      isVisible: presentations.length > 0,
+      isVisible: presentations.length > 0 || showPresentationPermissionAlert,
     },
     {
       id: 'excuses',
@@ -340,8 +448,6 @@ const ChildDetailPage = () => {
           </Grid>
         </CardBody>
       </Card>
-
-      {/* Edit Child Modal */}
       {canEdit && childData && (
         <EditChildModal
           isOpen={isEditModalOpen}
@@ -350,8 +456,6 @@ const ChildDetailPage = () => {
           onSave={handleEditSave}
         />
       )}
-
-      {/* Delete Confirmation Dialog */}
       {canEdit && (
         <ConfirmDialog
           isOpen={isDeleteConfirmOpen}

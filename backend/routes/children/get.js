@@ -157,6 +157,54 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
+    const classResult = await pool.query(
+      'SELECT class_id FROM class_children WHERE child_id = $1 ORDER BY class_id DESC LIMIT 1',
+      [id]
+    );
+
+    if (classResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Child class not found' });
+    }
+
+    const classId = classResult.rows[0].class_id;
+
+    if (req.user.role === 'admin') {
+      const permissionResult = await pool.query(
+        `SELECT 1 FROM presentation_permissions
+         WHERE class_id = $1 AND admin_id = $2 AND granted = TRUE
+         LIMIT 1`,
+        [classId, req.user.id]
+      );
+
+      if (permissionResult.rows.length === 0) {
+        return res.status(403).json({ error: 'You do not have permission to view presentations' });
+      }
+    } else if (req.user.role === 'teacher') {
+      const teacherResult = await pool.query(
+        `SELECT 1 FROM class_teachers
+         WHERE class_id = $1 AND teacher_id = $2
+         LIMIT 1`,
+        [classId, req.user.id]
+      );
+
+      if (teacherResult.rows.length === 0) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+    } else if (req.user.role === 'parent') {
+      const parentResult = await pool.query(
+        `SELECT 1 FROM child_parents
+         WHERE child_id = $1 AND parent_id = $2
+         LIMIT 1`,
+        [id, req.user.id]
+      );
+
+      if (parentResult.rows.length === 0) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+    } else {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
     const query = `
       SELECT 
         s.id,
