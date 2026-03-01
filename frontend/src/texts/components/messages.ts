@@ -35,6 +35,10 @@ export const messages = {
     cs: 'Obsah zprávy',
     en: 'Message Content',
   },
+  recipients: {
+    cs: 'Příjemci',
+    en: 'Recipients',
+  },
   send: {
     cs: 'Odeslat',
     en: 'Send',
@@ -142,5 +146,13 @@ export const messages = {
   classLabel: {
     cs: 'Třída:',
     en: 'Class:',
+  },
+  allUsers: {
+    cs: 'Všichni uživatelé',
+    en: 'All Users',
+  },
+  allParentsInClass: {
+    cs: 'Všichni rodiče v mých třídách',
+    en: 'All Parents in My Classes',
   },
 };

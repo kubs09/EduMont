@@ -22,7 +22,7 @@ const ColorModeToggle: React.FC<ColorModeToggleProps> = ({ size = 'md', variant 
     <Tooltip label={label} placement="bottom">
       <IconButton
         aria-label={label}
-        icon={<Icon />}
+        icon={React.createElement(Icon as React.ElementType)}
         onClick={toggleColorMode}
         size={size}
         variant={variant}

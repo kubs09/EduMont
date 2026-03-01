@@ -16,14 +16,11 @@ import {
   Input,
   Textarea,
   VStack,
-  Checkbox,
-  SimpleGrid,
-  Box,
-  Text,
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
+import { Combobox } from '@frontend/shared/components';
 
 interface User {
   id: number;
@@ -45,6 +42,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
   const { language } = useLanguage();
   const t = texts.messages;
   const messageSchema = createMessageSchema(language as 'en' | 'cs');
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const {
     control,
@@ -66,29 +64,57 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
     onClose();
   };
 
-  const groupUsersByClass = (users: User[], role: string) => {
-    const roleUsers = users.filter((u) => u.role === role);
-    const noClassUsers = roleUsers.filter((u) => !u.class_ids || u.class_ids.length === 0);
-    const classUsers = roleUsers.filter((u) => u.class_ids && u.class_ids.length > 0);
+  const getAllUsers = () => {
+    return users.map((u) => u.id);
+  };
 
-    const classMaps = new Map<string, User[]>();
-    classUsers.forEach((user) => {
-      const classes = user.class_names?.split(', ') || [];
-      classes.forEach((className) => {
-        if (!classMaps.has(className)) {
-          classMaps.set(className, []);
-        }
-        classMaps.get(className)?.push(user);
+  const getTeacherParents = () => {
+    return users.filter((u) => u.role === 'parent').map((p) => p.id);
+  };
+
+  const buildComboboxOptions = () => {
+    const options: Array<{ value: string | number; label: string }> = [];
+
+    if (currentUser.role === 'admin') {
+      options.push({
+        value: 'ALL_USERS',
+        label: `${t.allUsers[language]} (${users.length})`,
+      });
+    } else if (currentUser.role === 'teacher') {
+      const parentCount = getTeacherParents().length;
+      options.push({
+        value: 'ALL_PARENTS_IN_CLASS',
+        label: `${t.allParentsInClass[language]} (${parentCount})`,
+      });
+    }
+
+    users.forEach((user) => {
+      options.push({
+        value: user.id,
+        label: `${user.firstname} ${user.surname} (${user.role}${user.class_names ? ` - ${user.class_names}` : ''})`,
       });
     });
 
-    return {
-      noClassUsers,
-      classGroups: Array.from(classMaps.entries()).map(([className, users]) => ({
-        className,
-        users,
-      })),
-    };
+    return options;
+  };
+
+  const handleComboboxChange = (newValue: string | number | Array<string | number> | null) => {
+    if (!Array.isArray(newValue)) return;
+
+    let finalValue = [...newValue];
+
+    if (newValue.includes('ALL_USERS')) {
+      finalValue = finalValue.filter((val) => val !== 'ALL_USERS');
+      finalValue.push(...getAllUsers());
+    } else if (newValue.includes('ALL_PARENTS_IN_CLASS')) {
+      finalValue = finalValue.filter((val) => val !== 'ALL_PARENTS_IN_CLASS');
+      finalValue.push(...getTeacherParents());
+    }
+
+    const uniqueValue = Array.from(new Set(finalValue));
+    const filteredValue = uniqueValue.filter((val) => typeof val === 'number');
+
+    return filteredValue;
   };
 
   return (
@@ -106,62 +132,16 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
                   name="to_user_ids"
                   control={control}
                   render={({ field: { value, onChange } }) => (
-                    <Box
-                      maxH="300px"
-                      overflowY="auto"
-                      w="100%"
-                      p={2}
-                      borderWidth={1}
-                      borderRadius="md"
-                    >
-                      {['admin', 'teacher', 'parent'].map(
-                        (role: 'admin' | 'teacher' | 'parent') => {
-                          const { noClassUsers, classGroups } = groupUsersByClass(users, role);
-                          if (noClassUsers.length === 0 && classGroups.length === 0) return null;
-
-                          return (
-                            <Box key={role} mb={4}>
-                              <Text fontWeight="bold" mb={2}>
-                                {t.roleGroups[role][language]}
-                              </Text>
-
-                              {noClassUsers.length > 0 && (
-                                <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={2} mb={2}>
-                                  {noClassUsers.map((user) => (
-                                    <UserCheckbox
-                                      key={user.id}
-                                      user={user}
-                                      isChecked={value.includes(user.id)}
-                                      onChange={onChange}
-                                      value={value}
-                                    />
-                                  ))}
-                                </SimpleGrid>
-                              )}
-
-                              {classGroups.map(({ className, users }) => (
-                                <Box key={className} ml={4} mb={3}>
-                                  <Text fontSize="sm" fontWeight="medium" mb={1}>
-                                    {className}
-                                  </Text>
-                                  <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={2}>
-                                    {users.map((user) => (
-                                      <UserCheckbox
-                                        key={user.id}
-                                        user={user}
-                                        isChecked={value.includes(user.id)}
-                                        onChange={onChange}
-                                        value={value}
-                                      />
-                                    ))}
-                                  </SimpleGrid>
-                                </Box>
-                              ))}
-                            </Box>
-                          );
-                        }
-                      )}
-                    </Box>
+                    <Combobox
+                      options={buildComboboxOptions()}
+                      value={value}
+                      onChange={(newValue) => {
+                        const expanded = handleComboboxChange(newValue);
+                        onChange(expanded || []);
+                      }}
+                      placeholder={t.recipients[language]}
+                      isMulti
+                    />
                   )}
                 />
                 <FormErrorMessage>{errors.to_user_ids?.message}</FormErrorMessage>
@@ -201,28 +181,5 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
     </Modal>
   );
 };
-
-interface UserCheckboxProps {
-  user: User;
-  isChecked: boolean;
-  onChange: (value: number[]) => void;
-  value: number[];
-}
-
-const UserCheckbox: React.FC<UserCheckboxProps> = ({ user, isChecked, onChange, value }) => (
-  <Checkbox
-    isChecked={isChecked}
-    onChange={(e) => {
-      const newValue = e.target.checked
-        ? [...value, user.id]
-        : value.filter((id: number) => id !== user.id);
-      onChange(newValue);
-    }}
-  >
-    <Text>
-      {user.firstname} {user.surname}
-    </Text>
-  </Checkbox>
-);
 
 export default ComposeMessageModal;

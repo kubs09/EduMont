@@ -15,9 +15,12 @@ const pool = new Pool({
 async function migrate() {
   try {
     const schemaFile = path.join(__dirname, 'schema.sql');
+    const insertDataFile = path.join(__dirname, 'insert.sql');
     const schema = fs.readFileSync(schemaFile, 'utf8');
+    const insertData = fs.readFileSync(insertDataFile, 'utf8');
 
     await pool.query(schema);
+    await pool.query(insertData);
   } catch (error) {
     throw error;
   } finally {
