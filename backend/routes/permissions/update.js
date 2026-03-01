@@ -8,7 +8,7 @@ router.post('/accept', auth, async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const { class_id, requester_id, language } = req.body;
+    const { class_id, language } = req.body;
     const approver_id = req.user.id;
 
     const approverCheck = await client.query(
@@ -24,8 +24,8 @@ router.post('/accept', auth, async (req, res) => {
     }
 
     const permissionCheck = await client.query(
-      'SELECT pp.id FROM presentation_permissions pp WHERE pp.class_id = $1 AND pp.admin_id = $2 AND pp.permission_requested = TRUE FOR UPDATE',
-      [class_id, requester_id]
+      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE FOR UPDATE',
+      [class_id]
     );
 
     if (!permissionCheck.rows.length) {
@@ -33,16 +33,13 @@ router.post('/accept', auth, async (req, res) => {
       return res.status(404).json({ error: 'No pending permission request found for this class' });
     }
 
-    if (!permissionCheck.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'No matching pending permission request found' });
-    }
+    const requester_id = permissionCheck.rows[0].admin_id;
 
     const classResult = await client.query('SELECT name FROM classes WHERE id = $1', [class_id]);
     const className = classResult.rows[0]?.name || class_id;
 
     await client.query(
-      'UPDATE presentation_permissions SET permission_requested = FALSE, granted = TRUE, updated_at = CURRENT_TIMESTAMP WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE',
+      'UPDATE presentation_permissions SET granted = TRUE, updated_at = CURRENT_TIMESTAMP WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE',
       [class_id, requester_id]
     );
 

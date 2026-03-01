@@ -114,7 +114,7 @@ router.get('/pending', auth, async (req, res) => {
       `SELECT pp.*, u.firstname, u.surname, u.email 
        FROM presentation_permissions pp 
        JOIN users u ON pp.admin_id = u.id 
-       WHERE pp.class_id = $1 AND pp.permission_requested = TRUE`,
+       WHERE pp.class_id = $1 AND pp.permission_requested = TRUE AND pp.granted = FALSE`,
       [class_id]
     );
 

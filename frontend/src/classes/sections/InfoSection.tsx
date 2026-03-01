@@ -22,7 +22,8 @@ interface InfoTabProps {
   classData: Class;
   language: 'cs' | 'en';
   isAdmin: boolean;
-  premissionRequested: boolean;
+  permissionRequested: boolean;
+  permissionGranted: boolean;
   pendingPermissions: PendingPermissionRequest[];
   onEditClick: () => void;
   onEditMembersClick: () => void;
@@ -34,7 +35,8 @@ const InfoTab: React.FC<InfoTabProps> = ({
   classData,
   language,
   isAdmin,
-  premissionRequested,
+  permissionRequested,
+  permissionGranted,
   pendingPermissions,
   onEditClick,
   onEditMembersClick,
@@ -113,7 +115,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
           </Button>
         </Stack>
       )}
-      {!isAdmin && premissionRequested && requestingAdmin && (
+      {!isAdmin && permissionRequested && requestingAdmin && !permissionGranted && (
         <Alert status="info" borderRadius="md">
           <AlertIcon />
           <Box flex="1">

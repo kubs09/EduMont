@@ -207,7 +207,7 @@ const ClassDetailPage = () => {
         (teacher.class_role === 'teacher' || teacher.class_role === 'assistant')
     );
 
-  const hasPremissionRequestRecieved = isCurrentUserTeacherOfClass && pendingPermissions.length > 0;
+  const hasPermissionRequestReceived = isCurrentUserTeacherOfClass && pendingPermissions.length > 0;
 
   const handleSaveClassInfo = async (updatedInfo: {
     name: string;
@@ -340,7 +340,8 @@ const ClassDetailPage = () => {
       classData={classData}
       language={language}
       isAdmin={isAdmin}
-      premissionRequested={hasPremissionRequestRecieved || false}
+      permissionRequested={hasPermissionRequestReceived || false}
+      permissionGranted={hasGrantedPermission}
       pendingPermissions={pendingPermissions}
       onEditClick={() => setIsEditInfoModalOpen(true)}
       onEditMembersClick={() => setIsMembersModalOpen(true)}
