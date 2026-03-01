@@ -72,14 +72,14 @@ router.get('/', authenticateToken, async (req, res) => {
 
 router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
-    const { childId } = req.params;
+    const childId = Number(req.params.childId);
     const { status } = req.query;
 
-    const hasAccess = await canAccessChildpresentation(
-      req.user.id,
-      req.user.role,
-      parseInt(childId)
-    );
+    if (!Number.isInteger(childId)) {
+      return res.status(400).json({ error: 'Invalid child ID' });
+    }
+
+    const hasAccess = await canAccessChildpresentation(req.user.id, req.user.role, childId);
     if (!hasAccess) {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -130,8 +130,12 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
 
 router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
-    const { classId } = req.params;
+    const classId = Number(req.params.classId);
     const { status } = req.query;
+
+    if (!Number.isInteger(classId)) {
+      return res.status(400).json({ error: 'Invalid class ID' });
+    }
 
     if (req.user.role === 'teacher') {
       const teacherClassResult = await pool.query(

@@ -63,11 +63,11 @@ export const presentation = {
     cs: 'Kategorie',
     en: 'Category',
   },
-  childpresentation: {
+  childPresentation: {
     cs: 'Rozvrh dítěte',
     en: 'Child presentation',
   },
-  classpresentation: {
+  classPresentation: {
     cs: 'Rozvrh třídy',
     en: 'Class presentation',
   },
@@ -139,15 +139,15 @@ export const presentation = {
     cs: 'Žádné položky rozvrhu',
     en: 'No presentation entries',
   },
-  todaypresentation: {
+  todayPresentation: {
     cs: 'Dnešní rozvrh',
     en: "Today's presentation",
   },
-  weekpresentation: {
+  weekPresentation: {
     cs: 'Týdenní rozvrh',
     en: 'Weekly presentation',
   },
-  monthpresentation: {
+  monthPresentation: {
     cs: 'Měsíční rozvrh',
     en: 'Monthly presentation',
   },

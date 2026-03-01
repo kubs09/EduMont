@@ -10,8 +10,9 @@ const {
 } = require('./validation');
 
 router.put('/children/:childId/:presentationId/status', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const childId = Number(req.params.childId);
     const presentationId = Number(req.params.presentationId);
     const { status, notes } = req.body || {};
@@ -69,7 +70,7 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     console.error('Error updating presentation status:', error);
     res.status(500).json({ error: 'Failed to update presentation status' });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 });
 

@@ -31,8 +31,6 @@ router.get('/check', auth, async (req, res) => {
       return res.status(404).json({ error: 'Class not found' });
     }
 
-    const className = classResult.rows[0].name;
-
     const existingRequestCheck = await client.query(
       `SELECT id FROM presentation_permissions
        WHERE class_id = $1 AND admin_id = $2 AND permission_requested = TRUE`,
@@ -56,9 +54,13 @@ router.get('/check', auth, async (req, res) => {
 router.get('/granted', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { resource_id } = req.query;
+    const resource_id = Number(req.query.resource_id);
     const user_id = req.user.id;
     const user_role = req.user.role;
+
+    if (!Number.isInteger(resource_id) || resource_id <= 0) {
+      return res.status(400).json({ error: 'resource_id must be a positive integer' });
+    }
 
     if (user_role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can check presentation permissions' });
@@ -93,12 +95,12 @@ router.get('/granted', auth, async (req, res) => {
 router.get('/pending', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { class_id } = req.query;
+    const class_id = Number(req.query.class_id);
     const user_id = req.user.id;
     const user_role = req.user.role;
 
-    if (!class_id) {
-      return res.status(400).json({ error: 'class_id is required' });
+    if (!Number.isInteger(class_id) || class_id <= 0) {
+      return res.status(400).json({ error: 'class_id must be a positive integer' });
     }
 
     const teacherCheck = await client.query(
@@ -136,9 +138,14 @@ router.get('/pending', auth, async (req, res) => {
 router.post('/request', auth, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { resource_type, resource_id, reason, language } = req.body;
+    const { resource_type, reason, language } = req.body;
+    const resource_id = Number(req.body.resource_id);
     const requester_id = req.user.id;
     const requester_role = req.user.role;
+
+    if (!Number.isInteger(resource_id) || resource_id <= 0) {
+      return res.status(400).json({ error: 'resource_id must be a positive integer' });
+    }
 
     if (requester_role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can request permissions' });
@@ -157,11 +164,6 @@ router.post('/request', auth, async (req, res) => {
     const requesterName = `${requester.firstname} ${requester.surname}`;
 
     await client.query('BEGIN');
-
-    if (!resource_id) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Class ID (resource_id) is required' });
-    }
 
     const classResult = await client.query('SELECT id, name FROM classes WHERE id = $1', [
       resource_id,
@@ -265,7 +267,11 @@ router.post('/request', auth, async (req, res) => {
       already_requested: false,
     });
   } catch (error) {
-    await client.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      console.error('Rollback error after permission request failure:', rollbackError);
+    }
     console.error('Permission request error:', error);
     res.status(500).json({
       error: 'Failed to send permission request',

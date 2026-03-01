@@ -245,21 +245,27 @@ const ClassDetailPage = () => {
     }
   };
 
+  const refreshPremissionState = async (class_id: number) => {
+    const pending = await getPendingPermissionRequests(class_id);
+    setPendingPermissions(pending.requests || []);
+    if (isAdmin) {
+      try {
+        const result = await checkPresentationPermission(class_id);
+        setHasGrantedPermission(result.has_access);
+      } catch (error) {
+        console.error('Failed to refresh granted permission:', error);
+        setHasGrantedPermission(false);
+      }
+    }
+  };
+
   const handleAcceptPermission = async () => {
     if (!id) return;
+    const class_id = parseInt(id);
 
     try {
-      await acceptPermissionRequest(parseInt(id), language);
-
-      const pending = await getPendingPermissionRequests(parseInt(id));
-      setPendingPermissions(pending.requests || []);
-
-      if (isAdmin) {
-        try {
-          const result = await checkPresentationPermission(parseInt(id));
-          setHasGrantedPermission(result.has_access);
-        } catch (error) {}
-      }
+      await acceptPermissionRequest(class_id, language);
+      await refreshPremissionState(class_id);
 
       const updatedClass = await api.get(`/api/classes/${id}`);
       setClassData(updatedClass.data);
@@ -283,19 +289,11 @@ const ClassDetailPage = () => {
 
   const handleDenyPermission = async () => {
     if (!id) return;
+    const class_id = parseInt(id);
 
     try {
-      await denyPermissionRequest(parseInt(id), language);
-
-      const pending = await getPendingPermissionRequests(parseInt(id));
-      setPendingPermissions(pending.requests || []);
-
-      if (isAdmin) {
-        try {
-          const result = await checkPresentationPermission(parseInt(id));
-          setHasGrantedPermission(result.has_access);
-        } catch (error) {}
-      }
+      await denyPermissionRequest(class_id, language);
+      await refreshPremissionState(class_id);
 
       toast({
         title: texts.classes.detail.permissionDenied[language],

@@ -77,7 +77,7 @@ router.put('/:id', auth, async (req, res) => {
     const teacherChanged = !currentTeacher || Number(currentTeacher.teacher_id) !== teacherIdNum;
     const assistantChanged =
       assistantIdNum !== null
-        ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNu
+        ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNum
         : !!currentAssistant;
 
     await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
@@ -125,6 +125,7 @@ router.put('/:id', auth, async (req, res) => {
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
       error.message.includes('Assistant cannot be the same') ||
+      error.message.includes('Invalid teacher identifiers') ||
       error.message.includes('Missing required field') ||
       error.message.includes('Invalid age range values') ||
       error.message.includes('Missing required fields')
