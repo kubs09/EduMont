@@ -10,9 +10,10 @@ const { hashPassword } = passwordService;
 const { generateInvitationToken, createInvitationExpiry, sendInvitationEmail } = emailService;
 
 router.post('/', auth, async (req, res) => {
-  const client = await connect();
+  let client;
 
   try {
+    client = await connect();
     const { email, role, language } = req.body;
 
     const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -42,19 +43,21 @@ router.post('/', auth, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json({ message: 'Invitation sent successfully' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch((rollbackErr) => {
+      console.error('Error rolling back transaction:', rollbackErr);
+    });
     console.error('Invitation error:', error);
     res.status(500).json({ error: 'Failed to create invitation' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 router.post('/register/:token', async (req, res) => {
-  const client = await connect();
+  let client;
 
   try {
-    await client.query('BEGIN');
+    client = await connect();
     const { token } = req.params;
     const { firstname, surname, password } = req.body;
 
@@ -66,6 +69,8 @@ router.post('/register/:token', async (req, res) => {
     if (invitation.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid or expired invitation' });
     }
+
+    await client.query('BEGIN');
 
     const { email, role } = invitation.rows[0];
 
@@ -81,11 +86,13 @@ router.post('/register/:token', async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch((rollbackErr) => {
+      console.error('Error rolling back transaction:', rollbackErr);
+    });
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Failed to register user' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

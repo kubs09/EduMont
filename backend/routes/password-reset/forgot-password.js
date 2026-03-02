@@ -8,8 +8,9 @@ import getForgotPasswordEmail from '#backend/templates/forgotPasswordEmail.js';
 import { generateResetToken } from './helpers.js';
 
 router.post('/forgot-password', async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { email, language } = req.body;
 
     const userResult = await client.query(
@@ -55,7 +56,7 @@ router.post('/forgot-password', async (req, res) => {
     console.error('Password reset error:', error);
     return res.status(500).json({ success: false, error: 'Failed to process request' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

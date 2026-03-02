@@ -4,14 +4,15 @@ import { connect } from '#backend/config/database.js';
 import auth from '#backend/middleware/auth.js';
 
 router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
+  let client;
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
       .status(403)
       .json({ error: 'Only administrators and teachers can confirm class assignments' });
   }
 
-  const client = await connect();
   try {
+    client = await connect();
     await client.query('BEGIN');
 
     await client.query(
@@ -69,10 +70,12 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({ error: 'Failed to confirm class assignment' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -84,8 +87,9 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
       .json({ error: 'Only administrators and teachers can deny class assignments' });
   }
 
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     await client.query('BEGIN');
 
     await client.query(
@@ -144,10 +148,12 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Failed to deny class assignment' });
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+    res.status(500).json({ error: 'Failed to confirm class assignment' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

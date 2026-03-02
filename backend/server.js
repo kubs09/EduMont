@@ -28,6 +28,7 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 let dbInitPromise = null;
+const isVercel = process.env.VERCEL === 'true';
 
 const ensureDatabaseInitialized = async () => {
   if (!pool || !initDatabase) return;
@@ -96,7 +97,7 @@ const lazyLoadModules = async () => {
   modulesLoaded = true;
 };
 
-if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
+if (isVercel || process.env.NODE_ENV !== 'production') {
   await lazyLoadModules();
 }
 
@@ -108,7 +109,7 @@ const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Bo
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
 if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
 
-if (!(process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production')) {
+if (!(isVercel || process.env.NODE_ENV === 'production')) {
   if (process.env.INCLUDE_DEV_URLS) {
     corsOrigins.push('http://10.0.1.37:3000');
   }
@@ -150,7 +151,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api', async (req, res, next) => {
   try {
-    if (process.env.VERCEL === 'true' && !modulesLoaded) {
+    if (isVercel && !modulesLoaded) {
       await lazyLoadModules();
     }
     next();
@@ -159,59 +160,57 @@ app.use('/api', async (req, res, next) => {
   }
 });
 
-if (modulesLoaded && pool && initDatabase) {
-  if (process.env.VERCEL) {
-    let dbInitialized = false;
-    let dbInitializing = false;
+if (!isVercel && modulesLoaded && pool && initDatabase) {
+  let dbInitialized = false;
+  let dbInitializing = false;
 
-    app.use(async (req, res, next) => {
-      if (!req.path.startsWith('/api')) {
-        return next();
-      }
+  app.use(async (req, res, next) => {
+    if (!req.path.startsWith('/api')) {
+      return next();
+    }
 
+    if (dbInitialized) {
+      return next();
+    }
+
+    if (dbInitializing) {
+      await setTimeout(100);
       if (dbInitialized) {
         return next();
       }
+      return res.status(503).json({ error: 'Database is initializing, please retry' });
+    }
 
-      if (dbInitializing) {
-        await setTimeout(100);
-        if (dbInitialized) {
-          return next();
+    dbInitializing = true;
+    try {
+      if (process.env.USE_SUPABASE === 'true') {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+          throw new Error(
+            'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
+          );
         }
-        return res.status(503).json({ error: 'Database is initializing, please retry' });
+      } else {
+        /* empty */
       }
 
-      dbInitializing = true;
-      try {
-        if (process.env.USE_SUPABASE === 'true') {
-          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-            throw new Error(
-              'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
-            );
-          }
-        } else {
-          /* empty */
-        }
-
-        await initDatabase();
-        dbInitialized = true;
-        dbInitializing = false;
-        next();
-      } catch (err) {
-        dbInitializing = false;
-        return res.status(500).json({
-          error: 'Database initialization failed',
-          message: err.message,
-          details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-        });
-      }
-    });
-  } else {
-    ensureDatabaseInitialized().catch((error) => {
-      console.error('Database initialization error:', error);
-      process.exit(1);
-    });
-  }
+      await initDatabase();
+      dbInitialized = true;
+      dbInitializing = false;
+      next();
+    } catch (err) {
+      dbInitializing = false;
+      return res.status(500).json({
+        error: 'Database initialization failed',
+        message: err.message,
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      });
+    }
+  });
+} else {
+  ensureDatabaseInitialized().catch((error) => {
+    console.error('Database initialization error:', error);
+    process.exit(1);
+  });
 }
 
 app.use((req, res, next) => {
@@ -286,7 +285,7 @@ app.use((err, req, res, next) => {
 
 export default app;
 
-if (process.argv[1] === __filename && !process.env.VERCEL) {
+if (process.argv[1] === __filename && !isVercel) {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

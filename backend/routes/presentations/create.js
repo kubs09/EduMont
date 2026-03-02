@@ -9,8 +9,9 @@ const { validatepresentation, canEditChildpresentation, normalizeCategoryOrderin
 
 // Create a new presentation entry
 router.post('/', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
     const validationErrors = validatepresentation(req.body);
@@ -80,11 +81,15 @@ router.post('/', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK').catch((rollbackErr) => {
+        console.error('Error rolling back transaction:', rollbackErr);
+      });
+    }
     console.error('Error creating presentation:', err);
     res.status(500).json({ error: 'Failed to create presentation entry' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

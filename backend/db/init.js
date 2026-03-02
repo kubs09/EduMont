@@ -162,18 +162,18 @@ const initDatabase = async () => {
     await query(createChildExcusesTable);
     await query(createCategoryPresentationsTable);
     await query(createPresentationsTable);
-    await query('SELECT * FROM users LIMIT 1');
-    await query('SELECT * FROM children LIMIT 1');
-    await query('SELECT * FROM child_parents LIMIT 1');
-    await query('SELECT * FROM classes LIMIT 1');
-    await query('SELECT * FROM class_teachers LIMIT 1');
-    await query('SELECT * FROM class_children LIMIT 1');
-    await query('SELECT * FROM messages LIMIT 1');
-    await query('SELECT * FROM documents LIMIT 1');
-    await query('SELECT * FROM class_attendance LIMIT 1');
-    await query('SELECT * FROM child_excuses LIMIT 1');
-    await query('SELECT * FROM category_presentations LIMIT 1');
-    await query('SELECT * FROM presentations LIMIT 1');
+    await query('SELECT 1 FROM users LIMIT 1');
+    await query('SELECT 1 FROM children LIMIT 1');
+    await query('SELECT 1 FROM child_parents LIMIT 1');
+    await query('SELECT 1 FROM classes LIMIT 1');
+    await query('SELECT 1 FROM class_teachers LIMIT 1');
+    await query('SELECT 1 FROM class_children LIMIT 1');
+    await query('SELECT 1 FROM messages LIMIT 1');
+    await query('SELECT 1 FROM documents LIMIT 1');
+    await query('SELECT 1 FROM class_attendance LIMIT 1');
+    await query('SELECT 1 FROM child_excuses LIMIT 1');
+    await query('SELECT 1 FROM category_presentations LIMIT 1');
+    await query('SELECT 1 FROM presentations LIMIT 1');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(

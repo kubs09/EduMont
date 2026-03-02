@@ -4,9 +4,10 @@ import { connect } from '#backend/config/database.js';
 
 router.get('/check-token/:token', async (req, res) => {
   let { token } = req.params;
-  const client = await connect();
+  let client;
 
   try {
+    client = await connect();
     token = decodeURIComponent(token);
     if (token.includes('=')) {
       token = token.split('=').pop();
@@ -24,7 +25,7 @@ router.get('/check-token/:token', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to check token' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

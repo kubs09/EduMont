@@ -64,13 +64,18 @@ try {
 } catch (error) {
   app = express();
   app.use((req, res) => {
+    const isDev = process.env.NODE_ENV === 'development';
     res.status(500).json({
       error: 'Server initialization failed',
       message: error.message,
-      backendPath: backendPath,
-      dbPath: process.env.DB_PATH,
-      cwd: process.cwd(),
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      details: isDev
+        ? {
+            backendPath,
+            dbPath: process.env.DB_PATH,
+            cwd: process.cwd(),
+            stack: error.stack,
+          }
+        : undefined,
     });
   });
 }

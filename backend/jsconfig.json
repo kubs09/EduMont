@@ -14,7 +14,8 @@
       "@uploads/*": ["uploads/*"]
     },
     "target": "es6",
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "allowJs": true,
     "checkJs": false
   },

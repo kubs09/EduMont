@@ -9,8 +9,9 @@ const { hashPassword } = passwordService;
 const { validateSignupData } = validationService;
 
 router.post('/signup', async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { email, password, firstName, lastName } = req.body;
 
     const validation = validateSignupData(email, password, firstName, lastName);
@@ -53,11 +54,13 @@ router.post('/signup', async (req, res) => {
       },
     });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Signup error:', err);
     res.status(500).json({ error: 'Registration failed', details: err.message });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

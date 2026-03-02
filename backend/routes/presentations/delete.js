@@ -8,8 +8,9 @@ const { canEditChildpresentation, normalizeDisplayOrder } = validation;
 
 // Delete a presentation entry
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
 
     await client.query('BEGIN');
@@ -43,11 +44,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'presentation entry deleted successfully' });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK').catch((rollbackErr) => {
+        console.error('Error rolling back transaction:', rollbackErr);
+      });
+    }
     console.error('Error deleting presentation:', err);
     res.status(500).json({ error: 'Failed to delete presentation entry' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

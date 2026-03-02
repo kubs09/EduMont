@@ -6,10 +6,10 @@ import console from 'console';
 import validation from './validation.js';
 const { canEditDocumentByIds } = validation;
 
-// Delete a document
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
 
     await client.query('BEGIN');
@@ -38,11 +38,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Document deleted successfully' });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error deleting document:', err);
     res.status(500).json({ error: 'Failed to delete document' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

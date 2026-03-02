@@ -8,8 +8,9 @@ const { validateDocument, canEditDocumentByIds, ensureChildInClass } = validatio
 
 // Update a document
 router.put('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
     const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
       req.body;
@@ -86,11 +87,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error updating document:', err);
     res.status(500).json({ error: 'Failed to update document' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

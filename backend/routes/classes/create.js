@@ -15,11 +15,12 @@ function calculateAge(birthDate) {
 }
 
 router.post('/', auth, async (req, res) => {
+  let client;
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
   }
-  const client = await connect();
   try {
+    client = await connect();
     await client.query('BEGIN');
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
     const classResult = await client.query(
@@ -72,7 +73,9 @@ router.post('/', auth, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json({ id: classId });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     if (
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
@@ -89,7 +92,7 @@ router.post('/', auth, async (req, res) => {
       details: error.message,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -98,8 +101,9 @@ router.post('/auto-assign', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can trigger auto-assignment' });
   }
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     await client.query('BEGIN');
     // First, clear all previous assignments
     await client.query('DELETE FROM class_children');
@@ -139,13 +143,15 @@ router.post('/auto-assign', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Automatic class assignment completed' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({
       error: 'Failed to perform automatic class assignment',
       details: error.message,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

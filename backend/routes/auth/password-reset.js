@@ -11,8 +11,9 @@ const { sendPasswordResetEmail } = emailService;
 const { validateForgotPasswordData } = validationService;
 
 router.post('/forgot-password', async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { email, language } = req.body;
 
     const validation = validateForgotPasswordData(email);
@@ -41,13 +42,16 @@ router.post('/forgot-password', async (req, res) => {
 
     return res.json({ success: true });
   } catch (error) {
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Password reset error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to process password reset request',
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

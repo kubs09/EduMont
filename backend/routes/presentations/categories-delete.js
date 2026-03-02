@@ -6,8 +6,9 @@ import auth from '#backend/middleware/auth.js';
 
 // Delete a category presentation
 router.delete('/categories/:id', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -51,13 +52,15 @@ router.delete('/categories/:id', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Category presentation deleted successfully' });
   } catch (error) {
-    await client.query('ROLLBACK').catch((err) => {
-      console.error('Error deleting category presentation:', err);
-    });
+    if (client) {
+      await client.query('ROLLBACK').catch((err) => {
+        console.error('Error rolling back transaction:', err);
+      });
+    }
     console.error('Error deleting category presentation:', error);
     res.status(500).json({ error: 'Failed to delete category presentation' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

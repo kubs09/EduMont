@@ -5,8 +5,9 @@ import { connect, query as _query } from '#backend/config/database.js';
 import auth from '#backend/middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     let query = '';
     const params = [];
 
@@ -122,12 +123,15 @@ router.get('/', auth, async (req, res) => {
     const result = await client.query(query, params);
     res.json(result.rows);
   } catch (error) {
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({
       error: 'Failed to fetch classes',
       details: error.message,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

@@ -10,8 +10,9 @@ const { validateUserProfile } = validationService;
 const { hashPassword, comparePassword } = passwordService;
 
 router.put('/:id', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -43,7 +44,7 @@ router.put('/:id', auth, async (req, res) => {
     }
     res.status(500).json({ error: 'Failed to update user' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -80,8 +81,9 @@ router.put('/:id/password', auth, async (req, res) => {
 });
 
 router.put('/:id/notifications', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { messageNotifications } = req.body;
     const userId = parseInt(req.params.id);
 
@@ -103,7 +105,7 @@ router.put('/:id/notifications', auth, async (req, res) => {
     console.error('Error updating notification settings:', error);
     res.status(500).json({ error: 'Failed to update notification settings' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

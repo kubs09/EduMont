@@ -9,8 +9,9 @@ const { validatepresentation, canEditChildpresentation, normalizeCategoryOrderin
 
 // Update a presentation entry
 router.put('/:id', authenticateToken, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { id } = req.params;
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
@@ -70,11 +71,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch((rollbackErr) => {
+      console.error('Error rolling back transaction:', rollbackErr);
+    });
     console.error('Error updating presentation:', err);
     res.status(500).json({ error: 'Failed to update presentation entry' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

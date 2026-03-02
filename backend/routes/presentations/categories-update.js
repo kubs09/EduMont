@@ -5,8 +5,9 @@ import { connect } from '#backend/config/database.js';
 import auth from '#backend/middleware/auth.js';
 
 router.put('/categories/:id', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -177,10 +178,11 @@ router.put('/categories/:id', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK').catch((err) => {
-      console.error('Error rolling back transaction:', err);
-    });
-
+    if (client) {
+      await client.query('ROLLBACK').catch((err) => {
+        console.error('Error rolling back transaction:', err);
+      });
+    }
     if (error.code === '23505') {
       return res.status(400).json({
         error: 'A presentation with this category and display order already exists',
@@ -189,7 +191,7 @@ router.put('/categories/:id', auth, async (req, res) => {
     console.error('Error updating category presentation:', error);
     res.status(500).json({ error: 'Failed to update category presentation' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

@@ -5,13 +5,14 @@ import { hash } from 'bcryptjs';
 
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
-  const client = await connect();
+  let client;
 
   try {
     if (!token || token.length !== 64) {
       return res.status(400).json({ error: 'Invalid reset token format' });
     }
 
+    client = await connect();
     await client.query('BEGIN');
 
     const checkResult = await client.query(
@@ -52,10 +53,12 @@ router.post('/reset-password', async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Password reset successful' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({ error: 'Failed to reset password' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

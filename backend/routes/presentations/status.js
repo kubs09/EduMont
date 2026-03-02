@@ -74,7 +74,7 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     console.error('Error updating presentation status:', error);
     res.status(500).json({ error: 'Failed to update presentation status' });
   } finally {
-    if (client) client.release();
+    client?.release();
   }
 });
 
@@ -176,7 +176,7 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
     console.error('Error reordering presentations:', error);
     res.status(500).json({ error: 'Failed to reorder presentations' });
   } finally {
-    if (client) client.release();
+    client?.release();
   }
 });
 

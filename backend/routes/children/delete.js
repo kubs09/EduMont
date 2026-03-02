@@ -6,8 +6,9 @@ import { connect } from '#backend/config/database.js';
 import authenticateToken from '#backend/middleware/auth.js';
 
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { id } = req.params;
 
     const child = await client.query('SELECT id FROM children WHERE id = $1', [id]);
@@ -34,17 +35,20 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Child deleted successfully' });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error deleting child:', err);
     res.status(500).json({ error: 'Failed to delete child record' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     const { childId, classId } = req.params;
 
     const child = await client.query('SELECT id FROM children WHERE id = $1', [childId]);
@@ -76,7 +80,7 @@ router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) 
       details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

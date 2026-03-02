@@ -1,4 +1,5 @@
 import pool from '../config/database.js';
+import console from 'console';
 import { setTimeout as sleep } from 'timers/promises';
 
 const executeQuery = async (query, params = [], retries = 2) => {
@@ -30,18 +31,21 @@ const executeQuery = async (query, params = [], retries = 2) => {
 };
 
 const executeTransaction = async (callback) => {
-  const client = await pool.connect();
+  let client;
 
   try {
+    client = await pool.connect();
     await client.query('BEGIN');
     const result = await callback(client);
     await client.query('COMMIT');
     return result;
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch((rollbackErr) => {
+      console.error('Error rolling back transaction:', rollbackErr);
+    });
     throw error;
   } finally {
-    client.release();
+    client?.release();
   }
 };
 
