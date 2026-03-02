@@ -1,12 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import { query } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
   try {
-    const result = await pool.query(
+    const result = await query(
       `
       WITH recipients AS (
         SELECT 
@@ -59,7 +58,7 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
   try {
-    const result = await pool.query(
+    const result = await query(
       `
       WITH recipients AS (
         SELECT 
@@ -111,7 +110,7 @@ router.get('/:id', auth, async (req, res) => {
     }
 
     if (result.rows[0].to_user_id === req.user.id && !result.rows[0].read_at) {
-      await pool.query('UPDATE messages SET read_at = NOW() WHERE id = $1', [req.params.id]);
+      await query('UPDATE messages SET read_at = NOW() WHERE id = $1', [req.params.id]);
     }
 
     res.json(result.rows[0]);
@@ -120,4 +119,4 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

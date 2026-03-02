@@ -1,14 +1,16 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { validateDocument, canEditDocumentByIds, ensureChildInClass } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
+import console from 'console';
+import validation from './validation.js';
+const { validateDocument, canEditDocumentByIds, ensureChildInClass } = validation;
 
 // Update a document
 router.put('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
     const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
       req.body;
@@ -85,12 +87,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error updating document:', err);
     res.status(500).json({ error: 'Failed to update document' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

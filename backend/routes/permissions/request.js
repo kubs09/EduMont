@@ -1,13 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.get('/check', auth, async (req, res) => {
   let client;
   try {
-    client = await pool.connect();
+    client = await connect();
     const resource_id = Number(req.query.resource_id);
     const requester_id = req.user.id;
     const requester_role = req.user.role;
@@ -49,8 +50,9 @@ router.get('/check', auth, async (req, res) => {
 });
 
 router.get('/granted', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const resource_id = Number(req.query.resource_id);
     const user_id = req.user.id;
     const user_role = req.user.role;
@@ -81,13 +83,14 @@ router.get('/granted', auth, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 router.get('/pending', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const class_id = Number(req.query.class_id);
     const user_id = req.user.id;
     const user_role = req.user.role;
@@ -124,13 +127,14 @@ router.get('/pending', auth, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 router.post('/request', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const { resource_type, reason, language } = req.body;
     const resource_id = Number(req.body.resource_id);
     const requester_id = req.user.id;
@@ -248,7 +252,9 @@ router.post('/request', auth, async (req, res) => {
     });
   } catch (error) {
     try {
-      await client.query('ROLLBACK');
+      if (client) {
+        await client.query('ROLLBACK');
+      }
     } catch (rollbackError) {
       console.error('Rollback error after permission request failure:', rollbackError);
     }
@@ -258,8 +264,8 @@ router.post('/request', auth, async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

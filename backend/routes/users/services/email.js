@@ -1,23 +1,10 @@
-/* eslint-disable */
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const getInvitationEmail = require('../../../templates/invitationEmail');
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+import { randomBytes } from 'crypto';
+import process from 'process';
+import { sendEmail } from '#backend/config/mail.js';
+import getInvitationEmail from '#backend/templates/invitationEmail.js';
 
 const generateInvitationToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+  return randomBytes(32).toString('hex');
 };
 
 const createInvitationExpiry = (hoursFromNow = 48) => {
@@ -30,7 +17,7 @@ const sendInvitationEmail = async (email, role, token, language = 'en') => {
   const inviteUrl = `${process.env.FRONTEND_URL}/register/invite/${token}`;
   const emailContent = getInvitationEmail(role, inviteUrl, language);
 
-  return await transporter.sendMail({
+  return await sendEmail({
     from: `EduMont <${process.env.SMTP_FROM}>`,
     to: email,
     subject: emailContent.subject,
@@ -38,7 +25,7 @@ const sendInvitationEmail = async (email, role, token, language = 'en') => {
   });
 };
 
-module.exports = {
+export default {
   generateInvitationToken,
   createInvitationExpiry,
   sendInvitationEmail,

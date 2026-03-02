@@ -1,26 +1,9 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import loginRouter from './login.js';
+import signupRouter from './signup.js';
+import passwordResetRouter from './password-reset.js';
 
-let loginRouter, signupRouter, passwordResetRouter;
-
-try {
-  loginRouter = require('./login');
-} catch (error) {
-  loginRouter = null;
-}
-
-try {
-  signupRouter = require('./signup');
-} catch (error) {
-  signupRouter = null;
-}
-
-try {
-  passwordResetRouter = require('./password-reset');
-} catch (error) {
-  passwordResetRouter = null;
-}
+const router = Router();
 
 if (loginRouter) router.use('/', loginRouter);
 if (signupRouter) router.use('/', signupRouter);
@@ -33,4 +16,4 @@ router.get('/auth-test', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

@@ -1,14 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { canEditDocumentByIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
+import console from 'console';
+import validation from './validation.js';
+const { canEditDocumentByIds } = validation;
 
-// Delete a document
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
 
     await client.query('BEGIN');
@@ -37,12 +38,14 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Document deleted successfully' });
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error deleting document:', err);
     res.status(500).json({ error: 'Failed to delete document' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

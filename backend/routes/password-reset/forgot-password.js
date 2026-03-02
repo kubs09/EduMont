@@ -1,14 +1,16 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { sendEmail } = require('../../config/mail');
-const getForgotPasswordEmail = require('../../templates/forgotPasswordEmail');
-const { generateResetToken } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '#backend/config/database.js';
+import { sendEmail } from '#backend/config/mail.js';
+import getForgotPasswordEmail from '#backend/templates/forgotPasswordEmail.js';
+import { generateResetToken } from './helpers.js';
 
 router.post('/forgot-password', async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const { email, language } = req.body;
 
     const userResult = await client.query(
@@ -54,7 +56,7 @@ router.post('/forgot-password', async (req, res) => {
     console.error('Password reset error:', error);
     return res.status(500).json({ success: false, error: 'Failed to process request' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -72,4 +74,4 @@ router.post('/test-email', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

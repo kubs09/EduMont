@@ -1,5 +1,4 @@
-/* eslint-disable */
-const sharedTexts = require('../../shared/texts');
+import sharedTexts from '../../shared/texts.js';
 
 const emailTexts = {
   emailSubject: {
@@ -106,4 +105,4 @@ const getInvitationEmail = (role, inviteUrl, language = 'en') => {
   };
 };
 
-module.exports = getInvitationEmail;
+export default getInvitationEmail;

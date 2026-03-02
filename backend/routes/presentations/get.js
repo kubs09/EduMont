@@ -1,9 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { canAccessChildpresentation } = require('./validation');
+import { Router } from 'express';
+import pool from '#backend/config/database.js';
+import console from 'console';
+import authenticateToken from '#backend/middleware/auth.js';
+import validationModule from './validation.js';
+
+const router = Router();
+const { canAccessChildpresentation } = validationModule;
 
 const PRESENTATION_SELECT_QUERY = `
     SELECT 
@@ -147,6 +149,7 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid status value' });
     }
     if (req.user.role === 'admin') {
+      /* empty */
     } else if (req.user.role === 'teacher') {
       const teacherClassResult = await pool.query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
@@ -198,4 +201,4 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

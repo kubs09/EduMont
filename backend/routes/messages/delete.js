@@ -1,14 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
-// Delete a message (soft delete)
 router.delete('/:id', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
 
   try {
+    client = await connect();
     await client.query('BEGIN');
 
     const message = await client.query(
@@ -29,10 +29,11 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(204).send();
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error('Error deleting message:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

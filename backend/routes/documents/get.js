@@ -1,9 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { canAccessDocumentByIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
+import console from 'console';
+import validationModule from './validation.js';
+const { canAccessDocumentByIds } = validationModule;
 
 const buildDocumentSelect = () => `
   SELECT
@@ -177,4 +178,4 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

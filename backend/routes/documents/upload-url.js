@@ -1,16 +1,23 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const authenticateToken = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import authenticateToken from '#backend/middleware/auth.js';
 
 let supabase;
 try {
-  supabase = require('../../config/supabase');
+  supabase = (await import('#backend/config/supabase.js')).default;
 } catch (error) {
   supabase = null;
 }
 
 router.post('/', authenticateToken, async (req, res) => {
+  // Initialize supabase if not already done
+  if (supabase === undefined) {
+    try {
+      supabase = (await import('#backend/config/supabase.js')).default;
+    } catch (error) {
+      supabase = null;
+    }
+  }
   try {
     if (!supabase) {
       return res.status(500).json({
@@ -59,4 +66,4 @@ router.get('/', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

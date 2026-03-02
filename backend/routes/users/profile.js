@@ -1,14 +1,18 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('@config/database');
-const auth = require('@middleware/auth');
-const { validateUserProfile } = require('./services/validation');
-const { hashPassword, comparePassword } = require('./services/password');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect, query } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
+import validationService from './services/validation.js';
+import passwordService from './services/password.js';
+
+const { validateUserProfile } = validationService;
+const { hashPassword, comparePassword } = passwordService;
 
 router.put('/:id', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -40,7 +44,7 @@ router.put('/:id', auth, async (req, res) => {
     }
     res.status(500).json({ error: 'Failed to update user' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
@@ -55,7 +59,7 @@ router.put('/:id/password', auth, async (req, res) => {
 
     const { currentPassword, newPassword } = req.body;
 
-    const user = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
+    const user = await query('SELECT password FROM users WHERE id = $1', [userId]);
 
     if (user.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -68,7 +72,7 @@ router.put('/:id/password', auth, async (req, res) => {
 
     const hashedPassword = await hashPassword(newPassword);
 
-    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+    await query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
 
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
@@ -77,8 +81,9 @@ router.put('/:id/password', auth, async (req, res) => {
 });
 
 router.put('/:id/notifications', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const { messageNotifications } = req.body;
     const userId = parseInt(req.params.id);
 
@@ -100,8 +105,8 @@ router.put('/:id/notifications', auth, async (req, res) => {
     console.error('Error updating notification settings:', error);
     res.status(500).json({ error: 'Failed to update notification settings' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

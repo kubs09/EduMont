@@ -1,9 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { validateChildUpdate, validateParentIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
+import validation from './validation.js';
+import console from 'console';
+const { validateChildUpdate, validateParentIds } = validation;
 
 const toDateString = (value) => {
   if (!value) return null;
@@ -12,8 +13,9 @@ const toDateString = (value) => {
 };
 
 router.put('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { id } = req.params;
     const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
@@ -147,11 +149,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.json(updatedChild.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+    console.error('Error updating child:', err);
     res.status(500).json({ error: 'Failed to update child record' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

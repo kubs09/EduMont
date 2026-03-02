@@ -1,13 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 // Create a new category presentation
 router.post('/categories', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -68,12 +69,16 @@ router.post('/categories', auth, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {});
+    if (client) {
+      await client.query('ROLLBACK').catch((err) => {
+        console.error('Error rolling back transaction:', err);
+      });
+    }
     console.error('Error creating category presentation:', error);
     res.status(500).json({ error: 'Failed to create category presentation' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,16 +1,13 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { executeQuery } = require('../../utils/dbQuery');
-const { validateDocument, canAccessDocumentByIds, ensureChildInClass } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import authenticateToken from '#backend/middleware/auth.js';
+import { executeQuery } from '#backend/utils/dbQuery.js';
+import { validateDocument, canAccessDocumentByIds, ensureChildInClass } from './validation.js';
 
 // Create a new document
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    // Use pool.query directly instead of pool.connect for better serverless compatibility
-    // This avoids connection pool exhaustion issues on Vercel
     const { title, description, file_url, file_name, mime_type, size_bytes, class_id, child_id } =
       req.body;
 
@@ -66,9 +63,8 @@ router.post('/', authenticateToken, async (req, res) => {
     const statusCode = err.code === 'ECONNREFUSED' || err.message.includes('timeout') ? 503 : 500;
     res.status(statusCode).json({
       error: 'Failed to create document',
-      details: err.message,
     });
   }
 });
 
-module.exports = router;
+export default router;

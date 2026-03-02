@@ -1,6 +1,9 @@
-/* eslint-disable */
-require('dotenv').config();
-const { Pool } = require('pg');
+import 'dotenv/config';
+import process from 'process';
+import { URL } from 'url';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 const useSupabase =
   (process.env.NODE_ENV === 'production' ||
@@ -8,12 +11,49 @@ const useSupabase =
     process.env.USE_SUPABASE === 'true') &&
   (!!process.env.SUPABASE_URL || !!process.env.SUPABASE_DATABASE_URL);
 
-const getSSLConfig = () => {
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+const parseSSLOverride = () => {
+  const raw =
+    process.env.DB_SSL ??
+    process.env.POSTGRES_SSL ??
+    process.env.PGSSLMODE ??
+    process.env.SUPABASE_SSL;
+
+  if (!raw) return null;
+
+  const normalized = String(raw).trim().toLowerCase();
+
+  if (['0', 'false', 'no', 'off', 'disable', 'disabled'].includes(normalized)) {
+    return false;
+  }
+
+  if (['1', 'true', 'yes', 'on', 'require', 'required'].includes(normalized)) {
     return {
       rejectUnauthorized: false,
     };
   }
+
+  if (['full', 'verify-ca', 'verify-full'].includes(normalized)) {
+    return {
+      rejectUnauthorized: true,
+    };
+  }
+
+  return null;
+};
+
+const getSSLConfig = ({ defaultEnabled = false } = {}) => {
+  const override = parseSSLOverride();
+
+  if (override !== null) {
+    return override;
+  }
+
+  if (defaultEnabled) {
+    return {
+      rejectUnauthorized: true,
+    };
+  }
+
   return false;
 };
 
@@ -32,7 +72,7 @@ if (useSupabase) {
   poolConfig = process.env.SUPABASE_DATABASE_URL
     ? {
         connectionString: process.env.SUPABASE_DATABASE_URL,
-        ssl: { rejectUnauthorized: false },
+        ssl: getSSLConfig({ defaultEnabled: true }),
         connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 5000,
         max: 1,
@@ -45,7 +85,7 @@ if (useSupabase) {
         database: process.env.SUPABASE_DB || 'postgres',
         password: supabaseKey,
         port: 5432,
-        ssl: { rejectUnauthorized: false },
+        ssl: getSSLConfig({ defaultEnabled: true }),
         connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 5000,
         max: 1,
@@ -59,7 +99,9 @@ if (useSupabase) {
     database: process.env.POSTGRES_DB || 'edumont',
     password: process.env.POSTGRES_PASSWORD || 'password',
     port: process.env.POSTGRES_PORT || 5432,
-    ssl: getSSLConfig(),
+    ssl: getSSLConfig({
+      defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
+    }),
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
     max: process.env.NODE_ENV === 'production' ? 5 : 20,
@@ -68,4 +110,7 @@ if (useSupabase) {
 
 const pool = new Pool(poolConfig);
 
-module.exports = pool;
+export const query = (text, params) => pool.query(text, params);
+export const connect = () => pool.connect();
+
+export default pool;

@@ -1,12 +1,13 @@
 import 'dotenv/config';
-import pkg from 'pg';
 import process from 'process';
 import fs from 'fs';
 import path from 'path';
 import console from 'console';
 import { fileURLToPath } from 'url';
+import pkg from 'pg';
 
 const { Pool } = pkg;
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const pool = new Pool({
@@ -17,18 +18,18 @@ const pool = new Pool({
   database: process.env.POSTGRES_DB,
 });
 
-async function migrate() {
+async function seed() {
   try {
-    const schemaDataFile = path.join(__dirname, 'schema.sql');
-    const schemaData = fs.readFileSync(schemaDataFile, 'utf8');
+    const insertDataFile = path.join(__dirname, 'insert.sql');
+    const insertData = fs.readFileSync(insertDataFile, 'utf8');
 
-    await pool.query(schemaData);
+    await pool.query(insertData);
   } finally {
     await pool.end();
   }
 }
 
-migrate().catch((error) => {
-  console.error('Migration failed:', error);
+seed().catch((error) => {
+  console.error('Seeding failed:', error);
   process.exit(1);
 });

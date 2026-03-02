@@ -1,5 +1,4 @@
-/* eslint-disable */
-const pool = require('../../config/database');
+import { query } from '#backend/config/database.js';
 
 const STATUS_VALUES = [
   'prerequisites not met',
@@ -126,7 +125,7 @@ const canAccessChildpresentation = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    const result = await pool.query(
+    const result = await query(
       `
       SELECT 1 FROM class_teachers ct
       JOIN class_children cc ON ct.class_id = cc.class_id
@@ -144,7 +143,7 @@ const canEditChildpresentation = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    const result = await pool.query(
+    const result = await query(
       `
       SELECT 1 FROM class_teachers ct
       JOIN class_children cc ON ct.class_id = cc.class_id
@@ -158,7 +157,7 @@ const canEditChildpresentation = async (userId, userRole, childId) => {
   return false;
 };
 
-module.exports = {
+export default {
   validatepresentation,
   canAccessChildpresentation,
   canEditChildpresentation,

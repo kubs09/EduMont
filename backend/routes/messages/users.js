@@ -1,21 +1,20 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
-const { getAllowedRecipients } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
+import { getAllowedRecipients } from './helpers.js';
 
-// Get allowed recipients for the authenticated user
 router.get('/users', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const result = await getAllowedRecipients(req.user.id, req.user.role, client);
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch users', details: error.message });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

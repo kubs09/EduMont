@@ -1,11 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import requestRoute from './request.js';
+import updateRoute from './update.js';
 
-const requestRoute = require('./request');
-const updateRoute = require('./update');
+const router = Router();
 
 router.use('/', requestRoute);
 router.use('/', updateRoute);
 
-module.exports = router;
+export default router;

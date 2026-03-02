@@ -1,14 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('@config/database');
-const auth = require('@middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.delete('/:id', auth, async (req, res) => {
   const userId = req.params.id;
-  const client = await pool.connect();
+  let client;
 
   try {
+    client = await connect();
     if (parseInt(userId) === req.user.id) {
       return res.status(400).json({ error: 'You cannot delete your own account' });
     }
@@ -57,12 +58,14 @@ router.delete('/:id', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch((rollbackErr) => {
+      console.error('Error rolling back transaction:', rollbackErr);
+    });
     console.error('Delete user error:', error);
     res.status(500).json({ error: 'Failed to delete user' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,11 +1,17 @@
-/* eslint-disable */
-// Vercel deployment - Fixed API routing and database configuration
-require('module-alias/register');
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const path = require('path');
+import 'dotenv/config';
+import process from 'process';
+import express from 'express';
+import cors from 'cors';
+import pkg from 'body-parser';
+import { join } from 'path';
+import { URL } from 'url';
+import console from 'console';
+import { setTimeout } from 'timers/promises';
+import { fileURLToPath } from 'url';
+
+const { json } = pkg;
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
 
 let pool,
   initDatabase,
@@ -21,54 +27,89 @@ let pool,
 
 let modulesLoaded = false;
 let moduleError = null;
+let dbInitPromise = null;
+const isVercel = process.env.VERCEL === 'true';
 
-const requireWithFallback = (aliasPath, relativePath) => {
-  try {
-    return require(aliasPath);
-  } catch (aliasError) {
-    try {
-      return require(path.join(__dirname, relativePath));
-    } catch (relativeError) {
-      throw new Error(
-        `Failed to load module: ${aliasPath}. Alias error: ${aliasError.message}. Relative error: ${relativeError.message}`
-      );
-    }
+const ensureDatabaseInitialized = async () => {
+  if (!pool || !initDatabase) return;
+
+  if (!dbInitPromise) {
+    dbInitPromise = initDatabase().catch((error) => {
+      dbInitPromise = null;
+      throw error;
+    });
   }
+
+  await dbInitPromise;
 };
 
-const lazyLoadModules = () => {
-  if (modulesLoaded || moduleError) return;
-
+const importWithFallback = async (relativePath) => {
   try {
-    pool = requireWithFallback('@config/database', 'config/database');
-    initDatabase = requireWithFallback('@db/init', 'db/init');
-    authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
-    childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
-    usersRoutes = requireWithFallback('@routes/users', 'routes/users');
-    classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
-    presentationsRoutes = requireWithFallback('@routes/presentations', 'routes/presentations');
-    documentsRoutes = requireWithFallback('@routes/documents', 'routes/documents');
-    passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
-    messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
-    permissionsRoutes = requireWithFallback('@routes/permissions', 'routes/permissions');
-    modulesLoaded = true;
+    return await import(new URL(relativePath, import.meta.url));
   } catch (error) {
-    moduleError = error.message;
+    throw new Error(`Failed to load module ${relativePath}: ${error.message}`);
   }
 };
 
-if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
-  lazyLoadModules();
+const resolveModuleExport = (moduleNamespace) => {
+  let resolved = moduleNamespace;
+  let maxDepth = 0;
+
+  while (resolved && typeof resolved === 'object' && 'default' in resolved && maxDepth < 3) {
+    resolved = resolved.default;
+    maxDepth += 1;
+  }
+
+  return resolved;
+};
+
+const resolveRouter = (moduleNamespace) => {
+  const resolved = resolveModuleExport(moduleNamespace);
+  return typeof resolved === 'function' ? resolved : null;
+};
+
+const lazyLoadModules = async () => {
+  if (modulesLoaded) return;
+
+  const moduleLoadErrors = [];
+  const loadOptional = async (relativePath) => {
+    try {
+      return await importWithFallback(relativePath);
+    } catch (error) {
+      moduleLoadErrors.push(error.message);
+      return null;
+    }
+  };
+
+  pool = resolveModuleExport(await loadOptional('./config/database.js'));
+  initDatabase = resolveModuleExport(await loadOptional('./db/init.js'));
+  authRoutes = resolveRouter(await loadOptional('./routes/auth/index.js'));
+  childrenRoutes = resolveRouter(await loadOptional('./routes/children/index.js'));
+  usersRoutes = resolveRouter(await loadOptional('./routes/users/index.js'));
+  classesRoutes = resolveRouter(await loadOptional('./routes/classes/index.js'));
+  presentationsRoutes = resolveRouter(await loadOptional('./routes/presentations/index.js'));
+  documentsRoutes = resolveRouter(await loadOptional('./routes/documents/index.js'));
+  passwordResetRoutes = resolveRouter(await loadOptional('./routes/password-reset/index.js'));
+  messageRoutes = resolveRouter(await loadOptional('./routes/messages/index.js'));
+  permissionsRoutes = resolveRouter(await loadOptional('./routes/permissions/index.js'));
+
+  moduleError = moduleLoadErrors.length ? moduleLoadErrors.join(' | ') : null;
+  modulesLoaded = true;
+};
+
+if (isVercel || process.env.NODE_ENV !== 'production') {
+  await lazyLoadModules();
 }
 
 const app = express();
+const apiRouter = express.Router();
 
 const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
 
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
 if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
 
-if (!(process.env.VERCEL === 'true' || process.env.NODE_ENV === 'production')) {
+if (!(isVercel || process.env.NODE_ENV === 'production')) {
   if (process.env.INCLUDE_DEV_URLS) {
     corsOrigins.push('http://10.0.1.37:3000');
   }
@@ -82,9 +123,9 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(json({ limit: '10mb' }));
 
-const publicPath = path.join(__dirname, 'public');
+const publicPath = join(__dirname, 'public');
 try {
   app.use(express.static(publicPath));
 } catch (err) {
@@ -108,64 +149,68 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-app.use('/api', (req, res, next) => {
-  if (process.env.VERCEL === 'true') {
-    lazyLoadModules();
+app.use('/api', async (req, res, next) => {
+  try {
+    if (isVercel && !modulesLoaded) {
+      await lazyLoadModules();
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 });
 
-if (modulesLoaded && pool && initDatabase) {
-  if (process.env.VERCEL) {
-    let dbInitialized = false;
-    let dbInitializing = false;
+if (!isVercel && modulesLoaded && pool && initDatabase) {
+  let dbInitialized = false;
+  let dbInitializing = false;
 
-    app.use(async (req, res, next) => {
-      if (!req.path.startsWith('/api')) {
-        return next();
-      }
+  app.use(async (req, res, next) => {
+    if (!req.path.startsWith('/api')) {
+      return next();
+    }
 
+    if (dbInitialized) {
+      return next();
+    }
+
+    if (dbInitializing) {
+      await setTimeout(100);
       if (dbInitialized) {
         return next();
       }
+      return res.status(503).json({ error: 'Database is initializing, please retry' });
+    }
 
-      if (dbInitializing) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        if (dbInitialized) {
-          return next();
+    dbInitializing = true;
+    try {
+      if (process.env.USE_SUPABASE === 'true') {
+        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+          throw new Error(
+            'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
+          );
         }
-        return res.status(503).json({ error: 'Database is initializing, please retry' });
+      } else {
+        /* empty */
       }
 
-      dbInitializing = true;
-      try {
-        if (process.env.USE_SUPABASE === 'true') {
-          if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-            throw new Error(
-              'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
-            );
-          }
-        } else {
-        }
-
-        await initDatabase();
-        dbInitialized = true;
-        dbInitializing = false;
-        next();
-      } catch (err) {
-        dbInitializing = false;
-        return res.status(500).json({
-          error: 'Database initialization failed',
-          message: err.message,
-          details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-        });
-      }
-    });
-  } else {
-    initDatabase().catch((err) => {
-      process.exit(1);
-    });
-  }
+      await initDatabase();
+      dbInitialized = true;
+      dbInitializing = false;
+      next();
+    } catch (err) {
+      dbInitializing = false;
+      return res.status(500).json({
+        error: 'Database initialization failed',
+        message: err.message,
+        details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      });
+    }
+  });
+} else {
+  ensureDatabaseInitialized().catch((error) => {
+    console.error('Database initialization error:', error);
+    process.exit(1);
+  });
 }
 
 app.use((req, res, next) => {
@@ -183,16 +228,16 @@ let routesMounted = false;
 const mountRoutes = () => {
   if (routesMounted) return;
 
-  if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
-  if (authRoutes) app.use('/api', authRoutes);
-  if (childrenRoutes) app.use('/api/children', childrenRoutes);
-  if (usersRoutes) app.use('/api/users', usersRoutes);
-  if (classesRoutes) app.use('/api/classes', classesRoutes);
-  if (messageRoutes) app.use('/api/messages', messageRoutes);
-  if (presentationsRoutes) app.use('/api/presentations', presentationsRoutes);
-  if (permissionsRoutes) app.use('/api/permissions', permissionsRoutes);
+  if (passwordResetRoutes) apiRouter.use('/', passwordResetRoutes);
+  if (authRoutes) apiRouter.use('/', authRoutes);
+  if (childrenRoutes) apiRouter.use('/children', childrenRoutes);
+  if (usersRoutes) apiRouter.use('/users', usersRoutes);
+  if (classesRoutes) apiRouter.use('/classes', classesRoutes);
+  if (messageRoutes) apiRouter.use('/messages', messageRoutes);
+  if (presentationsRoutes) apiRouter.use('/presentations', presentationsRoutes);
+  if (permissionsRoutes) apiRouter.use('/permissions', permissionsRoutes);
   if (documentsRoutes) {
-    app.use('/api/documents', documentsRoutes);
+    apiRouter.use('/documents', documentsRoutes);
   } else {
     console.warn('⚠️ documentsRoutes not available!');
   }
@@ -203,30 +248,34 @@ if (modulesLoaded) {
   mountRoutes();
 }
 
-app.use('/api', (req, res, next) => {
-  if (!modulesLoaded) {
-    return res.status(500).json({
-      error: 'Server modules not loaded',
-      details: moduleError || 'Modules still loading',
-    });
-  }
+app.use('/api', async (req, res, next) => {
+  try {
+    if (!modulesLoaded) {
+      await lazyLoadModules();
+    }
 
-  if (!routesMounted && modulesLoaded) {
-    mountRoutes();
-  }
+    if (!process.env.VERCEL && modulesLoaded && pool && initDatabase) {
+      await ensureDatabaseInitialized();
+    }
 
-  next();
+    if (!routesMounted && modulesLoaded) {
+      mountRoutes();
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
-if (modulesLoaded) {
-  mountRoutes();
-}
+app.use('/api', apiRouter);
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
 app.use((err, req, res, next) => {
+  void next;
   res.status(500).json({
     error: 'Internal server error',
     message: err.message,
@@ -234,9 +283,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;
 
-if (require.main === module && !process.env.VERCEL) {
+if (process.argv[1] === __filename && !isVercel) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {});
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }

@@ -1,13 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const {
-  STATUS_VALUES,
-  canEditChildpresentation,
-  normalizeCategoryOrdering,
-} = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import console from 'console';
+import authenticateToken from '#backend/middleware/auth.js';
+import validation from './validation.js';
+const { STATUS_VALUES, canEditChildpresentation, normalizeCategoryOrdering } = validation;
 
 router.put('/children/:childId/:presentationId/status', authenticateToken, async (req, res) => {
   let client;
@@ -70,12 +67,14 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     res.json(result.rows[0]);
   } catch (error) {
     if (client) {
-      await client.query('ROLLBACK').catch(() => {});
+      await client.query('ROLLBACK').catch(() => {
+        res.status(500).json({ error: 'Failed to update presentation status' });
+      });
     }
     console.error('Error updating presentation status:', error);
     res.status(500).json({ error: 'Failed to update presentation status' });
   } finally {
-    if (client) client.release();
+    client?.release();
   }
 });
 
@@ -170,13 +169,15 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
     res.json({ success: true, message: `Presentation moved ${direction}` });
   } catch (error) {
     if (client) {
-      await client.query('ROLLBACK').catch(() => {});
+      await client.query('ROLLBACK').catch(() => {
+        res.status(500).json({ error: 'Failed to reorder presentations' });
+      });
     }
     console.error('Error reordering presentations:', error);
     res.status(500).json({ error: 'Failed to reorder presentations' });
   } finally {
-    if (client) client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

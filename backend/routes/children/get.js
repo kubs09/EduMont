@@ -1,8 +1,8 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import process from 'process';
+import { query as _query } from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -52,7 +52,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     query += ' ORDER BY c.surname ASC';
 
-    const result = await pool.query(query, params);
+    const result = await _query(query, params);
 
     if (result.rows.length === 0) {
       return res.json([]);
@@ -102,7 +102,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       WHERE c.id = $1
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await _query(query, [id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
@@ -143,7 +143,7 @@ router.get('/:id/classes', authenticateToken, async (req, res) => {
       ORDER BY cl.name ASC
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await _query(query, [id]);
     res.json(result.rows || []);
   } catch (err) {
     res.status(500).json({
@@ -157,7 +157,7 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const classResult = await pool.query(
+    const classResult = await _query(
       'SELECT class_id FROM class_children WHERE child_id = $1 ORDER BY class_id DESC LIMIT 1',
       [id]
     );
@@ -169,7 +169,7 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
     const classId = classResult.rows[0].class_id;
 
     if (req.user.role === 'admin') {
-      const permissionResult = await pool.query(
+      const permissionResult = await _query(
         `SELECT 1 FROM presentation_permissions
          WHERE class_id = $1 AND admin_id = $2 AND granted = TRUE
          LIMIT 1`,
@@ -180,7 +180,7 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
         return res.status(403).json({ error: 'You do not have permission to view presentations' });
       }
     } else if (req.user.role === 'teacher') {
-      const teacherResult = await pool.query(
+      const teacherResult = await _query(
         `SELECT 1 FROM class_teachers
          WHERE class_id = $1 AND teacher_id = $2
          LIMIT 1`,
@@ -191,7 +191,7 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
         return res.status(403).json({ error: 'Unauthorized' });
       }
     } else if (req.user.role === 'parent') {
-      const parentResult = await pool.query(
+      const parentResult = await _query(
         `SELECT 1 FROM child_parents
          WHERE child_id = $1 AND parent_id = $2
          LIMIT 1`,
@@ -220,7 +220,7 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
       ORDER BY s.category ASC, s.display_order ASC
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await _query(query, [id]);
     res.json(result.rows || []);
   } catch (err) {
     res.status(500).json({
@@ -230,4 +230,4 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

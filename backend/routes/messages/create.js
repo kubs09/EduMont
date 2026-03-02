@@ -1,15 +1,17 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
-const { sendEmail } = require('../../config/mail');
-const getMessageNotificationEmail = require('../../templates/messageNotificationEmail');
-const { getAllowedRecipients } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import pool from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
+import mailConfig from '#backend/config/mail.js';
+import process from 'process';
+const { sendEmail } = mailConfig;
+import getMessageNotificationEmail from '#backend/templates/messageNotificationEmail.js';
+import { getAllowedRecipients } from './helpers.js';
 
 router.post('/', auth, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     await client.query('BEGIN');
 
     const { to_user_ids, subject, content, language } = req.body;
@@ -29,29 +31,19 @@ router.post('/', auth, async (req, res) => {
 
     const senderName = `${senderResult.rows[0].firstname} ${senderResult.rows[0].surname}`;
 
-    const messageResult = await client.query(
-      'INSERT INTO messages (from_user_id, to_user_id, subject, content) VALUES ($1, $2, $3, $4) RETURNING *',
-      [from_user_id, to_user_ids[0], subject, content]
+    const insertedMessage = await client.query(
+      `
+      INSERT INTO messages (from_user_id, to_user_id, subject, content)
+      SELECT $1, recipient_id, $3, $4
+      FROM unnest($2::int[]) AS recipient_id
+      RETURNING id, to_user_id, from_user_id, subject, content
+    `,
+      [from_user_id, to_user_ids, subject, content]
     );
 
-    const messageId = messageResult.rows[0].id;
-
-    if (to_user_ids.length > 1) {
-      const additionalValues = to_user_ids
-        .slice(1)
-        .map((id) => `(${from_user_id}, ${id}, $1, $2)`)
-        .join(', ');
-
-      if (additionalValues) {
-        await client.query(
-          `
-          INSERT INTO messages (from_user_id, to_user_id, subject, content)
-          VALUES ${additionalValues}
-        `,
-          [subject, content]
-        );
-      }
-    }
+    const messageIdByRecipient = new Map(
+      insertedMessage.rows.map((row) => [row.to_user_id, row.id])
+    );
 
     const recipientsResult = await client.query(
       'SELECT id, email, message_notifications FROM users WHERE id = ANY($1)',
@@ -62,36 +54,34 @@ router.post('/', auth, async (req, res) => {
 
     for (const recipient of recipientsResult.rows) {
       if (recipient.message_notifications) {
-        try {
-          const emailContent = getMessageNotificationEmail(
-            senderName,
-            messageId,
-            frontendUrl,
-            language
-          );
+        const emailContent = getMessageNotificationEmail(
+          senderName,
+          messageIdByRecipient.get(recipient.id),
+          frontendUrl,
+          language
+        );
 
-          await sendEmail({
-            to: recipient.email,
-            subject: emailContent.subject,
-            html: emailContent.html,
-          });
-        } catch (emailError) {
-          throw emailError;
-        }
+        await sendEmail({
+          to: recipient.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        });
       }
     }
 
     await client.query('COMMIT');
-    res.status(201).json(messageResult.rows[0]);
+    res.status(201).json(insertedMessage.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({
       error: 'Failed to send message',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

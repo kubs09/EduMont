@@ -1,13 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { validateChild, validateParentIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '#backend/config/database.js';
+import console from 'console';
+import authenticateToken from '#backend/middleware/auth.js';
+import validation from './validation.js';
+const { validateChild, validateParentIds } = validation;
 
 router.post('/', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
     // Validate input
@@ -103,12 +105,14 @@ router.post('/', authenticateToken, async (req, res) => {
     await client.query('COMMIT');
     res.status(201).json(childResult.rows[0]);
   } catch (err) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Error creating child:', err);
     res.status(500).json({ error: 'Failed to create child record' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

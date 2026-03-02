@@ -1,38 +1,34 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const resolveRouter = (moduleNamespace) => {
+  let resolved = moduleNamespace;
+  let maxDepth = 0;
+
+  while (resolved && typeof resolved === 'object' && 'default' in resolved && maxDepth < 3) {
+    resolved = resolved.default;
+    maxDepth += 1;
+  }
+
+  return typeof resolved === 'function' ? resolved : null;
+};
+
+const loadOptionalRouter = async (relativePath) => {
+  try {
+    const moduleNamespace = await import(relativePath);
+    return resolveRouter(moduleNamespace);
+  } catch (error) {
+    return null;
+  }
+};
+
+const router = Router();
 
 let getChildrenRouter, createChildRouter, updateChildRouter, deleteChildRouter, excusesRouter;
 
-try {
-  getChildrenRouter = require('./get');
-} catch (error) {
-  getChildrenRouter = null;
-}
-
-try {
-  createChildRouter = require('./create');
-} catch (error) {
-  createChildRouter = null;
-}
-
-try {
-  updateChildRouter = require('./update');
-} catch (error) {
-  updateChildRouter = null;
-}
-
-try {
-  deleteChildRouter = require('./delete');
-} catch (error) {
-  deleteChildRouter = null;
-}
-
-try {
-  excusesRouter = require('./excuses');
-} catch (error) {
-  excusesRouter = null;
-}
+getChildrenRouter = await loadOptionalRouter('./get.js');
+createChildRouter = await loadOptionalRouter('./create.js');
+updateChildRouter = await loadOptionalRouter('./update.js');
+deleteChildRouter = await loadOptionalRouter('./delete.js');
+excusesRouter = await loadOptionalRouter('./excuses.js');
 
 if (getChildrenRouter) router.use('/', getChildrenRouter);
 if (createChildRouter) router.use('/', createChildRouter);
@@ -47,4 +43,4 @@ router.get('/test', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

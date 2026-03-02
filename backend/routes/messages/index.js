@@ -1,43 +1,48 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
 let getRouter, createRouter, deleteRouter, usersRouter;
 
-try {
-  getRouter = require('./get');
-} catch (error) {
-  getRouter = null;
-}
+const resolveRouter = (moduleNamespace) => {
+  let resolved = moduleNamespace;
+  let maxDepth = 0;
 
-try {
-  createRouter = require('./create');
-} catch (error) {
-  createRouter = null;
-}
+  while (resolved && typeof resolved === 'object' && 'default' in resolved && maxDepth < 3) {
+    resolved = resolved.default;
+    maxDepth += 1;
+  }
 
-try {
-  deleteRouter = require('./delete');
-} catch (error) {
-  deleteRouter = null;
-}
+  return typeof resolved === 'function' ? resolved : null;
+};
 
-try {
-  usersRouter = require('./users');
-} catch (error) {
-  usersRouter = null;
-}
+const loadOptionalRouter = async (relativePath) => {
+  try {
+    const moduleNamespace = await import(relativePath);
+    return resolveRouter(moduleNamespace);
+  } catch (error) {
+    return null;
+  }
+};
 
-if (usersRouter) router.use('/', usersRouter);
-if (getRouter) router.use('/', getRouter);
-if (createRouter) router.use('/', createRouter);
-if (deleteRouter) router.use('/', deleteRouter);
+getRouter = await loadOptionalRouter('./get.js');
+createRouter = await loadOptionalRouter('./create.js');
+deleteRouter = await loadOptionalRouter('./delete.js');
+usersRouter = await loadOptionalRouter('./users.js');
 
-router.get('/test', (req, res) => {
-  res.json({
-    message: 'Messages router is working',
-    timestamp: new Date().toISOString(),
+async function initializeRouters() {
+  if (usersRouter) router.use('/', usersRouter);
+  if (getRouter) router.use('/', getRouter);
+  if (createRouter) router.use('/', createRouter);
+  if (deleteRouter) router.use('/', deleteRouter);
+
+  router.get('/test', (req, res) => {
+    res.json({
+      message: 'Messages router is working',
+      timestamp: new Date().toISOString(),
+    });
   });
-});
+}
 
-module.exports = router;
+initializeRouters();
+
+export default router;

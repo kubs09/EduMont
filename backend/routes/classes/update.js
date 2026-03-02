@@ -1,15 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
   }
-  const client = await pool.connect();
+  let client;
   try {
+    client = await connect();
     await client.query('BEGIN');
     const { id } = req.params;
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
@@ -121,7 +121,10 @@ router.put('/:id', auth, async (req, res) => {
 
     res.json(updatedClass.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+
     if (
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
@@ -141,8 +144,8 @@ router.put('/:id', auth, async (req, res) => {
       details: error.message,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

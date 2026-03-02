@@ -1,4 +1,3 @@
-/* eslint-disable */
 const getMessageNotificationEmail = (senderName, messageId, frontendUrl, language = 'en') => {
   const translations = {
     subject: {
@@ -72,7 +71,7 @@ const getMessageNotificationEmail = (senderName, messageId, frontendUrl, languag
               <h2>${translations.subject[language]}</h2>
             </div>
             <div class="content">
-              <p><b>${translations.from[language]}</></p>
+              <p><b>${translations.from[language]}</b></p>
               <h3>${senderName}</h3>
               <p>${translations.instruction[language]}</p>
               <a href="${viewUrl}" style="color: white" class="button">
@@ -87,4 +86,4 @@ const getMessageNotificationEmail = (senderName, messageId, frontendUrl, languag
   };
 };
 
-module.exports = getMessageNotificationEmail;
+export default getMessageNotificationEmail;

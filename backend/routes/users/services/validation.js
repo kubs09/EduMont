@@ -1,6 +1,5 @@
-/* eslint-disable */
 const validatePhoneNumber = (phone) => {
-  if (!phone) return true; // Phone is optional
+  if (!phone) return true;
   return /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/.test(phone);
 };
 
@@ -40,7 +39,7 @@ const validateUserProfile = ({ firstname, surname, email, phone }) => {
   };
 };
 
-module.exports = {
+export default {
   validatePhoneNumber,
   validateEmail,
   validatePassword,

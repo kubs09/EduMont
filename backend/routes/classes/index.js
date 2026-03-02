@@ -1,44 +1,19 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import getRouterModule from './get.js';
+import createRouterModule from './create.js';
+import updateRouterModule from './update.js';
+import deleteRouterModule from './delete.js';
+import historyRouterModule from './history.js';
+import attendanceRouterModule from './attendance.js';
 
-let getRouter, createRouter, updateRouter, deleteRouter, historyRouter, attendanceRouter;
+const router = Router();
 
-try {
-  getRouter = require('./get');
-} catch (error) {
-  getRouter = null;
-}
-
-try {
-  createRouter = require('./create');
-} catch (error) {
-  createRouter = null;
-}
-
-try {
-  updateRouter = require('./update');
-} catch (error) {
-  updateRouter = null;
-}
-
-try {
-  deleteRouter = require('./delete');
-} catch (error) {
-  deleteRouter = null;
-}
-
-try {
-  historyRouter = require('./history');
-} catch (error) {
-  historyRouter = null;
-}
-
-try {
-  attendanceRouter = require('./attendance');
-} catch (error) {
-  attendanceRouter = null;
-}
+let getRouter = getRouterModule || null;
+let createRouter = createRouterModule || null;
+let updateRouter = updateRouterModule || null;
+let deleteRouter = deleteRouterModule || null;
+let historyRouter = historyRouterModule || null;
+let attendanceRouter = attendanceRouterModule || null;
 
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
@@ -54,4 +29,4 @@ router.get('/test', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

@@ -5,6 +5,7 @@
       "@/*": ["./*"],
       "@config/*": ["config/*"],
       "@routes/*": ["routes/*"],
+      "#backend/*": ["./*"],
       "@middleware/*": ["middleware/*"],
       "@db/*": ["db/*"],
       "@src/*": ["src/*"],
@@ -13,7 +14,8 @@
       "@uploads/*": ["uploads/*"]
     },
     "target": "es6",
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "allowJs": true,
     "checkJs": false
   },

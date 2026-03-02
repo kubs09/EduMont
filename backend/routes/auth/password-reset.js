@@ -1,17 +1,21 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { generateResetToken } = require('./services/token');
-const { sendPasswordResetEmail } = require('./services/email');
-const { validateForgotPasswordData } = require('./services/validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import pool from '#backend/config/database.js';
+import tokenService from './services/token.js';
+import emailService from './services/email.js';
+import validationService from './services/validation.js';
+
+const { generateResetToken } = tokenService;
+const { sendPasswordResetEmail } = emailService;
+const { validateForgotPasswordData } = validationService;
 
 router.post('/forgot-password', async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     const { email, language } = req.body;
 
-    // Validate input
     const validation = validateForgotPasswordData(email);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
@@ -38,14 +42,17 @@ router.post('/forgot-password', async (req, res) => {
 
     return res.json({ success: true });
   } catch (error) {
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     console.error('Password reset error:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to process password reset request',
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;

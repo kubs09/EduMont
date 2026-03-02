@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 const validateLoginData = (email, password) => {
   const errors = [];
 
@@ -67,7 +65,7 @@ const validateForgotPasswordData = (email) => {
   };
 };
 
-module.exports = {
+export default {
   validateLoginData,
   validateSignupData,
   validateForgotPasswordData,

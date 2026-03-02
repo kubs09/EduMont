@@ -1,18 +1,18 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const bcrypt = require('bcryptjs');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '#backend/config/database.js';
+import { hash } from 'bcryptjs';
 
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
-  const client = await pool.connect();
+  let client;
 
   try {
     if (!token || token.length !== 64) {
       return res.status(400).json({ error: 'Invalid reset token format' });
     }
 
+    client = await connect();
     await client.query('BEGIN');
 
     const checkResult = await client.query(
@@ -33,7 +33,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Reset token has expired' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hash(password, 10);
 
     const updateResult = await client.query(
       `UPDATE users 
@@ -53,11 +53,13 @@ router.post('/reset-password', async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Password reset successful' });
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      await client.query('ROLLBACK');
+    }
     res.status(500).json({ error: 'Failed to reset password' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
-module.exports = router;
+export default router;
