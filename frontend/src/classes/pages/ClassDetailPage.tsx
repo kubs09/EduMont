@@ -71,6 +71,8 @@ const ClassDetailPage = () => {
         const isUserAdmin = userInfo?.role === 'admin';
         const isUserTeacher = userInfo?.role === 'teacher';
         const isUserParent = userInfo?.role === 'parent';
+        const shouldLoadPresentationData = isUserAdmin || isUserTeacher;
+        const shouldLoadPermissionData = isUserAdmin || isUserTeacher;
         setIsAdmin(isUserAdmin);
         setIsTeacher(isUserTeacher);
         setIsParent(isUserParent);
@@ -131,8 +133,12 @@ const ClassDetailPage = () => {
 
         fetchClassData();
         if (id) {
-          fetchNextPresentations();
-          fetchPendingPermissions();
+          if (shouldLoadPresentationData) {
+            fetchNextPresentations();
+          }
+          if (shouldLoadPermissionData) {
+            fetchPendingPermissions();
+          }
           fetchGrantedPermission();
         }
 

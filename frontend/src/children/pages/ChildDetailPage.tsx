@@ -334,9 +334,12 @@ const ChildDetailPage = () => {
       label: texts.profile.children.excuse.historyTitle[language],
       content: (
         <ExcusesSection
+          childId={id ? parseInt(id, 10) : 0}
           excuses={excuses}
           language={language}
+          isParent={isParent}
           canViewParentProfile={canViewParentProfile}
+          onRefreshExcuses={loadExcuses}
         />
       ),
     },

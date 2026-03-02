@@ -183,13 +183,21 @@ export const profile = {
         cs: 'Omluvenky',
         en: 'Excuses',
       },
+      editTitle: {
+        cs: 'Upravit omluvenku',
+        en: 'Edit Excuse',
+      },
       historyEmpty: {
         cs: 'Žádné omluvenky k zobrazení.',
         en: 'No excuses to display.',
       },
-      button: {
-        cs: 'Omluvit',
-        en: 'Excuse',
+      excuseButton: {
+        cs: 'Omluvit nepřítomnost',
+        en: 'Excuse Absence',
+      },
+      excuseEditButton: {
+        cs: 'Upravit omluvenku',
+        en: 'Edit Excuse',
       },
       cancel: {
         cs: 'Zrušit omluvenku',

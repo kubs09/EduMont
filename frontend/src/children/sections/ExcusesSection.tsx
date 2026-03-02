@@ -10,6 +10,7 @@ import {
   Link as ChakraLink,
   HStack,
   Box,
+  Flex,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -18,11 +19,15 @@ import { ROUTES } from '@frontend/shared/route';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 import { DatePicker } from '@frontend/shared/components';
 import { TablePagination, DEFAULT_PAGE_SIZE } from '@frontend/shared/components/TablePagination';
+import ChildExcuseAction from '@frontend/shared/components/ChildExcuseAction/ChildExcuseAction';
 
 interface ExcusesSectionProps {
+  childId: number;
   excuses: ChildExcuse[];
   language: 'cs' | 'en';
+  isParent: boolean;
   canViewParentProfile: boolean;
+  onRefreshExcuses: (childId: number) => Promise<void>;
 }
 
 const formatExcuseDate = (value: string, language: 'cs' | 'en') => {
@@ -50,11 +55,15 @@ const parseExcuseDate = (value: string) => {
 };
 
 const ExcusesSection: React.FC<ExcusesSectionProps> = ({
+  childId,
   excuses,
   language,
+  isParent,
   canViewParentProfile,
+  onRefreshExcuses,
 }) => {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const currentUserId = useMemo(() => Number(localStorage.getItem('userId') || '0'), []);
   const [attendanceDate, setAttendanceDate] = useState(today);
   const [page, setPage] = useState(1);
   const pageSize = DEFAULT_PAGE_SIZE;
@@ -89,9 +98,45 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
     setPage((current) => Math.min(current, totalPages));
   }, [totalPages]);
 
+  const ownExcuseForDate = useMemo(() => {
+    const selected = parseExcuseDate(attendanceDate);
+    if (!selected) {
+      return null;
+    }
+    const selectedTime = selected.setHours(0, 0, 0, 0);
+    return (
+      excuses.find((excuse) => {
+        if (excuse.parent_id !== currentUserId) {
+          return false;
+        }
+        const from = parseExcuseDate(excuse.date_from);
+        const to = parseExcuseDate(excuse.date_to);
+        if (!from || !to) {
+          return false;
+        }
+        const fromTime = from.setHours(0, 0, 0, 0);
+        const toTime = to.setHours(0, 0, 0, 0);
+        return selectedTime >= fromTime && selectedTime <= toTime;
+      }) || null
+    );
+  }, [attendanceDate, excuses, currentUserId]);
+
   return (
     <Box w="full" overflowX="auto">
-      <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
+      <Flex align="center" mb={4} gap={2}>
+        {isParent && (
+          <ChildExcuseAction
+            childId={childId}
+            childName=""
+            language={language}
+            excuse={ownExcuseForDate}
+            onRefreshExcuses={onRefreshExcuses}
+            size="sm"
+            variant="brand"
+          />
+        )}
+      </Flex>
+      <HStack spacing={4} align="center" flexWrap="wrap" mb={4}>
         <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"

@@ -160,7 +160,7 @@ const ChildExcuseAction = ({
         </Button>
       ) : (
         <Button size={size} variant={variant} onClick={openModal}>
-          {texts.profile.children.excuse.button[language]}
+          {texts.profile.children.excuse.excuseButton[language]}
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={closeModal}>

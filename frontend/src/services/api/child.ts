@@ -95,6 +95,23 @@ export const createChildExcuse = async (
   }
 };
 
+export const updateChildExcuse = async (
+  childId: number,
+  excuseId: number,
+  excuseData: CreateChildExcuseData
+): Promise<void> => {
+  try {
+    await api.put(`/api/children/${childId}/excuses/${excuseId}`, excuseData);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const message =
+        error.response?.data?.details || error.response?.data?.error || 'Failed to update excuse';
+      throw new ApiError(message, error.response?.status);
+    }
+    throw error;
+  }
+};
+
 export const getChildExcuses = async (childId: number): Promise<ChildExcuse[]> => {
   try {
     const response = await api.get<ChildExcuse[]>(`/api/children/${childId}/excuses`);
