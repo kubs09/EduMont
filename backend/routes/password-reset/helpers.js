@@ -1,6 +1,5 @@
-/* eslint-disable */
-const crypto = require('crypto');
+import { randomBytes } from 'crypto';
 
-const generateResetToken = () => crypto.randomBytes(32).toString('hex');
+const generateResetToken = () => randomBytes(32).toString('hex');
 
-module.exports = { generateResetToken };
+export default { generateResetToken };

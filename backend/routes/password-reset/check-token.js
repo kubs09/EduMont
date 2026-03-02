@@ -1,11 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '../../config/database.js';
 
 router.get('/check-token/:token', async (req, res) => {
   let { token } = req.params;
-  const client = await pool.connect();
+  const client = await connect();
 
   try {
     token = decodeURIComponent(token);
@@ -29,4 +28,4 @@ router.get('/check-token/:token', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

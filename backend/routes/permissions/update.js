@@ -1,11 +1,12 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.post('/accept', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     await client.query('BEGIN');
     const { class_id, language } = req.body;
@@ -74,7 +75,7 @@ router.post('/accept', auth, async (req, res) => {
 });
 
 router.post('/deny', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     await client.query('BEGIN');
     const { class_id, language } = req.body;
@@ -142,4 +143,4 @@ router.post('/deny', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

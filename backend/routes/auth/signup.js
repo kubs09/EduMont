@@ -1,35 +1,32 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { hashPassword } = require('./services/password');
-const { validateSignupData } = require('./services/validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import pool from '../../config/database.js';
+import passwordService from './services/password.js';
+import validationService from './services/validation.js';
+
+const { hashPassword } = passwordService;
+const { validateSignupData } = validationService;
 
 router.post('/signup', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, password, firstName, lastName } = req.body;
 
-    // Validate input
     const validation = validateSignupData(email, password, firstName, lastName);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
     }
-
-    // Start transaction
     await client.query('BEGIN');
 
-    // Check if user already exists
     const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Insert new user
     const insertQuery = `
       INSERT INTO users (email, password, firstname, surname, role)
       VALUES ($1, $2, $3, $4, $5)
@@ -64,4 +61,4 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

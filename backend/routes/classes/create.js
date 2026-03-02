@@ -1,8 +1,7 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 function calculateAge(birthDate) {
   const today = new Date();
@@ -15,12 +14,11 @@ function calculateAge(birthDate) {
   return age;
 }
 
-// Create a new class
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
   }
-  const client = await pool.connect();
+  const client = await connect();
   try {
     await client.query('BEGIN');
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
@@ -100,7 +98,7 @@ router.post('/auto-assign', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can trigger auto-assignment' });
   }
-  const client = await pool.connect();
+  const client = await connect();
   try {
     await client.query('BEGIN');
     // First, clear all previous assignments
@@ -151,4 +149,4 @@ router.post('/auto-assign', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,4 +1,3 @@
-/* eslint-disable */
 const getForgotPasswordEmail = (resetUrl, language = 'en') => {
   const translations = {
     subject: {
@@ -53,4 +52,4 @@ const getForgotPasswordEmail = (resetUrl, language = 'en') => {
   };
 };
 
-module.exports = getForgotPasswordEmail;
+export default getForgotPasswordEmail;

@@ -1,11 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.put('/categories/:id', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
@@ -177,7 +177,9 @@ router.put('/categories/:id', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {});
+    await client.query('ROLLBACK').catch((err) => {
+      console.error('Error rolling back transaction:', err);
+    });
 
     if (error.code === '23505') {
       return res.status(400).json({
@@ -191,4 +193,4 @@ router.put('/categories/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

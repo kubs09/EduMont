@@ -1,12 +1,12 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('@config/database');
-const auth = require('@middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.delete('/:id', auth, async (req, res) => {
   const userId = req.params.id;
-  const client = await pool.connect();
+  const client = await connect();
 
   try {
     if (parseInt(userId) === req.user.id) {
@@ -65,4 +65,4 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

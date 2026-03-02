@@ -1,12 +1,12 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 // Delete a category presentation
 router.delete('/categories/:id', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
@@ -51,7 +51,9 @@ router.delete('/categories/:id', auth, async (req, res) => {
     await client.query('COMMIT');
     res.json({ message: 'Category presentation deleted successfully' });
   } catch (error) {
-    await client.query('ROLLBACK').catch(() => {});
+    await client.query('ROLLBACK').catch((err) => {
+      console.error('Error deleting category presentation:', err);
+    });
     console.error('Error deleting category presentation:', error);
     res.status(500).json({ error: 'Failed to delete category presentation' });
   } finally {
@@ -59,4 +61,4 @@ router.delete('/categories/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

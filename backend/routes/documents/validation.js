@@ -1,6 +1,6 @@
-/* eslint-disable */
-const pool = require('../../config/database');
-const { executeQuery } = require('../../utils/dbQuery');
+import { query } from '../../config/database.js';
+import console from 'console';
+import { executeQuery } from '../../utils/dbQuery.js';
 
 const validateDocument = (data) => {
   const errors = [];
@@ -56,7 +56,7 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
 
   if (userRole === 'teacher') {
     if (classId) {
-      const result = await pool.query(
+      const result = await query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
         [classId, userId]
       );
@@ -64,7 +64,7 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
     }
 
     if (childId) {
-      const result = await pool.query(
+      const result = await query(
         `
         SELECT 1 FROM class_teachers ct
         JOIN class_children cc ON ct.class_id = cc.class_id
@@ -78,7 +78,7 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
 
   if (userRole === 'parent') {
     if (childId) {
-      const result = await pool.query(
+      const result = await query(
         'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
         [childId, userId]
       );
@@ -86,7 +86,7 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
     }
 
     if (classId) {
-      const result = await pool.query(
+      const result = await query(
         `
         SELECT 1 FROM class_children cc
         JOIN children ch ON cc.child_id = ch.id
@@ -128,7 +128,9 @@ const ensureChildInClass = async (childId, classId) => {
   }
 };
 
-module.exports = {
+export { validateDocument, canAccessDocumentByIds, canEditDocumentByIds, ensureChildInClass };
+
+export default {
   validateDocument,
   canAccessDocumentByIds,
   canEditDocumentByIds,

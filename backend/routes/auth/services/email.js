@@ -1,6 +1,8 @@
-/* eslint-disable */
-const { sendEmail } = require('../../../config/mail');
-const getForgotPasswordEmail = require('../../../templates/forgotPasswordEmail');
+import mailService from '../../../config/mail.js';
+import getForgotPasswordEmail from '../../../templates/forgotPasswordEmail.js';
+import process from 'process';
+
+const { sendEmail } = mailService;
 
 const sendPasswordResetEmail = async (userEmail, resetToken, language = 'en') => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
@@ -14,6 +16,6 @@ const sendPasswordResetEmail = async (userEmail, resetToken, language = 'en') =>
   });
 };
 
-module.exports = {
+export default {
   sendPasswordResetEmail,
 };

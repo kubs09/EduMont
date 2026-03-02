@@ -1,5 +1,5 @@
-/* eslint-disable */
-const pool = require('../config/database');
+import { query } from '../config/database.js';
+import console from 'console';
 
 const initDatabase = async () => {
   const createClassesTable = `
@@ -151,29 +151,29 @@ const initDatabase = async () => {
   `;
 
   try {
-    await pool.query(createClassesTable);
-    await pool.query(createClassTeachersTable);
-    await pool.query(createClassChildrenTable);
-    await pool.query(createMessagesTable);
-    await pool.query(createChildrenTable);
-    await pool.query(createChildParentsTable);
-    await pool.query(createDocumentsTable);
-    await pool.query(createClassAttendanceTable);
-    await pool.query(createChildExcusesTable);
-    await pool.query(createCategoryPresentationsTable);
-    await pool.query(createPresentationsTable);
-    await pool.query('SELECT * FROM users');
-    await pool.query('SELECT * FROM children');
-    await pool.query('SELECT * FROM child_parents');
-    await pool.query('SELECT * FROM classes');
-    await pool.query('SELECT * FROM class_teachers');
-    await pool.query('SELECT * FROM class_children');
-    await pool.query('SELECT * FROM messages');
-    await pool.query('SELECT * FROM documents');
-    await pool.query('SELECT * FROM class_attendance');
-    await pool.query('SELECT * FROM child_excuses');
-    await pool.query('SELECT * FROM category_presentations');
-    await pool.query('SELECT * FROM presentations');
+    await query(createClassesTable);
+    await query(createClassTeachersTable);
+    await query(createClassChildrenTable);
+    await query(createMessagesTable);
+    await query(createChildrenTable);
+    await query(createChildParentsTable);
+    await query(createDocumentsTable);
+    await query(createClassAttendanceTable);
+    await query(createChildExcusesTable);
+    await query(createCategoryPresentationsTable);
+    await query(createPresentationsTable);
+    await query('SELECT * FROM users');
+    await query('SELECT * FROM children');
+    await query('SELECT * FROM child_parents');
+    await query('SELECT * FROM classes');
+    await query('SELECT * FROM class_teachers');
+    await query('SELECT * FROM class_children');
+    await query('SELECT * FROM messages');
+    await query('SELECT * FROM documents');
+    await query('SELECT * FROM class_attendance');
+    await query('SELECT * FROM child_excuses');
+    await query('SELECT * FROM category_presentations');
+    await query('SELECT * FROM presentations');
   } catch (err) {
     console.error('Database verification error:', err);
     throw new Error(
@@ -182,4 +182,4 @@ const initDatabase = async () => {
   }
 };
 
-module.exports = initDatabase;
+export default initDatabase;

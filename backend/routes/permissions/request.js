@@ -1,13 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.get('/check', auth, async (req, res) => {
   let client;
   try {
-    client = await pool.connect();
+    client = await connect();
     const resource_id = Number(req.query.resource_id);
     const requester_id = req.user.id;
     const requester_role = req.user.role;
@@ -49,7 +50,7 @@ router.get('/check', auth, async (req, res) => {
 });
 
 router.get('/granted', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const resource_id = Number(req.query.resource_id);
     const user_id = req.user.id;
@@ -86,7 +87,7 @@ router.get('/granted', auth, async (req, res) => {
 });
 
 router.get('/pending', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const class_id = Number(req.query.class_id);
     const user_id = req.user.id;
@@ -129,7 +130,7 @@ router.get('/pending', auth, async (req, res) => {
 });
 
 router.post('/request', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const { resource_type, reason, language } = req.body;
     const resource_id = Number(req.body.resource_id);
@@ -262,4 +263,4 @@ router.post('/request', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,8 +1,8 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import process from 'process';
+import { query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -47,7 +47,7 @@ const canAccessChild = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'parent') {
-    const result = await pool.query(
+    const result = await query(
       'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
       [childId, userId]
     );
@@ -55,7 +55,7 @@ const canAccessChild = async (userId, userRole, childId) => {
   }
 
   if (userRole === 'teacher') {
-    const result = await pool.query(
+    const result = await query(
       `
       SELECT 1 FROM class_teachers ct
       JOIN class_children cc ON ct.class_id = cc.class_id
@@ -82,7 +82,7 @@ router.get('/:id/excuses', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const result = await pool.query(
+    const result = await query(
       `
       SELECT 
         ce.id,
@@ -128,7 +128,7 @@ router.post('/:id/excuses', auth, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    const relation = await pool.query(
+    const relation = await query(
       'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
       [childId, req.user.id]
     );
@@ -139,7 +139,7 @@ router.post('/:id/excuses', auth, async (req, res) => {
 
     const { date_from, date_to, reason } = req.body;
 
-    const result = await pool.query(
+    const result = await query(
       `
       INSERT INTO child_excuses (child_id, parent_id, date_from, date_to, reason)
       VALUES ($1, $2, $3, $4, $5)
@@ -170,7 +170,7 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const excuseResult = await pool.query(
+    const excuseResult = await query(
       'SELECT id, child_id, parent_id FROM child_excuses WHERE id = $1',
       [excuseId]
     );
@@ -185,7 +185,7 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
     }
 
     if (req.user.role === 'parent') {
-      const relation = await pool.query(
+      const relation = await query(
         'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
         [childId, req.user.id]
       );
@@ -199,7 +199,7 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
       }
     }
 
-    await pool.query('DELETE FROM child_excuses WHERE id = $1', [excuseId]);
+    await query('DELETE FROM child_excuses WHERE id = $1', [excuseId]);
 
     res.json({ message: 'Excuse cancelled' });
   } catch (error) {
@@ -210,4 +210,4 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,15 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { query as _query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.get('/class/:id/next-presentations', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
     if (req.user.role === 'teacher') {
-      const teacherClassResult = await pool.query(
+      const teacherClassResult = await _query(
         'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
         [id, req.user.id]
       );
@@ -17,7 +17,7 @@ router.get('/class/:id/next-presentations', auth, async (req, res) => {
         return res.status(403).json({ error: 'Access denied' });
       }
     } else if (req.user.role === 'parent') {
-      const parentChildResult = await pool.query(
+      const parentChildResult = await _query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
          WHERE cc.class_id = $1 AND EXISTS (
@@ -61,7 +61,7 @@ router.get('/class/:id/next-presentations', auth, async (req, res) => {
 
     query += ` ORDER BY s.created_at ASC`;
 
-    const result = await pool.query(query, params);
+    const result = await _query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching next presentations:', err);
@@ -69,4 +69,4 @@ router.get('/class/:id/next-presentations', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

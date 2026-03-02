@@ -1,9 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { canEditDocumentByIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '../../config/database.js';
+import authenticateToken from '../../middleware/auth.js';
+import console from 'console';
+import validation from './validation.js';
+const { canEditDocumentByIds } = validation;
 
 // Delete a document
 router.delete('/:id', authenticateToken, async (req, res) => {
@@ -45,4 +46,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

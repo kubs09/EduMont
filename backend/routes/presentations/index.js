@@ -1,84 +1,38 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
 
-let getRouter,
-  createRouter,
-  updateRouter,
-  deleteRouter,
-  validationHelpers,
-  categoriesGetRouter,
-  categoriesCreateRouter,
-  categoriesUpdateRouter,
-  categoriesDeleteRouter,
-  statusRouter,
-  nextPresentationsRouter;
+const router = Router();
 
-try {
-  validationHelpers = require('./validation');
-} catch (error) {
-  validationHelpers = null;
-}
+const resolveRouter = (moduleNamespace) => {
+  let resolved = moduleNamespace;
+  let maxDepth = 0;
 
-try {
-  getRouter = require('./get');
-} catch (error) {
-  getRouter = null;
-}
+  while (resolved && typeof resolved === 'object' && 'default' in resolved && maxDepth < 3) {
+    resolved = resolved.default;
+    maxDepth += 1;
+  }
 
-try {
-  createRouter = require('./create');
-} catch (error) {
-  createRouter = null;
-}
+  return typeof resolved === 'function' ? resolved : null;
+};
 
-try {
-  updateRouter = require('./update');
-} catch (error) {
-  updateRouter = null;
-}
+const loadOptionalRouter = async (relativePath) => {
+  try {
+    const moduleNamespace = await import(relativePath);
+    return resolveRouter(moduleNamespace);
+  } catch (error) {
+    return null;
+  }
+};
 
-try {
-  deleteRouter = require('./delete');
-} catch (error) {
-  deleteRouter = null;
-}
-
-try {
-  categoriesGetRouter = require('./categories-get');
-} catch (error) {
-  categoriesGetRouter = null;
-}
-
-try {
-  categoriesCreateRouter = require('./categories-create');
-} catch (error) {
-  categoriesCreateRouter = null;
-}
-
-try {
-  categoriesUpdateRouter = require('./categories-update');
-} catch (error) {
-  categoriesUpdateRouter = null;
-}
-
-try {
-  categoriesDeleteRouter = require('./categories-delete');
-} catch (error) {
-  categoriesDeleteRouter = null;
-}
-
-try {
-  statusRouter = require('./status');
-} catch (error) {
-  statusRouter = null;
-}
-
-try {
-  nextPresentationsRouter = require('./next-presentations');
-} catch (error) {
-  nextPresentationsRouter = null;
-}
+const getRouter = await loadOptionalRouter('./get.js');
+const createRouter = await loadOptionalRouter('./create.js');
+const updateRouter = await loadOptionalRouter('./update.js');
+const deleteRouter = await loadOptionalRouter('./delete.js');
+const categoriesGetRouter = await loadOptionalRouter('./categories-get.js');
+const categoriesCreateRouter = await loadOptionalRouter('./categories-create.js');
+const categoriesUpdateRouter = await loadOptionalRouter('./categories-update.js');
+const categoriesDeleteRouter = await loadOptionalRouter('./categories-delete.js');
+const statusRouter = await loadOptionalRouter('./status.js');
+const nextPresentationsRouter = await loadOptionalRouter('./next-presentations.js');
 
 if (getRouter) router.use('/', getRouter);
 if (createRouter) router.use('/', createRouter);
@@ -98,4 +52,4 @@ router.get('/test', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

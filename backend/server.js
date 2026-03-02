@@ -1,11 +1,17 @@
-/* eslint-disable */
-// Vercel deployment - Fixed API routing and database configuration
-require('module-alias/register');
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const path = require('path');
+import 'dotenv/config';
+import process from 'process';
+import express from 'express';
+import cors from 'cors';
+import pkg from 'body-parser';
+import { join } from 'path';
+import { URL } from 'url';
+import console from 'console';
+import { setTimeout } from 'timers/promises';
+import { fileURLToPath } from 'url';
+
+const { json } = pkg;
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
 
 let pool,
   initDatabase,
@@ -22,43 +28,62 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 
-const requireWithFallback = (aliasPath, relativePath) => {
+const importWithFallback = async (relativePath) => {
   try {
-    return require(aliasPath);
-  } catch (aliasError) {
-    try {
-      return require(path.join(__dirname, relativePath));
-    } catch (relativeError) {
-      throw new Error(
-        `Failed to load module: ${aliasPath}. Alias error: ${aliasError.message}. Relative error: ${relativeError.message}`
-      );
-    }
+    return await import(new URL(relativePath, import.meta.url));
+  } catch (error) {
+    throw new Error(`Failed to load module ${relativePath}: ${error.message}`);
   }
 };
 
-const lazyLoadModules = () => {
-  if (modulesLoaded || moduleError) return;
+const resolveModuleExport = (moduleNamespace) => {
+  let resolved = moduleNamespace;
+  let maxDepth = 0;
 
-  try {
-    pool = requireWithFallback('@config/database', 'config/database');
-    initDatabase = requireWithFallback('@db/init', 'db/init');
-    authRoutes = requireWithFallback('@routes/auth', 'routes/auth');
-    childrenRoutes = requireWithFallback('@routes/children', 'routes/children');
-    usersRoutes = requireWithFallback('@routes/users', 'routes/users');
-    classesRoutes = requireWithFallback('@routes/classes', 'routes/classes');
-    presentationsRoutes = requireWithFallback('@routes/presentations', 'routes/presentations');
-    documentsRoutes = requireWithFallback('@routes/documents', 'routes/documents');
-    passwordResetRoutes = requireWithFallback('@routes/password-reset', 'routes/password-reset');
-    messageRoutes = requireWithFallback('@routes/messages', 'routes/messages');
-    permissionsRoutes = requireWithFallback('@routes/permissions', 'routes/permissions');
-    modulesLoaded = true;
-  } catch (error) {
-    moduleError = error.message;
+  while (resolved && typeof resolved === 'object' && 'default' in resolved && maxDepth < 3) {
+    resolved = resolved.default;
+    maxDepth += 1;
   }
+
+  return resolved;
+};
+
+const resolveRouter = (moduleNamespace) => {
+  const resolved = resolveModuleExport(moduleNamespace);
+  return typeof resolved === 'function' ? resolved : null;
+};
+
+const lazyLoadModules = async () => {
+  if (modulesLoaded) return;
+
+  const moduleLoadErrors = [];
+  const loadOptional = async (relativePath) => {
+    try {
+      return await importWithFallback(relativePath);
+    } catch (error) {
+      moduleLoadErrors.push(error.message);
+      return null;
+    }
+  };
+
+  pool = resolveModuleExport(await loadOptional('./config/database.js'));
+  initDatabase = resolveModuleExport(await loadOptional('./db/init.js'));
+  authRoutes = resolveRouter(await loadOptional('./routes/auth/index.js'));
+  childrenRoutes = resolveRouter(await loadOptional('./routes/children/index.js'));
+  usersRoutes = resolveRouter(await loadOptional('./routes/users/index.js'));
+  classesRoutes = resolveRouter(await loadOptional('./routes/classes/index.js'));
+  presentationsRoutes = resolveRouter(await loadOptional('./routes/presentations/index.js'));
+  documentsRoutes = resolveRouter(await loadOptional('./routes/documents/index.js'));
+  passwordResetRoutes = resolveRouter(await loadOptional('./routes/password-reset/index.js'));
+  messageRoutes = resolveRouter(await loadOptional('./routes/messages/index.js'));
+  permissionsRoutes = resolveRouter(await loadOptional('./routes/permissions/index.js'));
+
+  moduleError = moduleLoadErrors.length ? moduleLoadErrors.join(' | ') : null;
+  modulesLoaded = true;
 };
 
 if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
-  lazyLoadModules();
+  await lazyLoadModules();
 }
 
 const app = express();
@@ -82,9 +107,9 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(json({ limit: '10mb' }));
 
-const publicPath = path.join(__dirname, 'public');
+const publicPath = join(__dirname, 'public');
 try {
   app.use(express.static(publicPath));
 } catch (err) {
@@ -108,11 +133,15 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-app.use('/api', (req, res, next) => {
-  if (process.env.VERCEL === 'true') {
-    lazyLoadModules();
+app.use('/api', async (req, res, next) => {
+  try {
+    if (process.env.VERCEL === 'true' && !modulesLoaded) {
+      await lazyLoadModules();
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 });
 
 if (modulesLoaded && pool && initDatabase) {
@@ -130,7 +159,7 @@ if (modulesLoaded && pool && initDatabase) {
       }
 
       if (dbInitializing) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await setTimeout(100);
         if (dbInitialized) {
           return next();
         }
@@ -146,6 +175,7 @@ if (modulesLoaded && pool && initDatabase) {
             );
           }
         } else {
+          /* empty */
         }
 
         await initDatabase();
@@ -162,7 +192,7 @@ if (modulesLoaded && pool && initDatabase) {
       }
     });
   } else {
-    initDatabase().catch((err) => {
+    initDatabase().catch(() => {
       process.exit(1);
     });
   }
@@ -203,30 +233,31 @@ if (modulesLoaded) {
   mountRoutes();
 }
 
-app.use('/api', (req, res, next) => {
-  if (!modulesLoaded) {
-    return res.status(500).json({
-      error: 'Server modules not loaded',
-      details: moduleError || 'Modules still loading',
-    });
-  }
+app.use('/api', async (req, res, next) => {
+  try {
+    if (!modulesLoaded) {
+      await lazyLoadModules();
+    }
 
-  if (!routesMounted && modulesLoaded) {
-    mountRoutes();
-  }
+    if (!routesMounted && modulesLoaded) {
+      mountRoutes();
+    }
 
-  next();
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 if (modulesLoaded) {
   mountRoutes();
 }
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   res.status(500).json({
     error: 'Internal server error',
     message: err.message,
@@ -234,9 +265,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;
 
-if (require.main === module && !process.env.VERCEL) {
+if (process.argv[1] === __filename && !process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {});
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }

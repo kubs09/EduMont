@@ -1,8 +1,7 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import { query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.get('/:id/history', auth, async (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher' && req.user.role !== 'parent') {
@@ -13,7 +12,7 @@ router.get('/:id/history', auth, async (req, res) => {
     const { id } = req.params;
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await pool.query(
+      const parentChildCheck = await query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
          WHERE cc.class_id = $1 AND EXISTS (
@@ -26,7 +25,7 @@ router.get('/:id/history', auth, async (req, res) => {
       }
     }
 
-    const result = await pool.query(
+    const result = await query(
       `
       SELECT ch.*, 
         json_build_object('id', u.id, 'firstname', u.firstname, 'surname', u.surname) as created_by
@@ -51,7 +50,7 @@ router.post('/:id/history', auth, async (req, res) => {
 
   try {
     const { date, notes } = req.body;
-    const result = await pool.query(
+    const result = await query(
       'INSERT INTO class_history (class_id, date, notes, created_by) VALUES ($1, $2, $3, $4) RETURNING *',
       [req.params.id, date, notes, req.user.id]
     );
@@ -69,7 +68,7 @@ router.delete('/:classId/history/:historyId', auth, async (req, res) => {
   }
 
   try {
-    await pool.query('DELETE FROM class_history WHERE id = $1 AND class_id = $2', [
+    await query('DELETE FROM class_history WHERE id = $1 AND class_id = $2', [
       req.params.historyId,
       req.params.classId,
     ]);
@@ -79,4 +78,4 @@ router.delete('/:classId/history/:historyId', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

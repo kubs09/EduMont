@@ -1,9 +1,11 @@
-/* eslint-disable */
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const getInvitationEmail = require('../../../templates/invitationEmail');
+import { randomBytes } from 'crypto';
+import process from 'process';
+import nodemailer from 'nodemailer';
+import getInvitationEmail from '../../../templates/invitationEmail.js';
 
-const transporter = nodemailer.createTransport({
+const { createTransport } = nodemailer;
+
+const transporter = createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
   secure: false,
@@ -17,7 +19,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const generateInvitationToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+  return randomBytes(32).toString('hex');
 };
 
 const createInvitationExpiry = (hoursFromNow = 48) => {
@@ -38,7 +40,7 @@ const sendInvitationEmail = async (email, role, token, language = 'en') => {
   });
 };
 
-module.exports = {
+export default {
   generateInvitationToken,
   createInvitationExpiry,
   sendInvitationEmail,

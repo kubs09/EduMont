@@ -1,44 +1,48 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+import console from 'console';
 
-let getRouter, createRouter, updateRouter, deleteRouter, uploadUrlRouter, validationHelpers;
-
-try {
-  validationHelpers = require('./validation');
-} catch (error) {
-  validationHelpers = null;
-}
+let getRouter = null;
+let createRouter = null;
+let updateRouter = null;
+let deleteRouter = null;
+let uploadUrlRouter = null;
 
 try {
-  getRouter = require('./get');
+  const module = await import('./get.js');
+  getRouter = module.default;
 } catch (error) {
   getRouter = null;
 }
 
 try {
-  createRouter = require('./create');
+  const module = await import('./create.js');
+  createRouter = module.default;
 } catch (error) {
   createRouter = null;
 }
 
 try {
-  updateRouter = require('./update');
+  const module = await import('./update.js');
+  updateRouter = module.default || module;
 } catch (error) {
   updateRouter = null;
 }
 
 try {
-  deleteRouter = require('./delete');
+  const module = await import('./delete.js');
+  deleteRouter = module.default;
 } catch (error) {
   deleteRouter = null;
 }
 
 try {
-  uploadUrlRouter = require('./upload-url');
+  const module = await import('./upload-url.js');
+  uploadUrlRouter = module.default;
 } catch (error) {
   uploadUrlRouter = null;
 }
+
+const router = Router();
 
 if (uploadUrlRouter) {
   router.use('/upload-url', uploadUrlRouter);
@@ -65,4 +69,4 @@ router.get('/debug-routes', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

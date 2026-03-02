@@ -1,11 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect, query as _query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     let query = '';
     const params = [];
@@ -136,7 +136,7 @@ router.get('/:id', auth, async (req, res) => {
     const { id } = req.params;
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await pool.query(
+      const parentChildCheck = await _query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
          WHERE cc.class_id = $1 AND EXISTS (
@@ -203,7 +203,7 @@ router.get('/:id', auth, async (req, res) => {
 
     query += ` GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
 
-    const classDetails = await pool.query(query, params);
+    const classDetails = await _query(query, params);
     if (classDetails.rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
     }
@@ -219,7 +219,7 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
     const { id } = req.params;
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await pool.query(
+      const parentChildCheck = await _query(
         `SELECT 1 FROM class_children cc
          JOIN children ch ON cc.child_id = ch.id
          WHERE cc.class_id = $1 AND EXISTS (
@@ -258,7 +258,7 @@ router.get('/:id/next-presentations', auth, async (req, res) => {
       WHERE s.class_id = $1 AND s.status = 'to be presented'
       ORDER BY s.created_at DESC`;
 
-    const result = await pool.query(query, [id]);
+    const result = await _query(query, [id]);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching next presentations:', error);
@@ -275,7 +275,7 @@ router.get('/by-age/:age', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid age provided' });
     }
 
-    const result = await pool.query(
+    const result = await _query(
       `SELECT id, name, description, min_age, max_age 
        FROM classes 
        WHERE $1 BETWEEN min_age AND max_age 
@@ -290,4 +290,4 @@ router.get('/by-age/:age', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

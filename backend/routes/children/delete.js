@@ -1,11 +1,12 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '../../config/database.js';
+import authenticateToken from '../../middleware/auth.js';
 
 router.delete('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const { id } = req.params;
 
@@ -42,7 +43,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const { childId, classId } = req.params;
 
@@ -79,4 +80,4 @@ router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) 
   }
 });
 
-module.exports = router;
+export default router;

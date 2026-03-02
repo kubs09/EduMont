@@ -1,16 +1,19 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { comparePassword } = require('./services/password');
-const { generateJwtToken } = require('./services/token');
-const { validateLoginData } = require('./services/validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import pool from '../../config/database.js';
+import passwordService from './services/password.js';
+import tokenService from './services/token.js';
+import validationService from './services/validation.js';
+
+const { comparePassword } = passwordService;
+const { generateJwtToken } = tokenService;
+const { validateLoginData } = validationService;
 
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     const validation = validateLoginData(email, password);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
@@ -51,4 +54,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

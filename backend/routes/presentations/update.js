@@ -1,17 +1,15 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const {
-  validatepresentation,
-  canEditChildpresentation,
-  normalizeCategoryOrdering,
-} = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '../../config/database.js';
+import authenticateToken from '../../middleware/auth.js';
+import validationModule from './validation.js';
+const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
+  validationModule;
 
 // Update a presentation entry
 router.put('/:id', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const { id } = req.params;
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
@@ -80,4 +78,4 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

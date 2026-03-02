@@ -1,13 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
-const { getAllowedRecipients } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
+import { getAllowedRecipients } from './helpers.js';
 
-// Get allowed recipients for the authenticated user
 router.get('/users', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const result = await getAllowedRecipients(req.user.id, req.user.role, client);
     res.json(result.rows);
@@ -18,4 +16,4 @@ router.get('/users', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

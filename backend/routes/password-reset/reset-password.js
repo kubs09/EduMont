@@ -1,12 +1,11 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const bcrypt = require('bcryptjs');
+import { Router } from 'express';
+const router = Router();
+import { connect } from '../../config/database.js';
+import { hash } from 'bcryptjs';
 
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
-  const client = await pool.connect();
+  const client = await connect();
 
   try {
     if (!token || token.length !== 64) {
@@ -33,7 +32,7 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Reset token has expired' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hash(password, 10);
 
     const updateResult = await client.query(
       `UPDATE users 
@@ -60,4 +59,4 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

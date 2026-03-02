@@ -1,6 +1,14 @@
-/* eslint-disable */
-const path = require('path');
-const fs = require('fs');
+import { join, dirname } from 'path';
+import { existsSync, mkdirSync } from 'fs';
+import { URL, fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import process from 'process';
+import console from 'console';
+import express from 'express';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Set up environment for the backend server
 process.env.VERCEL = 'true';
@@ -12,8 +20,8 @@ if (process.env.USE_SUPABASE !== 'true') {
 
   // Ensure /tmp directory exists and is writable
   try {
-    if (!fs.existsSync('/tmp')) {
-      fs.mkdirSync('/tmp', { recursive: true });
+    if (!existsSync('/tmp')) {
+      mkdirSync('/tmp', { recursive: true });
     }
     console.log('✅ /tmp directory ready');
   } catch (error) {
@@ -34,18 +42,18 @@ console.log('Database configuration:', {
 });
 
 // Set up module alias resolution for the backend
-const moduleAlias = require('module-alias');
+import moduleAlias, { addAliases } from 'module-alias';
 
 // Get the correct backend path
-const backendPath = path.join(__dirname, '..', 'backend');
+const backendPath = join(__dirname, '..', 'backend');
 
 // Add aliases for backend modules - use absolute paths
-moduleAlias.addAliases({
-  '@config': path.join(backendPath, 'config'),
-  '@db': path.join(backendPath, 'db'),
-  '@routes': path.join(backendPath, 'routes'),
-  '@middleware': path.join(backendPath, 'middleware'),
-  '@utils': path.join(backendPath, 'utils'),
+addAliases({
+  '@config': join(backendPath, 'config'),
+  '@db': join(backendPath, 'db'),
+  '@routes': join(backendPath, 'routes'),
+  '@middleware': join(backendPath, 'middleware'),
+  '@utils': join(backendPath, 'utils'),
 });
 
 // Register the aliases
@@ -53,9 +61,8 @@ moduleAlias();
 
 let app;
 try {
-  app = require(path.join(backendPath, 'server.js'));
+  app = require(join(backendPath, 'server.js'));
 } catch (error) {
-  const express = require('express');
   app = express();
   app.use((req, res) => {
     res.status(500).json({
@@ -69,7 +76,7 @@ try {
   });
 }
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   const incomingUrl = req.url || req.originalUrl || '/api/index.js';
   const queryPath = req.query?.path;
   let parsedQueryPath = queryPath;

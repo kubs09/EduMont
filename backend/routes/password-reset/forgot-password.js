@@ -1,13 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { sendEmail } = require('../../config/mail');
-const getForgotPasswordEmail = require('../../templates/forgotPasswordEmail');
-const { generateResetToken } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import process from 'process';
+import { connect } from '../../config/database.js';
+import { sendEmail } from '../../config/mail.js';
+import getForgotPasswordEmail from '../../templates/forgotPasswordEmail.js';
+import { generateResetToken } from './helpers.js';
 
 router.post('/forgot-password', async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
   try {
     const { email, language } = req.body;
 
@@ -72,4 +73,4 @@ router.post('/test-email', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

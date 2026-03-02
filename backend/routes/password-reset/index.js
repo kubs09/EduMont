@@ -1,30 +1,36 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-let forgotPasswordRouter, checkTokenRouter, resetPasswordRouter;
+const initializeRouters = async () => {
+  let forgotPasswordRouter, checkTokenRouter, resetPasswordRouter;
 
-try {
-  forgotPasswordRouter = require('./forgot-password');
-} catch (error) {
-  forgotPasswordRouter = null;
-}
+  try {
+    const module = await import('./forgot-password');
+    forgotPasswordRouter = module.default;
+  } catch (error) {
+    forgotPasswordRouter = null;
+  }
 
-try {
-  checkTokenRouter = require('./check-token');
-} catch (error) {
-  checkTokenRouter = null;
-}
+  try {
+    const module = await import('./check-token');
+    checkTokenRouter = module.default;
+  } catch (error) {
+    checkTokenRouter = null;
+  }
 
-try {
-  resetPasswordRouter = require('./reset-password');
-} catch (error) {
-  resetPasswordRouter = null;
-}
+  try {
+    const module = await import('./reset-password');
+    resetPasswordRouter = module.default;
+  } catch (error) {
+    resetPasswordRouter = null;
+  }
 
-if (forgotPasswordRouter) router.use('/', forgotPasswordRouter);
-if (checkTokenRouter) router.use('/', checkTokenRouter);
-if (resetPasswordRouter) router.use('/', resetPasswordRouter);
+  if (forgotPasswordRouter) router.use('/', forgotPasswordRouter);
+  if (checkTokenRouter) router.use('/', checkTokenRouter);
+  if (resetPasswordRouter) router.use('/', resetPasswordRouter);
+};
+
+initializeRouters();
 
 router.get('/test', (req, res) => {
   res.json({
@@ -33,4 +39,4 @@ router.get('/test', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

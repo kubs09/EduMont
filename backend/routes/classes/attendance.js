@@ -1,8 +1,7 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import { query as _query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
@@ -15,7 +14,7 @@ const parseId = (value) => {
 };
 
 const isTeacherForClass = async (userId, classId) => {
-  const result = await pool.query(
+  const result = await _query(
     'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
     [classId, userId]
   );
@@ -23,7 +22,7 @@ const isTeacherForClass = async (userId, classId) => {
 };
 
 const isParentForChildInClass = async (userId, classId, childId) => {
-  const result = await pool.query(
+  const result = await _query(
     `
     SELECT 1
     FROM class_children cc
@@ -36,7 +35,7 @@ const isParentForChildInClass = async (userId, classId, childId) => {
 };
 
 const isChildInClass = async (childId, classId) => {
-  const result = await pool.query(
+  const result = await _query(
     'SELECT 1 FROM class_children WHERE class_id = $1 AND child_id = $2',
     [classId, childId]
   );
@@ -107,7 +106,7 @@ router.get('/:id/attendance', auth, async (req, res) => {
 
     query += ' ORDER BY ch.surname, ch.firstname';
 
-    const result = await pool.query(query, params);
+    const result = await _query(query, params);
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch attendance', details: error.message });
@@ -165,7 +164,7 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
     }
 
     const dateValue = attendanceDate || new Date().toISOString().slice(0, 10);
-    const existing = await pool.query(
+    const existing = await _query(
       `
       SELECT id, check_in_at
       FROM class_attendance
@@ -179,7 +178,7 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
     }
 
     if (existing.rows.length === 0) {
-      const insertResult = await pool.query(
+      const insertResult = await _query(
         `
         INSERT INTO class_attendance
           (class_id, child_id, attendance_date, check_in_at, checked_in_by, notes)
@@ -191,7 +190,7 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
       return res.status(201).json(insertResult.rows[0]);
     }
 
-    const updateResult = await pool.query(
+    const updateResult = await _query(
       `
       UPDATE class_attendance
       SET check_in_at = COALESCE($2, NOW()),
@@ -261,7 +260,7 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
     }
 
     const dateValue = attendanceDate || new Date().toISOString().slice(0, 10);
-    const existing = await pool.query(
+    const existing = await _query(
       `
       SELECT id, check_in_at, check_out_at
       FROM class_attendance
@@ -278,7 +277,7 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
       return res.status(409).json({ error: 'Child is already checked out for this date' });
     }
 
-    const updateResult = await pool.query(
+    const updateResult = await _query(
       `
       UPDATE class_attendance
       SET check_out_at = COALESCE($2, NOW()),
@@ -297,4 +296,4 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

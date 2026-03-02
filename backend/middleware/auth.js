@@ -1,5 +1,8 @@
-/* eslint-disable */
-const jwt = require('jsonwebtoken');
+import jsonwebtoken from 'jsonwebtoken';
+import process from 'process';
+import console from 'console';
+
+const { verify } = jsonwebtoken;
 
 const auth = async (req, res, next) => {
   try {
@@ -15,7 +18,7 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verify(token, process.env.JWT_SECRET);
 
     req.user = decoded;
     next();
@@ -45,4 +48,4 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth;
+export default auth;

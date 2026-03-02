@@ -1,9 +1,9 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { validateChildUpdate, validateParentIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '../../config/database';
+import authenticateToken from '../../middleware/auth.js';
+import validation from './validation.js';
+const { validateChildUpdate, validateParentIds } = validation;
 
 const toDateString = (value) => {
   if (!value) return null;
@@ -154,4 +154,4 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

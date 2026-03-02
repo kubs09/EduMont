@@ -1,11 +1,12 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
-const { sendEmail } = require('../../config/mail');
-const getMessageNotificationEmail = require('../../templates/messageNotificationEmail');
-const { getAllowedRecipients } = require('./helpers');
+import { Router } from 'express';
+const router = Router();
+import pool from '../../config/database.js';
+import auth from '../../middleware/auth.js';
+import mailConfig from '../../config/mail.js';
+import process from 'process';
+const { sendEmail } = mailConfig;
+import getMessageNotificationEmail from '../../templates/messageNotificationEmail.js';
+import { getAllowedRecipients } from './helpers.js';
 
 router.post('/', auth, async (req, res) => {
   const client = await pool.connect();
@@ -62,22 +63,18 @@ router.post('/', auth, async (req, res) => {
 
     for (const recipient of recipientsResult.rows) {
       if (recipient.message_notifications) {
-        try {
-          const emailContent = getMessageNotificationEmail(
-            senderName,
-            messageId,
-            frontendUrl,
-            language
-          );
+        const emailContent = getMessageNotificationEmail(
+          senderName,
+          messageId,
+          frontendUrl,
+          language
+        );
 
-          await sendEmail({
-            to: recipient.email,
-            subject: emailContent.subject,
-            html: emailContent.html,
-          });
-        } catch (emailError) {
-          throw emailError;
-        }
+        await sendEmail({
+          to: recipient.email,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        });
       }
     }
 
@@ -94,4 +91,4 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

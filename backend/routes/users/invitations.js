@@ -1,17 +1,16 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('@config/database');
-const auth = require('@middleware/auth');
-const { hashPassword } = require('./services/password');
-const {
-  generateInvitationToken,
-  createInvitationExpiry,
-  sendInvitationEmail,
-} = require('./services/email');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { connect } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
+import passwordService from './services/password.js';
+import emailService from './services/email.js';
+
+const { hashPassword } = passwordService;
+const { generateInvitationToken, createInvitationExpiry, sendInvitationEmail } = emailService;
 
 router.post('/', auth, async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
 
   try {
     await client.query('BEGIN');
@@ -52,7 +51,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 router.post('/register/:token', async (req, res) => {
-  const client = await pool.connect();
+  const client = await connect();
 
   try {
     await client.query('BEGIN');
@@ -90,4 +89,4 @@ router.post('/register/:token', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

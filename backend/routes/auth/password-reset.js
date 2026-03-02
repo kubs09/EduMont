@@ -1,17 +1,20 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const { generateResetToken } = require('./services/token');
-const { sendPasswordResetEmail } = require('./services/email');
-const { validateForgotPasswordData } = require('./services/validation');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import pool from '../../config/database.js';
+import tokenService from './services/token.js';
+import emailService from './services/email.js';
+import validationService from './services/validation.js';
+
+const { generateResetToken } = tokenService;
+const { sendPasswordResetEmail } = emailService;
+const { validateForgotPasswordData } = validationService;
 
 router.post('/forgot-password', async (req, res) => {
   const client = await pool.connect();
   try {
     const { email, language } = req.body;
 
-    // Validate input
     const validation = validateForgotPasswordData(email);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
@@ -48,4 +51,4 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

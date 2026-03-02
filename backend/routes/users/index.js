@@ -1,15 +1,14 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const listRouter = require('./list');
-const profileRouter = require('./profile');
-const invitationsRouter = require('./invitations');
-const deleteRouter = require('./delete');
+import listRouter from './list.js';
+import profileRouter from './profile.js';
+import invitationsRouter from './invitations.js';
+import deleteRouter from './delete.js';
 
 router.use('/', listRouter);
 router.use('/', profileRouter);
 router.use('/', invitationsRouter);
 router.use('/', deleteRouter);
 
-module.exports = router;
+export default router;

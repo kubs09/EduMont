@@ -1,16 +1,17 @@
-/* eslint-disable */
-const bcrypt = require('bcryptjs');
+import bcryptjs from 'bcryptjs';
+
+const { genSalt, hash, compare } = bcryptjs;
 
 const hashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
+  const salt = await genSalt(10);
+  return await hash(password, salt);
 };
 
 const comparePassword = async (plainPassword, hashedPassword) => {
-  return await bcrypt.compare(plainPassword, hashedPassword);
+  return await compare(plainPassword, hashedPassword);
 };
 
-module.exports = {
+export default {
   hashPassword,
   comparePassword,
 };

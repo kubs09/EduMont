@@ -1,9 +1,10 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const authenticateToken = require('../../middleware/auth');
-const { validateChild, validateParentIds } = require('./validation');
+import { Router } from 'express';
+const router = Router();
+import pool from '../../config/database.js';
+import console from 'console';
+import authenticateToken from '../../middleware/auth.js';
+import validation from './validation.js';
+const { validateChild, validateParentIds } = validation;
 
 router.post('/', authenticateToken, async (req, res) => {
   const client = await pool.connect();
@@ -111,4 +112,4 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

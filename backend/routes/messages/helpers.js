@@ -1,6 +1,3 @@
-/* eslint-disable */
-const pool = require('../../config/database');
-
 async function getAllowedRecipients(userId, userRole, client) {
   switch (userRole) {
     case 'admin':
@@ -125,4 +122,4 @@ async function getAllowedRecipients(userId, userRole, client) {
   }
 }
 
-module.exports = { getAllowedRecipients };
+export { getAllowedRecipients };

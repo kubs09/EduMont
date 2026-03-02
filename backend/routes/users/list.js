@@ -1,8 +1,8 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('@config/database');
-const auth = require('@middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { query as _query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
   try {
@@ -18,7 +18,7 @@ router.get('/', auth, async (req, res) => {
 
     query += ' ORDER BY surname ASC';
 
-    const result = await pool.query(query, params);
+    const result = await _query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Fetch users error:', error);
@@ -34,7 +34,7 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid user id' });
     }
 
-    const result = await pool.query(
+    const result = await _query(
       'SELECT id, firstname, surname, email, role, phone FROM users WHERE id = $1',
       [userId]
     );
@@ -55,7 +55,7 @@ router.get('/:id', auth, async (req, res) => {
 
     if (!canViewProfile) {
       if (requesterRole === 'parent' && targetUser.role === 'parent') {
-        const sharedChildResult = await pool.query(
+        const sharedChildResult = await _query(
           `SELECT 1
            FROM child_parents cp_self
            JOIN child_parents cp_other ON cp_self.child_id = cp_other.child_id
@@ -79,4 +79,4 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

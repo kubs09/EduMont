@@ -1,8 +1,8 @@
-/* eslint-disable */
-const express = require('express');
-const router = express.Router();
-const pool = require('../../config/database');
-const auth = require('../../middleware/auth');
+import { Router } from 'express';
+const router = Router();
+import console from 'console';
+import { query as _query } from '../../config/database.js';
+import auth from '../../middleware/auth.js';
 
 // Get all category presentations
 router.get('/categories', auth, async (req, res) => {
@@ -24,7 +24,7 @@ router.get('/categories', auth, async (req, res) => {
       ORDER BY age_group ASC, category ASC, display_order ASC
     `;
 
-    const result = await pool.query(query);
+    const result = await _query(query);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching category presentations:', error);
@@ -55,7 +55,7 @@ router.get('/categories/category/:category', auth, async (req, res) => {
       ORDER BY age_group ASC, display_order ASC
     `;
 
-    const result = await pool.query(query, [category]);
+    const result = await _query(query, [category]);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching presentations by category:', error);
@@ -76,7 +76,7 @@ router.get('/categories/list/categories', auth, async (req, res) => {
       ORDER BY category ASC
     `;
 
-    const result = await pool.query(query);
+    const result = await _query(query);
     res.json(result.rows.map((row) => row.category));
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -84,4 +84,4 @@ router.get('/categories/list/categories', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

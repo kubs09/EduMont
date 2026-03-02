@@ -1,4 +1,3 @@
-/* eslint-disable */
 const validateChild = (data) => {
   const errors = [];
 
@@ -83,4 +82,4 @@ const validateChildUpdate = (data) => {
   return errors;
 };
 
-module.exports = { validateChild, validateChildUpdate, validateParentIds };
+export default { validateChild, validateChildUpdate, validateParentIds };

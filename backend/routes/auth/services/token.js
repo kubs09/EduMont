@@ -1,18 +1,21 @@
-/* eslint-disable */
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+import jsonwebtoken from 'jsonwebtoken';
+import crypto from 'crypto';
+import process from 'process';
+
+const { sign } = jsonwebtoken;
+const { randomBytes } = crypto;
 
 const generateJwtToken = (user) => {
-  return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+  return sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: '24h',
   });
 };
 
 const generateResetToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+  return randomBytes(32).toString('hex');
 };
 
-module.exports = {
+export default {
   generateJwtToken,
   generateResetToken,
 };

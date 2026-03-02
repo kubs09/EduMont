@@ -1,5 +1,5 @@
-/* eslint-disable */
-const pool = require('../config/database');
+import pool from '../config/database.js';
+import { setTimeout } from 'timers/promises';
 
 const executeQuery = async (query, params = [], retries = 2) => {
   let lastError;
@@ -45,7 +45,4 @@ const executeTransaction = async (callback) => {
   }
 };
 
-module.exports = {
-  executeQuery,
-  executeTransaction,
-};
+export { executeQuery, executeTransaction };

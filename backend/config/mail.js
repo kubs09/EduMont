@@ -1,7 +1,8 @@
-/*eslint-disable */
-const nodemailer = require('nodemailer');
+import { createTransport } from 'nodemailer';
+import process from 'process';
+import console from 'console';
 
-const transporter = nodemailer.createTransport({
+const transporter = createTransport({
   host: process.env.SMTP_HOST,
   port: parseInt(process.env.SMTP_PORT),
   secure: process.env.SMTP_SECURE === 'true',
@@ -33,4 +34,4 @@ const sendEmail = async ({ to, subject, html, from }) => {
   }
 };
 
-module.exports = { sendEmail, transporter };
+export default { sendEmail, transporter };
