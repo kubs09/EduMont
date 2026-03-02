@@ -98,29 +98,6 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
     setPage((current) => Math.min(current, totalPages));
   }, [totalPages]);
 
-  const ownExcuseForDate = useMemo(() => {
-    const selected = parseExcuseDate(attendanceDate);
-    if (!selected) {
-      return null;
-    }
-    const selectedTime = selected.setHours(0, 0, 0, 0);
-    return (
-      excuses.find((excuse) => {
-        if (excuse.parent_id !== currentUserId) {
-          return false;
-        }
-        const from = parseExcuseDate(excuse.date_from);
-        const to = parseExcuseDate(excuse.date_to);
-        if (!from || !to) {
-          return false;
-        }
-        const fromTime = from.setHours(0, 0, 0, 0);
-        const toTime = to.setHours(0, 0, 0, 0);
-        return selectedTime >= fromTime && selectedTime <= toTime;
-      }) || null
-    );
-  }, [attendanceDate, excuses, currentUserId]);
-
   return (
     <Box w="full" overflowX="auto">
       <Flex align="center" mb={4} gap={2}>
@@ -129,7 +106,6 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
             childId={childId}
             childName=""
             language={language}
-            excuse={ownExcuseForDate}
             onRefreshExcuses={onRefreshExcuses}
             size="sm"
             variant="brand"
@@ -156,6 +132,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                 <Th>{texts.profile.children.excuse.dateTo[language]}</Th>
                 <Th>{texts.profile.children.excuse.reason[language]}</Th>
                 <Th>{texts.profile.children.excuse.submittedBy[language]}</Th>
+                {isParent && <Th>{texts.profile.children.excuse.actions[language]}</Th>}
               </Tr>
             </Thead>
             <Tbody>
@@ -165,6 +142,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                   .join(' ');
                 const parentId = excuse.parent_id;
                 const hasParentLink = canViewParentProfile && parentId;
+                const isOwnExcuse = isParent && excuse.parent_id === currentUserId;
                 return (
                   <Tr key={excuse.id}>
                     <Td>{formatExcuseDate(excuse.date_from, language)}</Td>
@@ -189,6 +167,26 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                         <Text>-</Text>
                       )}
                     </Td>
+                    {isParent && (
+                      <Td>
+                        {isOwnExcuse ? (
+                          <HStack spacing={2}>
+                            <ChildExcuseAction
+                              childId={childId}
+                              childName=""
+                              language={language}
+                              excuse={excuse}
+                              onRefreshExcuses={onRefreshExcuses}
+                              size="xs"
+                              variant="outline"
+                              buttonText={texts.profile.children.excuse.edit[language]}
+                            />
+                          </HStack>
+                        ) : (
+                          <Text>-</Text>
+                        )}
+                      </Td>
+                    )}
                   </Tr>
                 );
               })}

@@ -199,6 +199,18 @@ export const profile = {
         cs: 'Upravit omluvenku',
         en: 'Edit Excuse',
       },
+      excuseEndButton: {
+        cs: 'Zrušit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      edit: {
+        cs: 'Upravit',
+        en: 'Edit',
+      },
+      actions: {
+        cs: 'Akce',
+        en: 'Actions',
+      },
       cancel: {
         cs: 'Zrušit omluvenku',
         en: 'Cancel Excuse',

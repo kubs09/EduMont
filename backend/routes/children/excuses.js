@@ -184,24 +184,6 @@ router.put('/:id/excuses/:excuseId', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const excuseResult = await query(
-      'SELECT id, child_id, parent_id FROM child_excuses WHERE id = $1',
-      [excuseId]
-    );
-
-    if (excuseResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Excuse not found' });
-    }
-
-    const excuse = excuseResult.rows[0];
-    if (excuse.child_id !== childId) {
-      return res.status(400).json({ error: 'Excuse does not belong to this child' });
-    }
-
-    if (excuse.parent_id !== req.user.id) {
-      return res.status(403).json({ error: "Cannot edit another parent's excuse" });
-    }
-
     const { date_from, date_to, reason } = req.body;
 
     const result = await query(
@@ -212,10 +194,16 @@ router.put('/:id/excuses/:excuseId', auth, async (req, res) => {
           reason = $3,
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $4
+        and child_id = $5
+        and parent_id = $6
       RETURNING *
     `,
-      [date_from, date_to, reason.trim(), excuseId]
+      [date_from, date_to, reason.trim(), excuseId, childId, req.user.id]
     );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Excuse not found or unauthorized' });
+    }
 
     res.json(result.rows[0]);
   } catch (error) {

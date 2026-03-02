@@ -19,26 +19,28 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { DatePicker } from '@frontend/shared/components/DatePicker';
-import { ChildExcuse, createChildExcuse, deleteChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse, createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
 
 interface ChildExcuseActionProps {
   childId: number;
   childName: string;
   language: 'cs' | 'en';
-  excuse: ChildExcuse | null;
+  excuse?: ChildExcuse | null;
   onRefreshExcuses: (childId: number) => Promise<void>;
   size?: ButtonProps['size'];
   variant?: ButtonProps['variant'];
+  buttonText?: string;
 }
 
 const ChildExcuseAction = ({
   childId,
   childName,
   language,
-  excuse,
+  excuse = null,
   onRefreshExcuses,
   size = 'sm',
   variant = 'outline',
+  buttonText,
 }: ChildExcuseActionProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +60,15 @@ const ChildExcuseAction = ({
   };
 
   const openModal = () => {
-    resetForm();
+    if (excuse) {
+      setExcuseData({
+        date_from: excuse.date_from,
+        date_to: excuse.date_to,
+        reason: excuse.reason,
+      });
+    } else {
+      resetForm();
+    }
     setIsOpen(true);
   };
 
@@ -100,11 +110,16 @@ const ChildExcuseAction = ({
 
     try {
       setIsSubmitting(true);
-      await createChildExcuse(childId, {
+      const payload = {
         date_from: excuseData.date_from,
         date_to: excuseData.date_to,
         reason: excuseData.reason.trim(),
-      });
+      };
+      if (excuse) {
+        await updateChildExcuse(childId, excuse.id, payload);
+      } else {
+        await createChildExcuse(childId, payload);
+      }
       await onRefreshExcuses(childId);
       toast({
         title: texts.profile.children.excuse.success[language],
@@ -136,7 +151,20 @@ const ChildExcuseAction = ({
     if (!excuse) return;
     try {
       setIsCancelling(true);
-      await deleteChildExcuse(childId, excuse.id);
+      const today = new Date().toISOString().split('T')[0];
+
+      const dateFrom = excuse.date_from.includes('T')
+        ? excuse.date_from.split('T')[0]
+        : excuse.date_from;
+
+      // If date_from is in the future, set it to today to avoid validation errors
+      const adjustedDateFrom = dateFrom > today ? today : dateFrom;
+
+      await updateChildExcuse(childId, excuse.id, {
+        date_from: adjustedDateFrom,
+        date_to: today,
+        reason: excuse.reason,
+      });
       await onRefreshExcuses(childId);
       toast({
         title: texts.profile.children.excuse.cancelSuccess[language],
@@ -159,15 +187,38 @@ const ChildExcuseAction = ({
     }
   };
 
+  const canEndExcuse =
+    excuse &&
+    (() => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateTo = excuse.date_to.includes('T') ? excuse.date_to.split('T')[0] : excuse.date_to;
+      return dateTo > today;
+    })();
+
+  const canEditExcuse =
+    excuse &&
+    (() => {
+      const today = new Date().toISOString().split('T')[0];
+      const dateTo = excuse.date_to.includes('T') ? excuse.date_to.split('T')[0] : excuse.date_to;
+      return dateTo >= today;
+    })();
+
+  const displayText =
+    buttonText ||
+    (excuse
+      ? texts.profile.children.excuse.excuseEditButton[language]
+      : texts.profile.children.excuse.excuseButton[language]);
+
   return (
     <>
-      {excuse ? (
-        <Button size={size} variant={variant} onClick={handleExcuseCancel} isLoading={isCancelling}>
-          {texts.profile.children.excuse.cancel[language]}
-        </Button>
-      ) : (
+      {(!excuse || canEditExcuse) && (
         <Button size={size} variant={variant} onClick={openModal}>
-          {texts.profile.children.excuse.excuseButton[language]}
+          {displayText}
+        </Button>
+      )}
+      {excuse && canEndExcuse && (
+        <Button size={size} variant="secondary" onClick={handleExcuseCancel} ml={2}>
+          {texts.profile.children.excuse.excuseEndButton[language]}
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={closeModal}>

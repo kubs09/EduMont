@@ -39,14 +39,14 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('Invalid age range values');
     }
 
+    if (assistantIdNum !== null && assistantIdNum === teacherIdNum) {
+      throw new Error('Assistant cannot be the same as the main teacher');
+    }
+
     await client.query(
       'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
       [name, description, minAge, maxAge, id]
     );
-
-    if (assistantIdNum !== null && assistantIdNum === teacherIdNum) {
-      throw new Error('Assistant cannot be the same as the main teacher');
-    }
 
     const assignedTeacher = await client.query(
       'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
