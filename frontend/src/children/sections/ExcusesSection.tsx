@@ -62,7 +62,10 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
   canViewParentProfile,
   onRefreshExcuses,
 }) => {
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }, []);
   const currentUserId = useMemo(() => Number(localStorage.getItem('userId') || '0'), []);
   const [attendanceDate, setAttendanceDate] = useState(today);
   const [page, setPage] = useState(1);

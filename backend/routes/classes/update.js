@@ -143,10 +143,17 @@ router.put('/:id', auth, async (req, res) => {
       error.message.includes('Invalid teacher identifiers') ||
       error.message.includes('Missing required field') ||
       error.message.includes('Invalid age range values') ||
-      error.message.includes('Missing required fields')
+      error.message.includes('Missing required fields') ||
+      error.message.includes('Invalid class ID')
     ) {
       return res.status(400).json({
         error: error.message,
+      });
+    }
+
+    if (error.message.includes('Class not found')) {
+      return res.status(404).json({
+        error: 'Class not found',
       });
     }
 

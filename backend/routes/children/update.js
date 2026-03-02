@@ -39,7 +39,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       }
     }
 
-    const child = await client.query('SELECT id FROM children WHERE id = $1', [id]);
+    const child = await client.query('SELECT id FROM children WHERE id = $1', [childId]);
     if (child.rows.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
@@ -113,24 +113,24 @@ router.put('/:id', authenticateToken, async (req, res) => {
           details: "The selected class is not suitable for the child's age",
         });
       }
-    }
 
-    await client.query(
-      `WITH upserted AS (
-      INSERT INTO class_children (child_id, class_id)
-      VALUES ($1, $2)
-      ON CONFLICT (child_id) DO UPDATE 
-      SET class_id = EXCLUDED.class_id
-      WHERE class_children.class_id IS DISTINCT FROM EXCLUDED.class_id
-      RETURNING child_id, class_id
-    )
-      UPDATE presentations p
-      SET class_id = u.class_id,
-          updated_at = CURRENT_TIMESTAMP
-      FROM upserted u
-      WHERE p.child_id = u.child_id`,
-      [childId, normalizedClassId]
-    );
+      await client.query(
+        `WITH upserted AS (
+        INSERT INTO class_children (child_id, class_id)
+        VALUES ($1, $2)
+        ON CONFLICT (child_id) DO UPDATE 
+        SET class_id = EXCLUDED.class_id
+        WHERE class_children.class_id IS DISTINCT FROM EXCLUDED.class_id
+        RETURNING child_id, class_id
+      )
+        UPDATE presentations p
+        SET class_id = u.class_id,
+            updated_at = CURRENT_TIMESTAMP
+        FROM upserted u
+        WHERE p.child_id = u.child_id`,
+        [childId, normalizedClassId]
+      );
+    }
 
     const updatedChild = await client.query(
       `SELECT 
