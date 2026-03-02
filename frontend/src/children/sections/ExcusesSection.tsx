@@ -100,8 +100,8 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
 
   return (
     <Box w="full" overflowX="auto">
-      <Flex align="center" mb={4} gap={2}>
-        {isParent && (
+      {isParent && (
+        <Flex align="center" mb={4} gap={2}>
           <ChildExcuseAction
             childId={childId}
             childName=""
@@ -110,8 +110,8 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
             size="sm"
             variant="brand"
           />
-        )}
-      </Flex>
+        </Flex>
+      )}
       <HStack spacing={4} align="center" flexWrap="wrap" mb={4}>
         <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker

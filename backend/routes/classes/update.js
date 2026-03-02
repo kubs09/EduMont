@@ -12,8 +12,16 @@ router.put('/:id', auth, async (req, res) => {
     client = await connect();
     await client.query('BEGIN');
     const { id } = req.params;
+    const classId = Number(id);
+
+    if (!Number.isInteger(classId) || classId <= 0) {
+      throw new Error('Invalid class ID');
+    }
     const { name, description, min_age, max_age, teacherId, assistantId } = req.body;
 
+    if (typeof name !== 'string' || name.trim() === '') {
+      throw new Error('Missing required field: name is required and must be a non-empty string');
+    }
     if (!teacherId) {
       throw new Error('Missing required field: teacherId is required');
     }
@@ -43,16 +51,18 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('Assistant cannot be the same as the main teacher');
     }
 
-    await client.query(
+    const updateResult = await client.query(
       'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
-      [name, description, minAge, maxAge, id]
+      [name, description, minAge, maxAge, classId]
     );
+    if (updateResult.rowCount === 0) {
+      throw new Error('Class not found');
+    }
 
     const assignedTeacher = await client.query(
       'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-      [teacherIdNum, id]
+      [teacherIdNum, classId]
     );
-
     if (assignedTeacher.rows.length > 0) {
       throw new Error('Selected teacher is already assigned to another class');
     }
@@ -60,7 +70,7 @@ router.put('/:id', auth, async (req, res) => {
     if (assistantIdNum !== null) {
       const assignedAssistant = await client.query(
         'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-        [assistantIdNum, id]
+        [assistantIdNum, classId]
       );
 
       if (assignedAssistant.rows.length > 0) {
@@ -70,7 +80,7 @@ router.put('/:id', auth, async (req, res) => {
 
     const currentTeachers = await client.query(
       'SELECT teacher_id, role FROM class_teachers WHERE class_id = $1',
-      [id]
+      [classId]
     );
 
     const currentTeacher = currentTeachers.rows.find((r) => r.role === 'teacher');
@@ -82,17 +92,17 @@ router.put('/:id', auth, async (req, res) => {
         ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNum
         : !!currentAssistant;
 
-    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
+    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [classId]);
 
     await client.query(
       'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-      [id, teacherIdNum, 'teacher', teacherChanged]
+      [classId, teacherIdNum, 'teacher', teacherChanged]
     );
 
     if (assistantIdNum !== null) {
       await client.query(
         'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-        [id, assistantIdNum, 'assistant', assistantChanged]
+        [classId, assistantIdNum, 'assistant', assistantChanged]
       );
     }
 
@@ -117,7 +127,7 @@ router.put('/:id', auth, async (req, res) => {
       LEFT JOIN users t ON ct.teacher_id = t.id
       WHERE c.id = $1
       GROUP BY c.id`,
-      [id]
+      [classId]
     );
 
     res.json(updatedClass.rows[0]);

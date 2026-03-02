@@ -60,6 +60,7 @@ const ChildExcuseAction = ({
   };
 
   const openModal = () => {
+    setExcuseErrors({});
     if (excuse) {
       setExcuseData({
         date_from: excuse.date_from,
@@ -147,17 +148,23 @@ const ChildExcuseAction = ({
     onConfirmOpen();
   };
 
+  const getLocalDateIso = () => {
+    const today = new Date();
+    const timezoneOffset = today.getTimezoneOffset() * 60000;
+    const localIso = new Date(today.getTime() - timezoneOffset).toISOString().split('T')[0];
+    return localIso;
+  };
+
   const handleConfirmDelete = async () => {
     if (!excuse) return;
     try {
       setIsCancelling(true);
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateIso();
 
       const dateFrom = excuse.date_from.includes('T')
         ? excuse.date_from.split('T')[0]
         : excuse.date_from;
 
-      // If date_from is in the future, set it to today to avoid validation errors
       const adjustedDateFrom = dateFrom > today ? today : dateFrom;
 
       await updateChildExcuse(childId, excuse.id, {
@@ -190,7 +197,7 @@ const ChildExcuseAction = ({
   const canEndExcuse =
     excuse &&
     (() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateIso();
       const dateTo = excuse.date_to.includes('T') ? excuse.date_to.split('T')[0] : excuse.date_to;
       return dateTo > today;
     })();
@@ -198,7 +205,7 @@ const ChildExcuseAction = ({
   const canEditExcuse =
     excuse &&
     (() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateIso();
       const dateTo = excuse.date_to.includes('T') ? excuse.date_to.split('T')[0] : excuse.date_to;
       return dateTo >= today;
     })();
