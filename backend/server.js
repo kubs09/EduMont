@@ -27,6 +27,20 @@ let pool,
 
 let modulesLoaded = false;
 let moduleError = null;
+let dbInitPromise = null;
+
+const ensureDatabaseInitialized = async () => {
+  if (!pool || !initDatabase) return;
+
+  if (!dbInitPromise) {
+    dbInitPromise = initDatabase().catch((error) => {
+      dbInitPromise = null;
+      throw error;
+    });
+  }
+
+  await dbInitPromise;
+};
 
 const importWithFallback = async (relativePath) => {
   try {
@@ -87,6 +101,7 @@ if (process.env.VERCEL === 'true' || process.env.NODE_ENV !== 'production') {
 }
 
 const app = express();
+const apiRouter = express.Router();
 
 const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
 
@@ -192,7 +207,7 @@ if (modulesLoaded && pool && initDatabase) {
       }
     });
   } else {
-    initDatabase().catch(() => {
+    ensureDatabaseInitialized().catch(() => {
       process.exit(1);
     });
   }
@@ -213,16 +228,16 @@ let routesMounted = false;
 const mountRoutes = () => {
   if (routesMounted) return;
 
-  if (passwordResetRoutes) app.use('/api', passwordResetRoutes);
-  if (authRoutes) app.use('/api', authRoutes);
-  if (childrenRoutes) app.use('/api/children', childrenRoutes);
-  if (usersRoutes) app.use('/api/users', usersRoutes);
-  if (classesRoutes) app.use('/api/classes', classesRoutes);
-  if (messageRoutes) app.use('/api/messages', messageRoutes);
-  if (presentationsRoutes) app.use('/api/presentations', presentationsRoutes);
-  if (permissionsRoutes) app.use('/api/permissions', permissionsRoutes);
+  if (passwordResetRoutes) apiRouter.use('/', passwordResetRoutes);
+  if (authRoutes) apiRouter.use('/', authRoutes);
+  if (childrenRoutes) apiRouter.use('/children', childrenRoutes);
+  if (usersRoutes) apiRouter.use('/users', usersRoutes);
+  if (classesRoutes) apiRouter.use('/classes', classesRoutes);
+  if (messageRoutes) apiRouter.use('/messages', messageRoutes);
+  if (presentationsRoutes) apiRouter.use('/presentations', presentationsRoutes);
+  if (permissionsRoutes) apiRouter.use('/permissions', permissionsRoutes);
   if (documentsRoutes) {
-    app.use('/api/documents', documentsRoutes);
+    apiRouter.use('/documents', documentsRoutes);
   } else {
     console.warn('⚠️ documentsRoutes not available!');
   }
@@ -239,6 +254,10 @@ app.use('/api', async (req, res, next) => {
       await lazyLoadModules();
     }
 
+    if (!process.env.VERCEL && modulesLoaded && pool && initDatabase) {
+      await ensureDatabaseInitialized();
+    }
+
     if (!routesMounted && modulesLoaded) {
       mountRoutes();
     }
@@ -249,15 +268,14 @@ app.use('/api', async (req, res, next) => {
   }
 });
 
-if (modulesLoaded) {
-  mountRoutes();
-}
+app.use('/api', apiRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not Found' });
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
+  void next;
   res.status(500).json({
     error: 'Internal server error',
     message: err.message,

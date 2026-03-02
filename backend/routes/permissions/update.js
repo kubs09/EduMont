@@ -94,8 +94,7 @@ router.post('/deny', auth, async (req, res) => {
     }
 
     const permissionCheck = await client.query(
-      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE',
-      [class_id]
+      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE FOR UPDATE'
     );
 
     if (!permissionCheck.rows.length) {

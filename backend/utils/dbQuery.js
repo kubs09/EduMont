@@ -1,5 +1,5 @@
 import pool from '../config/database.js';
-import { setTimeout } from 'timers/promises';
+import { setTimeout as sleep } from 'timers/promises';
 
 const executeQuery = async (query, params = [], retries = 2) => {
   let lastError;
@@ -17,7 +17,7 @@ const executeQuery = async (query, params = [], retries = 2) => {
         error.message.includes('timeout')
       ) {
         if (attempt < retries) {
-          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
+          await sleep(Math.pow(2, attempt) * 100);
           continue;
         }
       }

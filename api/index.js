@@ -1,12 +1,10 @@
 import { join, dirname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { URL, fileURLToPath } from 'url';
-import { createRequire } from 'module';
+import { URL, fileURLToPath, pathToFileURL } from 'url';
 import process from 'process';
 import console from 'console';
 import express from 'express';
 
-const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -61,7 +59,8 @@ moduleAlias();
 
 let app;
 try {
-  app = require(join(backendPath, 'server.js'));
+  const serverModule = await import(pathToFileURL(join(backendPath, 'server.js')).href);
+  app = serverModule.default ?? serverModule;
 } catch (error) {
   app = express();
   app.use((req, res) => {

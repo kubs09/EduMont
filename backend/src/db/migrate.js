@@ -3,6 +3,7 @@ import pkg from 'pg';
 import process from 'process';
 import fs from 'fs';
 import path from 'path';
+import console from 'console';
 import { fileURLToPath } from 'url';
 
 const { Pool } = pkg;
@@ -27,4 +28,7 @@ async function migrate() {
   }
 }
 
-migrate();
+migrate().catch((error) => {
+  console.error('Migration failed:', error);
+  process.exit(1);
+});

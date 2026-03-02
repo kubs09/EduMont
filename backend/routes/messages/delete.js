@@ -1,5 +1,6 @@
 import { Router } from 'express';
 const router = Router();
+import console from 'console';
 import { connect } from '../../config/database.js';
 import auth from '../../middleware/auth.js';
 
@@ -27,6 +28,7 @@ router.delete('/:id', auth, async (req, res) => {
     res.status(204).send();
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error('Error deleting message:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   } finally {
     client.release();

@@ -26,13 +26,15 @@ const parseSSLOverride = () => {
     return false;
   }
 
-  if (
-    ['1', 'true', 'yes', 'on', 'require', 'required', 'verify-ca', 'verify-full'].includes(
-      normalized
-    )
-  ) {
+  if (['1', 'true', 'yes', 'on', 'require', 'required'].includes(normalized)) {
     return {
       rejectUnauthorized: false,
+    };
+  }
+
+  if (['full', 'verify-ca', 'verify-full'].includes(normalized)) {
+    return {
+      rejectUnauthorized: true,
     };
   }
 
@@ -48,7 +50,7 @@ const getSSLConfig = ({ defaultEnabled = false } = {}) => {
 
   if (defaultEnabled) {
     return {
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
     };
   }
 

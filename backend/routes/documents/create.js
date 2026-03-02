@@ -63,7 +63,6 @@ router.post('/', authenticateToken, async (req, res) => {
     const statusCode = err.code === 'ECONNREFUSED' || err.message.includes('timeout') ? 503 : 500;
     res.status(statusCode).json({
       error: 'Failed to create document',
-      details: err.message,
     });
   }
 });

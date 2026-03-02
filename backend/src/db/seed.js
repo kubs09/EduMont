@@ -2,6 +2,7 @@ import 'dotenv/config';
 import process from 'process';
 import fs from 'fs';
 import path from 'path';
+import console from 'console';
 import { fileURLToPath } from 'url';
 import pkg from 'pg';
 
@@ -28,4 +29,7 @@ async function seed() {
   }
 }
 
-seed();
+seed().catch((error) => {
+  console.error('Seeding failed:', error);
+  process.exit(1);
+});

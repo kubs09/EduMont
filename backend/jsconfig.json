@@ -5,6 +5,7 @@
       "@/*": ["./*"],
       "@config/*": ["config/*"],
       "@routes/*": ["routes/*"],
+      "@backend/*": ["backend/*"],
       "@middleware/*": ["middleware/*"],
       "@db/*": ["db/*"],
       "@src/*": ["src/*"],

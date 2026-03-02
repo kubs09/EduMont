@@ -13,8 +13,7 @@ router.post('/', auth, async (req, res) => {
   const client = await connect();
 
   try {
-    await client.query('BEGIN');
-    const { email, role, language = 'en' } = req.body;
+    const { email, role, language } = req.body;
 
     const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
@@ -29,6 +28,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(409).json({ error: 'invitation_exists' });
     }
 
+    await client.query('BEGIN');
     const token = generateInvitationToken();
     const expiresAt = createInvitationExpiry(48);
 

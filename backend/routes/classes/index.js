@@ -10,7 +10,7 @@ const router = Router();
 
 let getRouter = getRouterModule || null;
 let createRouter = createRouterModule || null;
-let updateRouter = (updateRouterModule && updateRouterModule.default) || null;
+let updateRouter = updateRouterModule || null;
 let deleteRouter = deleteRouterModule || null;
 let historyRouter = historyRouterModule || null;
 let attendanceRouter = attendanceRouterModule || null;
