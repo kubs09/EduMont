@@ -183,13 +183,33 @@ export const profile = {
         cs: 'Omluvenky',
         en: 'Excuses',
       },
+      editTitle: {
+        cs: 'Upravit omluvenku',
+        en: 'Edit Excuse',
+      },
       historyEmpty: {
         cs: 'Žádné omluvenky k zobrazení.',
         en: 'No excuses to display.',
       },
-      button: {
-        cs: 'Omluvit',
-        en: 'Excuse',
+      excuseButton: {
+        cs: 'Omluvit nepřítomnost',
+        en: 'Excuse Absence',
+      },
+      excuseEditButton: {
+        cs: 'Upravit omluvenku',
+        en: 'Edit Excuse',
+      },
+      excuseEndButton: {
+        cs: 'Zrušit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      edit: {
+        cs: 'Upravit',
+        en: 'Edit',
+      },
+      actions: {
+        cs: 'Akce',
+        en: 'Actions',
       },
       cancel: {
         cs: 'Zrušit omluvenku',
@@ -234,6 +254,18 @@ export const profile = {
       error: {
         cs: 'Nepodařilo se odeslat omluvenku',
         en: 'Failed to submit excuse',
+      },
+      cancelConfirmTitle: {
+        cs: 'Zrušit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      cancelConfirmMessage: {
+        cs: 'Opravdu chcete zrušit tuto omluvenku?',
+        en: 'Are you sure you want to cancel this excuse?',
+      },
+      keep: {
+        cs: 'Nezrušit',
+        en: 'Keep Excuse',
       },
       cancelSuccess: {
         cs: 'Omluvenka byla zrušena',

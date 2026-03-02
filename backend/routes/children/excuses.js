@@ -157,6 +157,63 @@ router.post('/:id/excuses', auth, async (req, res) => {
   }
 });
 
+router.put('/:id/excuses/:excuseId', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'parent') {
+      return res.status(403).json({ error: 'Only parents can update excuses' });
+    }
+
+    const childId = Number(req.params.id);
+    const excuseId = Number(req.params.excuseId);
+
+    if (!Number.isInteger(childId) || !Number.isInteger(excuseId)) {
+      return res.status(400).json({ error: 'Invalid child or excuse id' });
+    }
+
+    const validationErrors = validateExcuse(req.body);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ errors: validationErrors });
+    }
+
+    const relation = await query(
+      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
+      [childId, req.user.id]
+    );
+
+    if (relation.rows.length === 0) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const { date_from, date_to, reason } = req.body;
+
+    const result = await query(
+      `
+      UPDATE child_excuses
+      SET date_from = $1,
+          date_to = $2,
+          reason = $3,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4
+        and child_id = $5
+        and parent_id = $6
+      RETURNING *
+    `,
+      [date_from, date_to, reason.trim(), excuseId, childId, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Excuse not found or unauthorized' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({
+      error: 'Failed to update excuse',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+    });
+  }
+});
+
 router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
   try {
     const childId = Number(req.params.id);

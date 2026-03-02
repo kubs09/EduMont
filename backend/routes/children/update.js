@@ -19,6 +19,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
+    const childId = Number(id);
+    if (!Number.isInteger(childId) || childId <= 0) {
+      return res.status(400).json({ error: 'Invalid child identifier' });
+    }
+
     const validationErrors = validateChildUpdate(req.body);
     if (validationErrors.length > 0) {
       return res.status(400).json({ errors: validationErrors });
@@ -27,7 +32,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (parent_ids && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Only admins can edit parents' });
     }
-
     if (parent_ids) {
       const parentIdErrors = validateParentIds(parent_ids, true);
       if (parentIdErrors.length > 0) {
@@ -35,7 +39,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       }
     }
 
-    const child = await client.query('SELECT id FROM children WHERE id = $1', [id]);
+    const child = await client.query('SELECT id FROM children WHERE id = $1', [childId]);
     if (child.rows.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
@@ -43,7 +47,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (req.user.role === 'parent') {
       const parentLink = await client.query(
         'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-        [id, req.user.id]
+        [childId, req.user.id]
       );
       if (parentLink.rows.length === 0) {
         return res.status(403).json({ error: 'Unauthorized to edit this child' });
@@ -59,8 +63,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
        SET firstname = $1, surname = $2, date_of_birth = COALESCE($3::date, date_of_birth), notes = $4
        WHERE id = $5
        RETURNING *`,
-      [firstname, surname, actualDateOfBirth, notes, id]
+      [firstname, surname, actualDateOfBirth, notes, childId]
     );
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Child not found' });
+    }
 
     if (parent_ids) {
       const validParents = await client.query(
@@ -72,24 +80,34 @@ router.put('/:id', authenticateToken, async (req, res) => {
         return res.status(400).json({ errors: ['One or more parent IDs are invalid'] });
       }
 
-      await client.query('DELETE FROM child_parents WHERE child_id = $1', [id]);
+      await client.query('DELETE FROM child_parents WHERE child_id = $1', [childId]);
       await client.query(
         `INSERT INTO child_parents (child_id, parent_id)
          SELECT $1, unnest($2::int[])`,
-        [id, parent_ids]
+        [childId, parent_ids]
       );
     }
 
-    if (class_id) {
+    const normalizedClassId =
+      class_id === null || class_id === undefined || class_id === '' ? null : Number(class_id);
+
+    if (
+      normalizedClassId !== null &&
+      (!Number.isInteger(normalizedClassId) || normalizedClassId <= 0)
+    ) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Invalid class identifier' });
+    }
+
+    if (normalizedClassId !== null) {
       const childAge = Math.floor(
         (new Date() - new Date(actualDateOfBirth || result.rows[0].date_of_birth)) /
           (365.25 * 24 * 60 * 60 * 1000)
       );
 
-      // Verify the provided class exists and the age is appropriate
       const classResult = await client.query(
         'SELECT id FROM classes WHERE id = $1 AND $2 BETWEEN min_age AND max_age',
-        [class_id, childAge]
+        [normalizedClassId, childAge]
       );
 
       if (classResult.rows.length === 0) {
@@ -100,17 +118,21 @@ router.put('/:id', authenticateToken, async (req, res) => {
         });
       }
 
-      // Update the class assignment
-      await client.query('DELETE FROM class_children WHERE child_id = $1', [id]);
-      await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
-        class_id,
-        id,
-      ]);
-
-      // Update all presentations for this child to the new class
       await client.query(
-        'UPDATE presentations SET class_id = $1, updated_at = CURRENT_TIMESTAMP WHERE child_id = $2',
-        [class_id, id]
+        `WITH upserted AS (
+        INSERT INTO class_children (child_id, class_id)
+        VALUES ($1, $2)
+        ON CONFLICT (child_id) DO UPDATE 
+        SET class_id = EXCLUDED.class_id
+        WHERE class_children.class_id IS DISTINCT FROM EXCLUDED.class_id
+        RETURNING child_id, class_id
+      )
+        UPDATE presentations p
+        SET class_id = u.class_id,
+            updated_at = CURRENT_TIMESTAMP
+        FROM upserted u
+        WHERE p.child_id = u.child_id`,
+        [childId, normalizedClassId]
       );
     }
 
@@ -143,7 +165,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       LEFT JOIN class_children cc ON c.id = cc.child_id
       LEFT JOIN classes cl ON cc.class_id = cl.id
       WHERE c.id = $1`,
-      [id]
+      [childId]
     );
 
     await client.query('COMMIT');

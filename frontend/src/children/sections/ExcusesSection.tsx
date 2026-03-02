@@ -10,6 +10,7 @@ import {
   Link as ChakraLink,
   HStack,
   Box,
+  Flex,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -18,11 +19,15 @@ import { ROUTES } from '@frontend/shared/route';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 import { DatePicker } from '@frontend/shared/components';
 import { TablePagination, DEFAULT_PAGE_SIZE } from '@frontend/shared/components/TablePagination';
+import ChildExcuseAction from '@frontend/shared/components/ChildExcuseAction/ChildExcuseAction';
 
 interface ExcusesSectionProps {
+  childId: number;
   excuses: ChildExcuse[];
   language: 'cs' | 'en';
+  isParent: boolean;
   canViewParentProfile: boolean;
+  onRefreshExcuses: (childId: number) => Promise<void>;
 }
 
 const formatExcuseDate = (value: string, language: 'cs' | 'en') => {
@@ -50,11 +55,21 @@ const parseExcuseDate = (value: string) => {
 };
 
 const ExcusesSection: React.FC<ExcusesSectionProps> = ({
+  childId,
   excuses,
   language,
+  isParent,
   canViewParentProfile,
+  onRefreshExcuses,
 }) => {
-  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const today = useMemo(() => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }, []);
+  const currentUserId = useMemo(() => {
+    const parsed = Number(localStorage.getItem('userId') || '0');
+    return isNaN(parsed) ? 0 : parsed;
+  }, []);
   const [attendanceDate, setAttendanceDate] = useState(today);
   const [page, setPage] = useState(1);
   const pageSize = DEFAULT_PAGE_SIZE;
@@ -91,7 +106,19 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
 
   return (
     <Box w="full" overflowX="auto">
-      <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
+      {isParent && (
+        <Flex align="center" mb={4} gap={2}>
+          <ChildExcuseAction
+            childId={childId}
+            childName=""
+            language={language}
+            onRefreshExcuses={onRefreshExcuses}
+            size="sm"
+            variant="brand"
+          />
+        </Flex>
+      )}
+      <HStack spacing={4} align="center" flexWrap="wrap" mb={4}>
         <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"
@@ -111,6 +138,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                 <Th>{texts.profile.children.excuse.dateTo[language]}</Th>
                 <Th>{texts.profile.children.excuse.reason[language]}</Th>
                 <Th>{texts.profile.children.excuse.submittedBy[language]}</Th>
+                {isParent && <Th>{texts.profile.children.excuse.actions[language]}</Th>}
               </Tr>
             </Thead>
             <Tbody>
@@ -120,6 +148,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                   .join(' ');
                 const parentId = excuse.parent_id;
                 const hasParentLink = canViewParentProfile && parentId;
+                const isOwnExcuse = isParent && excuse.parent_id === currentUserId;
                 return (
                   <Tr key={excuse.id}>
                     <Td>{formatExcuseDate(excuse.date_from, language)}</Td>
@@ -144,6 +173,26 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                         <Text>-</Text>
                       )}
                     </Td>
+                    {isParent && (
+                      <Td>
+                        {isOwnExcuse ? (
+                          <HStack spacing={2}>
+                            <ChildExcuseAction
+                              childId={childId}
+                              childName=""
+                              language={language}
+                              excuse={excuse}
+                              onRefreshExcuses={onRefreshExcuses}
+                              size="xs"
+                              variant="outline"
+                              buttonText={texts.profile.children.excuse.edit[language]}
+                            />
+                          </HStack>
+                        ) : (
+                          <Text>-</Text>
+                        )}
+                      </Td>
+                    )}
                   </Tr>
                 );
               })}
