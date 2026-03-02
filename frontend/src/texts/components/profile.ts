@@ -243,6 +243,18 @@ export const profile = {
         cs: 'Nepodařilo se odeslat omluvenku',
         en: 'Failed to submit excuse',
       },
+      cancelConfirmTitle: {
+        cs: 'Zrušit omluvenku',
+        en: 'Cancel Excuse',
+      },
+      cancelConfirmMessage: {
+        cs: 'Opravdu chcete zrušit tuto omluvenku?',
+        en: 'Are you sure you want to cancel this excuse?',
+      },
+      keep: {
+        cs: 'Nezrušit',
+        en: 'Keep Excuse',
+      },
       cancelSuccess: {
         cs: 'Omluvenka byla zrušena',
         en: 'Excuse cancelled',

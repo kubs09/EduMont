@@ -14,6 +14,7 @@ import {
   ModalOverlay,
   Stack,
   Textarea,
+  useDisclosure,
   useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
@@ -41,6 +42,7 @@ const ChildExcuseAction = ({
 }: ChildExcuseActionProps) => {
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
   const [excuseData, setExcuseData] = useState({
     date_from: '',
     date_to: '',
@@ -127,7 +129,11 @@ const ChildExcuseAction = ({
 
   const handleExcuseCancel = async () => {
     if (!excuse) return;
+    onConfirmOpen();
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!excuse) return;
     try {
       setIsCancelling(true);
       await deleteChildExcuse(childId, excuse.id);
@@ -138,6 +144,7 @@ const ChildExcuseAction = ({
         duration: 3000,
         isClosable: true,
       });
+      onConfirmClose();
     } catch (error) {
       const message = (error as { message?: string })?.message;
       toast({
@@ -224,6 +231,22 @@ const ChildExcuseAction = ({
             </Button>
             <Button variant="brand" onClick={handleExcuseSubmit} isLoading={isSubmitting}>
               {texts.profile.children.excuse.submit[language]}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{texts.profile.children.excuse.cancelConfirmTitle[language]}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>{texts.profile.children.excuse.cancelConfirmMessage[language]}</ModalBody>
+          <ModalFooter>
+            <Button variant="outline" onClick={onConfirmClose} mr={3}>
+              {texts.profile.children.excuse.keep[language]}
+            </Button>
+            <Button variant="brand" onClick={handleConfirmDelete} isLoading={isCancelling}>
+              {texts.profile.children.excuse.cancel[language]}
             </Button>
           </ModalFooter>
         </ModalContent>
