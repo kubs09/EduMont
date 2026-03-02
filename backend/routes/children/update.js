@@ -65,6 +65,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
        RETURNING *`,
       [firstname, surname, actualDateOfBirth, notes, childId]
     );
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Child not found' });
+    }
 
     if (parent_ids) {
       const validParents = await client.query(

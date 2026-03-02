@@ -66,7 +66,10 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
     const now = new Date();
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   }, []);
-  const currentUserId = useMemo(() => Number(localStorage.getItem('userId') || '0'), []);
+  const currentUserId = useMemo(() => {
+    const parsed = Number(localStorage.getItem('userId') || '0');
+    return isNaN(parsed) ? 0 : parsed;
+  }, []);
   const [attendanceDate, setAttendanceDate] = useState(today);
   const [page, setPage] = useState(1);
   const pageSize = DEFAULT_PAGE_SIZE;
