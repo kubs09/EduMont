@@ -12,7 +12,12 @@ router.put('/:id', auth, async (req, res) => {
     client = await connect();
     await client.query('BEGIN');
     const { id } = req.params;
-    const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
+    const { name, description, min_age, max_age, teacherId, assistantId } = req.body;
+
+    if (!teacherId) {
+      throw new Error('Missing required field: teacherId is required');
+    }
+
     const teacherIdNum = Number(teacherId);
     const assistantIdNum =
       assistantId === undefined || assistantId === null || assistantId === ''
@@ -35,31 +40,27 @@ router.put('/:id', auth, async (req, res) => {
     }
 
     await client.query(
-      'UPDATE classes SET name = $1, description = $2, age_group = $3, min_age = $4, max_age = $5 WHERE id = $6',
-      [name, description, age_group, minAge, maxAge, id]
+      'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
+      [name, description, minAge, maxAge, id]
     );
 
-    if (!teacherId) {
-      throw new Error('Missing required field: teacherId is required');
-    }
-
-    if (assistantId && assistantId === teacherId) {
+    if (assistantIdNum !== null && assistantIdNum === teacherIdNum) {
       throw new Error('Assistant cannot be the same as the main teacher');
     }
 
     const assignedTeacher = await client.query(
       'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-      [teacherId, id]
+      [teacherIdNum, id]
     );
 
     if (assignedTeacher.rows.length > 0) {
       throw new Error('Selected teacher is already assigned to another class');
     }
 
-    if (assistantId) {
+    if (assistantIdNum !== null) {
       const assignedAssistant = await client.query(
         'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-        [assistantId, id]
+        [assistantIdNum, id]
       );
 
       if (assignedAssistant.rows.length > 0) {
