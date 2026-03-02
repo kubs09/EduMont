@@ -86,7 +86,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
           (365.25 * 24 * 60 * 60 * 1000)
       );
 
-      // Verify the provided class exists and the age is appropriate
       const classResult = await client.query(
         'SELECT id FROM classes WHERE id = $1 AND $2 BETWEEN min_age AND max_age',
         [class_id, childAge]
@@ -100,18 +99,32 @@ router.put('/:id', authenticateToken, async (req, res) => {
         });
       }
 
-      // Update the class assignment
-      await client.query('DELETE FROM class_children WHERE child_id = $1', [id]);
-      await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
-        class_id,
-        id,
-      ]);
-
-      // Update all presentations for this child to the new class
-      await client.query(
-        'UPDATE presentations SET class_id = $1, updated_at = CURRENT_TIMESTAMP WHERE child_id = $2',
-        [class_id, id]
+      const existingClassAssignment = await client.query(
+        'SELECT class_id FROM class_children WHERE child_id = $1',
+        [id]
       );
+
+      if (existingClassAssignment.rows.length === 0) {
+        await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
+          class_id,
+          id,
+        ]);
+      } else if (existingClassAssignment.rows[0].class_id !== class_id) {
+        await client.query(
+          `WITH updated_class_assignment AS (
+             UPDATE class_children
+             SET class_id = $1
+             WHERE child_id = $2
+             RETURNING child_id, class_id
+           )
+           UPDATE presentations p
+           SET class_id = uca.class_id,
+               updated_at = CURRENT_TIMESTAMP
+           FROM updated_class_assignment uca
+           WHERE p.child_id = uca.child_id`,
+          [class_id, id]
+        );
+      }
     }
 
     const updatedChild = await client.query(
