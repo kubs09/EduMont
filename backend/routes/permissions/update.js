@@ -2,12 +2,13 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import { connect } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.post('/accept', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     await client.query('BEGIN');
     const { class_id, language } = req.body;
     const approver_id = req.user.id;
@@ -64,19 +65,20 @@ router.post('/accept', auth, async (req, res) => {
     res.json({ message: 'Permission request accepted successfully' });
   } catch (error) {
     console.error('Permission accept error:', error);
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK');
     res.status(500).json({
       error: 'Failed to accept permission request',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 
 router.post('/deny', auth, async (req, res) => {
-  const client = await connect();
+  let client;
   try {
+    client = await connect();
     await client.query('BEGIN');
     const { class_id, language } = req.body;
     const denier_id = req.user.id;
@@ -94,7 +96,8 @@ router.post('/deny', auth, async (req, res) => {
     }
 
     const permissionCheck = await client.query(
-      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE FOR UPDATE'
+      'SELECT pp.*, u.firstname, u.surname FROM presentation_permissions pp JOIN users u ON pp.admin_id = u.id WHERE pp.class_id = $1 AND pp.permission_requested = TRUE FOR UPDATE',
+      [class_id]
     );
 
     if (!permissionCheck.rows.length) {
@@ -132,13 +135,13 @@ router.post('/deny', auth, async (req, res) => {
     res.json({ message: 'Permission request denied successfully' });
   } catch (error) {
     console.error('Permission deny error:', error);
-    await client.query('ROLLBACK');
+    if (client) await client.query('ROLLBACK');
     res.status(500).json({
       error: 'Failed to deny permission request',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

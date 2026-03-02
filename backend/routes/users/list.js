@@ -1,8 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { query as _query } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { query as _query } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
   try {

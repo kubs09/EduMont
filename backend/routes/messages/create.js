@@ -1,11 +1,11 @@
 import { Router } from 'express';
 const router = Router();
-import pool from '../../config/database.js';
-import auth from '../../middleware/auth.js';
-import mailConfig from '../../config/mail.js';
+import pool from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
+import mailConfig from '#backend/config/mail.js';
 import process from 'process';
 const { sendEmail } = mailConfig;
-import getMessageNotificationEmail from '../../templates/messageNotificationEmail.js';
+import getMessageNotificationEmail from '#backend/templates/messageNotificationEmail.js';
 import { getAllowedRecipients } from './helpers.js';
 
 router.post('/', auth, async (req, res) => {

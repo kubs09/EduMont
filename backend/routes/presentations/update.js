@@ -1,8 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '../../config/database.js';
-import authenticateToken from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
   validationModule;

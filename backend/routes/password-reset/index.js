@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import console from 'console';
 const router = Router();
 
 const initializeRouters = async () => {
@@ -8,21 +9,30 @@ const initializeRouters = async () => {
     const module = await import('./forgot-password.js');
     forgotPasswordRouter = module.default;
   } catch (error) {
-    forgotPasswordRouter = null;
+    console.error('Error loading forgot-password router:', error);
+    if (error?.code === 'ERR_MODULE_NOT_FOUND') {
+      throw error;
+    }
   }
 
   try {
     const module = await import('./check-token.js');
     checkTokenRouter = module.default;
   } catch (error) {
-    checkTokenRouter = null;
+    console.error('Error loading check-token router:', error);
+    if (error?.code === 'ERR_MODULE_NOT_FOUND') {
+      throw error;
+    }
   }
 
   try {
     const module = await import('./reset-password.js');
     resetPasswordRouter = module.default;
   } catch (error) {
-    resetPasswordRouter = null;
+    console.error('Error loading reset-password router:', error);
+    if (error?.code === 'ERR_MODULE_NOT_FOUND') {
+      throw error;
+    }
   }
 
   if (forgotPasswordRouter) router.use('/', forgotPasswordRouter);

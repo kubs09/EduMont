@@ -2,8 +2,8 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import { connect } from '../../config/database.js';
-import authenticateToken from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
 
 router.delete('/:id', authenticateToken, async (req, res) => {
   const client = await connect();

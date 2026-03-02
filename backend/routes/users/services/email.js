@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 import process from 'process';
 import nodemailer from 'nodemailer';
-import getInvitationEmail from '../../../templates/invitationEmail.js';
+import getInvitationEmail from '#backend/templates/invitationEmail.js';
 
 const { createTransport } = nodemailer;
 

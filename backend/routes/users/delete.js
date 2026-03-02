@@ -1,8 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.delete('/:id', auth, async (req, res) => {
   const userId = req.params.id;

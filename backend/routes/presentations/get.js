@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import pool from '../../config/database.js';
+import pool from '#backend/config/database.js';
 import console from 'console';
-import authenticateToken from '../../middleware/auth.js';
+import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 
 const router = Router();

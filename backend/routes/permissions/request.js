@@ -2,8 +2,8 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import { connect } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.get('/check', auth, async (req, res) => {
   let client;

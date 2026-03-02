@@ -207,7 +207,8 @@ if (modulesLoaded && pool && initDatabase) {
       }
     });
   } else {
-    ensureDatabaseInitialized().catch(() => {
+    ensureDatabaseInitialized().catch((error) => {
+      console.error('Database initialization error:', error);
       process.exit(1);
     });
   }

@@ -1,6 +1,6 @@
-import { query } from '../../config/database.js';
+import { query } from '#backend/config/database.js';
 import console from 'console';
-import { executeQuery } from '../../utils/dbQuery.js';
+import { executeQuery } from '#backend/utils/dbQuery.js';
 
 const validateDocument = (data) => {
   const errors = [];

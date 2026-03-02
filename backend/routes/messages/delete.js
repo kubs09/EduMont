@@ -1,13 +1,14 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 router.delete('/:id', auth, async (req, res) => {
-  const client = await connect();
+  let client;
 
   try {
+    client = await connect();
     await client.query('BEGIN');
 
     const message = await client.query(
@@ -31,7 +32,7 @@ router.delete('/:id', auth, async (req, res) => {
     console.error('Error deleting message:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   } finally {
-    client.release();
+    client?.release();
   }
 });
 

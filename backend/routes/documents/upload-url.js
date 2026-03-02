@@ -1,10 +1,10 @@
 import { Router } from 'express';
 const router = Router();
-import authenticateToken from '../../middleware/auth.js';
+import authenticateToken from '#backend/middleware/auth.js';
 
 let supabase;
 try {
-  supabase = (await import('../../config/supabase.js')).default;
+  supabase = (await import('#backend/config/supabase.js')).default;
 } catch (error) {
   supabase = null;
 }
@@ -13,7 +13,7 @@ router.post('/', authenticateToken, async (req, res) => {
   // Initialize supabase if not already done
   if (supabase === undefined) {
     try {
-      supabase = (await import('../../config/supabase.js')).default;
+      supabase = (await import('#backend/config/supabase.js')).default;
     } catch (error) {
       supabase = null;
     }

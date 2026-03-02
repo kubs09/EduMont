@@ -2,9 +2,9 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import { connect } from '../../config/database.js';
-import { sendEmail } from '../../config/mail.js';
-import getForgotPasswordEmail from '../../templates/forgotPasswordEmail.js';
+import { connect } from '#backend/config/database.js';
+import { sendEmail } from '#backend/config/mail.js';
+import getForgotPasswordEmail from '#backend/templates/forgotPasswordEmail.js';
 import { generateResetToken } from './helpers.js';
 
 router.post('/forgot-password', async (req, res) => {

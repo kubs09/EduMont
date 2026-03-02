@@ -1,8 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 import process from 'process';
-import { query } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { query } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 

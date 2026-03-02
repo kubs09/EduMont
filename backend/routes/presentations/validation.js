@@ -1,4 +1,4 @@
-import { query } from '../../config/database.js';
+import { query } from '#backend/config/database.js';
 
 const STATUS_VALUES = [
   'prerequisites not met',

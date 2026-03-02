@@ -1,8 +1,8 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import authenticateToken from '../../middleware/auth.js';
-import { executeQuery } from '../../utils/dbQuery.js';
+import authenticateToken from '#backend/middleware/auth.js';
+import { executeQuery } from '#backend/utils/dbQuery.js';
 import { validateDocument, canAccessDocumentByIds, ensureChildInClass } from './validation.js';
 
 // Create a new document

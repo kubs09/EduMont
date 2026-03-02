@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '../../config/database.js';
+import { connect } from '#backend/config/database.js';
 
 router.get('/check-token/:token', async (req, res) => {
   let { token } = req.params;

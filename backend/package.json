@@ -40,5 +40,8 @@
     "@utils": "./utils",
     "@scripts": "./scripts",
     "@uploads": "./uploads"
+  },
+  "imports": {
+    "#backend/*": "./*"
   }
 }

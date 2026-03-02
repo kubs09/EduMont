@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
-import { query as _query } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { query as _query } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 

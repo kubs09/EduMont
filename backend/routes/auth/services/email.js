@@ -1,5 +1,5 @@
-import mailService from '../../../config/mail.js';
-import getForgotPasswordEmail from '../../../templates/forgotPasswordEmail.js';
+import mailService from '#backend/config/mail.js';
+import getForgotPasswordEmail from '#backend/templates/forgotPasswordEmail.js';
 import process from 'process';
 
 const { sendEmail } = mailService;

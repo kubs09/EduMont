@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
-import pool from '../../config/database.js';
-import authenticateToken from '../../middleware/auth.js';
+import pool from '#backend/config/database.js';
+import authenticateToken from '#backend/middleware/auth.js';
 import console from 'console';
 import validation from './validation.js';
 const { validateDocument, canEditDocumentByIds, ensureChildInClass } = validation;

@@ -17,7 +17,7 @@ import { changePassword } from '@frontend/services/api';
 import {
   createPasswordChangeSchema,
   PasswordChangeSchema,
-} from '../../shared/validation/passwordSchema';
+} from '@frontend/shared/validation/passwordSchema';
 
 interface SettingsSectionProps {
   messageNotifications: boolean;

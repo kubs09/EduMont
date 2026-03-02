@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import pool from '../../config/database.js';
+import pool from '#backend/config/database.js';
 import passwordService from './services/password.js';
 import validationService from './services/validation.js';
 

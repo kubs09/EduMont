@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '../../config/database.js';
-import auth from '../../middleware/auth.js';
+import { connect } from '#backend/config/database.js';
+import auth from '#backend/middleware/auth.js';
 
 function calculateAge(birthDate) {
   const today = new Date();
