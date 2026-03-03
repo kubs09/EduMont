@@ -41,6 +41,11 @@ router.post('/', authenticateToken, async (req, res) => {
       .replace(/\s+/g, '-')
       .toLowerCase();
 
+    const baseName = sanitizedFileName.replace(/\.[^.]+$/, '');
+    if (!baseName || /^[-. ]+$/.test(baseName)) {
+      return res.status(400).json({ error: 'Invalid file name after sanitization' });
+    }
+
     const storagePath = classId
       ? `class-${classId}/${timestamp}-${sanitizedFileName}`
       : `child-${childId}/${timestamp}-${sanitizedFileName}`;
