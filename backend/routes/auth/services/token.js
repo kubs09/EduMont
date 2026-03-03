@@ -6,7 +6,14 @@ const { sign } = jsonwebtoken;
 const { randomBytes } = crypto;
 
 const generateJwtToken = (user) => {
-  return sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+  const jwtSecret = process.env.JWT_SECRET?.trim();
+  if (!jwtSecret) {
+    const error = new Error('JWT_SECRET is not configured');
+    error.code = 'JWT_SECRET_MISSING';
+    throw error;
+  }
+
+  return sign({ id: user.id, role: user.role }, jwtSecret, {
     expiresIn: '24h',
   });
 };

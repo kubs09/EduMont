@@ -28,7 +28,9 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 let dbInitPromise = null;
-const isVercel = process.env.VERCEL === 'true';
+const vercelRaw = process.env.VERCEL?.trim().toLowerCase();
+const isVercel =
+  vercelRaw === 'true' || vercelRaw === '1' || vercelRaw === 'yes' || vercelRaw === 'on';
 
 const ensureDatabaseInitialized = async () => {
   if (!pool || !initDatabase) return;
@@ -267,7 +269,9 @@ if (!isVercel && modulesLoaded && pool && initDatabase) {
 } else {
   ensureDatabaseInitialized().catch((error) => {
     console.error('Database initialization error:', error);
-    process.exit(1);
+    if (!isVercel) {
+      process.exit(1);
+    }
   });
 }
 
@@ -312,7 +316,7 @@ app.use('/api', async (req, res, next) => {
       await lazyLoadModules();
     }
 
-    if (!process.env.VERCEL && modulesLoaded && pool && initDatabase) {
+    if (!isVercel && modulesLoaded && pool && initDatabase) {
       await ensureDatabaseInitialized();
     }
 
