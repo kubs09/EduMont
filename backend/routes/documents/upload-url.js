@@ -30,17 +30,30 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const { fileName, fileType, childId, classId } = req.body;
 
-    if (!fileName || !fileType) {
+    if (
+      typeof fileName !== 'string' ||
+      typeof fileType !== 'string' ||
+      !fileName.trim() ||
+      !fileType.trim()
+    ) {
       return res.status(400).json({ error: 'fileName and fileType required' });
     }
 
-    if (!childId && !classId) {
+    const hasClassId = classId !== undefined && classId !== null && String(classId).trim() !== '';
+    const hasChildId = childId !== undefined && childId !== null && String(childId).trim() !== '';
+    if (!hasChildId && !hasClassId) {
       return res.status(400).json({ error: 'Either childId or classId must be provided' });
+    }
+
+    const selectedId = hasClassId ? String(classId).trim() : String(childId).trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(selectedId)) {
+      return res.status(400).json({ error: 'Invalid childId or classId format' });
     }
 
     const timestamp = Date.now();
 
     const sanitizedFileName = fileName
+      .trim()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^\w\s.-]/g, '')
@@ -52,9 +65,9 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid file name after sanitization' });
     }
 
-    const storagePath = classId
-      ? `class-${classId}/${timestamp}-${sanitizedFileName}`
-      : `child-${childId}/${timestamp}-${sanitizedFileName}`;
+    const storagePath = hasClassId
+      ? `class-${selectedId}/${timestamp}-${sanitizedFileName}`
+      : `child-${selectedId}/${timestamp}-${sanitizedFileName}`;
 
     const { data, error } = await supabase.storage
       .from('documents')
