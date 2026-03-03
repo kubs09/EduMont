@@ -16,7 +16,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const normalizedEmail = email?.trim()?.toLowerCase();
 
-    const validation = validateLoginData(email, password);
+    const validation = validateLoginData(normalizedEmail, password);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
     }

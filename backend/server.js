@@ -28,7 +28,7 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 let dbInitPromise = null;
-const isVercel = process.env.VERCEL === 'true';
+const isVercel = Boolean(process.env.VERCEL);
 
 const ensureDatabaseInitialized = async () => {
   if (!pool || !initDatabase) return;
@@ -314,7 +314,7 @@ app.use('/api', async (req, res, next) => {
       await lazyLoadModules();
     }
 
-    if (!process.env.VERCEL && modulesLoaded && pool && initDatabase) {
+    if (!isVercel && modulesLoaded && pool && initDatabase) {
       await ensureDatabaseInitialized();
     }
 

@@ -73,14 +73,16 @@ try {
       process.env.POSTGRES_URL ||
       process.env.SUPABASE_URL;
 
-    if (!supabaseConnectionString) {
+    const normalizedConnectionString = supabaseConnectionString?.trim();
+
+    if (!normalizedConnectionString) {
       configError =
         'Supabase enabled but missing database connection string. Set SUPABASE_DATABASE_URL, DATABASE_URL, or POSTGRES_URL';
       console.error('❌ ' + configError);
       throw new Error(configError);
     }
 
-    if (/^https?:\/\//i.test(supabaseConnectionString)) {
+    if (/^https?:\/\//i.test(normalizedConnectionString)) {
       configError =
         'Supabase database connection string is invalid. Use the Postgres URI (postgres://...), not the project HTTP URL';
       console.error('❌ ' + configError);
@@ -88,7 +90,7 @@ try {
     }
 
     poolConfig = {
-      connectionString: supabaseConnectionString,
+      connectionString: normalizedConnectionString,
       ssl: getSSLConfig({ defaultEnabled: true }),
       connectionTimeoutMillis: 30000,
       idleTimeoutMillis: 30000,
