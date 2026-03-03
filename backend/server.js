@@ -192,7 +192,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api', async (req, res, next) => {
   try {
-    if (isVercel && !modulesLoaded) {
+    if (!modulesLoaded) {
       try {
         await lazyLoadModules();
       } catch (error) {

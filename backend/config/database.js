@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import process from 'process';
-import { URL } from 'url';
 import console from 'console';
 import pg from 'pg';
 
@@ -69,38 +68,23 @@ let configError = null;
 try {
   if (useSupabase) {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-    if (!process.env.SUPABASE_DATABASE_URL && !supabaseUrl) {
+    if (!supabaseUrl) {
       configError =
         'Supabase enabled but missing credentials. Set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL';
       console.error('❌ ' + configError);
       throw new Error(configError);
     }
 
-    poolConfig = process.env.SUPABASE_DATABASE_URL
-      ? {
-          connectionString: process.env.SUPABASE_DATABASE_URL,
-          ssl: getSSLConfig({ defaultEnabled: true }),
-          connectionTimeoutMillis: 5000,
-          idleTimeoutMillis: 5000,
-          max: 1,
-          min: 0,
-          statement_timeout: 15000,
-        }
-      : {
-          user: process.env.SUPABASE_USER || 'postgres',
-          host: new URL(supabaseUrl).hostname,
-          database: process.env.SUPABASE_DB || 'postgres',
-          password: supabaseKey,
-          port: 5432,
-          ssl: getSSLConfig({ defaultEnabled: true }),
-          connectionTimeoutMillis: 5000,
-          idleTimeoutMillis: 5000,
-          max: 1,
-          min: 0,
-          statement_timeout: 15000,
-        };
+    poolConfig = {
+      connectionString: supabaseUrl,
+      ssl: getSSLConfig({ defaultEnabled: true }),
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 5000,
+      max: 1,
+      min: 0,
+      statement_timeout: 15000,
+    };
   } else {
     poolConfig = {
       user: process.env.POSTGRES_USER || 'postgres',
@@ -129,25 +113,25 @@ try {
   };
 }
 
+const createUnavailablePool = (cause) => ({
+  query: async () => {
+    throw cause instanceof Error ? cause : new Error(String(cause));
+  },
+  connect: async () => {
+    throw cause instanceof Error ? cause : new Error(String(cause));
+  },
+});
+
 let pool;
-try {
-  pool = new Pool(poolConfig);
-} catch (error) {
-  console.error('❌ Failed to create database pool:', error.message);
-  // Return a proxy that will error on query
-  pool = {
-    query: async () => {
-      const err = configError || new Error('Database pool failed to initialize');
-      throw err;
-    },
-    connect: async () => {
-      const err = configError || new Error('Database pool failed to initialize');
-      throw err;
-    },
-    on: () => {
-      // Dummy event handler for failed pool
-    },
-  };
+if (configError) {
+  pool = createUnavailablePool(configError);
+} else {
+  try {
+    pool = new Pool(poolConfig);
+  } catch (error) {
+    console.error('❌ Failed to create database pool:', error.message);
+    pool = createUnavailablePool(error);
+  }
 }
 
 // Log pool configuration (without sensitive credentials)
