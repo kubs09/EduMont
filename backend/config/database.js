@@ -79,11 +79,11 @@ try {
     poolConfig = {
       connectionString: supabaseUrl,
       ssl: getSSLConfig({ defaultEnabled: true }),
-      connectionTimeoutMillis: 5000,
-      idleTimeoutMillis: 5000,
+      connectionTimeoutMillis: 30000,
+      idleTimeoutMillis: 30000,
       max: 1,
       min: 0,
-      statement_timeout: 15000,
+      statement_timeout: 30000,
     };
   } else {
     poolConfig = {
@@ -95,8 +95,8 @@ try {
       ssl: getSSLConfig({
         defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
       }),
-      connectionTimeoutMillis: 5000,
-      idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
+      connectionTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 5000,
+      idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 30000,
       max: process.env.NODE_ENV === 'production' ? 5 : 20,
     };
   }
