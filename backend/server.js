@@ -109,7 +109,13 @@ const lazyLoadModules = async () => {
 };
 
 if (isVercel || process.env.NODE_ENV !== 'production') {
-  await lazyLoadModules();
+  try {
+    await lazyLoadModules();
+  } catch (error) {
+    console.error('❌ Failed to load modules during initialization:', error.message);
+    moduleError = error.message;
+    // Continue anyway - modules will be loaded on first request
+  }
 }
 
 const app = express();
@@ -143,8 +149,31 @@ try {
   console.warn('Public directory not accessible:', publicPath);
 }
 
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    server: 'running',
+    modulesLoaded,
+    poolAvailable: !!pool,
+  };
+
+  // Try to test database connection
+  if (pool && typeof pool.query === 'function') {
+    try {
+      await pool.query('SELECT NOW() as now');
+      health.database = 'connected';
+    } catch (err) {
+      health.database = 'error';
+      health.databaseError = process.env.NODE_ENV === 'development' ? err.message : undefined;
+    }
+  } else {
+    health.database = 'unavailable';
+    health.databaseError = moduleError || 'Pool not initialized';
+  }
+
+  const statusCode = health.database === 'connected' ? 200 : 503;
+  res.status(statusCode).json(health);
 });
 
 if (process.env.NODE_ENV === 'development') {
@@ -163,11 +192,17 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api', async (req, res, next) => {
   try {
     if (isVercel && !modulesLoaded) {
-      await lazyLoadModules();
+      try {
+        await lazyLoadModules();
+      } catch (error) {
+        console.error('❌ Failed to load modules on request:', error.message);
+        moduleError = error.message;
+      }
     }
 
     // Check if pool is available
     if (!pool) {
+      console.warn('⚠️ Pool not available - returning 503');
       return res.status(503).json({
         error: 'Database not available',
         message: 'Database pool failed to initialize',
@@ -298,6 +333,23 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   void next;
+  console.error('🔴 Unhandled error:', {
+    name: err.name,
+    message: err.message,
+    code: err.code,
+    path: req.path,
+    method: req.method,
+  });
+
+  if (err.code && ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(err.code)) {
+    return res.status(503).json({
+      error: 'Database connection failed',
+      message: `Cannot connect to database: ${err.message}`,
+      code: err.code,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
+  }
+
   res.status(500).json({
     error: 'Internal server error',
     message: err.message,

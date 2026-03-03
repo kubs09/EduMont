@@ -64,75 +64,104 @@ const getSSLConfig = ({ defaultEnabled = false } = {}) => {
 };
 
 let poolConfig;
+let configError = null;
 
-if (useSupabase) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+try {
+  if (useSupabase) {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
-    throw new Error(
-      'Supabase credentials incomplete: Either SUPABASE_URL + SUPABASE_ANON_KEY or SUPABASE_DATABASE_URL required'
-    );
+    if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
+      configError =
+        'Supabase enabled but missing credentials. Set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL';
+      console.error('❌ ' + configError);
+      throw new Error(configError);
+    }
+
+    poolConfig = process.env.SUPABASE_DATABASE_URL
+      ? {
+          connectionString: process.env.SUPABASE_DATABASE_URL,
+          ssl: getSSLConfig({ defaultEnabled: true }),
+          connectionTimeoutMillis: 5000,
+          idleTimeoutMillis: 5000,
+          max: 1,
+          min: 0,
+          statement_timeout: 15000,
+        }
+      : {
+          user: process.env.SUPABASE_USER || 'postgres',
+          host: new URL(supabaseUrl).hostname,
+          database: process.env.SUPABASE_DB || 'postgres',
+          password: supabaseKey,
+          port: 5432,
+          ssl: getSSLConfig({ defaultEnabled: true }),
+          connectionTimeoutMillis: 5000,
+          idleTimeoutMillis: 5000,
+          max: 1,
+          min: 0,
+          statement_timeout: 15000,
+        };
+  } else {
+    poolConfig = {
+      user: process.env.POSTGRES_USER || 'postgres',
+      host: process.env.POSTGRES_HOST || 'localhost',
+      database: process.env.POSTGRES_DB || 'edumont',
+      password: process.env.POSTGRES_PASSWORD || 'password',
+      port: process.env.POSTGRES_PORT || 5432,
+      ssl: getSSLConfig({
+        defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
+      }),
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
+      max: process.env.NODE_ENV === 'production' ? 5 : 20,
+    };
   }
-
-  poolConfig = process.env.SUPABASE_DATABASE_URL
-    ? {
-        connectionString: process.env.SUPABASE_DATABASE_URL,
-        ssl: getSSLConfig({ defaultEnabled: true }),
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 5000,
-        max: 1,
-        min: 0,
-        statement_timeout: 15000,
-      }
-    : {
-        user: process.env.SUPABASE_USER || 'postgres',
-        host: new URL(supabaseUrl).hostname,
-        database: process.env.SUPABASE_DB || 'postgres',
-        password: supabaseKey,
-        port: 5432,
-        ssl: getSSLConfig({ defaultEnabled: true }),
-        connectionTimeoutMillis: 5000,
-        idleTimeoutMillis: 5000,
-        max: 1,
-        min: 0,
-        statement_timeout: 15000,
-      };
-} else {
+} catch (error) {
+  console.error('❌ Database configuration error:', error.message);
+  configError = error;
+  // Create a dummy poolConfig to prevent total failure
   poolConfig = {
-    user: process.env.POSTGRES_USER || 'postgres',
-    host: process.env.POSTGRES_HOST || 'localhost',
-    database: process.env.POSTGRES_DB || 'edumont',
-    password: process.env.POSTGRES_PASSWORD || 'password',
-    port: process.env.POSTGRES_PORT || 5432,
-    ssl: getSSLConfig({
-      defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
-    }),
-    connectionTimeoutMillis: 5000,
-    idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 10000 : 30000,
-    max: process.env.NODE_ENV === 'production' ? 5 : 20,
+    host: 'invalid',
+    database: 'invalid',
+    user: 'invalid',
+    password: 'invalid',
+    port: 5432,
   };
 }
 
-const pool = new Pool(poolConfig);
+let pool;
+try {
+  pool = new Pool(poolConfig);
+} catch (error) {
+  console.error('❌ Failed to create database pool:', error.message);
+  // Return a proxy that will error on query
+  pool = {
+    query: async () => {
+      const err = configError || new Error('Database pool failed to initialize');
+      throw err;
+    },
+    connect: async () => {
+      const err = configError || new Error('Database pool failed to initialize');
+      throw err;
+    },
+    on: () => {
+      // Dummy event handler for failed pool
+    },
+  };
+}
 
 // Log pool configuration (without sensitive credentials)
-console.log('📊 Database Configuration:', {
-  useSupabase,
-  host: poolConfig.host || 'N/A',
-  database: poolConfig.database || poolConfig.connectionString?.split('/').pop() || 'N/A',
-  user: poolConfig.user || 'N/A',
-  sslEnabled: !!poolConfig.ssl,
-});
-
-// Handle pool errors
-pool.on('error', (err) => {
-  console.error('❌ Unexpected pool error:', err);
-});
-
-pool.on('connect', () => {
-  console.log('✅ Database pool connected successfully');
-});
+if (!configError) {
+  console.log('📊 Database Configuration:', {
+    useSupabase,
+    host: poolConfig.host || 'N/A',
+    database: poolConfig.database || poolConfig.connectionString?.split('/').pop() || 'N/A',
+    user: poolConfig.user || 'N/A',
+    sslEnabled: !!poolConfig.ssl,
+  });
+} else {
+  console.log('⚠️  Database Configuration Error:', configError);
+}
 
 export const query = (text, params) => pool.query(text, params);
 export const connect = () => pool.connect();

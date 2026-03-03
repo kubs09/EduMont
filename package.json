@@ -1,6 +1,7 @@
 {
   "name": "edumont-react",
   "version": "1.0.0",
+  "type": "module",
   "main": "server.js",
   "dependencies": {
     "@craco/craco": "^5.9.0",
