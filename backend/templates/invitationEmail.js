@@ -1,4 +1,6 @@
-import sharedTexts from '../../shared/texts.js';
+import * as sharedTextsModule from '../../shared/texts.js';
+
+const sharedTexts = sharedTextsModule.default ?? sharedTextsModule.texts ?? sharedTextsModule;
 
 const emailTexts = {
   emailSubject: {
