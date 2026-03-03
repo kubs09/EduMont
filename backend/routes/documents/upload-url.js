@@ -45,7 +45,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Either childId or classId must be provided' });
     }
 
-    const selectedId = hasClassId ? String(classId).trim() : String(childId).trim();
+    const selectedId = hasChildId ? String(childId).trim() : String(classId).trim();
     if (!/^[A-Za-z0-9_-]+$/.test(selectedId)) {
       return res.status(400).json({ error: 'Invalid childId or classId format' });
     }
@@ -65,9 +65,9 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid file name after sanitization' });
     }
 
-    const storagePath = hasClassId
-      ? `class-${selectedId}/${timestamp}-${sanitizedFileName}`
-      : `child-${selectedId}/${timestamp}-${sanitizedFileName}`;
+    const storagePath = hasChildId
+      ? `child-${selectedId}/${timestamp}-${sanitizedFileName}`
+      : `class-${selectedId}/${timestamp}-${sanitizedFileName}`;
 
     const { data, error } = await supabase.storage
       .from('documents')
