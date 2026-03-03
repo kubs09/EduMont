@@ -6,6 +6,24 @@ import console from 'console';
 import validation from './validation.js';
 const { canEditDocumentByIds } = validation;
 
+let supabase;
+try {
+  supabase = (await import('#backend/config/supabase.js')).default;
+} catch (error) {
+  supabase = null;
+}
+
+const extractStoragePath = (fileUrl) => {
+  try {
+    if (!fileUrl) return null;
+    const match = fileUrl.match(/\/documents\/(.+)$/);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.error('Error extracting storage path:', error);
+    return null;
+  }
+};
+
 router.delete('/:id', authenticateToken, async (req, res) => {
   let client;
   try {
@@ -31,6 +49,26 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     if (!canEdit) {
       await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Delete file from Supabase storage before deleting database record
+    if (supabase && document.file_url) {
+      const storagePath = extractStoragePath(document.file_url);
+      if (storagePath) {
+        try {
+          const { error: deleteError } = await supabase.storage
+            .from('documents')
+            .remove([storagePath]);
+
+          if (deleteError) {
+            console.warn('Warning: Failed to delete file from storage:', deleteError);
+            // Continue with database deletion even if storage deletion fails
+          }
+        } catch (storageErr) {
+          console.warn('Warning: Storage deletion error:', storageErr);
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
     }
 
     await client.query('DELETE FROM documents WHERE id = $1', [id]);
