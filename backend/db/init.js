@@ -2,6 +2,40 @@ import { query } from '../config/database.js';
 import console from 'console';
 
 const initDatabase = async () => {
+  const createUserRoleEnum = `
+    DO $$ BEGIN
+      CREATE TYPE user_role AS ENUM ('admin', 'teacher', 'parent');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `;
+
+  const createUsersTable = `
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(100) UNIQUE NOT NULL,
+      firstname VARCHAR(100) NOT NULL,
+      surname VARCHAR(100) NOT NULL,
+      password VARCHAR(100) NOT NULL,
+      role user_role NOT NULL,
+      reset_token VARCHAR(64),
+      reset_token_expiry TIMESTAMP,
+      message_notifications BOOLEAN DEFAULT TRUE,
+      phone VARCHAR(20)
+    );
+  `;
+
+  const createInvitationsTable = `
+    CREATE TABLE IF NOT EXISTS invitations (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(100) UNIQUE NOT NULL,
+      token VARCHAR(100) UNIQUE NOT NULL,
+      role user_role NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      expires_at TIMESTAMP NOT NULL
+    );
+  `;
+
   const createClassesTable = `
     CREATE TABLE IF NOT EXISTS classes (
       id SERIAL PRIMARY KEY,
@@ -151,34 +185,44 @@ const initDatabase = async () => {
   `;
 
   try {
+    // Create tables in dependency order
+    await query(createUserRoleEnum);
+    await query(createUsersTable);
+    await query(createInvitationsTable);
+    await query(createChildrenTable);
+    await query(createChildParentsTable);
     await query(createClassesTable);
     await query(createClassTeachersTable);
     await query(createClassChildrenTable);
     await query(createMessagesTable);
-    await query(createChildrenTable);
-    await query(createChildParentsTable);
     await query(createDocumentsTable);
     await query(createClassAttendanceTable);
     await query(createChildExcusesTable);
     await query(createCategoryPresentationsTable);
     await query(createPresentationsTable);
-    await query('SELECT 1 FROM users LIMIT 1');
-    await query('SELECT 1 FROM children LIMIT 1');
-    await query('SELECT 1 FROM child_parents LIMIT 1');
-    await query('SELECT 1 FROM classes LIMIT 1');
-    await query('SELECT 1 FROM class_teachers LIMIT 1');
-    await query('SELECT 1 FROM class_children LIMIT 1');
-    await query('SELECT 1 FROM messages LIMIT 1');
-    await query('SELECT 1 FROM documents LIMIT 1');
-    await query('SELECT 1 FROM class_attendance LIMIT 1');
-    await query('SELECT 1 FROM child_excuses LIMIT 1');
-    await query('SELECT 1 FROM category_presentations LIMIT 1');
-    await query('SELECT 1 FROM presentations LIMIT 1');
+
+    // Verify all tables exist with a single query
+    const verifyQuery = `
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name IN (
+          'users', 'invitations', 'children', 'child_parents', 'classes',
+          'class_teachers', 'class_children', 'messages', 'documents',
+          'class_attendance', 'child_excuses', 'category_presentations', 'presentations'
+        )
+      ) as tables_exist
+    `;
+
+    const result = await query(verifyQuery);
+    if (!result.rows[0]?.tables_exist) {
+      throw new Error('Table verification failed');
+    }
+
+    console.log('✅ Database tables initialized and verified successfully');
   } catch (err) {
-    console.error('Database verification error:', err);
-    throw new Error(
-      'Required database tables do not exist. Please ensure the database is properly initialized.'
-    );
+    console.error('Database initialization error:', err);
+    throw new Error(`Database initialization failed: ${err.message}`);
   }
 };
 
