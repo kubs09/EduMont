@@ -76,12 +76,20 @@ const lazyLoadModules = async () => {
     try {
       return await importWithFallback(relativePath);
     } catch (error) {
-      moduleLoadErrors.push(error.message);
+      const errorMsg = `${relativePath}: ${error.message}`;
+      console.error('❌ Failed to load module:', errorMsg);
+      moduleLoadErrors.push(errorMsg);
       return null;
     }
   };
 
   pool = resolveModuleExport(await loadOptional('./config/database.js'));
+  if (!pool) {
+    console.error('🔴 CRITICAL: Database pool failed to initialize');
+  } else {
+    console.log('✅ Database pool initialized');
+  }
+
   initDatabase = resolveModuleExport(await loadOptional('./db/init.js'));
   authRoutes = resolveRouter(await loadOptional('./routes/auth/index.js'));
   childrenRoutes = resolveRouter(await loadOptional('./routes/children/index.js'));
@@ -94,6 +102,9 @@ const lazyLoadModules = async () => {
   permissionsRoutes = resolveRouter(await loadOptional('./routes/permissions/index.js'));
 
   moduleError = moduleLoadErrors.length ? moduleLoadErrors.join(' | ') : null;
+  if (moduleError) {
+    console.error('🔴 Module loading errors:', moduleError);
+  }
   modulesLoaded = true;
 };
 
@@ -154,8 +165,19 @@ app.use('/api', async (req, res, next) => {
     if (isVercel && !modulesLoaded) {
       await lazyLoadModules();
     }
+
+    // Check if pool is available
+    if (!pool) {
+      return res.status(503).json({
+        error: 'Database not available',
+        message: 'Database pool failed to initialize',
+        details: process.env.NODE_ENV === 'development' ? moduleError : undefined,
+      });
+    }
+
     next();
   } catch (error) {
+    console.error('🔴 Middleware error:', error);
     next(error);
   }
 });

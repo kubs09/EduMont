@@ -1,6 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
+import process from 'process';
 import pool from '#backend/config/database.js';
 import passwordService from './services/password.js';
 import tokenService from './services/token.js';
@@ -19,10 +20,24 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: validation.errors.join(', ') });
     }
 
-    const result = await pool.query(
-      'SELECT id, email, password as hash, firstname, surname, role, message_notifications, phone FROM users WHERE email = $1',
-      [email]
-    );
+    let result;
+    try {
+      result = await pool.query(
+        'SELECT id, email, password as hash, firstname, surname, role, message_notifications, phone FROM users WHERE email = $1',
+        [email]
+      );
+    } catch (dbError) {
+      console.error('🔴 Database query error:', {
+        message: dbError.message,
+        code: dbError.code,
+        detail: dbError.detail,
+        hint: dbError.hint,
+      });
+      return res.status(503).json({
+        error: 'Database connection failed',
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined,
+      });
+    }
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -49,7 +64,11 @@ router.post('/login', async (req, res) => {
       phone: user.phone,
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('🔴 Login error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
