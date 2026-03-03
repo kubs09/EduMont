@@ -69,9 +69,9 @@ let configError = null;
 try {
   if (useSupabase) {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-    if (!supabaseKey && !process.env.SUPABASE_DATABASE_URL) {
+    if (!process.env.SUPABASE_DATABASE_URL && !supabaseUrl) {
       configError =
         'Supabase enabled but missing credentials. Set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL';
       console.error('❌ ' + configError);

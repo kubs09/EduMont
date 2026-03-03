@@ -169,7 +169,8 @@ app.get('/api/health', async (req, res) => {
     }
   } else {
     health.database = 'unavailable';
-    health.databaseError = moduleError || 'Pool not initialized';
+    health.databaseError =
+      process.env.NODE_ENV === 'development' ? moduleError || 'Pool not initialized' : undefined;
   }
 
   const statusCode = health.database === 'connected' ? 200 : 503;
