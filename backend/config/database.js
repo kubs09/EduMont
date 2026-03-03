@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import process from 'process';
 import { URL } from 'url';
+import console from 'console';
 import pg from 'pg';
 
 const { Pool } = pg;
@@ -114,6 +115,24 @@ if (useSupabase) {
 }
 
 const pool = new Pool(poolConfig);
+
+// Log pool configuration (without sensitive credentials)
+console.log('📊 Database Configuration:', {
+  useSupabase,
+  host: poolConfig.host || 'N/A',
+  database: poolConfig.database || poolConfig.connectionString?.split('/').pop() || 'N/A',
+  user: poolConfig.user || 'N/A',
+  sslEnabled: !!poolConfig.ssl,
+});
+
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('❌ Unexpected pool error:', err);
+});
+
+pool.on('connect', () => {
+  console.log('✅ Database pool connected successfully');
+});
 
 export const query = (text, params) => pool.query(text, params);
 export const connect = () => pool.connect();
