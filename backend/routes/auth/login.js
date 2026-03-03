@@ -1,6 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
+import process from 'process';
 import pool from '#backend/config/database.js';
 import passwordService from './services/password.js';
 import tokenService from './services/token.js';
@@ -32,9 +33,9 @@ router.post('/login', async (req, res) => {
         detail: dbError.detail,
         hint: dbError.hint,
       });
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'Database connection failed',
-        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined,
       });
     }
 

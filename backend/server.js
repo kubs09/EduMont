@@ -89,7 +89,7 @@ const lazyLoadModules = async () => {
   } else {
     console.log('✅ Database pool initialized');
   }
-  
+
   initDatabase = resolveModuleExport(await loadOptional('./db/init.js'));
   authRoutes = resolveRouter(await loadOptional('./routes/auth/index.js'));
   childrenRoutes = resolveRouter(await loadOptional('./routes/children/index.js'));
@@ -165,7 +165,7 @@ app.use('/api', async (req, res, next) => {
     if (isVercel && !modulesLoaded) {
       await lazyLoadModules();
     }
-    
+
     // Check if pool is available
     if (!pool) {
       return res.status(503).json({
@@ -174,7 +174,7 @@ app.use('/api', async (req, res, next) => {
         details: process.env.NODE_ENV === 'development' ? moduleError : undefined,
       });
     }
-    
+
     next();
   } catch (error) {
     console.error('🔴 Middleware error:', error);
