@@ -5,11 +5,16 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+const hasSupabaseCredentials =
+  !!process.env.SUPABASE_URL ||
+  !!process.env.SUPABASE_DATABASE_URL ||
+  !!process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  !!process.env.SUPABASE_ANON_KEY;
+
 const useSupabase =
-  (process.env.NODE_ENV === 'production' ||
-    !!process.env.VERCEL ||
-    process.env.USE_SUPABASE === 'true') &&
-  (!!process.env.SUPABASE_URL || !!process.env.SUPABASE_DATABASE_URL);
+  (process.env.USE_SUPABASE === 'true' ||
+    (process.env.VERCEL === 'true' && hasSupabaseCredentials)) &&
+  hasSupabaseCredentials;
 
 const parseSSLOverride = () => {
   const raw =
