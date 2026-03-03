@@ -1,4 +1,3 @@
-/* eslint-disable */
 const texts = {
   roles: {
     admin: {
@@ -46,4 +45,4 @@ const texts = {
   },
 };
 
-module.exports = texts;
+export default texts;
