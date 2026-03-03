@@ -6,6 +6,25 @@ import console from 'console';
 import validation from './validation.js';
 const { canEditDocumentByIds } = validation;
 
+let supabase;
+try {
+  supabase = (await import('#backend/config/supabase.js')).default;
+} catch (error) {
+  supabase = null;
+}
+
+const extractStoragePath = (fileUrl) => {
+  try {
+    if (!fileUrl) return null;
+    const urlWithoutQuery = fileUrl.split('?')[0];
+    const match = urlWithoutQuery.match(/\/documents\/(.+)$/);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.error('Error extracting storage path:', error);
+    return null;
+  }
+};
+
 router.delete('/:id', authenticateToken, async (req, res) => {
   let client;
   try {
@@ -33,9 +52,29 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
+    let storagePath = null;
+    if (supabase && document.file_url) {
+      storagePath = extractStoragePath(document.file_url);
+    }
+
     await client.query('DELETE FROM documents WHERE id = $1', [id]);
 
     await client.query('COMMIT');
+
+    if (storagePath) {
+      try {
+        const { error: deleteError } = await supabase.storage
+          .from('documents')
+          .remove([storagePath]);
+
+        if (deleteError) {
+          console.warn('Warning: Failed to delete file from storage:', deleteError);
+        }
+      } catch (storageErr) {
+        console.warn('Warning: Storage deletion error:', storageErr);
+      }
+    }
+
     res.json({ message: 'Document deleted successfully' });
   } catch (err) {
     if (client) {

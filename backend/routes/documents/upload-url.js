@@ -3,17 +3,19 @@ const router = Router();
 import authenticateToken from '#backend/middleware/auth.js';
 
 let supabase;
+let supabaseInitAttempted = false;
 try {
   supabase = (await import('#backend/config/supabase.js')).default;
+  supabaseInitAttempted = true;
 } catch (error) {
   supabase = null;
 }
 
 router.post('/', authenticateToken, async (req, res) => {
-  // Initialize supabase if not already done
-  if (supabase === undefined) {
+  if (!supabaseInitAttempted) {
     try {
       supabase = (await import('#backend/config/supabase.js')).default;
+      supabaseInitAttempted = true;
     } catch (error) {
       supabase = null;
     }
@@ -28,14 +30,44 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const { fileName, fileType, childId, classId } = req.body;
 
-    if (!fileName || !fileType) {
+    if (
+      typeof fileName !== 'string' ||
+      typeof fileType !== 'string' ||
+      !fileName.trim() ||
+      !fileType.trim()
+    ) {
       return res.status(400).json({ error: 'fileName and fileType required' });
     }
 
+    const hasClassId = classId !== undefined && classId !== null && String(classId).trim() !== '';
+    const hasChildId = childId !== undefined && childId !== null && String(childId).trim() !== '';
+    if (!hasChildId && !hasClassId) {
+      return res.status(400).json({ error: 'Either childId or classId must be provided' });
+    }
+
+    const selectedId = hasChildId ? String(childId).trim() : String(classId).trim();
+    if (!/^[A-Za-z0-9_-]+$/.test(selectedId)) {
+      return res.status(400).json({ error: 'Invalid childId or classId format' });
+    }
+
     const timestamp = Date.now();
-    const storagePath = classId
-      ? `class-${classId}/${timestamp}-${fileName}`
-      : `child-${childId}/${timestamp}-${fileName}`;
+
+    const sanitizedFileName = fileName
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s.-]/g, '')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+
+    const baseName = sanitizedFileName.replace(/\.[^.]+$/, '');
+    if (!baseName || /^[-. ]+$/.test(baseName)) {
+      return res.status(400).json({ error: 'Invalid file name after sanitization' });
+    }
+
+    const storagePath = hasChildId
+      ? `child-${selectedId}/${timestamp}-${sanitizedFileName}`
+      : `class-${selectedId}/${timestamp}-${sanitizedFileName}`;
 
     const { data, error } = await supabase.storage
       .from('documents')
