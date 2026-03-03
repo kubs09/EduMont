@@ -10,8 +10,7 @@ try {
 }
 
 router.post('/', authenticateToken, async (req, res) => {
-  // Initialize supabase if not already done
-  if (supabase === undefined) {
+  if (supabase === null) {
     try {
       supabase = (await import('#backend/config/supabase.js')).default;
     } catch (error) {
@@ -30,6 +29,10 @@ router.post('/', authenticateToken, async (req, res) => {
 
     if (!fileName || !fileType) {
       return res.status(400).json({ error: 'fileName and fileType required' });
+    }
+
+    if (!childId && !classId) {
+      return res.status(400).json({ error: 'Either childId or classId must be provided' });
     }
 
     const timestamp = Date.now();
