@@ -33,9 +33,17 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     const timestamp = Date.now();
+
+    const sanitizedFileName = fileName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s.-]/g, '')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+
     const storagePath = classId
-      ? `class-${classId}/${timestamp}-${fileName}`
-      : `child-${childId}/${timestamp}-${fileName}`;
+      ? `class-${classId}/${timestamp}-${sanitizedFileName}`
+      : `child-${childId}/${timestamp}-${sanitizedFileName}`;
 
     const { data, error } = await supabase.storage
       .from('documents')
