@@ -3,16 +3,19 @@ const router = Router();
 import authenticateToken from '#backend/middleware/auth.js';
 
 let supabase;
+let supabaseInitAttempted = false;
 try {
   supabase = (await import('#backend/config/supabase.js')).default;
+  supabaseInitAttempted = true;
 } catch (error) {
   supabase = null;
 }
 
 router.post('/', authenticateToken, async (req, res) => {
-  if (supabase === null) {
+  if (!supabaseInitAttempted) {
     try {
       supabase = (await import('#backend/config/supabase.js')).default;
+      supabaseInitAttempted = true;
     } catch (error) {
       supabase = null;
     }
