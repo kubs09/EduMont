@@ -51,7 +51,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Delete file from Supabase storage before deleting database record
     if (supabase && document.file_url) {
       const storagePath = extractStoragePath(document.file_url);
       if (storagePath) {
@@ -62,11 +61,9 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
           if (deleteError) {
             console.warn('Warning: Failed to delete file from storage:', deleteError);
-            // Continue with database deletion even if storage deletion fails
           }
         } catch (storageErr) {
           console.warn('Warning: Storage deletion error:', storageErr);
-          // Continue with database deletion even if storage deletion fails
         }
       }
     }
