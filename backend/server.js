@@ -28,7 +28,9 @@ let pool,
 let modulesLoaded = false;
 let moduleError = null;
 let dbInitPromise = null;
-const isVercel = Boolean(process.env.VERCEL);
+const vercelRaw = process.env.VERCEL?.trim().toLowerCase();
+const isVercel =
+  vercelRaw === 'true' || vercelRaw === '1' || vercelRaw === 'yes' || vercelRaw === 'on';
 
 const ensureDatabaseInitialized = async () => {
   if (!pool || !initDatabase) return;
