@@ -14,6 +14,7 @@ const { validateLoginData } = validationService;
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email?.trim()?.toLowerCase();
 
     const validation = validateLoginData(email, password);
     if (!validation.isValid) {
@@ -24,7 +25,7 @@ router.post('/login', async (req, res) => {
     try {
       result = await pool.query(
         'SELECT id, email, password as hash, firstname, surname, role, message_notifications, phone FROM users WHERE email = $1',
-        [email]
+        [normalizedEmail]
       );
     } catch (dbError) {
       console.error('🔴 Database query error:', {
@@ -45,13 +46,38 @@ router.post('/login', async (req, res) => {
 
     const user = result.rows[0];
 
-    const validPassword = await comparePassword(password, user.hash);
+    if (!user.hash) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    let validPassword = false;
+    try {
+      validPassword = await comparePassword(password, user.hash);
+    } catch (passwordError) {
+      console.error('🔴 Password comparison error:', {
+        message: passwordError.message,
+        code: passwordError.code,
+      });
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = generateJwtToken(user);
+    let token;
+    try {
+      token = generateJwtToken(user);
+    } catch (tokenError) {
+      if (tokenError?.code === 'JWT_SECRET_MISSING') {
+        console.error('🔴 Authentication configuration error:', tokenError.message);
+        return res.status(500).json({
+          error: 'Authentication service unavailable',
+          details: process.env.NODE_ENV === 'development' ? tokenError.message : undefined,
+        });
+      }
+      throw tokenError;
+    }
 
     res.json({
       token,

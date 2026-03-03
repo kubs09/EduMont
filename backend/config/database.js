@@ -67,17 +67,28 @@ let configError = null;
 
 try {
   if (useSupabase) {
-    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseConnectionString =
+      process.env.SUPABASE_DATABASE_URL ||
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      process.env.SUPABASE_URL;
 
-    if (!supabaseUrl) {
+    if (!supabaseConnectionString) {
       configError =
-        'Supabase enabled but missing credentials. Set SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL';
+        'Supabase enabled but missing database connection string. Set SUPABASE_DATABASE_URL, DATABASE_URL, or POSTGRES_URL';
+      console.error('❌ ' + configError);
+      throw new Error(configError);
+    }
+
+    if (/^https?:\/\//i.test(supabaseConnectionString)) {
+      configError =
+        'Supabase database connection string is invalid. Use the Postgres URI (postgres://...), not the project HTTP URL';
       console.error('❌ ' + configError);
       throw new Error(configError);
     }
 
     poolConfig = {
-      connectionString: supabaseUrl,
+      connectionString: supabaseConnectionString,
       ssl: getSSLConfig({ defaultEnabled: true }),
       connectionTimeoutMillis: 30000,
       idleTimeoutMillis: 30000,

@@ -267,7 +267,9 @@ if (!isVercel && modulesLoaded && pool && initDatabase) {
 } else {
   ensureDatabaseInitialized().catch((error) => {
     console.error('Database initialization error:', error);
-    process.exit(1);
+    if (!isVercel) {
+      process.exit(1);
+    }
   });
 }
 
