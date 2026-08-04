@@ -2,6 +2,8 @@ import 'dotenv/config';
 import process from 'process';
 import console from 'console';
 import pg from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from '../db/schema.js';
 
 const { Pool } = pg;
 
@@ -160,6 +162,8 @@ if (!configError) {
   console.log('⚠️  Database Configuration Error:', configError);
 }
 
+export const db = drizzle(pool, { schema });
+export { schema };
 export const query = (text, params) => pool.query(text, params);
 export const connect = () => pool.connect();
 

@@ -1,84 +1,93 @@
 import { Router } from 'express';
-import pool from '#backend/config/database.js';
+const router = Router();
 import console from 'console';
+import { and, asc, eq, exists } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { db } from '#backend/config/database.js';
+import { childParents, classChildren, classTeachers, classes, children, presentations, users } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 
-const router = Router();
 const { canAccessChildpresentation } = validationModule;
 
-const PRESENTATION_SELECT_QUERY = `
-    SELECT 
-      s.id,
-      s.child_id,
-      s.class_id,
-      s.name,
-      s.category,
-      s.display_order,
-      s.status,
-      s.notes,
-      s.created_at,
-      s.updated_at,
-      c.name as class_name,
-      ch.firstname as child_firstname,
-      ch.surname as child_surname,
-      creator.firstname as created_by_firstname,
-      creator.surname as created_by_surname,
-      updater.firstname as updated_by_firstname,
-      updater.surname as updated_by_surname
-    FROM presentations s
-    JOIN classes c ON s.class_id = c.id
-    JOIN children ch ON s.child_id = ch.id
-    LEFT JOIN users creator ON s.created_by = creator.id
-    LEFT JOIN users updater ON s.updated_by = updater.id
-  `;
+const creator = alias(users, 'creator');
+const updater = alias(users, 'updater');
+
+const presentationSelection = {
+  id: presentations.id,
+  child_id: presentations.childId,
+  class_id: presentations.classId,
+  name: presentations.name,
+  category: presentations.category,
+  display_order: presentations.displayOrder,
+  status: presentations.status,
+  notes: presentations.notes,
+  created_at: presentations.createdAt,
+  updated_at: presentations.updatedAt,
+  class_name: classes.name,
+  child_firstname: children.firstname,
+  child_surname: children.surname,
+  created_by_firstname: creator.firstname,
+  created_by_surname: creator.surname,
+  updated_by_firstname: updater.firstname,
+  updated_by_surname: updater.surname,
+};
+
+const buildPresentationQuery = () =>
+  db
+    .select(presentationSelection)
+    .from(presentations)
+    .innerJoin(classes, eq(presentations.classId, classes.id))
+    .innerJoin(children, eq(presentations.childId, children.id))
+    .leftJoin(creator, eq(presentations.createdBy, creator.id))
+    .leftJoin(updater, eq(presentations.updatedBy, updater.id));
+
+const STATUS_VALUES = [
+  'prerequisites not met',
+  'to be presented',
+  'presented',
+  'practiced',
+  'mastered',
+];
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
-    const statusValues = [
-      'prerequisites not met',
-      'to be presented',
-      'presented',
-      'practiced',
-      'mastered',
-    ];
 
     if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    if (status && !statusValues.includes(status)) {
+    if (status && !STATUS_VALUES.includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
-    let query = PRESENTATION_SELECT_QUERY;
-
-    const params = [];
-    let whereConditions = [];
+    const conditions = [];
 
     if (req.user.role === 'teacher') {
-      whereConditions.push(
-        's.class_id IN (SELECT class_id FROM class_teachers WHERE teacher_id = $' +
-          (params.length + 1) +
-          ')'
+      conditions.push(
+        exists(
+          db
+            .select({ id: classTeachers.classId })
+            .from(classTeachers)
+            .where(
+              and(eq(classTeachers.classId, presentations.classId), eq(classTeachers.teacherId, req.user.id))
+            )
+        )
       );
-      params.push(req.user.id);
     }
 
     if (status) {
-      whereConditions.push('s.status = $' + (params.length + 1));
-      params.push(status);
+      conditions.push(eq(presentations.status, status));
     }
 
-    if (whereConditions.length > 0) {
-      query += ' WHERE ' + whereConditions.join(' AND ');
+    let query = buildPresentationQuery();
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
 
-    query += ' ORDER BY s.category ASC, s.display_order ASC';
-
-    const result = await pool.query(query, params);
-    res.json(result.rows);
+    const result = await query.orderBy(asc(presentations.category), asc(presentations.displayOrder));
+    res.json(result);
   } catch (err) {
     console.error('Error fetching all presentations:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -89,19 +98,12 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
   try {
     const childId = Number(req.params.childId);
     const { status } = req.query;
-    const statusValues = [
-      'prerequisites not met',
-      'to be presented',
-      'presented',
-      'practiced',
-      'mastered',
-    ];
 
     if (!Number.isInteger(childId)) {
       return res.status(400).json({ error: 'Invalid child ID' });
     }
 
-    if (status && !statusValues.includes(status)) {
+    if (status && !STATUS_VALUES.includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
 
@@ -110,19 +112,15 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    let query = PRESENTATION_SELECT_QUERY + ' WHERE s.child_id = $1';
-
-    const params = [childId];
-
+    const conditions = [eq(presentations.childId, childId)];
     if (status) {
-      query += ' AND s.status = $2';
-      params.push(status);
+      conditions.push(eq(presentations.status, status));
     }
 
-    query += ' ORDER BY s.category ASC, s.display_order ASC';
-
-    const result = await pool.query(query, params);
-    res.json(result.rows);
+    const result = await buildPresentationQuery()
+      .where(and(...conditions))
+      .orderBy(asc(presentations.category), asc(presentations.displayOrder));
+    res.json(result);
   } catch (err) {
     console.error('Error fetching presentation:', err);
     res.status(500).json({ error: 'Failed to fetch presentation' });
@@ -133,68 +131,78 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
   try {
     const classId = Number(req.params.classId);
     const { status } = req.query;
-    const statusValues = [
-      'prerequisites not met',
-      'to be presented',
-      'presented',
-      'practiced',
-      'mastered',
-    ];
 
     if (!Number.isInteger(classId)) {
       return res.status(400).json({ error: 'Invalid class ID' });
     }
 
-    if (status && !statusValues.includes(status)) {
+    if (status && !STATUS_VALUES.includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
+
     if (req.user.role === 'admin') {
-      /* empty */
+      // full access
     } else if (req.user.role === 'teacher') {
-      const teacherClassResult = await pool.query(
-        'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
-        [classId, req.user.id]
-      );
-      if (teacherClassResult.rows.length === 0) {
+      const teacherClassResult = await db
+        .select({ classId: classTeachers.classId })
+        .from(classTeachers)
+        .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, req.user.id)));
+      if (teacherClassResult.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
     } else if (req.user.role === 'parent') {
-      const parentChildResult = await pool.query(
-        `
-        SELECT 1 FROM class_children cc
-        JOIN children ch ON cc.child_id = ch.id
-        WHERE cc.class_id = $1 AND EXISTS (
-          SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
-        )
-      `,
-        [classId, req.user.id]
-      );
-      if (parentChildResult.rows.length === 0) {
+      const parentChildResult = await db
+        .select({ classId: classChildren.classId })
+        .from(classChildren)
+        .innerJoin(children, eq(classChildren.childId, children.id))
+        .where(
+          and(
+            eq(classChildren.classId, classId),
+            exists(
+              db
+                .select({ id: childParents.childId })
+                .from(childParents)
+                .where(
+                  and(eq(childParents.childId, children.id), eq(childParents.parentId, req.user.id))
+                )
+            )
+          )
+        );
+      if (parentChildResult.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
     } else {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    let query = PRESENTATION_SELECT_QUERY + ' WHERE s.class_id = $1';
-
-    const params = [classId];
+    const conditions = [eq(presentations.classId, classId)];
 
     if (req.user.role === 'parent') {
-      query +=
-        ' AND EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2)';
-      params.push(req.user.id);
+      conditions.push(
+        exists(
+          db
+            .select({ id: childParents.childId })
+            .from(childParents)
+            .where(
+              and(eq(childParents.childId, children.id), eq(childParents.parentId, req.user.id))
+            )
+        )
+      );
     }
 
     if (status) {
-      query += ` AND s.status = $${params.length + 1}`;
-      params.push(status);
+      conditions.push(eq(presentations.status, status));
     }
 
-    query += ' ORDER BY s.category ASC, s.display_order ASC, ch.surname ASC, ch.firstname ASC';
-
-    const result = await pool.query(query, params);
-    res.json(result.rows);
+    const result = await buildPresentationQuery()
+      .where(and(...conditions))
+      .orderBy(
+        asc(presentations.category),
+        asc(presentations.displayOrder),
+        asc(children.surname),
+        asc(children.firstname)
+      );
+    res.json(result);
   } catch (err) {
     console.error('Error fetching class presentation:', err);
     res.status(500).json({ error: 'Failed to fetch class presentation' });

@@ -19,6 +19,7 @@
     "strictNullChecks": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": "src",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["../*"],
       "@frontend/*": ["./*"],

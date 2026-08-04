@@ -1,7 +1,9 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '#backend/config/database.js';
+import { and, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classChildren, presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
@@ -9,9 +11,7 @@ const { validatepresentation, canEditChildpresentation, normalizeCategoryOrderin
 
 // Update a presentation entry
 router.put('/:id', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     const { id } = req.params;
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
@@ -20,64 +20,63 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    await client.query('BEGIN');
+    const result = await db.transaction(async (tx) => {
+      const presentationResult = await tx
+        .select({ childId: presentations.childId, category: presentations.category })
+        .from(presentations)
+        .where(eq(presentations.id, id));
+      if (presentationResult.length === 0) {
+        return { status: 404, body: { error: 'presentation not found' } };
+      }
 
-    const presentationResult = await client.query(
-      'SELECT child_id, category FROM presentations WHERE id = $1',
-      [id]
-    );
-    if (presentationResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ error: 'presentation not found' });
-    }
+      const previousChildId = presentationResult[0].childId;
+      const previousCategory = presentationResult[0].category;
 
-    const previousChildId = presentationResult.rows[0].child_id;
-    const previousCategory = presentationResult.rows[0].category;
+      const canEdit = await canEditChildpresentation(req.user.id, req.user.role, child_id);
+      if (!canEdit) {
+        return {
+          status: 403,
+          body: { error: "You do not have permission to edit this child's presentation" },
+        };
+      }
 
-    const canEdit = await canEditChildpresentation(req.user.id, req.user.role, child_id);
-    if (!canEdit) {
-      await client.query('ROLLBACK');
-      return res
-        .status(403)
-        .json({ error: "You do not have permission to edit this child's presentation" });
-    }
+      const classChildResult = await tx
+        .select({ classId: classChildren.classId })
+        .from(classChildren)
+        .where(and(eq(classChildren.childId, child_id), eq(classChildren.classId, class_id)));
 
-    const classChildResult = await client.query(
-      'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
-      [child_id, class_id]
-    );
+      if (classChildResult.length === 0) {
+        return { status: 400, body: { error: 'Child is not assigned to this class' } };
+      }
 
-    if (classChildResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Child is not assigned to this class' });
-    }
+      const updated = await tx
+        .update(presentations)
+        .set({
+          childId: child_id,
+          classId: class_id,
+          name,
+          category,
+          displayOrder: display_order || 0,
+          status,
+          notes,
+          updatedAt: new Date(),
+          updatedBy: req.user.id,
+        })
+        .where(eq(presentations.id, id))
+        .returning();
 
-    const result = await client.query(
-      `
-      UPDATE presentations 
-      SET child_id = $1, class_id = $2, name = $3, category = $4, display_order = $5, status = $6, 
-          notes = $7, updated_at = CURRENT_TIMESTAMP, updated_by = $8
-      WHERE id = $9
-      RETURNING *
-    `,
-      [child_id, class_id, name, category, display_order || 0, status, notes, req.user.id, id]
-    );
+      await normalizeCategoryOrdering(tx, child_id, category);
+      if (previousChildId !== child_id || previousCategory !== category) {
+        await normalizeCategoryOrdering(tx, previousChildId, previousCategory);
+      }
 
-    await normalizeCategoryOrdering(client, child_id, category);
-    if (previousChildId !== child_id || previousCategory !== category) {
-      await normalizeCategoryOrdering(client, previousChildId, previousCategory);
-    }
-
-    await client.query('COMMIT');
-    res.json(result.rows[0]);
-  } catch (err) {
-    await client.query('ROLLBACK').catch((rollbackErr) => {
-      console.error('Error rolling back transaction:', rollbackErr);
+      return { status: 200, body: updated[0] };
     });
+
+    res.status(result.status).json(result.body);
+  } catch (err) {
     console.error('Error updating presentation:', err);
     res.status(500).json({ error: 'Failed to update presentation entry' });
-  } finally {
-    client?.release();
   }
 });
 

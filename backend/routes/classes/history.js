@@ -1,6 +1,8 @@
 import { Router } from 'express';
 const router = Router();
-import { query } from '#backend/config/database.js';
+import { and, desc, eq, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { childParents, classChildren, classHistory, children, users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.get('/:id/history', auth, async (req, res) => {
@@ -10,32 +12,39 @@ router.get('/:id/history', auth, async (req, res) => {
 
   try {
     const { id } = req.params;
+    const classId = Number(id);
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await query(
-        `SELECT 1 FROM class_children cc
-         JOIN children ch ON cc.child_id = ch.id
-         WHERE cc.class_id = $1 AND EXISTS (
-           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
-         )`,
-        [id, req.user.id]
-      );
-      if (parentChildCheck.rows.length === 0) {
+      const parentChildCheck = await db
+        .select({ id: classChildren.classId })
+        .from(classChildren)
+        .innerJoin(children, eq(classChildren.childId, children.id))
+        .where(
+          and(
+            eq(classChildren.classId, classId),
+            sql`EXISTS (SELECT 1 FROM ${childParents} cp WHERE cp.child_id = ${children.id} AND cp.parent_id = ${req.user.id})`
+          )
+        );
+      if (parentChildCheck.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
     }
 
-    const result = await query(
-      `
-      SELECT ch.*, 
-        json_build_object('id', u.id, 'firstname', u.firstname, 'surname', u.surname) as created_by
-      FROM class_history ch
-      LEFT JOIN users u ON ch.created_by = u.id
-      WHERE ch.class_id = $1
-      ORDER BY ch.date DESC`,
-      [id]
-    );
-    res.json(result.rows);
+    const result = await db
+      .select({
+        id: classHistory.id,
+        class_id: classHistory.classId,
+        date: classHistory.date,
+        notes: classHistory.notes,
+        created_at: classHistory.createdAt,
+        created_by: sql`json_build_object('id', ${users.id}, 'firstname', ${users.firstname}, 'surname', ${users.surname})`,
+      })
+      .from(classHistory)
+      .leftJoin(users, eq(classHistory.createdBy, users.id))
+      .where(eq(classHistory.classId, classId))
+      .orderBy(desc(classHistory.date));
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch class history' });
   }
@@ -50,11 +59,16 @@ router.post('/:id/history', auth, async (req, res) => {
 
   try {
     const { date, notes } = req.body;
-    const result = await query(
-      'INSERT INTO class_history (class_id, date, notes, created_by) VALUES ($1, $2, $3, $4) RETURNING *',
-      [req.params.id, date, notes, req.user.id]
-    );
-    res.status(201).json(result.rows[0]);
+    const result = await db
+      .insert(classHistory)
+      .values({
+        classId: Number(req.params.id),
+        date,
+        notes,
+        createdBy: req.user.id,
+      })
+      .returning();
+    res.status(201).json(result[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to create history entry' });
   }
@@ -68,10 +82,14 @@ router.delete('/:classId/history/:historyId', auth, async (req, res) => {
   }
 
   try {
-    await query('DELETE FROM class_history WHERE id = $1 AND class_id = $2', [
-      req.params.historyId,
-      req.params.classId,
-    ]);
+    await db
+      .delete(classHistory)
+      .where(
+        and(
+          eq(classHistory.id, Number(req.params.historyId)),
+          eq(classHistory.classId, Number(req.params.classId))
+        )
+      );
     res.json({ message: 'History entry deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete history entry' });

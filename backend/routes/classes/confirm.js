@@ -1,10 +1,62 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '#backend/config/database.js';
+import { eq, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { childParents, classChildren, classTeachers, classes, children, users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
+// NOTE: `class_children.confirmed` is not defined in db/schema.js (nor the legacy schema.sql
+// baseline) - referenced here as untyped SQL to preserve prior behavior exactly. Flagged for follow-up.
+const childrenWithParentsFragment = (confirmedExpr) => sql`COALESCE(
+  jsonb_agg(DISTINCT jsonb_build_object(
+    'id', ${children.id}, 'firstname', ${children.firstname}, 'surname', ${children.surname},
+    'date_of_birth', ${children.dateOfBirth},
+    'parents', COALESCE(
+      (SELECT jsonb_agg(jsonb_build_object(
+        'id', u.id, 'firstname', u.firstname, 'surname', u.surname, 'email', u.email, 'phone', u.phone
+      ) ORDER BY u.surname, u.firstname)
+      FROM ${childParents} cp JOIN ${users} u ON cp.parent_id = u.id
+      WHERE cp.child_id = ${children.id}),
+      '[]'::jsonb
+    ),
+    'confirmed', ${confirmedExpr},
+    'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ${children.dateOfBirth}))::integer
+  )) FILTER (WHERE ${children.id} IS NOT NULL),
+  '[]'::jsonb
+)`;
+
+const fetchClassWithChildren = async (tx, classId, confirmedExpr) => {
+  const rows = await tx
+    .select({
+      id: classes.id,
+      name: classes.name,
+      description: classes.description,
+      ageGroup: classes.ageGroup,
+      minAge: classes.minAge,
+      maxAge: classes.maxAge,
+      createdAt: classes.createdAt,
+      teachers: sql`COALESCE(
+        jsonb_agg(DISTINCT jsonb_build_object(
+          'id', ${users.id}, 'firstname', ${users.firstname}, 'surname', ${users.surname},
+          'class_role', ${classTeachers.role}
+        )) FILTER (WHERE ${users.id} IS NOT NULL),
+        '[]'::jsonb
+      )`,
+      children: childrenWithParentsFragment(confirmedExpr),
+    })
+    .from(classes)
+    .leftJoin(classTeachers, eq(classes.id, classTeachers.classId))
+    .leftJoin(users, eq(classTeachers.teacherId, users.id))
+    .leftJoin(classChildren, eq(classes.id, classChildren.classId))
+    .leftJoin(children, eq(classChildren.childId, children.id))
+    .where(eq(classes.id, classId))
+    .groupBy(classes.id);
+
+  return rows[0];
+};
+
+// Confirm a child's class assignment
 router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
-  let client;
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res
       .status(403)
@@ -12,70 +64,20 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
   }
 
   try {
-    client = await connect();
-    await client.query('BEGIN');
+    const classId = Number(req.params.classId);
+    const childId = Number(req.params.childId);
 
-    await client.query(
-      'UPDATE class_children SET confirmed = TRUE WHERE class_id = $1 AND child_id = $2',
-      [req.params.classId, req.params.childId]
-    );
+    const result = await db.transaction(async (tx) => {
+      await tx.execute(
+        sql`UPDATE class_children SET confirmed = TRUE WHERE class_id = ${classId} AND child_id = ${childId}`
+      );
 
-    const result = await client.query(
-      `
-      SELECT 
-        c.*,
-        COALESCE(
-          jsonb_agg(DISTINCT jsonb_build_object(
-            'id', t.id,
-            'firstname', t.firstname,
-            'surname', t.surname,
-            'class_role', ct.role
-          )) FILTER (WHERE t.id IS NOT NULL),
-          '[]'::jsonb
-        ) as teachers,
-        COALESCE(
-          jsonb_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname,
-            'date_of_birth', ch.date_of_birth,
-            'parents', COALESCE(
-              (SELECT jsonb_agg(jsonb_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'surname', u.surname,
-                'email', u.email,
-                'phone', u.phone
-              ) ORDER BY u.surname, u.firstname)
-              FROM child_parents cp
-              JOIN users u ON cp.parent_id = u.id
-              WHERE cp.child_id = ch.id),
-              '[]'::jsonb
-            ),
-            'confirmed', cc.confirmed,
-            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
-          )) FILTER (WHERE ch.id IS NOT NULL),
-          '[]'::jsonb
-        ) as children
-      FROM classes c
-      LEFT JOIN class_teachers ct ON c.id = ct.class_id
-      LEFT JOIN users t ON ct.teacher_id = t.id
-      LEFT JOIN class_children cc ON c.id = cc.class_id
-      LEFT JOIN children ch ON cc.child_id = ch.id
-      WHERE c.id = $1
-      GROUP BY c.id`,
-      [req.params.classId]
-    );
+      return fetchClassWithChildren(tx, classId, sql`class_children.confirmed`);
+    });
 
-    await client.query('COMMIT');
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     res.status(500).json({ error: 'Failed to confirm class assignment' });
-  } finally {
-    client?.release();
   }
 });
 
@@ -87,73 +89,21 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
       .json({ error: 'Only administrators and teachers can deny class assignments' });
   }
 
-  let client;
   try {
-    client = await connect();
-    await client.query('BEGIN');
+    const classId = Number(req.params.classId);
+    const childId = Number(req.params.childId);
 
-    await client.query(
-      'UPDATE class_children SET confirmed = FALSE WHERE class_id = $1 AND child_id = $2',
-      [req.params.classId, req.params.childId]
-    );
+    const result = await db.transaction(async (tx) => {
+      await tx.execute(
+        sql`UPDATE class_children SET confirmed = FALSE WHERE class_id = ${classId} AND child_id = ${childId}`
+      );
 
-    // Fetch updated class data with all children and their confirmation status
-    const result = await client.query(
-      `
-      SELECT 
-        c.*,
-        COALESCE(
-          jsonb_agg(DISTINCT jsonb_build_object(
-            'id', t.id,
-            'firstname', t.firstname,
-            'surname', t.surname,
-            'class_role', ct.role
-          )) FILTER (WHERE t.id IS NOT NULL),
-          '[]'::jsonb
-        ) as teachers,
-        COALESCE(
-          jsonb_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname,
-            'date_of_birth', ch.date_of_birth,
-            'parents', COALESCE(
-              (SELECT jsonb_agg(jsonb_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'surname', u.surname,
-                'email', u.email,
-                'phone', u.phone
-              ) ORDER BY u.surname, u.firstname)
-              FROM child_parents cp
-              JOIN users u ON cp.parent_id = u.id
-              WHERE cp.child_id = ch.id),
-              '[]'::jsonb
-            ),
-            'confirmed', COALESCE(cc.confirmed, false),
-            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
-          )) FILTER (WHERE ch.id IS NOT NULL),
-          '[]'::jsonb
-        ) as children
-      FROM classes c
-      LEFT JOIN class_teachers ct ON c.id = ct.class_id
-      LEFT JOIN users t ON ct.teacher_id = t.id
-      LEFT JOIN class_children cc ON c.id = cc.class_id
-      LEFT JOIN children ch ON cc.child_id = ch.id
-      WHERE c.id = $1
-      GROUP BY c.id`,
-      [req.params.classId]
-    );
+      return fetchClassWithChildren(tx, classId, sql`COALESCE(class_children.confirmed, false)`);
+    });
 
-    await client.query('COMMIT');
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     res.status(500).json({ error: 'Failed to confirm class assignment' });
-  } finally {
-    client?.release();
   }
 });
 

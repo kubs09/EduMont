@@ -1,14 +1,15 @@
 import { Router } from 'express';
 const router = Router();
-import { query } from '#backend/config/database.js';
+import { eq, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { messages } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.get('/', auth, async (req, res) => {
   try {
-    const result = await query(
-      `
+    const result = await db.execute(sql`
       WITH recipients AS (
-        SELECT 
+        SELECT
           m2.subject,
           m2.content,
           m2.created_at,
@@ -23,7 +24,7 @@ router.get('/', auth, async (req, res) => {
         JOIN users u ON m2.to_user_id = u.id
         GROUP BY m2.subject, m2.content, m2.created_at, m2.from_user_id
       )
-      SELECT DISTINCT ON (m.subject, m.content, m.created_at) m.*, 
+      SELECT DISTINCT ON (m.subject, m.content, m.created_at) m.*,
         json_build_object(
           'firstname', f.firstname,
           'surname', f.surname,
@@ -38,17 +39,15 @@ router.get('/', auth, async (req, res) => {
       FROM messages m
       JOIN users f ON m.from_user_id = f.id
       JOIN users t ON m.to_user_id = t.id
-      LEFT JOIN recipients r ON 
-        r.subject = m.subject 
-        AND r.content = m.content 
+      LEFT JOIN recipients r ON
+        r.subject = m.subject
+        AND r.content = m.content
         AND r.created_at = m.created_at
         AND r.from_user_id = m.from_user_id
-      WHERE m.to_user_id = $1 AND NOT m.deleted_by_recipient
-      OR m.from_user_id = $1 AND NOT m.deleted_by_sender
+      WHERE m.to_user_id = ${req.user.id} AND NOT m.deleted_by_recipient
+      OR m.from_user_id = ${req.user.id} AND NOT m.deleted_by_sender
       ORDER BY m.subject, m.content, m.created_at DESC, m.id DESC
-    `,
-      [req.user.id]
-    );
+    `);
 
     res.json(result.rows);
   } catch (error) {
@@ -58,10 +57,9 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
   try {
-    const result = await query(
-      `
+    const result = await db.execute(sql`
       WITH recipients AS (
-        SELECT 
+        SELECT
           m2.subject,
           m2.content,
           m2.created_at,
@@ -74,13 +72,13 @@ router.get('/:id', auth, async (req, res) => {
           ) ORDER BY u.surname, u.firstname) as recipients
         FROM messages m2
         JOIN users u ON m2.to_user_id = u.id
-        WHERE m2.subject = (SELECT subject FROM messages WHERE id = $1)
-          AND m2.content = (SELECT content FROM messages WHERE id = $1)
-          AND m2.created_at = (SELECT created_at FROM messages WHERE id = $1)
-          AND m2.from_user_id = (SELECT from_user_id FROM messages WHERE id = $1)
+        WHERE m2.subject = (SELECT subject FROM messages WHERE id = ${req.params.id})
+          AND m2.content = (SELECT content FROM messages WHERE id = ${req.params.id})
+          AND m2.created_at = (SELECT created_at FROM messages WHERE id = ${req.params.id})
+          AND m2.from_user_id = (SELECT from_user_id FROM messages WHERE id = ${req.params.id})
         GROUP BY m2.subject, m2.content, m2.created_at, m2.from_user_id
       )
-      SELECT m.*, 
+      SELECT m.*,
         json_build_object(
           'firstname', f.firstname,
           'surname', f.surname,
@@ -95,22 +93,20 @@ router.get('/:id', auth, async (req, res) => {
       FROM messages m
       JOIN users f ON m.from_user_id = f.id
       JOIN users t ON m.to_user_id = t.id
-      LEFT JOIN recipients r ON 
-        r.subject = m.subject 
-        AND r.content = m.content 
+      LEFT JOIN recipients r ON
+        r.subject = m.subject
+        AND r.content = m.content
         AND r.created_at = m.created_at
         AND r.from_user_id = m.from_user_id
-      WHERE m.id = $1 AND (m.to_user_id = $2 OR m.from_user_id = $2)
-    `,
-      [req.params.id, req.user.id]
-    );
+      WHERE m.id = ${req.params.id} AND (m.to_user_id = ${req.user.id} OR m.from_user_id = ${req.user.id})
+    `);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Message not found' });
     }
 
     if (result.rows[0].to_user_id === req.user.id && !result.rows[0].read_at) {
-      await query('UPDATE messages SET read_at = NOW() WHERE id = $1', [req.params.id]);
+      await db.update(messages).set({ readAt: new Date() }).where(eq(messages.id, req.params.id));
     }
 
     res.json(result.rows[0]);

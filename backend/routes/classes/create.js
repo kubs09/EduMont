@@ -1,6 +1,8 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '#backend/config/database.js';
+import { eq, isNull } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classChildren, classTeachers, classes, children } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 function calculateAge(birthDate) {
@@ -15,67 +17,70 @@ function calculateAge(birthDate) {
 }
 
 router.post('/', auth, async (req, res) => {
-  let client;
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can create classes' });
   }
   try {
-    client = await connect();
-    await client.query('BEGIN');
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
-    const classResult = await client.query(
-      'INSERT INTO classes (name, description, age_group, min_age, max_age) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [name, description, age_group, min_age, max_age]
-    );
-    const classId = classResult.rows[0].id;
 
-    if (!teacherId) {
-      throw new Error('Missing required field: teacherId is required');
-    }
+    const classId = await db.transaction(async (tx) => {
+      const classResult = await tx
+        .insert(classes)
+        .values({ name, description, ageGroup: age_group, minAge: min_age, maxAge: max_age })
+        .returning({ id: classes.id });
+      const newClassId = classResult[0].id;
 
-    if (assistantId && assistantId === teacherId) {
-      throw new Error('Assistant cannot be the same as the main teacher');
-    }
-
-    const assignedTeacher = await client.query(
-      'SELECT class_id FROM class_teachers WHERE teacher_id = $1 LIMIT 1',
-      [teacherId]
-    );
-
-    if (assignedTeacher.rows.length > 0) {
-      throw new Error('Selected teacher is already assigned to another class');
-    }
-
-    if (assistantId) {
-      const assignedAssistant = await client.query(
-        'SELECT class_id FROM class_teachers WHERE teacher_id = $1 LIMIT 1',
-        [assistantId]
-      );
-
-      if (assignedAssistant.rows.length > 0) {
-        throw new Error('Selected assistant is already assigned to another class');
+      if (!teacherId) {
+        throw new Error('Missing required field: teacherId is required');
       }
-    }
 
-    const teacherParams = [classId, teacherId];
-    await client.query(
-      'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-      [...teacherParams, 'teacher', false]
-    );
+      if (assistantId && assistantId === teacherId) {
+        throw new Error('Assistant cannot be the same as the main teacher');
+      }
 
-    if (assistantId) {
-      await client.query(
-        'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-        [classId, assistantId, 'assistant', false]
-      );
-    }
+      const assignedTeacher = await tx
+        .select({ classId: classTeachers.classId })
+        .from(classTeachers)
+        .where(eq(classTeachers.teacherId, teacherId))
+        .limit(1);
 
-    await client.query('COMMIT');
+      if (assignedTeacher.length > 0) {
+        throw new Error('Selected teacher is already assigned to another class');
+      }
+
+      if (assistantId) {
+        const assignedAssistant = await tx
+          .select({ classId: classTeachers.classId })
+          .from(classTeachers)
+          .where(eq(classTeachers.teacherId, assistantId))
+          .limit(1);
+
+        if (assignedAssistant.length > 0) {
+          throw new Error('Selected assistant is already assigned to another class');
+        }
+      }
+
+      await tx.insert(classTeachers).values({
+        classId: newClassId,
+        teacherId,
+        role: 'teacher',
+        permissionRequested: false,
+      });
+
+      if (assistantId) {
+        await tx.insert(classTeachers).values({
+          classId: newClassId,
+          teacherId: assistantId,
+          role: 'assistant',
+          permissionRequested: false,
+        });
+      }
+
+      return newClassId;
+    });
+
     res.status(201).json({ id: classId });
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     if (
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
@@ -91,8 +96,6 @@ router.post('/', auth, async (req, res) => {
       error: 'Failed to create class',
       details: error.message,
     });
-  } finally {
-    client?.release();
   }
 });
 
@@ -101,57 +104,48 @@ router.post('/auto-assign', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can trigger auto-assignment' });
   }
-  let client;
   try {
-    client = await connect();
-    await client.query('BEGIN');
-    // First, clear all previous assignments
-    await client.query('DELETE FROM class_children');
+    await db.transaction(async (tx) => {
+      // First, clear all previous assignments
+      await tx.delete(classChildren);
 
-    // Get all children who aren't assigned to any class
-    const childrenQuery = `
-      SELECT id, date_of_birth 
-      FROM children ch
-      WHERE NOT EXISTS (
-        SELECT 1 FROM class_children cc 
-        WHERE cc.child_id = ch.id
-      )
-    `;
-    const childrenResult = await client.query(childrenQuery);
+      // Get all children who aren't assigned to any class
+      const unassignedChildren = await tx
+        .select({ id: children.id, dateOfBirth: children.dateOfBirth })
+        .from(children)
+        .leftJoin(classChildren, eq(classChildren.childId, children.id))
+        .where(isNull(classChildren.childId));
 
-    // Get all classes with their age ranges
-    const classesQuery = 'SELECT id, min_age, max_age FROM classes ORDER BY min_age, max_age, name';
-    const classesResult = await client.query(classesQuery);
+      // Get all classes with their age ranges
+      const allClasses = await tx
+        .select({ id: classes.id, minAge: classes.minAge, maxAge: classes.maxAge })
+        .from(classes)
+        .orderBy(classes.minAge, classes.maxAge, classes.name);
 
-    // For each child, find the most appropriate class based on age
-    for (const child of childrenResult.rows) {
-      const age = calculateAge(child.date_of_birth);
-      // Find the most appropriate class for this age
-      const suitableClass = classesResult.rows.find((c) => age >= c.min_age && age <= c.max_age);
+      // For each child, find the most appropriate class based on age
+      for (const child of unassignedChildren) {
+        const age = calculateAge(child.dateOfBirth);
+        // Find the most appropriate class for this age
+        const suitableClass = allClasses.find((c) => age >= c.minAge && age <= c.maxAge);
 
-      if (suitableClass) {
-        await client.query(
-          `INSERT INTO class_children (class_id, child_id, created_at) 
-           VALUES ($1, $2, CURRENT_TIMESTAMP)
-           ON CONFLICT (class_id, child_id) 
-           DO UPDATE SET created_at = CURRENT_TIMESTAMP`,
-          [suitableClass.id, child.id]
-        );
+        if (suitableClass) {
+          await tx
+            .insert(classChildren)
+            .values({ classId: suitableClass.id, childId: child.id })
+            .onConflictDoUpdate({
+              target: [classChildren.classId, classChildren.childId],
+              set: { createdAt: new Date() },
+            });
+        }
       }
-    }
+    });
 
-    await client.query('COMMIT');
     res.json({ message: 'Automatic class assignment completed' });
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     res.status(500).json({
       error: 'Failed to perform automatic class assignment',
       details: error.message,
     });
-  } finally {
-    client?.release();
   }
 });
 

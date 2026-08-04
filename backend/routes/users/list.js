@@ -1,25 +1,35 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { query as _query } from '#backend/config/database.js';
+import { and, eq, exists } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { db } from '#backend/config/database.js';
+import { childParents, users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
+
+const requesterChildParents = alias(childParents, 'requester_child_parents');
+const targetChildParents = alias(childParents, 'target_child_parents');
 
 router.get('/', auth, async (req, res) => {
   try {
     const { role } = req.query;
 
-    let query = 'SELECT id, firstname, surname, email, role FROM users';
-    const params = [];
+    let query = db
+      .select({
+        id: users.id,
+        firstname: users.firstname,
+        surname: users.surname,
+        email: users.email,
+        role: users.role,
+      })
+      .from(users);
 
     if (role) {
-      query += ' WHERE role = $1';
-      params.push(role);
+      query = query.where(eq(users.role, role));
     }
 
-    query += ' ORDER BY surname ASC';
-
-    const result = await _query(query, params);
-    res.json(result.rows);
+    const result = await query.orderBy(users.surname);
+    res.json(result);
   } catch (error) {
     console.error('Fetch users error:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -34,16 +44,24 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid user id' });
     }
 
-    const result = await _query(
-      'SELECT id, firstname, surname, email, role, phone FROM users WHERE id = $1',
-      [userId]
-    );
+    const result = await db
+      .select({
+        id: users.id,
+        firstname: users.firstname,
+        surname: users.surname,
+        email: users.email,
+        role: users.role,
+        phone: users.phone,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const targetUser = result.rows[0];
+    const targetUser = result[0];
     const requesterRole = req.user.role;
     const isSelf = req.user.id === targetUser.id;
     const canViewProfile =
@@ -55,16 +73,28 @@ router.get('/:id', auth, async (req, res) => {
 
     if (!canViewProfile) {
       if (requesterRole === 'parent' && targetUser.role === 'parent') {
-        const sharedChildResult = await _query(
-          `SELECT 1
-           FROM child_parents cp_self
-           JOIN child_parents cp_other ON cp_self.child_id = cp_other.child_id
-           WHERE cp_self.parent_id = $1 AND cp_other.parent_id = $2
-           LIMIT 1`,
-          [req.user.id, targetUser.id]
-        );
+        const sharedChildResult = await db
+          .select({ id: requesterChildParents.childId })
+          .from(requesterChildParents)
+          .where(
+            and(
+              eq(requesterChildParents.parentId, req.user.id),
+              exists(
+                db
+                  .select({ id: targetChildParents.childId })
+                  .from(targetChildParents)
+                  .where(
+                    and(
+                      eq(targetChildParents.childId, requesterChildParents.childId),
+                      eq(targetChildParents.parentId, targetUser.id)
+                    )
+                  )
+              )
+            )
+          )
+          .limit(1);
 
-        if (sharedChildResult.rows.length > 0) {
+        if (sharedChildResult.length > 0) {
           return res.json(targetUser);
         }
       }

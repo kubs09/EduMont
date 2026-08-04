@@ -1,6 +1,8 @@
 import { Router } from 'express';
 const router = Router();
-import pool from '#backend/config/database.js';
+import { eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { documents } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import console from 'console';
 import validation from './validation.js';
@@ -26,40 +28,36 @@ const extractStoragePath = (fileUrl) => {
 };
 
 router.delete('/:id', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await pool.connect();
     const { id } = req.params;
 
-    await client.query('BEGIN');
-
-    const documentResult = await client.query('SELECT * FROM documents WHERE id = $1', [id]);
-    if (documentResult.rows.length === 0) {
-      await client.query('ROLLBACK');
+    const documentResult = await db
+      .select()
+      .from(documents)
+      .where(eq(documents.id, parseInt(id)))
+      .limit(1);
+    if (documentResult.length === 0) {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const document = documentResult.rows[0];
+    const document = documentResult[0];
 
     const canEdit = await canEditDocumentByIds(
       req.user.id,
       req.user.role,
-      document.child_id,
-      document.class_id
+      document.childId,
+      document.classId
     );
     if (!canEdit) {
-      await client.query('ROLLBACK');
       return res.status(403).json({ error: 'Access denied' });
     }
 
     let storagePath = null;
-    if (supabase && document.file_url) {
-      storagePath = extractStoragePath(document.file_url);
+    if (supabase && document.fileUrl) {
+      storagePath = extractStoragePath(document.fileUrl);
     }
 
-    await client.query('DELETE FROM documents WHERE id = $1', [id]);
-
-    await client.query('COMMIT');
+    await db.delete(documents).where(eq(documents.id, parseInt(id)));
 
     if (storagePath) {
       try {
@@ -77,13 +75,8 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     res.json({ message: 'Document deleted successfully' });
   } catch (err) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     console.error('Error deleting document:', err);
     res.status(500).json({ error: 'Failed to delete document' });
-  } finally {
-    client?.release();
   }
 });
 

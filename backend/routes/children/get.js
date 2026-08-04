@@ -1,64 +1,93 @@
 import { Router } from 'express';
 const router = Router();
 import process from 'process';
-import { query as _query } from '#backend/config/database.js';
+import { and, asc, desc, eq, exists, inArray, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { db } from '#backend/config/database.js';
 import authenticateToken from '#backend/middleware/auth.js';
+import {
+  childParents,
+  children,
+  classChildren,
+  classTeachers,
+  classes,
+  presentations,
+  presentationPermissions,
+  users,
+} from '#backend/db/schema.js';
+
+const buildParentAggregation = () => sql`
+  COALESCE(
+    (
+      SELECT json_agg(
+        json_build_object(
+          'id', u.id,
+          'firstname', u.firstname,
+          'surname', u.surname,
+          'email', u.email,
+          'phone', u.phone
+        )
+        ORDER BY u.surname, u.firstname
+      )
+      FROM ${childParents} cp
+      JOIN ${users} u ON cp.parent_id = u.id
+      WHERE cp.child_id = ${children.id}
+    ),
+    '[]'
+  )
+`;
+
+const buildChildBaseSelect = () =>
+  db
+    .select({
+      id: children.id,
+      firstname: children.firstname,
+      surname: children.surname,
+      date_of_birth: children.dateOfBirth,
+      notes: children.notes,
+      parents: buildParentAggregation(),
+      class_id: classes.id,
+      class_name: classes.name,
+    })
+    .from(children)
+    .leftJoin(classChildren, eq(children.id, classChildren.childId))
+    .leftJoin(classes, eq(classChildren.classId, classes.id));
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    let query = `
-      SELECT 
-        c.id, 
-        c.firstname,
-        c.surname, 
-        c.date_of_birth,
-        c.notes,
-        COALESCE(
-          (SELECT json_agg(
-            json_build_object(
-              'id', u.id,
-              'firstname', u.firstname,
-              'surname', u.surname,
-              'email', u.email,
-              'phone', u.phone
-            )
-            ORDER BY u.surname, u.firstname
-          )
-          FROM child_parents cp
-          JOIN users u ON cp.parent_id = u.id
-          WHERE cp.child_id = c.id),
-          '[]'
-        ) as parents,
-        cl.id as class_id,
-        cl.name as class_name
-      FROM children c
-      LEFT JOIN class_children cc ON c.id = cc.child_id
-      LEFT JOIN classes cl ON cc.class_id = cl.id
-    `;
+    let resultQuery = buildChildBaseSelect();
 
-    const params = [];
     if (req.user.role === 'parent') {
-      query +=
-        ' WHERE EXISTS (SELECT 1 FROM child_parents cp WHERE cp.child_id = c.id AND cp.parent_id = $1)';
-      params.push(req.user.id);
+      resultQuery = resultQuery.where(
+        exists(
+          db
+            .select({ id: childParents.childId })
+            .from(childParents)
+            .where(
+              and(eq(childParents.childId, children.id), eq(childParents.parentId, req.user.id))
+            )
+        )
+      );
     } else if (req.user.role === 'teacher') {
-      query += ` WHERE cl.id IN (
-        SELECT ct.class_id 
-        FROM class_teachers ct 
-        WHERE ct.teacher_id = $1
-      )`;
-      params.push(req.user.id);
+      resultQuery = resultQuery.where(
+        exists(
+          db
+            .select({ id: classTeachers.classId })
+            .from(classTeachers)
+            .where(
+              and(eq(classTeachers.classId, classes.id), eq(classTeachers.teacherId, req.user.id))
+            )
+        )
+      );
     }
 
-    query += ' ORDER BY c.surname ASC';
+    const result = await resultQuery.orderBy(asc(children.surname));
 
-    const result = await _query(query, params);
-
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.json([]);
     }
 
-    res.json(result.rows);
+    res.json(result);
   } catch (err) {
     res.status(500).json({
       error: 'Failed to fetch children',
@@ -70,45 +99,13 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const result = await buildChildBaseSelect().where(eq(children.id, Number(id)));
 
-    const query = `
-      SELECT 
-        c.id, 
-        c.firstname,
-        c.surname, 
-        c.date_of_birth,
-        c.notes,
-        COALESCE(
-          (SELECT json_agg(
-            json_build_object(
-              'id', u.id,
-              'firstname', u.firstname,
-              'surname', u.surname,
-              'email', u.email,
-              'phone', u.phone
-            )
-            ORDER BY u.surname, u.firstname
-          )
-          FROM child_parents cp
-          JOIN users u ON cp.parent_id = u.id
-          WHERE cp.child_id = c.id),
-          '[]'
-        ) as parents,
-        cl.id as class_id,
-        cl.name as class_name
-      FROM children c
-      LEFT JOIN class_children cc ON c.id = cc.child_id
-      LEFT JOIN classes cl ON cc.class_id = cl.id
-      WHERE c.id = $1
-    `;
-
-    const result = await _query(query, [id]);
-
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
 
-    const child = result.rows[0];
+    const child = result[0];
 
     if (req.user.role === 'parent' && !child.parents.some((parent) => parent.id === req.user.id)) {
       return res.status(403).json({ error: 'Unauthorized' });
@@ -127,24 +124,22 @@ router.get('/:id/classes', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const query = `
-      SELECT 
-        cl.id,
-        cl.name,
-        cl.description,
-        cc.status,
-        u.firstname as teacher_firstname,
-        u.surname as teacher_surname
-      FROM class_children cc
-      JOIN classes cl ON cc.class_id = cl.id
-      LEFT JOIN class_teachers ct ON cl.id = ct.class_id
-      LEFT JOIN users u ON ct.teacher_id = u.id
-      WHERE cc.child_id = $1
-      ORDER BY cl.name ASC
-    `;
+    const result = await db
+      .select({
+        id: classes.id,
+        name: classes.name,
+        description: classes.description,
+        teacher_firstname: users.firstname,
+        teacher_surname: users.surname,
+      })
+      .from(classChildren)
+      .innerJoin(classes, eq(classChildren.classId, classes.id))
+      .leftJoin(classTeachers, eq(classes.id, classTeachers.classId))
+      .leftJoin(users, eq(classTeachers.teacherId, users.id))
+      .where(eq(classChildren.childId, Number(id)))
+      .orderBy(asc(classes.name));
 
-    const result = await _query(query, [id]);
-    res.json(result.rows || []);
+    res.json(result || []);
   } catch (err) {
     res.status(500).json({
       error: 'Failed to fetch child classes',
@@ -157,71 +152,75 @@ router.get('/:id/presentations', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const classResult = await _query(
-      'SELECT class_id FROM class_children WHERE child_id = $1 ORDER BY class_id DESC LIMIT 1',
-      [id]
-    );
+    const classResult = await db
+      .select({ classId: classChildren.classId })
+      .from(classChildren)
+      .where(eq(classChildren.childId, Number(id)))
+      .orderBy(desc(classChildren.classId))
+      .limit(1);
 
-    if (classResult.rows.length === 0) {
+    if (classResult.length === 0) {
       return res.status(404).json({ error: 'Child class not found' });
     }
 
-    const classId = classResult.rows[0].class_id;
+    const classId = classResult[0].classId;
 
     if (req.user.role === 'admin') {
-      const permissionResult = await _query(
-        `SELECT 1 FROM presentation_permissions
-         WHERE class_id = $1 AND admin_id = $2 AND granted = TRUE
-         LIMIT 1`,
-        [classId, req.user.id]
-      );
+      const permissionResult = await db
+        .select({ id: presentationPermissions.id })
+        .from(presentationPermissions)
+        .where(
+          and(
+            eq(presentationPermissions.classId, classId),
+            eq(presentationPermissions.adminId, req.user.id),
+            eq(presentationPermissions.granted, true)
+          )
+        )
+        .limit(1);
 
-      if (permissionResult.rows.length === 0) {
+      if (permissionResult.length === 0) {
         return res.status(403).json({ error: 'You do not have permission to view presentations' });
       }
     } else if (req.user.role === 'teacher') {
-      const teacherResult = await _query(
-        `SELECT 1 FROM class_teachers
-         WHERE class_id = $1 AND teacher_id = $2
-         LIMIT 1`,
-        [classId, req.user.id]
-      );
+      const teacherResult = await db
+        .select({ id: classTeachers.classId })
+        .from(classTeachers)
+        .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, req.user.id)))
+        .limit(1);
 
-      if (teacherResult.rows.length === 0) {
+      if (teacherResult.length === 0) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
     } else if (req.user.role === 'parent') {
-      const parentResult = await _query(
-        `SELECT 1 FROM child_parents
-         WHERE child_id = $1 AND parent_id = $2
-         LIMIT 1`,
-        [id, req.user.id]
-      );
+      const parentResult = await db
+        .select({ id: childParents.childId })
+        .from(childParents)
+        .where(and(eq(childParents.childId, Number(id)), eq(childParents.parentId, req.user.id)))
+        .limit(1);
 
-      if (parentResult.rows.length === 0) {
+      if (parentResult.length === 0) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
     } else {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const query = `
-      SELECT 
-        s.id,
-        s.name,
-        s.category,
-        s.display_order,
-        s.status,
-        s.notes,
-        s.child_id,
-        s.class_id
-      FROM presentations s
-      WHERE s.child_id = $1
-      ORDER BY s.category ASC, s.display_order ASC
-    `;
+    const result = await db
+      .select({
+        id: presentations.id,
+        name: presentations.name,
+        category: presentations.category,
+        display_order: presentations.displayOrder,
+        status: presentations.status,
+        notes: presentations.notes,
+        child_id: presentations.childId,
+        class_id: presentations.classId,
+      })
+      .from(presentations)
+      .where(eq(presentations.childId, Number(id)))
+      .orderBy(asc(presentations.category), asc(presentations.displayOrder));
 
-    const result = await _query(query, [id]);
-    res.json(result.rows || []);
+    res.json(result || []);
   } catch (err) {
     res.status(500).json({
       error: 'Failed to fetch child presentations',

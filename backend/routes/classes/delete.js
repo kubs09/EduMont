@@ -1,32 +1,31 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '#backend/config/database.js';
+import { eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classChildren, classTeachers, classes } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.delete('/:id', auth, async (req, res) => {
-  let client;
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can delete classes' });
   }
 
   try {
-    client = await connect();
-    await client.query('BEGIN');
-    const { id } = req.params;
+    const classId = Number(req.params.id);
 
-    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [id]);
-    await client.query('DELETE FROM class_children WHERE class_id = $1', [id]);
-    await client.query('DELETE FROM classes WHERE id = $1', [id]);
+    if (!Number.isInteger(classId) || classId <= 0) {
+      return res.status(400).json({ error: 'Invalid class identifier' });
+    }
 
-    await client.query('COMMIT');
+    await db.transaction(async (tx) => {
+      await tx.delete(classTeachers).where(eq(classTeachers.classId, classId));
+      await tx.delete(classChildren).where(eq(classChildren.classId, classId));
+      await tx.delete(classes).where(eq(classes.id, classId));
+    });
+
     res.json({ message: 'Class deleted successfully' });
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     res.status(500).json({ error: 'Failed to delete class' });
-  } finally {
-    client?.release();
   }
 });
 

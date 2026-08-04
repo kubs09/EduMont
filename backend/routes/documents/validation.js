@@ -1,6 +1,7 @@
-import { query } from '#backend/config/database.js';
+import { and, eq } from 'drizzle-orm';
 import console from 'console';
-import { executeQuery } from '#backend/utils/dbQuery.js';
+import { db } from '#backend/config/database.js';
+import { childParents, classChildren, classTeachers, children } from '#backend/db/schema.js';
 
 const validateDocument = (data) => {
   const errors = [];
@@ -52,51 +53,60 @@ const validateDocument = (data) => {
 };
 
 const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
+  const numericUserId = Number(userId);
+  const numericChildId = childId === null || childId === undefined ? null : Number(childId);
+  const numericClassId = classId === null || classId === undefined ? null : Number(classId);
+
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    if (classId) {
-      const result = await query(
-        'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
-        [classId, userId]
-      );
-      return result.rows.length > 0;
+    if (numericClassId) {
+      const result = await db
+        .select({ id: classTeachers.classId })
+        .from(classTeachers)
+        .where(
+          and(eq(classTeachers.classId, numericClassId), eq(classTeachers.teacherId, numericUserId))
+        )
+        .limit(1);
+      return result.length > 0;
     }
 
-    if (childId) {
-      const result = await query(
-        `
-        SELECT 1 FROM class_teachers ct
-        JOIN class_children cc ON ct.class_id = cc.class_id
-        WHERE ct.teacher_id = $1 AND cc.child_id = $2
-      `,
-        [userId, childId]
-      );
-      return result.rows.length > 0;
+    if (numericChildId) {
+      const result = await db
+        .select({ id: classTeachers.classId })
+        .from(classTeachers)
+        .innerJoin(classChildren, eq(classTeachers.classId, classChildren.classId))
+        .where(
+          and(eq(classTeachers.teacherId, numericUserId), eq(classChildren.childId, numericChildId))
+        )
+        .limit(1);
+      return result.length > 0;
     }
   }
 
   if (userRole === 'parent') {
-    if (childId) {
-      const result = await query(
-        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-        [childId, userId]
-      );
-      return result.rows.length > 0;
+    if (numericChildId) {
+      const result = await db
+        .select({ id: childParents.childId })
+        .from(childParents)
+        .where(
+          and(eq(childParents.childId, numericChildId), eq(childParents.parentId, numericUserId))
+        )
+        .limit(1);
+      return result.length > 0;
     }
 
-    if (classId) {
-      const result = await query(
-        `
-        SELECT 1 FROM class_children cc
-        JOIN children ch ON cc.child_id = ch.id
-        WHERE cc.class_id = $1 AND EXISTS (
-          SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
+    if (numericClassId) {
+      const result = await db
+        .select({ id: classChildren.classId })
+        .from(classChildren)
+        .innerJoin(children, eq(classChildren.childId, children.id))
+        .innerJoin(childParents, eq(childParents.childId, children.id))
+        .where(
+          and(eq(classChildren.classId, numericClassId), eq(childParents.parentId, numericUserId))
         )
-      `,
-        [classId, userId]
-      );
-      return result.rows.length > 0;
+        .limit(1);
+      return result.length > 0;
     }
   }
 
@@ -117,11 +127,14 @@ const ensureChildInClass = async (childId, classId) => {
   if (!childId || !classId) return true;
 
   try {
-    const result = await executeQuery(
-      'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
-      [childId, classId]
-    );
-    return result.rows.length > 0;
+    const result = await db
+      .select({ id: classChildren.childId })
+      .from(classChildren)
+      .where(
+        and(eq(classChildren.childId, Number(childId)), eq(classChildren.classId, Number(classId)))
+      )
+      .limit(1);
+    return result.length > 0;
   } catch (error) {
     console.error('Error checking child in class:', error);
     return false;

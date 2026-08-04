@@ -2,75 +2,85 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import { connect } from '#backend/config/database.js';
+import { and, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { childParents, children, classChildren } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 
 router.delete('/:id', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await connect();
-    const { id } = req.params;
+    const childId = Number(req.params.id);
 
-    const child = await client.query('SELECT id FROM children WHERE id = $1', [id]);
+    if (!Number.isInteger(childId) || childId <= 0) {
+      return res.status(400).json({ error: 'Invalid child identifier' });
+    }
 
-    if (child.rows.length === 0) {
+    const child = await db
+      .select({ id: children.id })
+      .from(children)
+      .where(eq(children.id, childId))
+      .limit(1);
+
+    if (child.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
 
     if (req.user.role === 'parent') {
-      const parentLink = await client.query(
-        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-        [id, req.user.id]
-      );
-      if (parentLink.rows.length === 0) {
+      const parentLink = await db
+        .select({ childId: childParents.childId })
+        .from(childParents)
+        .where(and(eq(childParents.childId, childId), eq(childParents.parentId, req.user.id)))
+        .limit(1);
+      if (parentLink.length === 0) {
         return res.status(403).json({ error: 'Unauthorized to delete this child' });
       }
     }
 
-    await client.query('BEGIN');
+    await db.transaction(async (tx) => {
+      await tx.delete(classChildren).where(eq(classChildren.childId, childId));
+      await tx.delete(children).where(eq(children.id, childId));
+    });
 
-    await client.query('DELETE FROM class_children WHERE child_id = $1', [id]);
-    await client.query('DELETE FROM children WHERE id = $1', [id]);
-
-    await client.query('COMMIT');
     res.json({ message: 'Child deleted successfully' });
   } catch (err) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     console.error('Error deleting child:', err);
     res.status(500).json({ error: 'Failed to delete child record' });
-  } finally {
-    client?.release();
   }
 });
 
 router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await connect();
-    const { childId, classId } = req.params;
+    const childId = Number(req.params.childId);
+    const classId = Number(req.params.classId);
 
-    const child = await client.query('SELECT id FROM children WHERE id = $1', [childId]);
+    if (!Number.isInteger(childId) || childId <= 0 || !Number.isInteger(classId) || classId <= 0) {
+      return res.status(400).json({ error: 'Invalid identifier' });
+    }
 
-    if (child.rows.length === 0) {
+    const child = await db
+      .select({ id: children.id })
+      .from(children)
+      .where(eq(children.id, childId))
+      .limit(1);
+
+    if (child.length === 0) {
       return res.status(404).json({ error: 'Child not found' });
     }
 
     if (req.user.role === 'parent') {
-      const parentLink = await client.query(
-        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-        [childId, req.user.id]
-      );
-      if (parentLink.rows.length === 0) {
+      const parentLink = await db
+        .select({ childId: childParents.childId })
+        .from(childParents)
+        .where(and(eq(childParents.childId, childId), eq(childParents.parentId, req.user.id)))
+        .limit(1);
+      if (parentLink.length === 0) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
     }
 
-    await client.query('DELETE FROM class_children WHERE child_id = $1 AND class_id = $2', [
-      childId,
-      classId,
-    ]);
+    await db
+      .delete(classChildren)
+      .where(and(eq(classChildren.childId, childId), eq(classChildren.classId, classId)));
 
     res.json({ message: 'Child removed from class successfully' });
   } catch (err) {
@@ -79,8 +89,6 @@ router.delete('/:childId/classes/:classId', authenticateToken, async (req, res) 
       error: 'Failed to remove child from class',
       details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     });
-  } finally {
-    client?.release();
   }
 });
 

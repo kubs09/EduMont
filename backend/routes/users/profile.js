@@ -1,7 +1,9 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect, query } from '#backend/config/database.js';
+import { and, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 import validationService from './services/validation.js';
 import passwordService from './services/password.js';
@@ -10,9 +12,7 @@ const { validateUserProfile } = validationService;
 const { hashPassword, comparePassword } = passwordService;
 
 router.put('/:id', auth, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -27,24 +27,35 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(400).json({ error: validation.errors.join(', ') });
     }
 
-    const result = await client.query(
-      'UPDATE users SET firstname = $1, surname = $2, email = $3, phone = $4 WHERE id = $5 RETURNING id, firstname, surname, email, phone, role',
-      [firstname, surname, email.toLowerCase(), phone || null, userId]
-    );
+    const result = await db
+      .update(users)
+      .set({
+        firstname,
+        surname,
+        email: email.toLowerCase(),
+        phone: phone || null,
+      })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        firstname: users.firstname,
+        surname: users.surname,
+        email: users.email,
+        phone: users.phone,
+        role: users.role,
+      });
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(result.rows[0]);
+    res.json(result[0]);
   } catch (error) {
     console.error('Update user error:', error);
-    if (error.constraint === 'users_email_key') {
+    if (error.code === '23505') {
       return res.status(400).json({ error: 'Email already in use' });
     }
     res.status(500).json({ error: 'Failed to update user' });
-  } finally {
-    client?.release();
   }
 });
 
@@ -59,20 +70,24 @@ router.put('/:id/password', auth, async (req, res) => {
 
     const { currentPassword, newPassword } = req.body;
 
-    const user = await query('SELECT password FROM users WHERE id = $1', [userId]);
+    const user = await db
+      .select({ password: users.password })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-    if (user.rows.length === 0) {
+    if (user.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const validPassword = await comparePassword(currentPassword, user.rows[0].password);
+    const validPassword = await comparePassword(currentPassword, user[0].password);
     if (!validPassword) {
       return res.status(401).json({ error: 'Current password is incorrect' });
     }
 
     const hashedPassword = await hashPassword(newPassword);
 
-    await query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
 
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
@@ -81,9 +96,7 @@ router.put('/:id/password', auth, async (req, res) => {
 });
 
 router.put('/:id/notifications', auth, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     const { messageNotifications } = req.body;
     const userId = parseInt(req.params.id);
 
@@ -91,21 +104,20 @@ router.put('/:id/notifications', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized to update other users settings' });
     }
 
-    const result = await client.query(
-      'UPDATE users SET message_notifications = $1 WHERE id = $2 RETURNING message_notifications',
-      [messageNotifications, userId]
-    );
+    const result = await db
+      .update(users)
+      .set({ messageNotifications })
+      .where(eq(users.id, userId))
+      .returning({ messageNotifications: users.messageNotifications });
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ messageNotifications: result.rows[0].message_notifications });
+    res.json({ messageNotifications: result[0].messageNotifications });
   } catch (error) {
     console.error('Error updating notification settings:', error);
     res.status(500).json({ error: 'Failed to update notification settings' });
-  } finally {
-    client?.release();
   }
 });
 

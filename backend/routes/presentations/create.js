@@ -1,7 +1,9 @@
 import { Router } from 'express';
 const router = Router();
-import pool from '#backend/config/database.js';
 import console from 'console';
+import { and, asc, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { categoryPresentations, classChildren, classes, presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
@@ -9,9 +11,7 @@ const { validatepresentation, canEditChildpresentation, normalizeCategoryOrderin
 
 // Create a new presentation entry
 router.post('/', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await pool.connect();
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
     const validationErrors = validatepresentation(req.body);
@@ -26,70 +26,72 @@ router.post('/', authenticateToken, async (req, res) => {
         .json({ error: "You do not have permission to edit this child's presentation" });
     }
 
-    await client.query('BEGIN');
+    const result = await db.transaction(async (tx) => {
+      const classChildResult = await tx
+        .select({ classId: classChildren.classId })
+        .from(classChildren)
+        .where(and(eq(classChildren.childId, child_id), eq(classChildren.classId, class_id)));
 
-    const classChildResult = await client.query(
-      'SELECT 1 FROM class_children WHERE child_id = $1 AND class_id = $2',
-      [child_id, class_id]
-    );
+      if (classChildResult.length === 0) {
+        return { error: 'Child is not assigned to this class' };
+      }
 
-    if (classChildResult.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Child is not assigned to this class' });
-    }
+      // Get display_order from category_presentations if not provided
+      let finalDisplayOrder = display_order || 0;
+      if (category && !display_order) {
+        // Get the class's age_group to lookup correct category presentations
+        const classResult = await tx
+          .select({ ageGroup: classes.ageGroup })
+          .from(classes)
+          .where(eq(classes.id, class_id));
 
-    // Get display_order from category_presentations if not provided
-    let finalDisplayOrder = display_order || 0;
-    if (category && !display_order) {
-      // Get the class's age_group to lookup correct category presentations
-      const classResult = await client.query('SELECT age_group FROM classes WHERE id = $1', [
-        class_id,
-      ]);
-
-      if (classResult.rows.length > 0) {
-        const ageGroup = classResult.rows[0].age_group;
-        const orderResult = await client.query(
-          'SELECT display_order FROM category_presentations WHERE category = $1 AND age_group = $2 ORDER BY display_order ASC LIMIT 1',
-          [category, ageGroup]
-        );
-        if (orderResult.rows.length > 0) {
-          finalDisplayOrder = orderResult.rows[0].display_order;
+        if (classResult.length > 0) {
+          const ageGroup = classResult[0].ageGroup;
+          const orderResult = await tx
+            .select({ displayOrder: categoryPresentations.displayOrder })
+            .from(categoryPresentations)
+            .where(
+              and(
+                eq(categoryPresentations.category, category),
+                eq(categoryPresentations.ageGroup, ageGroup)
+              )
+            )
+            .orderBy(asc(categoryPresentations.displayOrder))
+            .limit(1);
+          if (orderResult.length > 0) {
+            finalDisplayOrder = orderResult[0].displayOrder;
+          }
         }
       }
+
+      const inserted = await tx
+        .insert(presentations)
+        .values({
+          childId: child_id,
+          classId: class_id,
+          name,
+          category,
+          displayOrder: finalDisplayOrder,
+          status: status || 'prerequisites not met',
+          notes,
+          createdBy: req.user.id,
+          updatedBy: req.user.id,
+        })
+        .returning();
+
+      await normalizeCategoryOrdering(tx, child_id, category);
+
+      return { presentation: inserted[0] };
+    });
+
+    if (result.error) {
+      return res.status(400).json({ error: result.error });
     }
 
-    const result = await client.query(
-      `
-      INSERT INTO presentations (child_id, class_id, name, category, display_order, status, notes, created_by, updated_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
-      RETURNING *
-    `,
-      [
-        child_id,
-        class_id,
-        name,
-        category,
-        finalDisplayOrder,
-        status || 'prerequisites not met',
-        notes,
-        req.user.id,
-      ]
-    );
-
-    await normalizeCategoryOrdering(client, child_id, category);
-
-    await client.query('COMMIT');
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(result.presentation);
   } catch (err) {
-    if (client) {
-      await client.query('ROLLBACK').catch((rollbackErr) => {
-        console.error('Error rolling back transaction:', rollbackErr);
-      });
-    }
     console.error('Error creating presentation:', err);
     res.status(500).json({ error: 'Failed to create presentation entry' });
-  } finally {
-    client?.release();
   }
 });
 

@@ -1,37 +1,46 @@
 import { Router } from 'express';
 const router = Router();
-import pool from '#backend/config/database.js';
+import { and, desc, eq } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
+import { db } from '#backend/config/database.js';
+import { children, classes, documents, users } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import console from 'console';
 import validationModule from './validation.js';
 const { canAccessDocumentByIds } = validationModule;
 
-const buildDocumentSelect = () => `
-  SELECT
-    d.id,
-    d.title,
-    d.description,
-    d.file_url,
-    d.file_name,
-    d.mime_type,
-    d.size_bytes,
-    d.class_id,
-    d.child_id,
-    d.created_at,
-    d.updated_at,
-    c.name as class_name,
-    ch.firstname as child_firstname,
-    ch.surname as child_surname,
-    creator.firstname as created_by_firstname,
-    creator.surname as created_by_surname,
-    updater.firstname as updated_by_firstname,
-    updater.surname as updated_by_surname
-  FROM documents d
-  LEFT JOIN classes c ON d.class_id = c.id
-  LEFT JOIN children ch ON d.child_id = ch.id
-  LEFT JOIN users creator ON d.created_by = creator.id
-  LEFT JOIN users updater ON d.updated_by = updater.id
-`;
+const creator = alias(users, 'creator');
+const updater = alias(users, 'updater');
+
+const documentSelection = {
+  id: documents.id,
+  title: documents.title,
+  description: documents.description,
+  file_url: documents.fileUrl,
+  file_name: documents.fileName,
+  mime_type: documents.mimeType,
+  size_bytes: documents.sizeBytes,
+  class_id: documents.classId,
+  child_id: documents.childId,
+  created_at: documents.createdAt,
+  updated_at: documents.updatedAt,
+  class_name: classes.name,
+  child_firstname: children.firstname,
+  child_surname: children.surname,
+  created_by_firstname: creator.firstname,
+  created_by_surname: creator.surname,
+  updated_by_firstname: updater.firstname,
+  updated_by_surname: updater.surname,
+};
+
+const buildDocumentQuery = () =>
+  db
+    .select(documentSelection)
+    .from(documents)
+    .leftJoin(classes, eq(documents.classId, classes.id))
+    .leftJoin(children, eq(documents.childId, children.id))
+    .leftJoin(creator, eq(documents.createdBy, creator.id))
+    .leftJoin(updater, eq(documents.updatedBy, updater.id));
 
 // Get all documents
 router.get('/', authenticateToken, async (req, res) => {
@@ -42,7 +51,6 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const params = [];
     const conditions = [];
 
     if (class_id) {
@@ -51,8 +59,7 @@ router.get('/', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'class_id must be a valid number' });
       }
 
-      params.push(classId);
-      conditions.push(`d.class_id = $${params.length}`);
+      conditions.push(eq(documents.classId, classId));
 
       const canAccess = await canAccessDocumentByIds(req.user.id, req.user.role, null, classId);
       if (!canAccess) {
@@ -66,8 +73,7 @@ router.get('/', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'child_id must be a valid number' });
       }
 
-      params.push(childId);
-      conditions.push(`d.child_id = $${params.length}`);
+      conditions.push(eq(documents.childId, childId));
 
       const canAccess = await canAccessDocumentByIds(req.user.id, req.user.role, childId, null);
       if (!canAccess) {
@@ -81,20 +87,17 @@ router.get('/', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'created_by must be a valid number' });
       }
 
-      params.push(createdBy);
-      conditions.push(`d.created_by = $${params.length}`);
+      conditions.push(eq(documents.createdBy, createdBy));
     }
 
-    let query = buildDocumentSelect();
+    let query = buildDocumentQuery();
 
     if (conditions.length > 0) {
-      query += ` WHERE ${conditions.join(' AND ')}`;
+      query = query.where(and(...conditions));
     }
 
-    query += ' ORDER BY d.created_at DESC';
-
-    const result = await pool.query(query, params);
-    res.json(result.rows);
+    const result = await query.orderBy(desc(documents.createdAt));
+    res.json(result);
   } catch (err) {
     console.error('Error fetching documents:', err);
     res.status(500).json({ error: 'Failed to fetch documents' });
@@ -116,9 +119,10 @@ router.get('/child/:childId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const query = `${buildDocumentSelect()} WHERE d.child_id = $1 ORDER BY d.created_at DESC`;
-    const result = await pool.query(query, [childId]);
-    res.json(result.rows);
+    const result = await buildDocumentQuery()
+      .where(eq(documents.childId, parseInt(childId)))
+      .orderBy(desc(documents.createdAt));
+    res.json(result);
   } catch (err) {
     console.error('Error fetching child documents:', err);
     res.status(500).json({ error: 'Failed to fetch documents' });
@@ -140,9 +144,10 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const query = `${buildDocumentSelect()} WHERE d.class_id = $1 ORDER BY d.created_at DESC`;
-    const result = await pool.query(query, [classId]);
-    res.json(result.rows);
+    const result = await buildDocumentQuery()
+      .where(eq(documents.classId, parseInt(classId)))
+      .orderBy(desc(documents.createdAt));
+    res.json(result);
   } catch (err) {
     console.error('Error fetching class documents:', err);
     res.status(500).json({ error: 'Failed to fetch documents' });
@@ -152,14 +157,13 @@ router.get('/class/:classId', authenticateToken, async (req, res) => {
 // Get a document by id
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
-    const query = `${buildDocumentSelect()} WHERE d.id = $1`;
-    const result = await pool.query(query, [req.params.id]);
+    const result = await buildDocumentQuery().where(eq(documents.id, parseInt(req.params.id)));
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    const document = result.rows[0];
+    const document = result[0];
 
     const canAccess = await canAccessDocumentByIds(
       req.user.id,
