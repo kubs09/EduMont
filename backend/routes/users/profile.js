@@ -1,7 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
 import { users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';

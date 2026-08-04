@@ -1,8 +1,7 @@
 import { Router } from 'express';
 const router = Router();
 import process from 'process';
-import { and, asc, desc, eq, exists, inArray, sql } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
+import { and, asc, desc, eq, exists, sql } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import {

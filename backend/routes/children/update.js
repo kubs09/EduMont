@@ -2,6 +2,8 @@ import { Router } from 'express';
 const router = Router();
 import { and, eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
+import { inArray } from 'drizzle-orm/pg-core';
+import sql from 'drizzle-orm/sql';
 import {
   childParents,
   children,

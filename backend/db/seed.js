@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import console from 'console';
 import { inArray } from 'drizzle-orm';
+import process from 'process';
 import {
   categoryPresentations,
   childParents,
