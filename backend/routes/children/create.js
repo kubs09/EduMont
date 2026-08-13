@@ -18,13 +18,13 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    // For parents, force parent_ids to their own ID
-    const actualParentIds = req.user.role === 'parent' ? [req.user.id] : parent_ids;
-
-    // Verify if admin/teacher or parent is creating for themselves
-    if (req.user.role === 'parent' && (!actualParentIds || actualParentIds[0] !== req.user.id)) {
+    // A parent may omit parent_ids (defaults to themselves) but may not name someone else
+    if (req.user.role === 'parent' && parent_ids && parent_ids[0] !== req.user.id) {
       return res.status(403).json({ error: 'Parents can only add their own children' });
     }
+
+    // For parents, force parent_ids to their own ID
+    const actualParentIds = req.user.role === 'parent' ? [req.user.id] : parent_ids;
 
     const parentIdErrors = validateParentIds(actualParentIds, true);
     if (parentIdErrors.length > 0) {
@@ -57,7 +57,7 @@ router.post('/', authenticateToken, async (req, res) => {
           .where(and(eq(classes.id, class_id), sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`));
 
         if (classResult.length === 0) {
-          return { error: 'selectedClassNotSuitable' };
+          throw new Error('selectedClassNotSuitable');
         }
         assignedClassId = class_id;
       } else {
@@ -69,7 +69,7 @@ router.post('/', authenticateToken, async (req, res) => {
           .limit(1);
 
         if (classResult.length === 0) {
-          return { error: 'noSuitableClass' };
+          throw new Error('noSuitableClass');
         }
         assignedClassId = classResult[0].id;
       }
@@ -81,31 +81,30 @@ router.post('/', authenticateToken, async (req, res) => {
         .from(users)
         .where(and(eq(users.role, 'parent'), inArray(users.id, actualParentIds)));
       if (validParents.length !== actualParentIds.length) {
-        return { error: 'invalidParentIds' };
+        throw new Error('invalidParentIds');
       }
 
       await tx
         .insert(childParents)
         .values(actualParentIds.map((parentId) => ({ childId: child.id, parentId })));
 
-      return { child };
+      return child;
     });
 
-    if (newChild.error === 'selectedClassNotSuitable') {
+    res.status(201).json(newChild);
+  } catch (err) {
+    if (err.message === 'selectedClassNotSuitable') {
       return res.status(400).json({
         error: 'selectedClassNotSuitable',
         details: "The selected class is not suitable for the child's age",
       });
     }
-    if (newChild.error === 'noSuitableClass') {
+    if (err.message === 'noSuitableClass') {
       return res.status(400).json({ error: 'noSuitableClass', details: null });
     }
-    if (newChild.error === 'invalidParentIds') {
+    if (err.message === 'invalidParentIds') {
       return res.status(400).json({ errors: ['One or more parent IDs are invalid'] });
     }
-
-    res.status(201).json(newChild.child);
-  } catch (err) {
     console.error('Error creating child:', err);
     res.status(500).json({ error: 'Failed to create child record' });
   }

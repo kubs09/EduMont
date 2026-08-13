@@ -281,6 +281,15 @@ export const presentations = pgTable(
       table.status
     ),
     childCategoryIndex: index('idx_presentations_child_category').on(table.childId, table.category),
+    // Deferrable (DEFERRABLE INITIALLY DEFERRED) at the DB level so that
+    // reassigning a child's class can update classChildren and this table in
+    // either order within one transaction without an immediate FK violation
+    // (classChildren.childId is unique, so a child can never simultaneously
+    // satisfy the old and new class). drizzle-orm's foreignKey() builder does
+    // not support declaring that here — see the hand-written migration
+    // db/drizzle/0001_defer_presentations_class_child_fk.sql. Do not run
+    // `drizzle-kit generate` off this definition without re-adding that
+    // deferrable clause, or it will regenerate a non-deferrable constraint.
     classChildFk: foreignKey({
       name: 'fk_presentations_class_child',
       columns: [table.classId, table.childId],
