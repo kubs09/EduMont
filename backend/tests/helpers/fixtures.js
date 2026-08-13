@@ -11,6 +11,7 @@ import {
   classTeachers,
   classes,
   documents,
+  messages,
   presentationPermissions,
   presentations,
   users,
@@ -109,6 +110,19 @@ export const createTestDocument = (overrides = {}) =>
     .returning()
     .then(([document]) => document);
 
+export const createTestMessage = (fromUserId, toUserId, overrides = {}) =>
+  db
+    .insert(messages)
+    .values({
+      fromUserId,
+      toUserId,
+      subject: `Fixture Subject ${uniqueSuffix()}`,
+      content: 'Fixture message content',
+      ...overrides,
+    })
+    .returning()
+    .then(([message]) => message);
+
 export const createTestClassHistory = (classId, createdBy, overrides = {}) =>
   db
     .insert(classHistory)
@@ -133,6 +147,7 @@ export const createCleanupTracker = () => {
     classHistory: [],
     classAttendance: [],
     documents: [],
+    messages: [],
     children: [],
     classes: [],
     users: [],
@@ -178,6 +193,9 @@ export const createCleanupTracker = () => {
     }
     for (const d of created.documents) {
       await db.delete(documents).where(eq(documents.id, d.id));
+    }
+    for (const m of created.messages) {
+      await db.delete(messages).where(eq(messages.id, m.id));
     }
     for (const c of created.children) {
       // Safety net: also remove rows created as a side effect of the route under
