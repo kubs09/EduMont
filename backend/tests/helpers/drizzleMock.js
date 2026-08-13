@@ -7,6 +7,7 @@ export const makeChain = (result) => {
   chain.from = jest.fn(returnChain);
   chain.where = jest.fn(returnChain);
   chain.set = jest.fn(returnChain);
+  chain.values = jest.fn(returnChain);
   chain.limit = jest.fn(() => Promise.resolve(result));
   chain.returning = jest.fn(() => Promise.resolve(result));
   chain.then = (onFulfilled, onRejected) => Promise.resolve(result).then(onFulfilled, onRejected);
