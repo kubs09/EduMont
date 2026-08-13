@@ -115,12 +115,7 @@ const canAccessDocumentByIds = async (userId, userRole, childId, classId) => {
 
 const canEditDocumentByIds = async (userId, userRole, childId, classId) => {
   if (userRole === 'admin') return true;
-
-  if (userRole === 'teacher') {
-    return canAccessDocumentByIds(userId, userRole, childId, classId);
-  }
-
-  return false;
+  return canAccessDocumentByIds(userId, userRole, childId, classId);
 };
 
 const ensureChildInClass = async (childId, classId) => {

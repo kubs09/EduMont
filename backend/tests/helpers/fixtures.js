@@ -10,6 +10,7 @@ import {
   classHistory,
   classTeachers,
   classes,
+  documents,
   presentationPermissions,
   presentations,
   users,
@@ -97,6 +98,17 @@ export const createTestExcuse = (childId, parentId, overrides = {}) =>
     .returning()
     .then(([excuse]) => excuse);
 
+export const createTestDocument = (overrides = {}) =>
+  db
+    .insert(documents)
+    .values({
+      title: `Fixture Document ${uniqueSuffix()}`,
+      fileUrl: `https://storage.example.com/documents/fixture-${uniqueSuffix()}.pdf`,
+      ...overrides,
+    })
+    .returning()
+    .then(([document]) => document);
+
 export const createTestClassHistory = (classId, createdBy, overrides = {}) =>
   db
     .insert(classHistory)
@@ -120,6 +132,7 @@ export const createCleanupTracker = () => {
     childExcuses: [],
     classHistory: [],
     classAttendance: [],
+    documents: [],
     children: [],
     classes: [],
     users: [],
@@ -163,11 +176,15 @@ export const createCleanupTracker = () => {
         .delete(classAttendance)
         .where(and(eq(classAttendance.classId, ca.classId), eq(classAttendance.childId, ca.childId)));
     }
+    for (const d of created.documents) {
+      await db.delete(documents).where(eq(documents.id, d.id));
+    }
     for (const c of created.children) {
       // Safety net: also remove rows created as a side effect of the route under
       // test (e.g. class/parent links inserted by create.js) that weren't
       // explicitly tracked above.
       await db.delete(presentations).where(eq(presentations.childId, c.id));
+      await db.delete(documents).where(eq(documents.childId, c.id));
       await db.delete(classChildren).where(eq(classChildren.childId, c.id));
       await db.delete(childParents).where(eq(childParents.childId, c.id));
       await db.delete(children).where(eq(children.id, c.id));
