@@ -2,9 +2,12 @@ import { hash, genSalt } from 'bcryptjs';
 import { and, eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
 import {
+  childExcuses,
   childParents,
   children,
+  classAttendance,
   classChildren,
+  classHistory,
   classTeachers,
   classes,
   presentationPermissions,
@@ -80,6 +83,33 @@ export const createTestPresentation = (childId, classId, overrides = {}) =>
     .returning()
     .then(([presentation]) => presentation);
 
+export const createTestExcuse = (childId, parentId, overrides = {}) =>
+  db
+    .insert(childExcuses)
+    .values({
+      childId,
+      parentId,
+      dateFrom: '2026-01-10',
+      dateTo: '2026-01-12',
+      reason: 'Fixture excuse',
+      ...overrides,
+    })
+    .returning()
+    .then(([excuse]) => excuse);
+
+export const createTestClassHistory = (classId, createdBy, overrides = {}) =>
+  db
+    .insert(classHistory)
+    .values({
+      classId,
+      date: '2026-01-10',
+      notes: 'Fixture history note',
+      createdBy,
+      ...overrides,
+    })
+    .returning()
+    .then(([history]) => history);
+
 export const createCleanupTracker = () => {
   const created = {
     presentations: [],
@@ -87,6 +117,9 @@ export const createCleanupTracker = () => {
     classChildren: [],
     classTeachers: [],
     childParents: [],
+    childExcuses: [],
+    classHistory: [],
+    classAttendance: [],
     children: [],
     classes: [],
     users: [],
@@ -118,6 +151,17 @@ export const createCleanupTracker = () => {
       await db
         .delete(childParents)
         .where(and(eq(childParents.childId, cp.childId), eq(childParents.parentId, cp.parentId)));
+    }
+    for (const ce of created.childExcuses) {
+      await db.delete(childExcuses).where(eq(childExcuses.id, ce.id));
+    }
+    for (const ch of created.classHistory) {
+      await db.delete(classHistory).where(eq(classHistory.id, ch.id));
+    }
+    for (const ca of created.classAttendance) {
+      await db
+        .delete(classAttendance)
+        .where(and(eq(classAttendance.classId, ca.classId), eq(classAttendance.childId, ca.childId)));
     }
     for (const c of created.children) {
       // Safety net: also remove rows created as a side effect of the route under

@@ -4,7 +4,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests",
+    "test": "npm run test:parallel && npm run test:isolated",
+    "test:parallel": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests --testPathIgnorePatterns=classes/auto-assign.test.js",
+    "test:isolated": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests --selectProjects integration --runInBand --testPathPatterns=classes/auto-assign.test.js",
     "start": "node --watch server.js",
     "dev": "nodemon server.js",
     "migrate": "node db/migrate.js",
