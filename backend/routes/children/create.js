@@ -54,7 +54,12 @@ router.post('/', authenticateToken, async (req, res) => {
         const classResult = await tx
           .select({ id: classes.id })
           .from(classes)
-          .where(and(eq(classes.id, class_id), sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`));
+          .where(
+            and(
+              eq(classes.id, class_id),
+              sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`
+            )
+          );
 
         if (classResult.length === 0) {
           throw new Error('selectedClassNotSuitable');
@@ -66,6 +71,7 @@ router.post('/', authenticateToken, async (req, res) => {
           .select({ id: classes.id })
           .from(classes)
           .where(sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`)
+          .orderBy(classes.minAge, classes.maxAge, classes.name)
           .limit(1);
 
         if (classResult.length === 0) {

@@ -141,13 +141,18 @@ describe('POST /api/children (integration)', () => {
     track('classes', await createTestClass({ minAge: 10, maxAge: 15 }));
     const surname = `Lovelace-${Date.now()}`;
 
+    // Age 17 is deliberately outside every class age range any fixture in
+    // the integration suite currently creates (all stay at maxAge 15 or
+    // below), so this doesn't race with classes created by other test files
+    // running concurrently in parallel Jest workers against the same shared
+    // test database. It still fits within the route's 0-18 validation range.
     const res = await request(app)
       .post('/api/children')
       .set('Authorization', authHeader(admin))
       .send({
         firstname: 'Ada',
         surname,
-        date_of_birth: dateOfBirthForAge(4),
+        date_of_birth: dateOfBirthForAge(17),
         parent_ids: [parent.id],
       });
 
