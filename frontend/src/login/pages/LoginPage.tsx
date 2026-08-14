@@ -24,10 +24,8 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createLoginSchema, LoginFormData } from '../schemas/LoginSchema';
 import { ROUTES } from '@frontend/shared/route';
+import { LoginPageProps } from '@frontend/types/auth';
 
-interface LoginPageProps {
-  onLoginSuccess: (token: string) => void;
-}
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
