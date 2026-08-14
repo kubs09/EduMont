@@ -21,7 +21,7 @@ router.post('/', auth, async (req, res) => {
 
       const invalidRecipients = to_user_ids.filter((id) => !allowedIds.has(id));
       if (invalidRecipients.length > 0) {
-        throw new Error('Some recipients are not allowed');
+        throw new Error('invalidRecipients');
       }
 
       const senderResult = await tx
@@ -80,6 +80,9 @@ router.post('/', auth, async (req, res) => {
 
     res.status(201).json(insertedFirstMessage);
   } catch (error) {
+    if (error.message === 'invalidRecipients') {
+      return res.status(403).json({ error: 'Some recipients are not allowed' });
+    }
     res.status(500).json({
       error: 'Failed to send message',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,

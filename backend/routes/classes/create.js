@@ -23,21 +23,15 @@ router.post('/', auth, async (req, res) => {
   try {
     const { name, description, age_group, min_age, max_age, teacherId, assistantId } = req.body;
 
+    if (!teacherId) {
+      throw new Error('Missing required field: teacherId is required');
+    }
+
+    if (assistantId && assistantId === teacherId) {
+      throw new Error('Assistant cannot be the same as the main teacher');
+    }
+
     const classId = await db.transaction(async (tx) => {
-      const classResult = await tx
-        .insert(classes)
-        .values({ name, description, ageGroup: age_group, minAge: min_age, maxAge: max_age })
-        .returning({ id: classes.id });
-      const newClassId = classResult[0].id;
-
-      if (!teacherId) {
-        throw new Error('Missing required field: teacherId is required');
-      }
-
-      if (assistantId && assistantId === teacherId) {
-        throw new Error('Assistant cannot be the same as the main teacher');
-      }
-
       const assignedTeacher = await tx
         .select({ classId: classTeachers.classId })
         .from(classTeachers)
@@ -59,6 +53,12 @@ router.post('/', auth, async (req, res) => {
           throw new Error('Selected assistant is already assigned to another class');
         }
       }
+
+      const classResult = await tx
+        .insert(classes)
+        .values({ name, description, ageGroup: age_group, minAge: min_age, maxAge: max_age })
+        .returning({ id: classes.id });
+      const newClassId = classResult[0].id;
 
       await tx.insert(classTeachers).values({
         classId: newClassId,

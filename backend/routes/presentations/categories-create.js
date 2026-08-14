@@ -75,6 +75,11 @@ router.post('/categories', auth, async (req, res) => {
 
     res.status(201).json(result);
   } catch (error) {
+    if (error.code === '23505') {
+      return res.status(400).json({
+        error: 'A presentation with this category and display order already exists',
+      });
+    }
     console.error('Error creating category presentation:', error);
     res.status(500).json({ error: 'Failed to create category presentation' });
   }

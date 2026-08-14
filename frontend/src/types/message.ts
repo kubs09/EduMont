@@ -30,3 +30,15 @@ export interface SendMessageData {
   content: string;
   language: string;
 }
+
+export interface MessageDetailProps {
+  message: Message | null;
+  onDelete: (id: number) => void;
+  onCompose: () => void;
+  translations: {
+    from: string;
+    to: string;
+    title: string;
+    compose: string;
+  };
+}

@@ -28,21 +28,7 @@ import { ROUTES } from '@frontend/shared/route';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
-
-interface User {
-  id: number;
-  email: string;
-  firstname: string;
-  surname: string;
-  role: 'admin' | 'teacher' | 'parent';
-}
-
-interface UserTableProps {
-  data: User[];
-  loading?: boolean;
-  error?: string | null;
-  onDelete: (userId: number) => void;
-}
+import { User, UserTableProps } from '@frontend/types/user';
 
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();

@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError, LoginResponse } from '@frontend/types/shared';
+import { ApiError } from '@frontend/types/user';
+import { LoginResponse } from '@frontend/types/auth';
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {

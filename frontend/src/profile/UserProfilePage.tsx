@@ -16,7 +16,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { getUserById } from '@frontend/services/api';
-import { User } from '@frontend/types/shared';
+import { User } from '@frontend/types/user';
 import { Section } from '@frontend/shared/components';
 
 const UserProfilePage = () => {

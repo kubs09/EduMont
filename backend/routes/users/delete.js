@@ -14,6 +14,10 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid user id' });
     }
 
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can delete users' });
+    }
+
     if (userId === req.user.id) {
       return res.status(400).json({ error: 'You cannot delete your own account' });
     }

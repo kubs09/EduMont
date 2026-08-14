@@ -13,6 +13,10 @@ const { generateInvitationToken, createInvitationExpiry, sendInvitationEmail } =
 
 router.post('/', auth, async (req, res) => {
   try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can send invitations' });
+    }
+
     const { email, role, language } = req.body;
 
     const existingUser = await db
