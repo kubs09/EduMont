@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
 import { Child, CreateChildData, UpdateChildData } from '@frontend/types/child';
-import { ApiError } from '@frontend/types/shared';
+import { ApiError } from '@frontend/types/user';
 
 export const getChildren = async (): Promise<Child[]> => {
   try {

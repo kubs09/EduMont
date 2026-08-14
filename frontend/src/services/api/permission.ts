@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError } from '@frontend/types/shared';
+import { ApiError } from '@frontend/types/user';
 import {
   PermissionCheckResponse,
   PresentationPermissionResponse,

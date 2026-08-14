@@ -33,8 +33,14 @@ router.put('/categories/:id', auth, async (req, res) => {
     }
 
     const currentPresentation = existsResult[0];
+    const targetCategory = category !== undefined ? category : currentPresentation.category;
+    const targetAgeGroup = age_group !== undefined ? age_group : currentPresentation.ageGroup;
+    const bucketChanged =
+      targetCategory !== currentPresentation.category ||
+      targetAgeGroup !== currentPresentation.ageGroup;
     const isReordering =
-      display_order !== undefined && display_order !== currentPresentation.displayOrder;
+      display_order !== undefined &&
+      (bucketChanged || display_order !== currentPresentation.displayOrder);
 
     if (category !== undefined && typeof category !== 'string') {
       return res.status(400).json({ error: 'Category must be a string' });
@@ -59,6 +65,14 @@ router.put('/categories/:id', auth, async (req, res) => {
         const newOrder = display_order;
 
         if (newCategory !== oldCategory || newAgeGroup !== oldAgeGroup) {
+          // Park the moved row out of the way first, so the old bucket's
+          // gap-closing shift below can't collide with it still sitting at
+          // its old (category, age_group, display_order).
+          await tx
+            .update(categoryPresentations)
+            .set({ displayOrder: -999999 })
+            .where(eq(categoryPresentations.id, id));
+
           await tx
             .update(categoryPresentations)
             .set({ displayOrder: sql`-(${categoryPresentations.displayOrder} - 1)` })

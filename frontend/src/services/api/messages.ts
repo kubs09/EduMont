@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError, User } from '@frontend/types/shared';
+import { ApiError, User } from '@frontend/types/user';
 import { Message } from '@frontend/types/message';
 
 export const getMessages = async (): Promise<Message[]> => {

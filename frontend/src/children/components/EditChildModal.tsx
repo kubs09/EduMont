@@ -23,7 +23,7 @@ import { editChildSchema } from '@frontend/shared/validation/childSchema';
 import { Child, UpdateChildData } from '@frontend/types/child';
 import { getUsers } from '@frontend/services/api/user';
 import { getClassesByAge } from '@frontend/services/api/class';
-import { User } from '@frontend/types/shared';
+import { User } from '@frontend/types/user';
 import { Class } from '@frontend/types/class';
 import { Combobox } from '@frontend/shared/components/Combobox';
 

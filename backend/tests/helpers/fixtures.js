@@ -2,6 +2,7 @@ import { hash, genSalt } from 'bcryptjs';
 import { and, eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
 import {
+  categoryPresentations,
   childExcuses,
   childParents,
   children,
@@ -59,7 +60,11 @@ export const createTestChild = ({ dateOfBirth = '2020-01-01' } = {}) =>
     .then(([child]) => child);
 
 export const linkParent = (childId, parentId) =>
-  db.insert(childParents).values({ childId, parentId }).returning().then(([link]) => link);
+  db
+    .insert(childParents)
+    .values({ childId, parentId })
+    .returning()
+    .then(([link]) => link);
 
 export const linkTeacher = (classId, teacherId, role = 'teacher') =>
   db
@@ -69,7 +74,11 @@ export const linkTeacher = (classId, teacherId, role = 'teacher') =>
     .then(([link]) => link);
 
 export const linkChildToClass = (childId, classId) =>
-  db.insert(classChildren).values({ childId, classId }).returning().then(([link]) => link);
+  db
+    .insert(classChildren)
+    .values({ childId, classId })
+    .returning()
+    .then(([link]) => link);
 
 export const grantPresentationPermission = (adminId, classId, granted = true, overrides = {}) =>
   db
@@ -142,8 +151,22 @@ export const createTestClassHistory = (classId, createdBy, overrides = {}) =>
     .returning()
     .then(([history]) => history);
 
+export const createTestCategoryPresentation = (overrides = {}) =>
+  db
+    .insert(categoryPresentations)
+    .values({
+      category: `Fixture Category ${uniqueSuffix()}`,
+      name: `Fixture Category Presentation ${uniqueSuffix()}`,
+      ageGroup: 'Toddler',
+      displayOrder: 1,
+      ...overrides,
+    })
+    .returning()
+    .then(([categoryPresentation]) => categoryPresentation);
+
 export const createCleanupTracker = () => {
   const created = {
+    categoryPresentations: [],
     presentations: [],
     presentationPermissions: [],
     classChildren: [],
@@ -165,6 +188,9 @@ export const createCleanupTracker = () => {
   };
 
   const cleanup = async () => {
+    for (const cp of created.categoryPresentations) {
+      await db.delete(categoryPresentations).where(eq(categoryPresentations.id, cp.id));
+    }
     for (const p of created.presentations) {
       await db.delete(presentations).where(eq(presentations.id, p.id));
     }
@@ -179,7 +205,9 @@ export const createCleanupTracker = () => {
     for (const ct of created.classTeachers) {
       await db
         .delete(classTeachers)
-        .where(and(eq(classTeachers.classId, ct.classId), eq(classTeachers.teacherId, ct.teacherId)));
+        .where(
+          and(eq(classTeachers.classId, ct.classId), eq(classTeachers.teacherId, ct.teacherId))
+        );
     }
     for (const cp of created.childParents) {
       await db
@@ -195,7 +223,9 @@ export const createCleanupTracker = () => {
     for (const ca of created.classAttendance) {
       await db
         .delete(classAttendance)
-        .where(and(eq(classAttendance.classId, ca.classId), eq(classAttendance.childId, ca.childId)));
+        .where(
+          and(eq(classAttendance.classId, ca.classId), eq(classAttendance.childId, ca.childId))
+        );
     }
     for (const d of created.documents) {
       await db.delete(documents).where(eq(documents.id, d.id));

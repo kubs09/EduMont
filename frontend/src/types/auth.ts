@@ -9,6 +9,10 @@ export interface LoginResponse {
   messageNotifications: boolean;
 }
 
+export interface LoginPageProps {
+  onLoginSuccess: (token: string) => void;
+}
+
 export interface PasswordResetRequest {
   email: string;
   language: string;
