@@ -92,6 +92,7 @@ jobs:
 
   migrate-production:
     runs-on: ubuntu-latest
+    environment: Production
     concurrency:
       group: production-supabase-migrations
       cancel-in-progress: false
