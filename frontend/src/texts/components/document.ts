@@ -66,6 +66,10 @@ export const document = {
     },
   },
   error: {
+    title: {
+      cs: 'Chyba při nahrávání dokumentu',
+      en: 'Error uploading document',
+    },
     fileTooLarge: {
       cs: 'Soubor je příliš velký. Maximální povolená velikost je 5 MB.',
       en: 'File is too large. Maximum allowed size is 5 MB.',
@@ -85,6 +89,16 @@ export const document = {
     uploadSuccess: {
       cs: 'Soubor byl úspěšně nahrán.',
       en: 'File uploaded successfully.',
+    },
+  },
+  success: {
+    upload: {
+      cs: 'Dokument byl úspěšně nahrán.',
+      en: 'Document uploaded successfully.',
+    },
+    delete: {
+      cs: 'Dokument byl úspěšně smazán.',
+      en: 'Document deleted successfully.',
     },
   },
 };

@@ -73,7 +73,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
     const maxBytes = 5 * 1024 * 1024;
     if (uploadFile.size > maxBytes) {
       toast({
-        title: texts.profile.error[language],
+        title: texts.document.error.title[language],
         description: texts.document.error.fileTooLarge[language],
         status: 'error',
         duration: 5000,
@@ -155,7 +155,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
       });
     } catch (error) {
       toast({
-        title: texts.profile.error[language],
+        title: texts.document.error.title[language],
         description: texts.document.error.uploadFailed[language],
         status: 'error',
         duration: 5000,

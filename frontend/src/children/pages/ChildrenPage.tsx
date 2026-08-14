@@ -55,7 +55,7 @@ const ChildrenPage = () => {
     } catch (error) {
       console.error('Failed to fetch children:', error);
       toast({
-        title: texts.profile.error[language],
+        title: texts.child.error.fetchTitle[language],
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -70,7 +70,7 @@ const ChildrenPage = () => {
   const handleAddChildSuccess = async () => {
     await fetchChildren();
     toast({
-      title: texts.profile.children.addChild.success[language],
+      title: texts.child.success.addTitle[language],
       status: 'success',
       duration: 3000,
     });

@@ -37,7 +37,7 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
       await api.delete(`/api/presentations/categories/${presentationId}`);
 
       toast({
-        title: texts.profile.success[language],
+        title: texts.presentation.messages.deleteSuccess[language],
         description: texts.presentation.messages.deleteSuccess[language],
         status: 'success',
         duration: 3000,
@@ -47,8 +47,8 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
       await onPresentationDeleted();
     } catch (error) {
       toast({
-        title: texts.profile.error[language],
-        description: texts.presentation.messages.deleteError[language],
+        title: texts.presentation.messages.deleteError[language],
+        description: texts.presentation.messages.deleteErrorDescription[language],
         status: 'error',
         duration: 5000,
         isClosable: true,

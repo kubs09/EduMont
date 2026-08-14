@@ -117,8 +117,8 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
         setParents(data);
       } catch (error) {
         toast({
-          title: texts.profile.error[language],
-          description: error.message || 'Failed to fetch parents',
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -176,7 +176,9 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
           error.message === 'selectedClassNotSuitable' || error.message.includes('not suitable');
 
         toast({
-          title: isSelectedClassNotSuitable ? 'Class not suitable' : texts.profile.error[language],
+          title: isSelectedClassNotSuitable
+            ? texts.profile.children.error.noSuitableClass[language]
+            : texts.profile.error.title[language],
           description: error.message,
           status: 'error',
           duration: 5000,

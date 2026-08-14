@@ -1,3 +1,6 @@
+// Supabase Storage client (used for document upload/delete signed URLs).
+// Separate from the Postgres connection pool in ./database.js, which
+// handles all direct database access via Drizzle.
 import { createClient } from '@supabase/supabase-js';
 import process from 'process';
 

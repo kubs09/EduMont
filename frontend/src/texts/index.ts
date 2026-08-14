@@ -5,6 +5,8 @@ import { messages } from './components/messages';
 import { presentation } from './components/presentation';
 import { common } from './components/common';
 import { document } from './components/document';
+import { user } from './components/user';
+import { child } from './components/child';
 
 export const texts = {
   ...auth,
@@ -14,6 +16,8 @@ export const texts = {
   ...messages,
   ...presentation,
   ...common,
+  ...user,
+  ...child,
   auth,
   document,
   profile,
@@ -21,6 +25,8 @@ export const texts = {
   messages,
   presentation,
   common,
+  user,
+  child,
 };
 
 export type Texts = typeof texts;

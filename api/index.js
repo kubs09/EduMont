@@ -80,21 +80,51 @@ try {
   });
 }
 
-export default async (req, res) => {
+// Reconstructs the Express-relative path (e.g. "/api/children/5") from a
+// Vercel serverless request. Vercel invokes this function for every /api/*
+// route and passes the original path either via the `path` query param
+// (see vercel.json's rewrite rule) or embedded in the raw incoming URL,
+// depending on how the request arrived.
+const resolveApiPath = (req) => {
   const incomingUrl = req.url || req.originalUrl || '/api/index.js';
-  const queryPath = req.query?.path;
-  let parsedQueryPath = queryPath;
-  try {
-    if (!parsedQueryPath && typeof incomingUrl === 'string') {
+  let parsedQueryPath = req.query?.path;
+
+  if (!parsedQueryPath && typeof incomingUrl === 'string') {
+    try {
       const urlObj = new URL(incomingUrl, 'http://localhost');
       const pathParam = urlObj.searchParams.get('path');
       if (pathParam) {
         parsedQueryPath = pathParam;
       }
+    } catch (e) {
+      console.warn('⚠️ [API Handler] Failed to parse query path from URL:', e?.message);
     }
-  } catch (e) {
-    console.warn('⚠️ [API Handler] Failed to parse query path from URL:', e?.message);
   }
+
+  if (parsedQueryPath) {
+    const pathSegments = Array.isArray(parsedQueryPath) ? parsedQueryPath : [parsedQueryPath];
+    let reconstructedPath = '/api';
+    for (const segment of pathSegments) {
+      if (segment) {
+        reconstructedPath += '/' + String(segment).split('/').filter(Boolean).join('/');
+      }
+    }
+    return reconstructedPath;
+  }
+
+  if (incomingUrl && incomingUrl !== '/api/index.js') {
+    const urlPath = incomingUrl.split('?')[0];
+    if (urlPath !== '/' && !urlPath.startsWith('/api/index.js')) {
+      return urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;
+    }
+  }
+
+  return '/api';
+};
+
+export default async (req, res) => {
+  const incomingUrl = req.url || req.originalUrl || '/api/index.js';
+  const queryPath = req.query?.path;
 
   console.log('🔍 [API Handler] Incoming request:', {
     method: req.method,
@@ -106,22 +136,7 @@ export default async (req, res) => {
   });
 
   try {
-    let reconstructedPath = '/api';
-
-    if (parsedQueryPath) {
-      const pathSegments = Array.isArray(parsedQueryPath) ? parsedQueryPath : [parsedQueryPath];
-
-      for (const segment of pathSegments) {
-        if (segment) {
-          reconstructedPath += '/' + String(segment).split('/').filter(Boolean).join('/');
-        }
-      }
-    } else if (incomingUrl && incomingUrl !== '/api/index.js') {
-      const urlPath = incomingUrl.split('?')[0];
-      if (urlPath !== '/' && !urlPath.startsWith('/api/index.js')) {
-        reconstructedPath = urlPath.startsWith('/api') ? urlPath : '/api' + urlPath;
-      }
-    }
+    const reconstructedPath = resolveApiPath(req);
 
     req.url = reconstructedPath;
     req.originalUrl = reconstructedPath;

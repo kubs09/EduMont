@@ -51,14 +51,6 @@ export const profile = {
     cs: 'Profil byl úspěšně aktualizován',
     en: 'Profile updated successfully',
   },
-  error: {
-    cs: 'Nepodařilo se aktualizovat profil',
-    en: 'Failed to update profile',
-  },
-  loadError: {
-    cs: 'Nepodařilo se načíst profil',
-    en: 'Failed to load profile',
-  },
   password: {
     cs: 'Heslo',
     en: 'Password',
@@ -102,6 +94,16 @@ export const profile = {
   incorrectCurrentPassword: {
     cs: 'Současné heslo není správné',
     en: 'Current password is incorrect',
+  },
+  error: {
+    title: {
+      cs: 'Nepodařilo se aktualizovat profil',
+      en: 'Failed to update profile',
+    },
+    description: {
+      cs: 'Nastala chyba při aktualizaci profilu. Zkuste to prosím později.',
+      en: 'An error occurred while updating the profile. Please try again later.',
+    },
   },
   validation: {
     currentPasswordRequired: {
@@ -388,12 +390,12 @@ export const profile = {
         en: 'Please select at least one parent',
       },
     },
-    noSuitableClass: {
+    error: {
       title: {
-        cs: 'Nelze přiřadit do třídy',
-        en: 'Cannot Assign to Class',
+        cs: 'Nastala chyba při přidávání dítěte',
+        en: 'Error Adding Child',
       },
-      description: {
+      noSuitableClass: {
         cs: 'Pro tento věk není k dispozici žádná třída',
         en: 'No class available for this age',
       },
