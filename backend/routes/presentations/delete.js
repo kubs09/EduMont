@@ -12,12 +12,16 @@ const { canEditChildpresentation, normalizeDisplayOrder } = validation;
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const presentationId = Number(id);
+    if (!Number.isInteger(presentationId)) {
+      return res.status(400).json({ error: 'Invalid presentation ID' });
+    }
 
     const result = await db.transaction(async (tx) => {
       const presentationResult = await tx
         .select({ childId: presentations.childId, category: presentations.category })
         .from(presentations)
-        .where(eq(presentations.id, id));
+        .where(eq(presentations.id, presentationId));
       if (presentationResult.length === 0) {
         return { status: 404, body: { error: 'presentation not found' } };
       }
@@ -35,7 +39,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       }
 
       // Delete the presentation
-      await tx.delete(presentations).where(eq(presentations.id, id));
+      await tx.delete(presentations).where(eq(presentations.id, presentationId));
 
       await normalizeDisplayOrder(tx, childId, category);
 

@@ -71,10 +71,16 @@ export const linkTeacher = (classId, teacherId, role = 'teacher') =>
 export const linkChildToClass = (childId, classId) =>
   db.insert(classChildren).values({ childId, classId }).returning().then(([link]) => link);
 
-export const grantPresentationPermission = (adminId, classId, granted = true) =>
+export const grantPresentationPermission = (adminId, classId, granted = true, overrides = {}) =>
   db
     .insert(presentationPermissions)
-    .values({ adminId, classId, granted, permissionRequested: granted ? true : false })
+    .values({
+      adminId,
+      classId,
+      granted,
+      permissionRequested: granted ? true : false,
+      ...overrides,
+    })
     .returning()
     .then(([permission]) => permission);
 

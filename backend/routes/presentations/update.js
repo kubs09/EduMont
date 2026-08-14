@@ -13,6 +13,10 @@ const { validatepresentation, canEditChildpresentation, normalizeCategoryOrderin
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const presentationId = Number(id);
+    if (!Number.isInteger(presentationId)) {
+      return res.status(400).json({ error: 'Invalid presentation ID' });
+    }
     const { child_id, class_id, name, category, status, notes, display_order } = req.body;
 
     const validationErrors = validatepresentation(req.body);
@@ -24,7 +28,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       const presentationResult = await tx
         .select({ childId: presentations.childId, category: presentations.category })
         .from(presentations)
-        .where(eq(presentations.id, id));
+        .where(eq(presentations.id, presentationId));
       if (presentationResult.length === 0) {
         return { status: 404, body: { error: 'presentation not found' } };
       }
@@ -62,7 +66,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
           updatedAt: new Date(),
           updatedBy: req.user.id,
         })
-        .where(eq(presentations.id, id))
+        .where(eq(presentations.id, presentationId))
         .returning();
 
       await normalizeCategoryOrdering(tx, child_id, category);

@@ -12,6 +12,10 @@ router.post('/accept', auth, async (req, res) => {
     const { class_id, language } = req.body;
     const approver_id = req.user.id;
 
+    if (!Number.isInteger(class_id) || class_id <= 0) {
+      return res.status(400).json({ error: 'class_id must be a positive integer' });
+    }
+
     const result = await db.transaction(async (tx) => {
       const approverCheck = await tx
         .select({ classId: classTeachers.classId })
@@ -97,6 +101,10 @@ router.post('/deny', auth, async (req, res) => {
   try {
     const { class_id, language } = req.body;
     const denier_id = req.user.id;
+
+    if (!Number.isInteger(class_id) || class_id <= 0) {
+      return res.status(400).json({ error: 'class_id must be a positive integer' });
+    }
 
     const result = await db.transaction(async (tx) => {
       const denierCheck = await tx
