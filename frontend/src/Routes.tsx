@@ -18,6 +18,7 @@ import ClassDetailPage from './classes/pages/ClassDetailPage';
 import SchedulePage from './schedule/pages/CurriculumPage';
 import ChildrenPage from './children/pages/ChildrenPage';
 import ChildDetailPage from './children/pages/ChildDetailPage';
+import NotFoundPage from './static-pages/NotFoundPage';
 
 interface RoutesProps {
   isAuthenticated: boolean;
@@ -40,6 +41,7 @@ const Routes = ({ isAuthenticated, onLoginSuccess }: RoutesProps) => {
       {/* Public routes */}
       <Route element={<PublicLayout />}>
         <Route path={ROUTES.HOME} element={<HomePage />} />
+        <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />
         <Route
           path={ROUTES.LOGIN}
           element={

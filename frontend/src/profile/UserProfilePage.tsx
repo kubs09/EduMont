@@ -34,8 +34,8 @@ const UserProfilePage = () => {
       const userId = parseInt(id, 10);
       if (Number.isNaN(userId)) {
         toast({
-          title: texts.common.userDashboard.errorTitle[language],
-          description: texts.profile.loadError[language],
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -48,8 +48,8 @@ const UserProfilePage = () => {
         setUser(response);
       } catch (error) {
         toast({
-          title: texts.common.userDashboard.errorTitle[language],
-          description: texts.profile.loadError[language],
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,

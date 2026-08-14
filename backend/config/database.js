@@ -7,17 +7,6 @@ import * as schema from '../db/schema.js';
 
 const { Pool } = pg;
 
-const hasSupabaseCredentials =
-  !!process.env.SUPABASE_URL ||
-  !!process.env.SUPABASE_DATABASE_URL ||
-  !!process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  !!process.env.SUPABASE_ANON_KEY;
-
-const useSupabase =
-  (process.env.USE_SUPABASE === 'true' ||
-    (process.env.VERCEL === 'true' && hasSupabaseCredentials)) &&
-  hasSupabaseCredentials;
-
 const parseSSLOverride = () => {
   const raw =
     process.env.DB_SSL ??
@@ -34,15 +23,11 @@ const parseSSLOverride = () => {
   }
 
   if (['1', 'true', 'yes', 'on', 'require', 'required'].includes(normalized)) {
-    return {
-      rejectUnauthorized: false,
-    };
+    return { rejectUnauthorized: false };
   }
 
   if (['full', 'verify-ca', 'verify-full'].includes(normalized)) {
-    return {
-      rejectUnauthorized: true,
-    };
+    return { rejectUnauthorized: true };
   }
 
   return null;
@@ -55,78 +40,77 @@ const getSSLConfig = ({ defaultEnabled = false } = {}) => {
     return override;
   }
 
-  if (defaultEnabled) {
-    return {
-      rejectUnauthorized: true,
-    };
-  }
-
-  return false;
+  return defaultEnabled ? { rejectUnauthorized: true } : false;
 };
 
-let poolConfig;
-let configError = null;
+// Supabase-hosted Postgres: connect via connection string (session pooler or
+// direct URI). SSL is on by default since Supabase requires it.
+const buildSupabasePoolConfig = () => {
+  const connectionString = (
+    process.env.SUPABASE_DATABASE_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.SUPABASE_URL
+  )?.trim();
 
-try {
-  if (useSupabase) {
-    const supabaseConnectionString =
-      process.env.SUPABASE_DATABASE_URL ||
-      process.env.DATABASE_URL ||
-      process.env.POSTGRES_URL ||
-      process.env.SUPABASE_URL;
-
-    const normalizedConnectionString = supabaseConnectionString?.trim();
-
-    if (!normalizedConnectionString) {
-      configError =
-        'Supabase enabled but missing database connection string. Set SUPABASE_DATABASE_URL, DATABASE_URL, or POSTGRES_URL';
-      console.error('❌ ' + configError);
-      throw new Error(configError);
-    }
-
-    if (/^https?:\/\//i.test(normalizedConnectionString)) {
-      configError =
-        'Supabase database connection string is invalid. Use the Postgres URI (postgres://...), not the project HTTP URL';
-      console.error('❌ ' + configError);
-      throw new Error(configError);
-    }
-
-    poolConfig = {
-      connectionString: normalizedConnectionString,
-      ssl: getSSLConfig({ defaultEnabled: true }),
-      connectionTimeoutMillis: 30000,
-      idleTimeoutMillis: 30000,
-      max: 1,
-      min: 0,
-      statement_timeout: 30000,
-    };
-  } else {
-    poolConfig = {
-      user: process.env.POSTGRES_USER || 'postgres',
-      host: process.env.POSTGRES_HOST || 'localhost',
-      database: process.env.POSTGRES_DB || 'edumont',
-      password: process.env.POSTGRES_PASSWORD || 'password',
-      port: process.env.POSTGRES_PORT || 5432,
-      ssl: getSSLConfig({
-        defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
-      }),
-      connectionTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 5000,
-      idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 30000,
-      max: process.env.NODE_ENV === 'production' ? 5 : 20,
-    };
+  if (!connectionString) {
+    throw new Error(
+      'Supabase enabled but missing database connection string. Set SUPABASE_DATABASE_URL, DATABASE_URL, or POSTGRES_URL'
+    );
   }
-} catch (error) {
-  console.error('❌ Database configuration error:', error.message);
-  configError = error;
-  // Create a dummy poolConfig to prevent total failure
-  poolConfig = {
-    host: 'invalid',
-    database: 'invalid',
-    user: 'invalid',
-    password: 'invalid',
-    port: 5432,
+
+  if (/^https?:\/\//i.test(connectionString)) {
+    throw new Error(
+      'Supabase database connection string is invalid. Use the Postgres URI (postgres://...), not the project HTTP URL'
+    );
+  }
+
+  return {
+    connectionString,
+    ssl: getSSLConfig({ defaultEnabled: true }),
+    connectionTimeoutMillis: 30000,
+    idleTimeoutMillis: 30000,
+    max: 1,
+    min: 0,
+    statement_timeout: 30000,
   };
-}
+};
+
+// Local/self-hosted Postgres: connect via discrete host/user/etc. SSL is off
+// by default except in production or when running on Vercel.
+const buildLocalPoolConfig = () => ({
+  user: process.env.POSTGRES_USER || 'postgres',
+  host: process.env.POSTGRES_HOST || 'localhost',
+  database: process.env.POSTGRES_DB || 'edumont',
+  password: process.env.POSTGRES_PASSWORD || 'password',
+  port: process.env.POSTGRES_PORT || 5432,
+  ssl: getSSLConfig({
+    defaultEnabled: process.env.NODE_ENV === 'production' || !!process.env.VERCEL,
+  }),
+  connectionTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 5000,
+  idleTimeoutMillis: process.env.NODE_ENV === 'production' ? 30000 : 30000,
+  max: process.env.NODE_ENV === 'production' ? 5 : 20,
+});
+
+// USE_SUPABASE opts in explicitly (still requires Supabase credentials to be
+// present, otherwise this falls back to local Postgres); absent that,
+// Vercel deploys use Supabase automatically whenever credentials are present.
+const resolvePoolConfig = () => {
+  const hasSupabaseCredentials =
+    !!process.env.SUPABASE_URL ||
+    !!process.env.SUPABASE_DATABASE_URL ||
+    !!process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    !!process.env.SUPABASE_ANON_KEY;
+
+  const useSupabase =
+    (process.env.USE_SUPABASE === 'true' ||
+      (process.env.VERCEL === 'true' && hasSupabaseCredentials)) &&
+    hasSupabaseCredentials;
+
+  const poolConfig = useSupabase ? buildSupabasePoolConfig() : buildLocalPoolConfig();
+
+  return { useSupabase, poolConfig };
+};
 
 const createUnavailablePool = (cause) => ({
   query: async () => {
@@ -135,7 +119,22 @@ const createUnavailablePool = (cause) => ({
   connect: async () => {
     throw cause instanceof Error ? cause : new Error(String(cause));
   },
+  // Scripts like db/migrate.js call pool.end() in a `finally` block; without
+  // a no-op here that would throw "pool.end is not a function" and mask the
+  // original configuration error above.
+  end: async () => undefined,
 });
+
+let useSupabase = false;
+let poolConfig;
+let configError = null;
+
+try {
+  ({ useSupabase, poolConfig } = resolvePoolConfig());
+} catch (error) {
+  console.error('❌ Database configuration error:', error.message);
+  configError = error;
+}
 
 let pool;
 if (configError) {

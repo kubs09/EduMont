@@ -97,6 +97,12 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 404) {
+      if (!window.location.pathname.includes('/not-found')) {
+        window.location.href = '/not-found';
+      }
+    }
+
     throw error;
   }
 );

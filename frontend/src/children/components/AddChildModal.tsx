@@ -110,8 +110,8 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
         setParents(data);
       } catch (error) {
         toast({
-          title: texts.profile.error[language],
-          description: error.message || 'Failed to fetch parents',
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -191,12 +191,12 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
 
         toast({
           title: isNoSuitableClass
-            ? texts.profile.children.noSuitableClass.title[language]
+            ? texts.profile.children.error.title[language]
             : isSelectedClassNotSuitable
-              ? 'Class not suitable'
+              ? texts.profile.children.error.noSuitableClass[language]
               : texts.profile.children.addChild.error[language],
           description: isNoSuitableClass
-            ? texts.profile.children.noSuitableClass.description[language]
+            ? texts.profile.children.error.noSuitableClass[language]
             : error.message,
           status: 'error',
           duration: 5000,

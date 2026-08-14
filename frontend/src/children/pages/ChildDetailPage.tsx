@@ -123,8 +123,8 @@ const ChildDetailPage = () => {
         }
       } catch (error) {
         toast({
-          title: texts.profile.error[language],
-          description: 'Failed to load child data',
+          title: texts.child.error.fetchTitle[language],
+          description: texts.child.error.fetchDescription[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -244,8 +244,8 @@ const ChildDetailPage = () => {
       });
     } catch (error) {
       toast({
-        title: texts.profile.error[language],
-        description: 'Failed to update child',
+        title: texts.child.error.updateTitle[language],
+        description: texts.child.error.updateDescription[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -267,8 +267,8 @@ const ChildDetailPage = () => {
     } catch (error) {
       console.error('Failed to delete child:', error);
       toast({
-        title: texts.profile.error[language],
-        description: 'Failed to delete child',
+        title: texts.child.error.deleteTitle[language],
+        description: texts.child.error.deleteDescription[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
