@@ -15,14 +15,7 @@ import api from '@frontend/services/apiConfig';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { SearchBar } from '@frontend/shared/components/SearchBar';
-
-interface User {
-  id: number;
-  email: string;
-  firstname: string;
-  surname: string;
-  role: 'admin' | 'teacher' | 'parent';
-}
+import { User } from '@frontend/types/user';
 
 const UserDashboard: React.FC = () => {
   const { language } = useLanguage();

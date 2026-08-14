@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
 import { Class, CreateClassData, UpdateClassData } from '@frontend/types/class';
-import { ApiError } from '@frontend/types/shared';
+import { ApiError } from '@frontend/types/user';
 
 export const getClasses = async (): Promise<Class[]> => {
   try {

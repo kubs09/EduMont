@@ -1,217 +1,195 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect, query as _query } from '#backend/config/database.js';
+import { and, asc, desc, eq, exists, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import {
+  childParents,
+  classChildren,
+  classTeachers,
+  classes,
+  children,
+  presentations,
+  users,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
+const teachersListFragment = sql`COALESCE(
+  (SELECT json_agg(json_build_object(
+    'id', u.id, 'firstname', u.firstname, 'surname', u.surname,
+    'class_role', ct.role, 'permission_requested', ct.permission_requested
+  ))
+  FROM ${classTeachers} ct JOIN ${users} u ON ct.teacher_id = u.id
+  WHERE ct.class_id = classes.id),
+  '[]'
+)`;
+
+const childrenWithParentsFragment = sql`COALESCE(
+  (SELECT json_agg(json_build_object(
+    'id', ch.id, 'firstname', ch.firstname, 'surname', ch.surname, 'date_of_birth', ch.date_of_birth,
+    'parents', COALESCE(
+      (SELECT json_agg(json_build_object(
+        'id', u.id, 'firstname', u.firstname, 'surname', u.surname, 'email', u.email, 'phone', u.phone
+      ) ORDER BY u.surname, u.firstname)
+      FROM ${childParents} cp JOIN ${users} u ON cp.parent_id = u.id
+      WHERE cp.child_id = ch.id),
+      '[]'
+    ),
+    'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
+  ))
+  FROM ${classChildren} cc JOIN ${children} ch ON cc.child_id = ch.id
+  WHERE cc.class_id = classes.id),
+  '[]'
+)`;
+
+const childrenBasicFragment = (userId) => sql`COALESCE(
+  (SELECT json_agg(json_build_object('id', ch.id, 'firstname', ch.firstname, 'surname', ch.surname))
+  FROM ${classChildren} cc JOIN ${children} ch ON cc.child_id = ch.id
+  WHERE cc.class_id = classes.id AND EXISTS (
+    SELECT 1 FROM ${childParents} cp WHERE cp.child_id = ch.id AND cp.parent_id = ${userId}
+  )),
+  '[]'
+)`;
+
 router.get('/', auth, async (req, res) => {
-  let client;
   try {
-    client = await connect();
-    let query = '';
-    const params = [];
+    let result;
 
     if (req.user.role === 'admin' || req.user.role === 'teacher') {
-      query = `
-        SELECT 
-          c.id,
-          c.name,
-          c.description,
-          c.age_group,
-          c.min_age,
-          c.max_age,
-          COALESCE(
-            (SELECT json_agg(teacher)
-            FROM (
-              SELECT u.id, u.firstname, u.surname, ct.role as class_role, ct.permission_requested
-              FROM class_teachers ct
-              JOIN users u ON ct.teacher_id = u.id
-              WHERE ct.class_id = c.id
-            ) teacher),
-            '[]'
-          ) as teachers,
-          COALESCE(
-            (SELECT json_agg(child)
-            FROM (
-              SELECT 
-                ch.id,
-                ch.firstname,
-                ch.surname,
-                ch.date_of_birth,
-                COALESCE(
-                  (SELECT json_agg(
-                    json_build_object(
-                      'id', u.id,
-                      'firstname', u.firstname,
-                      'surname', u.surname,
-                      'email', u.email,
-                      'phone', u.phone
-                    )
-                    ORDER BY u.surname, u.firstname
-                  )
-                  FROM child_parents cp
-                  JOIN users u ON cp.parent_id = u.id
-                  WHERE cp.child_id = ch.id),
-                  '[]'
-                ) as parents,
-                EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer as age
-              FROM class_children cc
-              JOIN children ch ON cc.child_id = ch.id
-              WHERE cc.class_id = c.id
-            ) child),
-            '[]'
-          ) as children
-        FROM classes c`;
+      let query = db
+        .select({
+          id: classes.id,
+          name: classes.name,
+          description: classes.description,
+          age_group: classes.ageGroup,
+          min_age: classes.minAge,
+          max_age: classes.maxAge,
+          teachers: teachersListFragment,
+          children: childrenWithParentsFragment,
+        })
+        .from(classes);
+
       if (req.user.role === 'teacher') {
-        query += ` WHERE EXISTS (
-          SELECT 1 FROM class_teachers ct 
-          WHERE ct.class_id = c.id AND ct.teacher_id = $1
-        )`;
-        params.push(req.user.id);
+        query = query.where(
+          exists(
+            db
+              .select({ id: classTeachers.classId })
+              .from(classTeachers)
+              .where(
+                and(eq(classTeachers.classId, classes.id), eq(classTeachers.teacherId, req.user.id))
+              )
+          )
+        );
       }
-      query += ' ORDER BY c.name';
+
+      result = await query.orderBy(asc(classes.name));
     } else if (req.user.role === 'parent') {
-      query = `
-        SELECT 
-          c.id,
-          c.name,
-          c.description,
-          c.age_group,
-          c.min_age,
-          c.max_age,
-          COALESCE(
-            (SELECT json_agg(
-              json_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'surname', u.surname,
-                'class_role', ct.role,
-                'permission_requested', ct.permission_requested
+      result = await db
+        .select({
+          id: classes.id,
+          name: classes.name,
+          description: classes.description,
+          age_group: classes.ageGroup,
+          min_age: classes.minAge,
+          max_age: classes.maxAge,
+          teachers: teachersListFragment,
+          children: childrenBasicFragment(req.user.id),
+        })
+        .from(classes)
+        .where(
+          exists(
+            db
+              .select({ id: classChildren.classId })
+              .from(classChildren)
+              .innerJoin(children, eq(classChildren.childId, children.id))
+              .where(
+                and(
+                  eq(classChildren.classId, classes.id),
+                  exists(
+                    db
+                      .select({ id: childParents.childId })
+                      .from(childParents)
+                      .where(
+                        and(
+                          eq(childParents.childId, children.id),
+                          eq(childParents.parentId, req.user.id)
+                        )
+                      )
+                  )
+                )
               )
-            )
-            FROM class_teachers ct
-            JOIN users u ON ct.teacher_id = u.id
-            WHERE ct.class_id = c.id),
-            '[]'
-          ) as teachers,
-          COALESCE(
-            (SELECT json_agg(
-              json_build_object(
-                'id', ch.id,
-                'firstname', ch.firstname,
-                'surname', ch.surname
-              )
-            )
-            FROM class_children cc
-            JOIN children ch ON cc.child_id = ch.id
-            WHERE cc.class_id = c.id AND EXISTS (
-              SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $1
-            )),
-            '[]'
-          ) as children
-        FROM classes c
-        WHERE EXISTS (
-          SELECT 1 FROM class_children cc
-          JOIN children ch ON cc.child_id = ch.id
-          WHERE cc.class_id = c.id AND EXISTS (
-            SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $1
           )
         )
-        ORDER BY c.name`;
-      params.push(req.user.id);
+        .orderBy(asc(classes.name));
+    } else {
+      result = [];
     }
-    const result = await client.query(query, params);
-    res.json(result.rows);
+
+    res.json(result);
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     res.status(500).json({
       error: 'Failed to fetch classes',
       details: error.message,
     });
-  } finally {
-    client?.release();
   }
 });
 
 router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
+    const classId = Number(id);
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await _query(
-        `SELECT 1 FROM class_children cc
-         JOIN children ch ON cc.child_id = ch.id
-         WHERE cc.class_id = $1 AND EXISTS (
-           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
-         )`,
-        [id, req.user.id]
-      );
-      if (parentChildCheck.rows.length === 0) {
+      const parentChildCheck = await db
+        .select({ id: classChildren.classId })
+        .from(classChildren)
+        .innerJoin(children, eq(classChildren.childId, children.id))
+        .where(
+          and(
+            eq(classChildren.classId, classId),
+            exists(
+              db
+                .select({ id: childParents.childId })
+                .from(childParents)
+                .where(
+                  and(eq(childParents.childId, children.id), eq(childParents.parentId, req.user.id))
+                )
+            )
+          )
+        );
+      if (parentChildCheck.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
     }
 
-    let query = `
-      SELECT 
-        c.*,
-        COALESCE(
+    const rows = await db
+      .select({
+        id: classes.id,
+        name: classes.name,
+        description: classes.description,
+        ageGroup: classes.ageGroup,
+        minAge: classes.minAge,
+        maxAge: classes.maxAge,
+        createdAt: classes.createdAt,
+        teachers: sql`COALESCE(
           jsonb_agg(DISTINCT jsonb_build_object(
-            'id', t.id,
-            'firstname', t.firstname,
-            'surname', t.surname,
-            'class_role', ct.role,
-            'permission_requested', ct.permission_requested
-          )) FILTER (WHERE t.id IS NOT NULL),
+            'id', ${users.id}, 'firstname', ${users.firstname}, 'surname', ${users.surname},
+            'class_role', ${classTeachers.role}, 'permission_requested', ${classTeachers.permissionRequested}
+          )) FILTER (WHERE ${users.id} IS NOT NULL),
           '[]'::jsonb
-        ) as teachers,
-        COALESCE(
-          jsonb_agg(DISTINCT jsonb_build_object(
-            'id', ch.id,
-            'firstname', ch.firstname,
-            'surname', ch.surname,
-            'date_of_birth', ch.date_of_birth,
-            'parents', COALESCE(
-              (SELECT jsonb_agg(jsonb_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'surname', u.surname,
-                'email', u.email,
-                'phone', u.phone
-              ) ORDER BY u.surname, u.firstname)
-              FROM child_parents cp
-              JOIN users u ON cp.parent_id = u.id
-              WHERE cp.child_id = ch.id),
-              '[]'::jsonb
-            ),
-            'age', EXTRACT(YEAR FROM age(CURRENT_DATE, ch.date_of_birth))::integer
-          )) FILTER (WHERE ch.id IS NOT NULL),
-          '[]'::jsonb
-        ) as children
-      FROM classes c
-      LEFT JOIN class_teachers ct ON c.id = ct.class_id
-      LEFT JOIN users t ON ct.teacher_id = t.id
-      LEFT JOIN class_children cc ON c.id = cc.class_id
-      LEFT JOIN children ch ON cc.child_id = ch.id
-      WHERE c.id = $1`;
+        )`,
+        children: childrenWithParentsFragment,
+      })
+      .from(classes)
+      .leftJoin(classTeachers, eq(classes.id, classTeachers.classId))
+      .leftJoin(users, eq(classTeachers.teacherId, users.id))
+      .where(eq(classes.id, classId))
+      .groupBy(classes.id);
 
-    const params = [id];
-
-    if (req.user.role === 'parent') {
-      query += ` AND (ch.id IS NULL OR EXISTS (
-        SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
-      ))`;
-      params.push(req.user.id);
-    }
-
-    query += ` GROUP BY c.id, c.name, c.description, c.min_age, c.max_age`;
-
-    const classDetails = await _query(query, params);
-    if (classDetails.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
     }
-    res.json(classDetails.rows[0]);
+    res.json(rows[0]);
   } catch (error) {
     console.error('Error fetching class details:', error);
     res.status(500).json({ error: 'Failed to fetch class details' });
@@ -221,49 +199,53 @@ router.get('/:id', auth, async (req, res) => {
 router.get('/:id/next-presentations', auth, async (req, res) => {
   try {
     const { id } = req.params;
+    const classId = Number(id);
 
     if (req.user.role === 'parent') {
-      const parentChildCheck = await _query(
-        `SELECT 1 FROM class_children cc
-         JOIN children ch ON cc.child_id = ch.id
-         WHERE cc.class_id = $1 AND EXISTS (
-           SELECT 1 FROM child_parents cp WHERE cp.child_id = ch.id AND cp.parent_id = $2
-         )`,
-        [id, req.user.id]
-      );
-      if (parentChildCheck.rows.length === 0) {
+      const parentChildCheck = await db
+        .select({ id: classChildren.classId })
+        .from(classChildren)
+        .innerJoin(children, eq(classChildren.childId, children.id))
+        .where(
+          and(
+            eq(classChildren.classId, classId),
+            exists(
+              db
+                .select({ id: childParents.childId })
+                .from(childParents)
+                .where(
+                  and(eq(childParents.childId, children.id), eq(childParents.parentId, req.user.id))
+                )
+            )
+          )
+        );
+      if (parentChildCheck.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
       }
     }
 
-    const query = `
-      SELECT 
-        s.id,
-        s.child_id,
-        s.class_id,
-        s.name,
-        s.category,
-        s.status,
-        s.notes,
-        s.created_at,
-        s.updated_at,
-        c.name as class_name,
-        ch.firstname as child_firstname,
-        ch.surname as child_surname,
-        cu.firstname as created_by_firstname,
-        cu.surname as created_by_surname,
-        uu.firstname as updated_by_firstname,
-        uu.surname as updated_by_surname
-      FROM presentations s
-      JOIN classes c ON s.class_id = c.id
-      JOIN children ch ON s.child_id = ch.id
-      LEFT JOIN users cu ON s.created_by = cu.id
-      LEFT JOIN users uu ON s.updated_by = uu.id
-      WHERE s.class_id = $1 AND s.status = 'to be presented'
-      ORDER BY s.created_at DESC`;
+    const result = await db
+      .select({
+        id: presentations.id,
+        child_id: presentations.childId,
+        class_id: presentations.classId,
+        name: presentations.name,
+        category: presentations.category,
+        status: presentations.status,
+        notes: presentations.notes,
+        created_at: presentations.createdAt,
+        updated_at: presentations.updatedAt,
+        class_name: classes.name,
+        child_firstname: children.firstname,
+        child_surname: children.surname,
+      })
+      .from(presentations)
+      .innerJoin(classes, eq(presentations.classId, classes.id))
+      .innerJoin(children, eq(presentations.childId, children.id))
+      .where(and(eq(presentations.classId, classId), eq(presentations.status, 'to be presented')))
+      .orderBy(desc(presentations.createdAt));
 
-    const result = await _query(query, [id]);
-    res.json(result.rows);
+    res.json(result);
   } catch (error) {
     console.error('Error fetching next presentations:', error);
     res.status(500).json({ error: 'Failed to fetch next presentations' });
@@ -279,15 +261,19 @@ router.get('/by-age/:age', auth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid age provided' });
     }
 
-    const result = await _query(
-      `SELECT id, name, description, min_age, max_age 
-       FROM classes 
-       WHERE $1 BETWEEN min_age AND max_age 
-       ORDER BY name ASC`,
-      [ageNumber]
-    );
+    const result = await db
+      .select({
+        id: classes.id,
+        name: classes.name,
+        description: classes.description,
+        min_age: classes.minAge,
+        max_age: classes.maxAge,
+      })
+      .from(classes)
+      .where(sql`${ageNumber} between ${classes.minAge} and ${classes.maxAge}`)
+      .orderBy(asc(classes.name));
 
-    res.json(result.rows);
+    res.json(result);
   } catch (error) {
     console.error('Error fetching classes by age:', error);
     res.status(500).json({ error: 'Failed to fetch classes' });

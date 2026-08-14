@@ -1,6 +1,8 @@
 import { Router } from 'express';
 const router = Router();
-import { query as _query } from '#backend/config/database.js';
+import { and, asc, eq, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classAttendance, classChildren, classTeachers, childParents, children } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
@@ -14,32 +16,34 @@ const parseId = (value) => {
 };
 
 const isTeacherForClass = async (userId, classId) => {
-  const result = await _query(
-    'SELECT 1 FROM class_teachers WHERE class_id = $1 AND teacher_id = $2',
-    [classId, userId]
-  );
-  return result.rows.length > 0;
+  const rows = await db
+    .select({ classId: classTeachers.classId })
+    .from(classTeachers)
+    .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, userId)));
+  return rows.length > 0;
 };
 
 const isParentForChildInClass = async (userId, classId, childId) => {
-  const result = await _query(
-    `
-    SELECT 1
-    FROM class_children cc
-    JOIN child_parents cp ON cp.child_id = cc.child_id
-    WHERE cc.class_id = $1 AND cc.child_id = $2 AND cp.parent_id = $3
-  `,
-    [classId, childId, userId]
-  );
-  return result.rows.length > 0;
+  const rows = await db
+    .select({ classId: classChildren.classId })
+    .from(classChildren)
+    .innerJoin(childParents, eq(childParents.childId, classChildren.childId))
+    .where(
+      and(
+        eq(classChildren.classId, classId),
+        eq(classChildren.childId, childId),
+        eq(childParents.parentId, userId)
+      )
+    );
+  return rows.length > 0;
 };
 
 const isChildInClass = async (childId, classId) => {
-  const result = await _query(
-    'SELECT 1 FROM class_children WHERE class_id = $1 AND child_id = $2',
-    [classId, childId]
-  );
-  return result.rows.length > 0;
+  const rows = await db
+    .select({ classId: classChildren.classId })
+    .from(classChildren)
+    .where(and(eq(classChildren.classId, classId), eq(classChildren.childId, childId)));
+  return rows.length > 0;
 };
 
 router.get('/:id/attendance', auth, async (req, res) => {
@@ -78,36 +82,36 @@ router.get('/:id/attendance', auth, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const params = [classId, attendanceDate];
-    let query = `
-      SELECT
-        ch.id,
-        ch.firstname,
-        ch.surname,
-        ca.attendance_date,
-        ca.check_in_at,
-        ca.check_out_at,
-        ca.checked_in_by,
-        ca.checked_out_by,
-        ca.notes
-      FROM class_children cc
-      JOIN children ch ON cc.child_id = ch.id
-      LEFT JOIN class_attendance ca
-        ON ca.class_id = cc.class_id
-        AND ca.child_id = cc.child_id
-        AND ca.attendance_date = COALESCE($2, CURRENT_DATE)
-      WHERE cc.class_id = $1
-    `;
+    let query = db
+      .select({
+        id: children.id,
+        firstname: children.firstname,
+        surname: children.surname,
+        attendance_date: classAttendance.attendanceDate,
+        check_in_at: classAttendance.checkInAt,
+        check_out_at: classAttendance.checkOutAt,
+        checked_in_by: classAttendance.checkedInBy,
+        checked_out_by: classAttendance.checkedOutBy,
+        notes: classAttendance.notes,
+      })
+      .from(classChildren)
+      .innerJoin(children, eq(classChildren.childId, children.id))
+      .leftJoin(
+        classAttendance,
+        and(
+          eq(classAttendance.classId, classChildren.classId),
+          eq(classAttendance.childId, classChildren.childId),
+          eq(classAttendance.attendanceDate, sql`COALESCE(${attendanceDate}, CURRENT_DATE)`)
+        )
+      )
+      .where(eq(classChildren.classId, classId));
 
     if (childId) {
-      query += ' AND ch.id = $3';
-      params.push(childId);
+      query = query.where(and(eq(classChildren.classId, classId), eq(children.id, childId)));
     }
 
-    query += ' ORDER BY ch.surname, ch.firstname';
-
-    const result = await _query(query, params);
-    res.json(result.rows);
+    const result = await query.orderBy(asc(children.surname), asc(children.firstname));
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch attendance', details: error.message });
   }
@@ -164,46 +168,48 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
     }
 
     const dateValue = attendanceDate || new Date().toISOString().slice(0, 10);
-    const existing = await _query(
-      `
-      SELECT id, check_in_at
-      FROM class_attendance
-      WHERE class_id = $1 AND child_id = $2 AND attendance_date = $3
-    `,
-      [classId, childId, dateValue]
-    );
+    const existing = await db
+      .select({ id: classAttendance.id, checkInAt: classAttendance.checkInAt })
+      .from(classAttendance)
+      .where(
+        and(
+          eq(classAttendance.classId, classId),
+          eq(classAttendance.childId, childId),
+          eq(classAttendance.attendanceDate, dateValue)
+        )
+      );
 
-    if (existing.rows.length > 0 && existing.rows[0].check_in_at) {
+    if (existing.length > 0 && existing[0].checkInAt) {
       return res.status(409).json({ error: 'Child is already checked in for this date' });
     }
 
-    if (existing.rows.length === 0) {
-      const insertResult = await _query(
-        `
-        INSERT INTO class_attendance
-          (class_id, child_id, attendance_date, check_in_at, checked_in_by, notes)
-        VALUES ($1, $2, $3, COALESCE($4, NOW()), $5, $6)
-        RETURNING *
-      `,
-        [classId, childId, dateValue, checkInAt, req.user.id, req.body.notes || null]
-      );
-      return res.status(201).json(insertResult.rows[0]);
+    if (existing.length === 0) {
+      const inserted = await db
+        .insert(classAttendance)
+        .values({
+          classId,
+          childId,
+          attendanceDate: dateValue,
+          checkInAt: checkInAt ? new Date(checkInAt) : new Date(),
+          checkedInBy: req.user.id,
+          notes: req.body.notes || null,
+        })
+        .returning();
+      return res.status(201).json(inserted[0]);
     }
 
-    const updateResult = await _query(
-      `
-      UPDATE class_attendance
-      SET check_in_at = COALESCE($2, NOW()),
-          checked_in_by = $3,
-          notes = COALESCE($4, notes),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
-    `,
-      [existing.rows[0].id, checkInAt, req.user.id, req.body.notes || null]
-    );
+    const updated = await db
+      .update(classAttendance)
+      .set({
+        checkInAt: checkInAt ? new Date(checkInAt) : new Date(),
+        checkedInBy: req.user.id,
+        notes: req.body.notes || undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(classAttendance.id, existing[0].id))
+      .returning();
 
-    return res.status(200).json(updateResult.rows[0]);
+    return res.status(200).json(updated[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to check in child', details: error.message });
   }
@@ -260,37 +266,41 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
     }
 
     const dateValue = attendanceDate || new Date().toISOString().slice(0, 10);
-    const existing = await _query(
-      `
-      SELECT id, check_in_at, check_out_at
-      FROM class_attendance
-      WHERE class_id = $1 AND child_id = $2 AND attendance_date = $3
-    `,
-      [classId, childId, dateValue]
-    );
+    const existing = await db
+      .select({
+        id: classAttendance.id,
+        checkInAt: classAttendance.checkInAt,
+        checkOutAt: classAttendance.checkOutAt,
+      })
+      .from(classAttendance)
+      .where(
+        and(
+          eq(classAttendance.classId, classId),
+          eq(classAttendance.childId, childId),
+          eq(classAttendance.attendanceDate, dateValue)
+        )
+      );
 
-    if (existing.rows.length === 0 || !existing.rows[0].check_in_at) {
+    if (existing.length === 0 || !existing[0].checkInAt) {
       return res.status(409).json({ error: 'Child must be checked in before check out' });
     }
 
-    if (existing.rows[0].check_out_at) {
+    if (existing[0].checkOutAt) {
       return res.status(409).json({ error: 'Child is already checked out for this date' });
     }
 
-    const updateResult = await _query(
-      `
-      UPDATE class_attendance
-      SET check_out_at = COALESCE($2, NOW()),
-          checked_out_by = $3,
-          notes = COALESCE($4, notes),
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-      RETURNING *
-    `,
-      [existing.rows[0].id, checkOutAt, req.user.id, req.body.notes || null]
-    );
+    const updated = await db
+      .update(classAttendance)
+      .set({
+        checkOutAt: checkOutAt ? new Date(checkOutAt) : new Date(),
+        checkedOutBy: req.user.id,
+        notes: req.body.notes || undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(classAttendance.id, existing[0].id))
+      .returning();
 
-    return res.status(200).json(updateResult.rows[0]);
+    return res.status(200).json(updated[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to check out child', details: error.message });
   }

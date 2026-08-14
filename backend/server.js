@@ -6,7 +6,6 @@ import pkg from 'body-parser';
 import { join } from 'path';
 import { URL } from 'url';
 import console from 'console';
-import { setTimeout } from 'timers/promises';
 import { fileURLToPath } from 'url';
 
 const { json } = pkg;
@@ -14,36 +13,20 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
 
 let pool,
-  initDatabase,
   authRoutes,
   childrenRoutes,
   usersRoutes,
   classesRoutes,
   presentationsRoutes,
   documentsRoutes,
-  passwordResetRoutes,
   messageRoutes,
   permissionsRoutes;
 
 let modulesLoaded = false;
 let moduleError = null;
-let dbInitPromise = null;
 const vercelRaw = process.env.VERCEL?.trim().toLowerCase();
 const isVercel =
   vercelRaw === 'true' || vercelRaw === '1' || vercelRaw === 'yes' || vercelRaw === 'on';
-
-const ensureDatabaseInitialized = async () => {
-  if (!pool || !initDatabase) return;
-
-  if (!dbInitPromise) {
-    dbInitPromise = initDatabase().catch((error) => {
-      dbInitPromise = null;
-      throw error;
-    });
-  }
-
-  await dbInitPromise;
-};
 
 const importWithFallback = async (relativePath) => {
   try {
@@ -92,14 +75,12 @@ const lazyLoadModules = async () => {
     console.log('✅ Database pool initialized');
   }
 
-  initDatabase = resolveModuleExport(await loadOptional('./db/init.js'));
   authRoutes = resolveRouter(await loadOptional('./routes/auth/index.js'));
   childrenRoutes = resolveRouter(await loadOptional('./routes/children/index.js'));
   usersRoutes = resolveRouter(await loadOptional('./routes/users/index.js'));
   classesRoutes = resolveRouter(await loadOptional('./routes/classes/index.js'));
   presentationsRoutes = resolveRouter(await loadOptional('./routes/presentations/index.js'));
   documentsRoutes = resolveRouter(await loadOptional('./routes/documents/index.js'));
-  passwordResetRoutes = resolveRouter(await loadOptional('./routes/password-reset/index.js'));
   messageRoutes = resolveRouter(await loadOptional('./routes/messages/index.js'));
   permissionsRoutes = resolveRouter(await loadOptional('./routes/permissions/index.js'));
 
@@ -220,61 +201,6 @@ app.use('/api', async (req, res, next) => {
   }
 });
 
-if (!isVercel && modulesLoaded && pool && initDatabase) {
-  let dbInitialized = false;
-  let dbInitializing = false;
-
-  app.use(async (req, res, next) => {
-    if (!req.path.startsWith('/api')) {
-      return next();
-    }
-
-    if (dbInitialized) {
-      return next();
-    }
-
-    if (dbInitializing) {
-      await setTimeout(100);
-      if (dbInitialized) {
-        return next();
-      }
-      return res.status(503).json({ error: 'Database is initializing, please retry' });
-    }
-
-    dbInitializing = true;
-    try {
-      if (process.env.USE_SUPABASE === 'true') {
-        if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-          throw new Error(
-            'Supabase configuration missing: SUPABASE_URL and SUPABASE_ANON_KEY required'
-          );
-        }
-      } else {
-        /* empty */
-      }
-
-      await initDatabase();
-      dbInitialized = true;
-      dbInitializing = false;
-      next();
-    } catch (err) {
-      dbInitializing = false;
-      return res.status(500).json({
-        error: 'Database initialization failed',
-        message: err.message,
-        details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-      });
-    }
-  });
-} else {
-  ensureDatabaseInitialized().catch((error) => {
-    console.error('Database initialization error:', error);
-    if (!isVercel) {
-      process.exit(1);
-    }
-  });
-}
-
 app.use((req, res, next) => {
   next();
 });
@@ -290,7 +216,6 @@ let routesMounted = false;
 const mountRoutes = () => {
   if (routesMounted) return;
 
-  if (passwordResetRoutes) apiRouter.use('/', passwordResetRoutes);
   if (authRoutes) apiRouter.use('/', authRoutes);
   if (childrenRoutes) apiRouter.use('/children', childrenRoutes);
   if (usersRoutes) apiRouter.use('/users', usersRoutes);
@@ -314,10 +239,6 @@ app.use('/api', async (req, res, next) => {
   try {
     if (!modulesLoaded) {
       await lazyLoadModules();
-    }
-
-    if (!isVercel && modulesLoaded && pool && initDatabase) {
-      await ensureDatabaseInitialized();
     }
 
     if (!routesMounted && modulesLoaded) {

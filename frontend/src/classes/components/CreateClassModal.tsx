@@ -20,7 +20,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { getUsers } from '@frontend/services/api/user';
 import { createClass, getClasses } from '@frontend/services/api/class';
-import { User } from '@frontend/types/shared';
+import { User } from '@frontend/types/user';
 import { Class as ClassType } from '@frontend/types/class';
 import { classAgeGroups, type ClassAgeGroupKey } from '../utils/ageGroups';
 import { classInfoSchema, classTeachersSchema } from '@frontend/shared/validation/classSchema';

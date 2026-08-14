@@ -2,7 +2,8 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import authenticateToken from '#backend/middleware/auth.js';
-import { executeQuery } from '#backend/utils/dbQuery.js';
+import { db } from '#backend/config/database.js';
+import { documents } from '#backend/db/schema.js';
 import { validateDocument, canAccessDocumentByIds, ensureChildInClass } from './validation.js';
 
 // Create a new document
@@ -26,38 +27,23 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Child is not assigned to this class' });
     }
 
-    // Use executeQuery for better serverless retry handling
-    const result = await executeQuery(
-      `
-      INSERT INTO documents (
+    const result = await db
+      .insert(documents)
+      .values({
         title,
-        description,
-        file_url,
-        file_name,
-        mime_type,
-        size_bytes,
-        class_id,
-        child_id,
-        created_by,
-        updated_by
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9)
-      RETURNING *
-    `,
-      [
-        title,
-        description || null,
-        file_url,
-        file_name || null,
-        mime_type || null,
-        size_bytes !== undefined ? size_bytes : null,
-        class_id || null,
-        child_id || null,
-        req.user.id,
-      ]
-    );
+        description: description || null,
+        fileUrl: file_url,
+        fileName: file_name || null,
+        mimeType: mime_type || null,
+        sizeBytes: size_bytes !== undefined ? size_bytes : null,
+        classId: class_id || null,
+        childId: child_id || null,
+        createdBy: req.user.id,
+        updatedBy: req.user.id,
+      })
+      .returning();
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(result[0]);
   } catch (err) {
     console.error('Error creating document:', err);
     const statusCode = err.code === 'ECONNREFUSED' || err.message.includes('timeout') ? 503 : 500;

@@ -1,14 +1,14 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '#backend/config/database.js';
+import { and, eq, gte, lt, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { categoryPresentations } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 // Create a new category presentation
 router.post('/categories', auth, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -32,52 +32,56 @@ router.post('/categories', auth, async (req, res) => {
       return res.status(400).json({ error: 'Display order must be a positive number' });
     }
 
-    await client.query('BEGIN');
+    const result = await db.transaction(async (tx) => {
+      // Shift down existing presentations at and after the display_order
+      // Step 1: Convert to temporary negative values to avoid constraint conflicts
+      await tx
+        .update(categoryPresentations)
+        .set({ displayOrder: sql`-(${categoryPresentations.displayOrder} + 1)` })
+        .where(
+          and(
+            eq(categoryPresentations.category, category),
+            eq(categoryPresentations.ageGroup, age_group),
+            gte(categoryPresentations.displayOrder, display_order)
+          )
+        );
 
-    // Shift down existing presentations at and after the display_order
-    // Step 1: Convert to temporary negative values to avoid constraint conflicts
-    const tempShiftQuery = `
-      UPDATE category_presentations
-      SET display_order = -(display_order + 1)
-      WHERE category = $1 AND age_group = $2 AND display_order >= $3
-    `;
-    await client.query(tempShiftQuery, [category, age_group, display_order]);
+      // Step 2: Convert negative values back to positive
+      await tx
+        .update(categoryPresentations)
+        .set({ displayOrder: sql`-${categoryPresentations.displayOrder}` })
+        .where(
+          and(
+            eq(categoryPresentations.category, category),
+            eq(categoryPresentations.ageGroup, age_group),
+            lt(categoryPresentations.displayOrder, 0)
+          )
+        );
 
-    // Step 2: Convert negative values back to positive
-    const finalShiftQuery = `
-      UPDATE category_presentations
-      SET display_order = -display_order
-      WHERE category = $1 AND age_group = $2 AND display_order < 0
-    `;
-    await client.query(finalShiftQuery, [category, age_group]);
+      // Insert the new presentation
+      const inserted = await tx
+        .insert(categoryPresentations)
+        .values({
+          category,
+          name,
+          ageGroup: age_group,
+          displayOrder: display_order,
+          notes: notes || null,
+        })
+        .returning();
 
-    // Insert the new presentation
-    const insertQuery = `
-      INSERT INTO category_presentations (category, name, age_group, display_order, notes)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, category, name, age_group, display_order, notes, created_at
-    `;
+      return inserted[0];
+    });
 
-    const result = await client.query(insertQuery, [
-      category,
-      name,
-      age_group,
-      display_order,
-      notes || null,
-    ]);
-
-    await client.query('COMMIT');
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(result);
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK').catch((err) => {
-        console.error('Error rolling back transaction:', err);
+    if (error.code === '23505') {
+      return res.status(400).json({
+        error: 'A presentation with this category and display order already exists',
       });
     }
     console.error('Error creating category presentation:', error);
     res.status(500).json({ error: 'Failed to create category presentation' });
-  } finally {
-    client?.release();
   }
 });
 

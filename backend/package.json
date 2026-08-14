@@ -4,11 +4,16 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "jest --passWithNoTests",
-    "start": "node server.js",
+    "test": "npm run test:parallel && npm run test:isolated",
+    "test:parallel": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests --testPathIgnorePatterns=classes/auto-assign.test.js",
+    "test:isolated": "node --experimental-vm-modules node_modules/jest/bin/jest.js --passWithNoTests --selectProjects integration --runInBand --testPathPatterns=classes/auto-assign.test.js",
+    "start": "node --watch server.js",
     "dev": "nodemon server.js",
-    "migrate": "node src/db/migrate.js",
-    "seed": "node src/db/seed.js"
+    "migrate": "node db/migrate.js",
+    "seed": "node db/seed.js",
+    "db:generate": "drizzle-kit generate --config drizzle.config.js",
+    "test:db:create": "node tests/setup/create-test-db.mjs",
+    "test:db:migrate": "node tests/setup/migrate-test-db.mjs"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +25,7 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "drizzle-orm": "^0.36.0",
     "edumont-react": "file:..",
     "express": "^4.21.2",
     "js": "^0.1.0",
@@ -29,8 +35,10 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.27.0",
     "jest": "^30.2.0",
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "supertest": "^7.2.2"
   },
   "_moduleAliases": {
     "@config": "./config",

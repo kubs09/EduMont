@@ -1,7 +1,9 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import pool from '#backend/config/database.js';
+import { eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { users } from '#backend/db/schema.js';
 import passwordService from './services/password.js';
 import validationService from './services/validation.js';
 
@@ -9,58 +11,60 @@ const { hashPassword } = passwordService;
 const { validateSignupData } = validationService;
 
 router.post('/signup', async (req, res) => {
-  let client;
   try {
-    client = await pool.connect();
     const { email, password, firstName, lastName } = req.body;
 
     const validation = validateSignupData(email, password, firstName, lastName);
     if (!validation.isValid) {
       return res.status(400).json({ error: validation.errors.join(', ') });
     }
-    await client.query('BEGIN');
 
-    const existingUser = await client.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existingUser.rows.length > 0) {
-      await client.query('ROLLBACK');
+    const normalizedEmail = email.toLowerCase();
+
+    const newUser = await db.transaction(async (tx) => {
+      const existingUser = await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, normalizedEmail))
+        .limit(1);
+
+      if (existingUser.length > 0) {
+        return null;
+      }
+
+      const hashedPassword = await hashPassword(password);
+
+      const inserted = await tx
+        .insert(users)
+        .values({
+          email: normalizedEmail,
+          password: hashedPassword,
+          firstname: firstName,
+          surname: lastName,
+          role: 'parent',
+        })
+        .returning({
+          id: users.id,
+          email: users.email,
+          firstname: users.firstname,
+          surname: users.surname,
+          role: users.role,
+        });
+
+      return inserted[0];
+    });
+
+    if (!newUser) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    const hashedPassword = await hashPassword(password);
-
-    const insertQuery = `
-      INSERT INTO users (email, password, firstname, surname, role)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, email, firstname, surname, role`;
-
-    const result = await client.query(insertQuery, [
-      email.toLowerCase(),
-      hashedPassword,
-      firstName,
-      lastName,
-      'parent',
-    ]);
-
-    await client.query('COMMIT');
-
     res.status(201).json({
       message: 'User registered successfully',
-      user: {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        firstname: result.rows[0].firstname,
-        surname: result.rows[0].surname,
-        role: result.rows[0].role,
-      },
+      user: newUser,
     });
   } catch (err) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
     console.error('Signup error:', err);
     res.status(500).json({ error: 'Registration failed', details: err.message });
-  } finally {
-    client?.release();
   }
 });
 

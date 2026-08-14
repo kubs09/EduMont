@@ -2,7 +2,9 @@ import { Router } from 'express';
 const router = Router();
 import console from 'console';
 import process from 'process';
-import pool from '#backend/config/database.js';
+import { eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { users } from '#backend/db/schema.js';
 import passwordService from './services/password.js';
 import tokenService from './services/token.js';
 import validationService from './services/validation.js';
@@ -23,10 +25,19 @@ router.post('/login', async (req, res) => {
 
     let result;
     try {
-      result = await pool.query(
-        'SELECT id, email, password as hash, firstname, surname, role, message_notifications, phone FROM users WHERE email = $1',
-        [normalizedEmail]
-      );
+      result = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          hash: users.password,
+          firstname: users.firstname,
+          surname: users.surname,
+          role: users.role,
+          messageNotifications: users.messageNotifications,
+          phone: users.phone,
+        })
+        .from(users)
+        .where(eq(users.email, normalizedEmail));
     } catch (dbError) {
       console.error('🔴 Database query error:', {
         message: dbError.message,
@@ -40,11 +51,11 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const user = result.rows[0];
+    const user = result[0];
 
     if (!user.hash) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -86,7 +97,7 @@ router.post('/login', async (req, res) => {
       surname: user.surname,
       role: user.role,
       email: user.email,
-      messageNotifications: user.message_notifications,
+      messageNotifications: user.messageNotifications,
       phone: user.phone,
     });
   } catch (error) {

@@ -1,16 +1,15 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '#backend/config/database.js';
+import { and, eq, ne, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classTeachers, classes, users } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.put('/:id', auth, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Only administrators can update classes' });
   }
-  let client;
   try {
-    client = await connect();
-    await client.query('BEGIN');
     const { id } = req.params;
     const classId = Number(id);
 
@@ -51,91 +50,104 @@ router.put('/:id', auth, async (req, res) => {
       throw new Error('Assistant cannot be the same as the main teacher');
     }
 
-    const updateResult = await client.query(
-      'UPDATE classes SET name = $1, description = $2, min_age = $3, max_age = $4 WHERE id = $5',
-      [name, description, minAge, maxAge, classId]
-    );
-    if (updateResult.rowCount === 0) {
-      throw new Error('Class not found');
-    }
-
-    const assignedTeacher = await client.query(
-      'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-      [teacherIdNum, classId]
-    );
-    if (assignedTeacher.rows.length > 0) {
-      throw new Error('Selected teacher is already assigned to another class');
-    }
-
-    if (assistantIdNum !== null) {
-      const assignedAssistant = await client.query(
-        'SELECT class_id FROM class_teachers WHERE teacher_id = $1 AND class_id <> $2 LIMIT 1',
-        [assistantIdNum, classId]
-      );
-
-      if (assignedAssistant.rows.length > 0) {
-        throw new Error('Selected assistant is already assigned to another class');
+    const updatedClass = await db.transaction(async (tx) => {
+      const updateResult = await tx
+        .update(classes)
+        .set({ name, description, minAge, maxAge })
+        .where(eq(classes.id, classId))
+        .returning({ id: classes.id });
+      if (updateResult.length === 0) {
+        throw new Error('Class not found');
       }
-    }
 
-    const currentTeachers = await client.query(
-      'SELECT teacher_id, role FROM class_teachers WHERE class_id = $1',
-      [classId]
-    );
+      const assignedTeacher = await tx
+        .select({ classId: classTeachers.classId })
+        .from(classTeachers)
+        .where(and(eq(classTeachers.teacherId, teacherIdNum), ne(classTeachers.classId, classId)))
+        .limit(1);
+      if (assignedTeacher.length > 0) {
+        throw new Error('Selected teacher is already assigned to another class');
+      }
 
-    const currentTeacher = currentTeachers.rows.find((r) => r.role === 'teacher');
-    const currentAssistant = currentTeachers.rows.find((r) => r.role === 'assistant');
+      if (assistantIdNum !== null) {
+        const assignedAssistant = await tx
+          .select({ classId: classTeachers.classId })
+          .from(classTeachers)
+          .where(
+            and(eq(classTeachers.teacherId, assistantIdNum), ne(classTeachers.classId, classId))
+          )
+          .limit(1);
 
-    const teacherChanged = !currentTeacher || Number(currentTeacher.teacher_id) !== teacherIdNum;
-    const assistantChanged =
-      assistantIdNum !== null
-        ? !currentAssistant || Number(currentAssistant.teacher_id) !== assistantIdNum
-        : !!currentAssistant;
+        if (assignedAssistant.length > 0) {
+          throw new Error('Selected assistant is already assigned to another class');
+        }
+      }
 
-    await client.query('DELETE FROM class_teachers WHERE class_id = $1', [classId]);
+      const currentTeachers = await tx
+        .select({ teacherId: classTeachers.teacherId, role: classTeachers.role })
+        .from(classTeachers)
+        .where(eq(classTeachers.classId, classId));
 
-    await client.query(
-      'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-      [classId, teacherIdNum, 'teacher', teacherChanged]
-    );
+      const currentTeacher = currentTeachers.find((r) => r.role === 'teacher');
+      const currentAssistant = currentTeachers.find((r) => r.role === 'assistant');
 
-    if (assistantIdNum !== null) {
-      await client.query(
-        'INSERT INTO class_teachers (class_id, teacher_id, role, permission_requested) VALUES ($1, $2, $3, $4)',
-        [classId, assistantIdNum, 'assistant', assistantChanged]
-      );
-    }
+      const teacherChanged = !currentTeacher || Number(currentTeacher.teacherId) !== teacherIdNum;
+      const assistantChanged =
+        assistantIdNum !== null
+          ? !currentAssistant || Number(currentAssistant.teacherId) !== assistantIdNum
+          : !!currentAssistant;
 
-    await client.query('COMMIT');
-    const updatedClass = await client.query(
-      `
-      SELECT c.*, 
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'id', t.id,
-              'firstname', t.firstname,
-              'surname', t.surname,
-              'class_role', ct.role,
-              'permission_requested', ct.permission_requested
-            )
-          ) FILTER (WHERE t.id IS NOT NULL), 
-          '[]'
-        ) as teachers
-      FROM classes c
-      LEFT JOIN class_teachers ct ON c.id = ct.class_id
-      LEFT JOIN users t ON ct.teacher_id = t.id
-      WHERE c.id = $1
-      GROUP BY c.id`,
-      [classId]
-    );
+      await tx.delete(classTeachers).where(eq(classTeachers.classId, classId));
 
-    res.json(updatedClass.rows[0]);
+      await tx.insert(classTeachers).values({
+        classId,
+        teacherId: teacherIdNum,
+        role: 'teacher',
+        permissionRequested: teacherChanged,
+      });
+
+      if (assistantIdNum !== null) {
+        await tx.insert(classTeachers).values({
+          classId,
+          teacherId: assistantIdNum,
+          role: 'assistant',
+          permissionRequested: assistantChanged,
+        });
+      }
+
+      const rows = await tx
+        .select({
+          id: classes.id,
+          name: classes.name,
+          description: classes.description,
+          ageGroup: classes.ageGroup,
+          minAge: classes.minAge,
+          maxAge: classes.maxAge,
+          createdAt: classes.createdAt,
+          teachers: sql`COALESCE(
+            json_agg(
+              json_build_object(
+                'id', ${users.id},
+                'firstname', ${users.firstname},
+                'surname', ${users.surname},
+                'class_role', ${classTeachers.role},
+                'permission_requested', ${classTeachers.permissionRequested}
+              )
+            ) FILTER (WHERE ${users.id} IS NOT NULL),
+            '[]'
+          )`,
+        })
+        .from(classes)
+        .leftJoin(classTeachers, eq(classes.id, classTeachers.classId))
+        .leftJoin(users, eq(classTeachers.teacherId, users.id))
+        .where(eq(classes.id, classId))
+        .groupBy(classes.id);
+
+      return rows[0];
+    });
+
+    res.json(updatedClass);
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
-
     if (
       error.message.includes('Selected teacher is already assigned') ||
       error.message.includes('Selected assistant is already assigned') ||
@@ -161,8 +173,6 @@ router.put('/:id', auth, async (req, res) => {
       error: 'Failed to update class',
       details: error.message,
     });
-  } finally {
-    client?.release();
   }
 });
 

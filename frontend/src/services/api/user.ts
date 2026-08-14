@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { ApiError, UpdateUserData, User } from '@frontend/types/shared';
+import { ApiError, UpdateUserData, User } from '@frontend/types/user';
 
 export const getUsers = async (role?: string): Promise<User[]> => {
   try {

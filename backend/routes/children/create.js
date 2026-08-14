@@ -1,15 +1,15 @@
 import { Router } from 'express';
 const router = Router();
-import { connect } from '#backend/config/database.js';
 import console from 'console';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { childParents, children, classChildren, classes, users } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validation from './validation.js';
 const { validateChild, validateParentIds } = validation;
 
 router.post('/', authenticateToken, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     const { firstname, surname, date_of_birth, parent_ids, notes, class_id } = req.body;
 
     // Validate input
@@ -18,13 +18,13 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    // For parents, force parent_ids to their own ID
-    const actualParentIds = req.user.role === 'parent' ? [req.user.id] : parent_ids;
-
-    // Verify if admin/teacher or parent is creating for themselves
-    if (req.user.role === 'parent' && (!actualParentIds || actualParentIds[0] !== req.user.id)) {
+    // A parent may omit parent_ids (defaults to themselves) but may not name someone else
+    if (req.user.role === 'parent' && parent_ids && parent_ids[0] !== req.user.id) {
       return res.status(403).json({ error: 'Parents can only add their own children' });
     }
+
+    // For parents, force parent_ids to their own ID
+    const actualParentIds = req.user.role === 'parent' ? [req.user.id] : parent_ids;
 
     const parentIdErrors = validateParentIds(actualParentIds, true);
     if (parentIdErrors.length > 0) {
@@ -36,82 +36,83 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
     }
 
-    await client.query('BEGIN');
+    const newChild = await db.transaction(async (tx) => {
+      const childResult = await tx
+        .insert(children)
+        .values({ firstname, surname, dateOfBirth: date_of_birth, notes })
+        .returning();
 
-    const childResult = await client.query(
-      `INSERT INTO children (firstname, surname, date_of_birth, notes)
-       VALUES ($1, $2, $3::date, $4)
-       RETURNING *`,
-      [firstname, surname, date_of_birth, notes]
-    );
+      const child = childResult[0];
 
-    const childAge = Math.floor(
-      (new Date() - new Date(date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000)
-    );
-
-    let assignedClassId;
-    if (class_id) {
-      // Verify the provided class exists and the age is appropriate
-      const classResult = await client.query(
-        'SELECT id FROM classes WHERE id = $1 AND $2 BETWEEN min_age AND max_age',
-        [class_id, childAge]
+      const childAge = Math.floor(
+        (new Date() - new Date(date_of_birth)) / (365.25 * 24 * 60 * 60 * 1000)
       );
 
-      if (classResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          error: 'selectedClassNotSuitable',
-          details: "The selected class is not suitable for the child's age",
-        });
+      let assignedClassId;
+      if (class_id) {
+        // Verify the provided class exists and the age is appropriate
+        const classResult = await tx
+          .select({ id: classes.id })
+          .from(classes)
+          .where(
+            and(
+              eq(classes.id, class_id),
+              sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`
+            )
+          );
+
+        if (classResult.length === 0) {
+          throw new Error('selectedClassNotSuitable');
+        }
+        assignedClassId = class_id;
+      } else {
+        // Auto-assign class based on age
+        const classResult = await tx
+          .select({ id: classes.id })
+          .from(classes)
+          .where(sql`${childAge} between ${classes.minAge} and ${classes.maxAge}`)
+          .orderBy(classes.minAge, classes.maxAge, classes.name)
+          .limit(1);
+
+        if (classResult.length === 0) {
+          throw new Error('noSuitableClass');
+        }
+        assignedClassId = classResult[0].id;
       }
-      assignedClassId = class_id;
-    } else {
-      // Auto-assign class based on age
-      const classResult = await client.query(
-        'SELECT id FROM classes WHERE $1 BETWEEN min_age AND max_age LIMIT 1',
-        [childAge]
-      );
 
-      if (classResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({
-          error: 'noSuitableClass',
-          details: null,
-        });
+      await tx.insert(classChildren).values({ classId: assignedClassId, childId: child.id });
+
+      const validParents = await tx
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.role, 'parent'), inArray(users.id, actualParentIds)));
+      if (validParents.length !== actualParentIds.length) {
+        throw new Error('invalidParentIds');
       }
-      assignedClassId = classResult.rows[0].id;
-    }
 
-    await client.query('INSERT INTO class_children (class_id, child_id) VALUES ($1, $2)', [
-      assignedClassId,
-      childResult.rows[0].id,
-    ]);
+      await tx
+        .insert(childParents)
+        .values(actualParentIds.map((parentId) => ({ childId: child.id, parentId })));
 
-    const validParents = await client.query(
-      'SELECT id FROM users WHERE role = $1 AND id = ANY($2)',
-      ['parent', actualParentIds]
-    );
-    if (validParents.rows.length !== actualParentIds.length) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ errors: ['One or more parent IDs are invalid'] });
-    }
+      return child;
+    });
 
-    await client.query(
-      `INSERT INTO child_parents (child_id, parent_id)
-       SELECT $1, unnest($2::int[])`,
-      [childResult.rows[0].id, actualParentIds]
-    );
-
-    await client.query('COMMIT');
-    res.status(201).json(childResult.rows[0]);
+    res.status(201).json(newChild);
   } catch (err) {
-    if (client) {
-      await client.query('ROLLBACK');
+    if (err.message === 'selectedClassNotSuitable') {
+      return res.status(400).json({
+        error: 'selectedClassNotSuitable',
+        details: "The selected class is not suitable for the child's age",
+      });
+    }
+    if (err.message === 'noSuitableClass') {
+      return res.status(400).json({ error: 'noSuitableClass', details: null });
+    }
+    if (err.message === 'invalidParentIds') {
+      return res.status(400).json({ errors: ['One or more parent IDs are invalid'] });
     }
     console.error('Error creating child:', err);
     res.status(500).json({ error: 'Failed to create child record' });
-  } finally {
-    client?.release();
   }
 });
 

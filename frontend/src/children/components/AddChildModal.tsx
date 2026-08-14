@@ -24,7 +24,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { createChildSchema } from '@frontend/shared/validation/childSchema';
 import DatePicker from '@frontend/shared/components/DatePicker/components/DatePicker';
 import { getUsers } from '@frontend/services/api/user';
-import { User } from '@frontend/types/shared';
+import { User } from '@frontend/types/user';
 import { Class } from '@frontend/types/class';
 import { Combobox } from '@frontend/shared/components/Combobox';
 interface AddChildModalProps {

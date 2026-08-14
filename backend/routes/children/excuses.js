@@ -1,7 +1,15 @@
 import { Router } from 'express';
 const router = Router();
 import process from 'process';
-import { query } from '#backend/config/database.js';
+import { and, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import {
+  childExcuses,
+  childParents,
+  classChildren,
+  classTeachers,
+  users,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -47,23 +55,22 @@ const canAccessChild = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'parent') {
-    const result = await query(
-      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-      [childId, userId]
-    );
-    return result.rows.length > 0;
+    const result = await db
+      .select({ id: childParents.childId })
+      .from(childParents)
+      .where(and(eq(childParents.childId, childId), eq(childParents.parentId, userId)))
+      .limit(1);
+    return result.length > 0;
   }
 
   if (userRole === 'teacher') {
-    const result = await query(
-      `
-      SELECT 1 FROM class_teachers ct
-      JOIN class_children cc ON ct.class_id = cc.class_id
-      WHERE ct.teacher_id = $1 AND cc.child_id = $2
-    `,
-      [userId, childId]
-    );
-    return result.rows.length > 0;
+    const result = await db
+      .select({ id: classTeachers.classId })
+      .from(classTeachers)
+      .innerJoin(classChildren, eq(classTeachers.classId, classChildren.classId))
+      .where(and(eq(classTeachers.teacherId, userId), eq(classChildren.childId, childId)))
+      .limit(1);
+    return result.length > 0;
   }
 
   return false;
@@ -82,27 +89,24 @@ router.get('/:id/excuses', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const result = await query(
-      `
-      SELECT 
-        ce.id,
-        ce.child_id,
-        ce.parent_id,
-        ce.date_from,
-        ce.date_to,
-        ce.reason,
-        ce.created_at,
-        u.firstname as parent_firstname,
-        u.surname as parent_surname
-      FROM child_excuses ce
-      LEFT JOIN users u ON ce.parent_id = u.id
-      WHERE ce.child_id = $1
-      ORDER BY ce.date_from DESC, ce.created_at DESC
-    `,
-      [childId]
-    );
+    const result = await db
+      .select({
+        id: childExcuses.id,
+        child_id: childExcuses.childId,
+        parent_id: childExcuses.parentId,
+        date_from: childExcuses.dateFrom,
+        date_to: childExcuses.dateTo,
+        reason: childExcuses.reason,
+        created_at: childExcuses.createdAt,
+        parent_firstname: users.firstname,
+        parent_surname: users.surname,
+      })
+      .from(childExcuses)
+      .leftJoin(users, eq(childExcuses.parentId, users.id))
+      .where(eq(childExcuses.childId, childId))
+      .orderBy(childExcuses.dateFrom, childExcuses.createdAt);
 
-    res.json(result.rows || []);
+    res.json(result || []);
   } catch (error) {
     res.status(500).json({
       error: 'Failed to fetch excuses',
@@ -128,27 +132,30 @@ router.post('/:id/excuses', auth, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    const relation = await query(
-      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-      [childId, req.user.id]
-    );
+    const relation = await db
+      .select({ id: childParents.childId })
+      .from(childParents)
+      .where(and(eq(childParents.childId, childId), eq(childParents.parentId, req.user.id)))
+      .limit(1);
 
-    if (relation.rows.length === 0) {
+    if (relation.length === 0) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
     const { date_from, date_to, reason } = req.body;
 
-    const result = await query(
-      `
-      INSERT INTO child_excuses (child_id, parent_id, date_from, date_to, reason)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
-    `,
-      [childId, req.user.id, date_from, date_to, reason.trim()]
-    );
+    const result = await db
+      .insert(childExcuses)
+      .values({
+        childId,
+        parentId: req.user.id,
+        dateFrom: date_from,
+        dateTo: date_to,
+        reason: reason.trim(),
+      })
+      .returning();
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(result[0]);
   } catch (error) {
     res.status(500).json({
       error: 'Failed to create excuse',
@@ -175,37 +182,40 @@ router.put('/:id/excuses/:excuseId', auth, async (req, res) => {
       return res.status(400).json({ errors: validationErrors });
     }
 
-    const relation = await query(
-      'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-      [childId, req.user.id]
-    );
+    const relation = await db
+      .select({ id: childParents.childId })
+      .from(childParents)
+      .where(and(eq(childParents.childId, childId), eq(childParents.parentId, req.user.id)))
+      .limit(1);
 
-    if (relation.rows.length === 0) {
+    if (relation.length === 0) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
     const { date_from, date_to, reason } = req.body;
 
-    const result = await query(
-      `
-      UPDATE child_excuses
-      SET date_from = $1,
-          date_to = $2,
-          reason = $3,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $4
-        and child_id = $5
-        and parent_id = $6
-      RETURNING *
-    `,
-      [date_from, date_to, reason.trim(), excuseId, childId, req.user.id]
-    );
+    const result = await db
+      .update(childExcuses)
+      .set({
+        dateFrom: date_from,
+        dateTo: date_to,
+        reason: reason.trim(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(childExcuses.id, excuseId),
+          eq(childExcuses.childId, childId),
+          eq(childExcuses.parentId, req.user.id)
+        )
+      )
+      .returning();
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ error: 'Excuse not found or unauthorized' });
     }
 
-    res.json(result.rows[0]);
+    res.json(result[0]);
   } catch (error) {
     res.status(500).json({
       error: 'Failed to update excuse',
@@ -227,27 +237,33 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    const excuseResult = await query(
-      'SELECT id, child_id, parent_id FROM child_excuses WHERE id = $1',
-      [excuseId]
-    );
+    const excuseResult = await db
+      .select({
+        id: childExcuses.id,
+        child_id: childExcuses.childId,
+        parent_id: childExcuses.parentId,
+      })
+      .from(childExcuses)
+      .where(eq(childExcuses.id, excuseId))
+      .limit(1);
 
-    if (excuseResult.rows.length === 0) {
+    if (excuseResult.length === 0) {
       return res.status(404).json({ error: 'Excuse not found' });
     }
 
-    const excuse = excuseResult.rows[0];
+    const excuse = excuseResult[0];
     if (excuse.child_id !== childId) {
       return res.status(400).json({ error: 'Excuse does not belong to this child' });
     }
 
     if (req.user.role === 'parent') {
-      const relation = await query(
-        'SELECT 1 FROM child_parents WHERE child_id = $1 AND parent_id = $2',
-        [childId, req.user.id]
-      );
+      const relation = await db
+        .select({ id: childParents.childId })
+        .from(childParents)
+        .where(and(eq(childParents.childId, childId), eq(childParents.parentId, req.user.id)))
+        .limit(1);
 
-      if (relation.rows.length === 0) {
+      if (relation.length === 0) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
 
@@ -256,7 +272,7 @@ router.delete('/:id/excuses/:excuseId', auth, async (req, res) => {
       }
     }
 
-    await query('DELETE FROM child_excuses WHERE id = $1', [excuseId]);
+    await db.delete(childExcuses).where(eq(childExcuses.id, excuseId));
 
     res.json({ message: 'Excuse cancelled' });
   } catch (error) {

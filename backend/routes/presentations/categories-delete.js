@@ -1,14 +1,14 @@
 import { Router } from 'express';
 const router = Router();
 import console from 'console';
-import { connect } from '#backend/config/database.js';
+import { and, eq, gt, lt, sql } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { categoryPresentations } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 // Delete a category presentation
 router.delete('/categories/:id', auth, async (req, res) => {
-  let client;
   try {
-    client = await connect();
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Access denied' });
     }
@@ -21,46 +21,51 @@ router.delete('/categories/:id', auth, async (req, res) => {
     }
 
     // Check if presentation exists and get its details
-    const existsQuery =
-      'SELECT id, category, age_group, display_order FROM category_presentations WHERE id = $1';
-    const existsResult = await client.query(existsQuery, [id]);
-    if (existsResult.rows.length === 0) {
+    const existsResult = await db
+      .select({
+        id: categoryPresentations.id,
+        category: categoryPresentations.category,
+        ageGroup: categoryPresentations.ageGroup,
+        displayOrder: categoryPresentations.displayOrder,
+      })
+      .from(categoryPresentations)
+      .where(eq(categoryPresentations.id, id));
+    if (existsResult.length === 0) {
       return res.status(404).json({ error: 'Category presentation not found' });
     }
 
-    const { category, age_group, display_order } = existsResult.rows[0];
+    const { category, ageGroup, displayOrder } = existsResult[0];
 
-    await client.query('BEGIN');
+    await db.transaction(async (tx) => {
+      await tx.delete(categoryPresentations).where(eq(categoryPresentations.id, id));
 
-    const deleteQuery = 'DELETE FROM category_presentations WHERE id = $1';
-    await client.query(deleteQuery, [id]);
+      await tx
+        .update(categoryPresentations)
+        .set({ displayOrder: sql`-(${categoryPresentations.displayOrder} - 1)` })
+        .where(
+          and(
+            eq(categoryPresentations.category, category),
+            eq(categoryPresentations.ageGroup, ageGroup),
+            gt(categoryPresentations.displayOrder, displayOrder)
+          )
+        );
 
-    const tempUpdateQuery = `
-      UPDATE category_presentations
-      SET display_order = -(display_order - 1)
-      WHERE category = $1 AND age_group = $2 AND display_order > $3
-    `;
-    await client.query(tempUpdateQuery, [category, age_group, display_order]);
+      await tx
+        .update(categoryPresentations)
+        .set({ displayOrder: sql`-${categoryPresentations.displayOrder}` })
+        .where(
+          and(
+            eq(categoryPresentations.category, category),
+            eq(categoryPresentations.ageGroup, ageGroup),
+            lt(categoryPresentations.displayOrder, 0)
+          )
+        );
+    });
 
-    const finalUpdateQuery = `
-      UPDATE category_presentations
-      SET display_order = -display_order
-      WHERE category = $1 AND age_group = $2 AND display_order < 0
-    `;
-    await client.query(finalUpdateQuery, [category, age_group]);
-
-    await client.query('COMMIT');
     res.json({ message: 'Category presentation deleted successfully' });
   } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK').catch((err) => {
-        console.error('Error rolling back transaction:', err);
-      });
-    }
     console.error('Error deleting category presentation:', error);
     res.status(500).json({ error: 'Failed to delete category presentation' });
-  } finally {
-    client?.release();
   }
 });
 

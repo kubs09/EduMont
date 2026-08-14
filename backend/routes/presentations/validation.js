@@ -1,4 +1,6 @@
-import { query } from '#backend/config/database.js';
+import { and, asc, eq } from 'drizzle-orm';
+import { db } from '#backend/config/database.js';
+import { classChildren, classTeachers, presentations } from '#backend/db/schema.js';
 
 const STATUS_VALUES = [
   'prerequisites not met',
@@ -46,30 +48,24 @@ const validatepresentation = (data) => {
   return errors;
 };
 
-const normalizeCategoryOrdering = async (client, childId, category) => {
+const normalizeCategoryOrdering = async (tx, childId, category) => {
   if (!category) return;
 
-  const result = await client.query(
-    `
-    SELECT id, status, display_order
-    FROM presentations
-    WHERE child_id = $1 AND category = $2
-    ORDER BY display_order ASC, id ASC
-  `,
-    [childId, category]
-  );
+  const rows = await tx
+    .select({ id: presentations.id, status: presentations.status })
+    .from(presentations)
+    .where(and(eq(presentations.childId, childId), eq(presentations.category, category)))
+    .orderBy(asc(presentations.displayOrder), asc(presentations.id));
 
-  if (result.rows.length === 0) return;
+  if (rows.length === 0) return;
 
-  const firstNotPresentedIndex = result.rows.findIndex(
-    (row) => !PRESENTED_STATUSES.has(row.status)
-  );
+  const firstNotPresentedIndex = rows.findIndex((row) => !PRESENTED_STATUSES.has(row.status));
 
   if (firstNotPresentedIndex === -1) return;
 
   const updates = [];
 
-  result.rows.forEach((row, index) => {
+  rows.forEach((row, index) => {
     let desiredStatus = row.status;
 
     if (index === firstNotPresentedIndex) {
@@ -84,40 +80,28 @@ const normalizeCategoryOrdering = async (client, childId, category) => {
   });
 
   for (const update of updates) {
-    await client.query(
-      `
-      UPDATE presentations
-      SET status = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
-    `,
-      [update.status, update.id]
-    );
+    await tx
+      .update(presentations)
+      .set({ status: update.status, updatedAt: new Date() })
+      .where(eq(presentations.id, update.id));
   }
 };
 
-const normalizeDisplayOrder = async (client, childId, category) => {
+const normalizeDisplayOrder = async (tx, childId, category) => {
   if (!category) return;
 
-  const result = await client.query(
-    `
-    SELECT id
-    FROM presentations
-    WHERE child_id = $1 AND category = $2
-    ORDER BY display_order ASC, id ASC
-  `,
-    [childId, category]
-  );
+  const rows = await tx
+    .select({ id: presentations.id })
+    .from(presentations)
+    .where(and(eq(presentations.childId, childId), eq(presentations.category, category)))
+    .orderBy(asc(presentations.displayOrder), asc(presentations.id));
 
-  for (let index = 0; index < result.rows.length; index += 1) {
+  for (let index = 0; index < rows.length; index += 1) {
     const desiredOrder = index + 1;
-    await client.query(
-      `
-      UPDATE presentations
-      SET display_order = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
-    `,
-      [desiredOrder, result.rows[index].id]
-    );
+    await tx
+      .update(presentations)
+      .set({ displayOrder: desiredOrder, updatedAt: new Date() })
+      .where(eq(presentations.id, rows[index].id));
   }
 };
 
@@ -125,15 +109,13 @@ const canAccessChildpresentation = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    const result = await query(
-      `
-      SELECT 1 FROM class_teachers ct
-      JOIN class_children cc ON ct.class_id = cc.class_id
-      WHERE ct.teacher_id = $1 AND cc.child_id = $2
-    `,
-      [userId, childId]
-    );
-    return result.rows.length > 0;
+    const rows = await db
+      .select({ id: classTeachers.classId })
+      .from(classTeachers)
+      .innerJoin(classChildren, eq(classTeachers.classId, classChildren.classId))
+      .where(and(eq(classTeachers.teacherId, userId), eq(classChildren.childId, childId)))
+      .limit(1);
+    return rows.length > 0;
   }
 
   return false;
@@ -143,15 +125,13 @@ const canEditChildpresentation = async (userId, userRole, childId) => {
   if (userRole === 'admin') return true;
 
   if (userRole === 'teacher') {
-    const result = await query(
-      `
-      SELECT 1 FROM class_teachers ct
-      JOIN class_children cc ON ct.class_id = cc.class_id
-      WHERE ct.teacher_id = $1 AND cc.child_id = $2
-    `,
-      [userId, childId]
-    );
-    return result.rows.length > 0;
+    const rows = await db
+      .select({ id: classTeachers.classId })
+      .from(classTeachers)
+      .innerJoin(classChildren, eq(classTeachers.classId, classChildren.classId))
+      .where(and(eq(classTeachers.teacherId, userId), eq(classChildren.childId, childId)))
+      .limit(1);
+    return rows.length > 0;
   }
 
   return false;
