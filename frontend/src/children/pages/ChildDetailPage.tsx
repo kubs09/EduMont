@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AxiosError } from 'axios';
 import {
   Box,
   Button,
@@ -122,6 +123,11 @@ const ChildDetailPage = () => {
           setExcuses([]);
         }
       } catch (error) {
+        if (error instanceof AxiosError && error.response?.status === 404) {
+          navigate(ROUTES.NOT_FOUND);
+          return;
+        }
+
         toast({
           title: texts.child.error.fetchTitle[language],
           description: texts.child.error.fetchDescription[language],
@@ -133,7 +139,7 @@ const ChildDetailPage = () => {
     };
 
     fetchData();
-  }, [id, language, toast, isAdmin]);
+  }, [id, language, navigate, toast, isAdmin]);
 
   useEffect(() => {
     const fetchPresentationPermission = async () => {

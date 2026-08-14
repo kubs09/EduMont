@@ -104,7 +104,7 @@ const resolvePoolConfig = () => {
 
   const useSupabase =
     (process.env.USE_SUPABASE === 'true' ||
-      (process.env.VERCEL === 'true' && hasSupabaseCredentials)) &&
+      (['1', 'true'].includes(process.env.VERCEL) && hasSupabaseCredentials)) &&
     hasSupabaseCredentials;
 
   const poolConfig = useSupabase ? buildSupabasePoolConfig() : buildLocalPoolConfig();
