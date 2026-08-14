@@ -75,7 +75,7 @@ const EditProfilePage = () => {
         setErrors(validationErrors);
       } else {
         toast({
-          title: texts.profile.error[language],
+          title: texts.profile.error.title[language],
           description: error.message || 'Update failed',
           status: 'error',
           duration: 3000,
