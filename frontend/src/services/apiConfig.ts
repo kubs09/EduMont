@@ -97,6 +97,13 @@ api.interceptors.response.use(
       }
     }
 
+    if (error.response?.status === 404) {
+      const shouldRedirectOn404 = Boolean(error.config?.redirectOn404);
+      if (shouldRedirectOn404 && !window.location.pathname.includes('/not-found')) {
+        window.location.href = '/not-found';
+      }
+    }
+
     throw error;
   }
 );

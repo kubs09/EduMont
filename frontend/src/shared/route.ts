@@ -3,6 +3,7 @@ export const ROUTES = {
   DASHBOARD: '/messages',
   ROOT: '/',
   UNAUTHORIZED: '/unauthorized',
+  NOT_FOUND: '/not-found',
   USER_DASHBOARD: '/users',
   HOME: '/',
   MESSAGES: '/messages',

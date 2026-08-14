@@ -5,7 +5,7 @@ import { ROUTES } from '@frontend/shared/route';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 
-const UnauthorizedPage = () => {
+const NotFoundPage = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const isAuthenticated = !!localStorage.getItem('token');
@@ -22,7 +22,7 @@ const UnauthorizedPage = () => {
     <Center h="100vh">
       <VStack spacing={6}>
         <Icon as={WarningIcon} color="red.500" boxSize={16} />
-        <Heading size="xl">{texts.static_pages.unauthorized_title[language]}</Heading>
+        <Heading size="xl">{texts.static_pages.notFound_title[language]}</Heading>
         <Text>
           {isAuthenticated
             ? texts.static_pages.backMessage[language]
@@ -38,4 +38,4 @@ const UnauthorizedPage = () => {
   );
 };
 
-export default UnauthorizedPage;
+export default NotFoundPage;

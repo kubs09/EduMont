@@ -314,6 +314,10 @@ export const presentation = {
       cs: 'Nepodařilo se smazat položku rozvrhu',
       en: 'Failed to delete presentation entry',
     },
+    deleteErrorDescription: {
+      cs: 'Nepodařilo se smazat položku rozvrhu. Zkuste to prosím znovu.',
+      en: 'Failed to delete presentation entry. Please try again.',
+    },
     fetchError: {
       cs: 'Nepodařilo se načíst rozvrh',
       en: 'Failed to fetch presentation',

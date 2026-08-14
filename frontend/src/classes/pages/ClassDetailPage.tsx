@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AxiosError } from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -83,6 +84,11 @@ const ClassDetailPage = () => {
             const response = await api.get(`/api/classes/${id}`);
             setClassData(transformClassData(response.data));
           } catch (error) {
+            if (error instanceof AxiosError && error.response?.status === 404) {
+              navigate(ROUTES.NOT_FOUND);
+              return;
+            }
+
             toast({
               title: 'Error',
               description: 'Failed to load class data',
@@ -158,7 +164,7 @@ const ClassDetailPage = () => {
     };
 
     fetchData();
-  }, [id, toast]);
+  }, [id, navigate, toast]);
 
   useEffect(() => {
     if (!classData?.children?.length) {

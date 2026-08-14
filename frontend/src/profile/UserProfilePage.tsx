@@ -16,8 +16,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { getUserById } from '@frontend/services/api';
-import { User } from '@frontend/types/user';
+import { ApiError, User } from '@frontend/types/user';
 import { Section } from '@frontend/shared/components';
+import { ROUTES } from '@frontend/shared/route';
 
 const UserProfilePage = () => {
   const { id } = useParams();
@@ -34,8 +35,8 @@ const UserProfilePage = () => {
       const userId = parseInt(id, 10);
       if (Number.isNaN(userId)) {
         toast({
-          title: texts.common.userDashboard.errorTitle[language],
-          description: texts.profile.loadError[language],
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -47,9 +48,14 @@ const UserProfilePage = () => {
         const response = await getUserById(userId);
         setUser(response);
       } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          navigate(ROUTES.NOT_FOUND);
+          return;
+        }
+
         toast({
-          title: texts.common.userDashboard.errorTitle[language],
-          description: texts.profile.loadError[language],
+          title: texts.profile.error.title[language],
+          description: texts.profile.error.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -58,7 +64,7 @@ const UserProfilePage = () => {
     };
 
     fetchUser();
-  }, [id, language, toast]);
+  }, [id, language, navigate, toast]);
 
   if (!user) {
     return null;

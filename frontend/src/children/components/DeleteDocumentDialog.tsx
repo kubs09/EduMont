@@ -39,8 +39,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
       await api.delete(`/api/documents/${documentId}`);
 
       toast({
-        title: texts.profile.success[language],
-        description: texts.document.error.deleteSuccess[language],
+        title: texts.document.success.delete[language],
         status: 'success',
         duration: 3000,
       });
@@ -49,7 +48,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
       await onDocumentDeleted();
     } catch (error) {
       toast({
-        title: texts.profile.error[language],
+        title: texts.document.error.title[language],
         description: texts.document.error.deleteFailed[language],
         status: 'error',
         duration: 5000,

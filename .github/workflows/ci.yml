@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '18'
           cache: 'npm'
@@ -29,9 +29,9 @@ jobs:
     needs: lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '18'
           cache: 'npm'
@@ -73,9 +73,9 @@ jobs:
       FRONTEND_URL: http://localhost:3000
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '18'
           cache: 'npm'
@@ -89,3 +89,30 @@ jobs:
         run: npm run test:db:migrate --prefix backend
       - name: Test
         run: npm test --prefix backend
+
+  migrate-production:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: production-supabase-migrations
+      cancel-in-progress: false
+    needs: [lint, frontend, backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    env:
+      USE_SUPABASE: 'true'
+      SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+      - name: Install deps
+        run: npm ci --prefix backend
+      - name: Apply pending migrations to production
+        run: npm run migrate --prefix backend
