@@ -2,19 +2,7 @@ import React from 'react';
 import { VStack, HStack, Text, IconButton, Button, Box } from '@chakra-ui/react';
 import { DeleteIcon, EmailIcon } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import { Message } from '@frontend/types/message';
-
-interface MessageDetailProps {
-  message: Message | null;
-  onDelete: (id: number) => void;
-  onCompose: () => void;
-  translations: {
-    from: string;
-    to: string;
-    title: string;
-    compose: string;
-  };
-}
+import { MessageDetailProps } from '@frontend/types/message';
 
 const MessageDetail: React.FC<MessageDetailProps> = ({
   message,

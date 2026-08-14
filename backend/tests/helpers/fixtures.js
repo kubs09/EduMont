@@ -12,6 +12,7 @@ import {
   classTeachers,
   classes,
   documents,
+  invitations,
   messages,
   presentationPermissions,
   presentations,
@@ -164,6 +165,23 @@ export const createTestCategoryPresentation = (overrides = {}) =>
     .returning()
     .then(([categoryPresentation]) => categoryPresentation);
 
+export const createTestInvitation = (overrides = {}) => {
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + 48);
+
+  return db
+    .insert(invitations)
+    .values({
+      email: `fixture-${uniqueSuffix()}@example.com`,
+      token: `fixture-token-${uniqueSuffix()}`,
+      role: 'parent',
+      expiresAt,
+      ...overrides,
+    })
+    .returning()
+    .then(([invitation]) => invitation);
+};
+
 export const createCleanupTracker = () => {
   const created = {
     categoryPresentations: [],
@@ -176,6 +194,7 @@ export const createCleanupTracker = () => {
     classHistory: [],
     classAttendance: [],
     documents: [],
+    invitations: [],
     messages: [],
     children: [],
     classes: [],
@@ -229,6 +248,9 @@ export const createCleanupTracker = () => {
     }
     for (const d of created.documents) {
       await db.delete(documents).where(eq(documents.id, d.id));
+    }
+    for (const inv of created.invitations) {
+      await db.delete(invitations).where(eq(invitations.id, inv.id));
     }
     for (const m of created.messages) {
       await db.delete(messages).where(eq(messages.id, m.id));
