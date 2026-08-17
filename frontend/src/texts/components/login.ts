@@ -1,3 +1,5 @@
+import { common } from './common';
+
 export const login = {
   errors: {
     invalidCredentials: {
@@ -32,17 +34,30 @@ export const login = {
     },
   },
   validation: {
-    emailRequired: {
-      cs: 'Emailová adresa je povinná',
-      en: 'Email address is required',
-    },
+    emailRequired: common.templates.validation.required(
+      { cs: 'Emailová adresa', en: 'Email address' },
+      'fem',
+    ),
     passwordRequired: {
       cs: 'Heslo je povinné',
       en: 'Password is required',
     },
-    invalidEmail: {
-      cs: 'Prosím zadejte platnou emailovou adresu',
-      en: 'Please enter a valid email address',
+    invalidEmail: common.templates.validation.invalidEmail,
+    newPasswordLength: common.templates.validation.minLength(
+      { cs: 'Nové heslo', en: 'New password' },
+      8,
+    ),
+    passwordUppercase: {
+      cs: 'Heslo musí obsahovat alespoň jedno velké písmeno',
+      en: 'Password must contain at least one uppercase letter',
+    },
+    passwordNumber: {
+      cs: 'Heslo musí obsahovat alespoň jedno číslo',
+      en: 'Password must contain at least one number',
+    },
+    passwordMatch: {
+      cs: 'Hesla se musí shodovat',
+      en: 'Passwords must match',
     },
   },
   signIn: {

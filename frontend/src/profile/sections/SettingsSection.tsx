@@ -60,7 +60,7 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
       setIsSubmitting(true);
       await changePassword(userId, formData.currentPassword, formData.newPassword);
       toast({
-        title: texts.profile.passwordChanged[language],
+        title: texts.profile.success.passwordChanged[language],
         status: 'success',
       });
       resetForm();
@@ -82,12 +82,12 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
         if (error.message === 'Current password is incorrect') {
           setErrors((prev) => ({
             ...prev,
-            currentPassword: texts.profile.incorrectCurrentPassword[language],
+            currentPassword: texts.profile.errors.incorrectCurrentPassword[language],
           }));
           return;
         } else {
           toast({
-            title: texts.profile.passwordError[language],
+            title: texts.profile.errors.passwordChangeFailed[language],
             status: 'error',
           });
         }
@@ -162,7 +162,7 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
                   setShowPasswordForm(false);
                 }}
               >
-                {texts.profile.cancel[language]}
+                {texts.common.cancel[language]}
               </Button>
             </VStack>
           </form>

@@ -110,8 +110,8 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
         setParents(data);
       } catch (error) {
         toast({
-          title: texts.profile.error.title[language],
-          description: texts.profile.error.description[language],
+          title: texts.common.genericError.title[language],
+          description: texts.common.genericError.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,

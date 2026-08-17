@@ -285,7 +285,7 @@ const ChildExcuseAction = ({
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onClick={closeModal} mr={3}>
-              {texts.profile.cancel[language]}
+              {texts.common.cancel[language]}
             </Button>
             <Button variant="brand" onClick={handleExcuseSubmit} isLoading={isSubmitting}>
               {texts.children.excuse.submit[language]}

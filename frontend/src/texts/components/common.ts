@@ -35,6 +35,16 @@ export const common = {
     cs: 'Nastala neznámá chyba',
     en: 'An unknown error occurred',
   },
+  genericError: {
+    title: {
+      cs: 'Nastala chyba',
+      en: 'An error occurred',
+    },
+    description: {
+      cs: 'Zkuste to prosím později.',
+      en: 'Please try again later.',
+    },
+  },
   entities: {} as Record<string, Entity>,
   templates: {
     success: {
@@ -42,6 +52,7 @@ export const common = {
       updated: (entity: Entity) => successPhrase('aktualizován', 'updated', entity),
       deleted: (entity: Entity) => successPhrase('smazán', 'deleted', entity),
       added: (entity: Entity) => successPhrase('přidán', 'added', entity),
+      changed: (entity: Entity) => successPhrase('změněn', 'changed', entity),
     },
     errors: {
       failedToLoad: (entity: Entity) => failedToPhrase('načíst', 'load', entity),
@@ -49,6 +60,7 @@ export const common = {
       failedToUpdate: (entity: Entity) => failedToPhrase('aktualizovat', 'update', entity),
       failedToDelete: (entity: Entity) => failedToPhrase('smazat', 'delete', entity),
       failedToAdd: (entity: Entity) => failedToPhrase('přidat', 'add', entity),
+      failedToChange: (entity: Entity) => failedToPhrase('změnit', 'change', entity),
     },
     validation: {
       required: (fieldLabel: { cs: string; en: string }, gender: Gender) => ({

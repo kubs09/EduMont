@@ -1,4 +1,88 @@
+import { common, type Entity } from './common';
+
+const profileEntity: Entity = {
+  label: { cs: 'Profil', en: 'Profile' },
+  accusative: 'profil',
+  gender: 'masc',
+};
+
+const passwordEntity: Entity = {
+  label: { cs: 'Heslo', en: 'Password' },
+  accusative: 'heslo',
+  gender: 'neut',
+};
+
+const notificationSettingsEntity: Entity = {
+  label: { cs: 'Nastavení upozornění', en: 'Notification settings' },
+  accusative: 'nastavení upozornění',
+  gender: 'neut',
+};
+
 export const profile = {
+  errors: {
+    updateFailed: {
+      title: common.templates.errors.failedToUpdate(profileEntity),
+      description: {
+        cs: 'Nastala chyba při aktualizaci profilu. Zkuste to prosím později.',
+        en: 'An error occurred while updating the profile. Please try again later.',
+      },
+    },
+    passwordChangeFailed: common.templates.errors.failedToChange(passwordEntity),
+    incorrectCurrentPassword: {
+      cs: 'Současné heslo není správné',
+      en: 'Current password is incorrect',
+    },
+    notificationsUpdateFailed: common.templates.errors.failedToUpdate(notificationSettingsEntity),
+  },
+  success: {
+    updated: common.templates.success.updated(profileEntity),
+    passwordChanged: common.templates.success.changed(passwordEntity),
+    notificationsUpdated: common.templates.success.updated(notificationSettingsEntity),
+  },
+  validation: {
+    currentPasswordRequired: common.templates.validation.required(
+      { cs: 'Současné heslo', en: 'Current password' },
+      'neut',
+    ),
+    newPasswordRequired: common.templates.validation.required(
+      { cs: 'Nové heslo', en: 'New password' },
+      'neut',
+    ),
+    newPasswordLength: common.templates.validation.minLength(
+      { cs: 'Nové heslo', en: 'New password' },
+      8,
+    ),
+    confirmPasswordRequired: {
+      cs: 'Potvrďte prosím nové heslo',
+      en: 'Please confirm your new password',
+    },
+    passwordsDoNotMatch: {
+      cs: 'Hesla se neshodují',
+      en: "Passwords don't match",
+    },
+    firstNameRequired: common.templates.validation.required(
+      { cs: 'Jméno', en: 'First name' },
+      'neut',
+    ),
+    firstNameLength: common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2),
+    lastNameRequired: common.templates.validation.required(
+      { cs: 'Příjmení', en: 'Last name' },
+      'neut',
+    ),
+    lastNameLength: common.templates.validation.minLength(
+      { cs: 'Příjmení', en: 'Last name' },
+      2,
+    ),
+    emailRequired: common.templates.validation.required(
+      { cs: 'Emailová adresa', en: 'Email address' },
+      'fem',
+    ),
+    invalidEmail: common.templates.validation.invalidEmail,
+    invalidPhone: {
+      cs: 'Zadejte platné telefonní číslo',
+      en: 'Please enter a valid phone number',
+    },
+  },
   title: {
     cs: 'Můj profil',
     en: 'My Profile',
@@ -43,14 +127,6 @@ export const profile = {
     cs: 'Uložit změny',
     en: 'Save Changes',
   },
-  cancel: {
-    cs: 'Zrušit',
-    en: 'Cancel',
-  },
-  success: {
-    cs: 'Profil byl úspěšně aktualizován',
-    en: 'Profile updated successfully',
-  },
   password: {
     cs: 'Heslo',
     en: 'Password',
@@ -71,102 +147,6 @@ export const profile = {
     cs: 'Potvrďte nové heslo',
     en: 'Confirm New Password',
   },
-  passwordChanged: {
-    cs: 'Heslo bylo úspěšně změněno',
-    en: 'Password changed successfully',
-  },
-  passwordError: {
-    cs: 'Nepodařilo se změnit heslo',
-    en: 'Failed to change password',
-  },
-  currentPasswordRequired: {
-    cs: 'Zadejte současné heslo',
-    en: 'Current password is required',
-  },
-  newPasswordRequired: {
-    cs: 'Zadejte nové heslo',
-    en: 'New password is required',
-  },
-  passwordsDoNotMatch: {
-    cs: 'Hesla se neshodují',
-    en: 'Passwords do not match',
-  },
-  incorrectCurrentPassword: {
-    cs: 'Současné heslo není správné',
-    en: 'Current password is incorrect',
-  },
-  error: {
-    title: {
-      cs: 'Nepodařilo se aktualizovat profil',
-      en: 'Failed to update profile',
-    },
-    description: {
-      cs: 'Nastala chyba při aktualizaci profilu. Zkuste to prosím později.',
-      en: 'An error occurred while updating the profile. Please try again later.',
-    },
-  },
-  validation: {
-    currentPasswordRequired: {
-      cs: 'Současné heslo je povinné',
-      en: 'Current password is required',
-    },
-    newPasswordRequired: {
-      cs: 'Nové heslo je povinné',
-      en: 'New password is required',
-    },
-    newPasswordLength: {
-      cs: 'Nové heslo musí mít alespoň 8 znaků',
-      en: 'New password must be at least 8 characters',
-    },
-    confirmPasswordRequired: {
-      cs: 'Potvrďte prosím nové heslo',
-      en: 'Please confirm your new password',
-    },
-    passwordsDoNotMatch: {
-      cs: 'Hesla se neshodují',
-      en: "Passwords don't match",
-    },
-    firstNameRequired: {
-      cs: 'Jméno je povinné',
-      en: 'First name is required',
-    },
-    firstNameLength: {
-      cs: 'Jméno musí mít alespoň 2 znaky',
-      en: 'First name must be at least 2 characters',
-    },
-    lastNameRequired: {
-      cs: 'Příjmení je povinné',
-      en: 'Last name is required',
-    },
-    lastNameLength: {
-      cs: 'Příjmení musí mít alespoň 2 znaky',
-      en: 'Last name must be at least 2 characters',
-    },
-    emailRequired: {
-      cs: 'Email je povinný',
-      en: 'Email is required',
-    },
-    emailInvalid: {
-      cs: 'Zadejte platnou emailovou adresu',
-      en: 'Please enter a valid email address',
-    },
-    passwordUppercase: {
-      cs: 'Heslo musí obsahovat alespoň jedno velké písmeno',
-      en: 'Password must contain at least one uppercase letter',
-    },
-    passwordNumber: {
-      cs: 'Heslo musí obsahovat alespoň jedno číslo',
-      en: 'Password must contain at least one number',
-    },
-    passwordMatch: {
-      cs: 'Hesla se musí shodovat',
-      en: 'Passwords must match',
-    },
-    invalidPhone: {
-      cs: 'Zadejte platné telefonní číslo',
-      en: 'Please enter a valid phone number',
-    },
-  },
   notifications: {
     title: {
       cs: 'Nastavení upozornění',
@@ -175,14 +155,6 @@ export const profile = {
     messages: {
       cs: 'Emailová upozornění na nové zprávy',
       en: 'Email notifications for new messages',
-    },
-    updateSuccess: {
-      cs: 'Nastavení upozornění bylo aktualizováno',
-      en: 'Notification settings updated successfully',
-    },
-    updateError: {
-      cs: 'Nepodařilo se aktualizovat nastavení upozornění',
-      en: 'Failed to update notification settings',
     },
   },
 };
