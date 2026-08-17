@@ -128,17 +128,17 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
         />
       </HStack>
       {filteredExcuses.length === 0 ? (
-        <Text variant="empty">{texts.profile.children.excuse.historyEmpty[language]}</Text>
+        <Text variant="empty">{texts.children.excuse.historyEmpty[language]}</Text>
       ) : (
         <>
           <Table variant="simple" size="md">
             <Thead>
               <Tr>
-                <Th>{texts.profile.children.excuse.dateFrom[language]}</Th>
-                <Th>{texts.profile.children.excuse.dateTo[language]}</Th>
-                <Th>{texts.profile.children.excuse.reason[language]}</Th>
-                <Th>{texts.profile.children.excuse.submittedBy[language]}</Th>
-                {isParent && <Th>{texts.profile.children.excuse.actions[language]}</Th>}
+                <Th>{texts.children.excuse.dateFrom[language]}</Th>
+                <Th>{texts.children.excuse.dateTo[language]}</Th>
+                <Th>{texts.children.excuse.reason[language]}</Th>
+                <Th>{texts.children.excuse.submittedBy[language]}</Th>
+                {isParent && <Th>{texts.children.excuse.actions[language]}</Th>}
               </Tr>
             </Thead>
             <Tbody>
@@ -185,7 +185,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                               onRefreshExcuses={onRefreshExcuses}
                               size="xs"
                               variant="outline"
-                              buttonText={texts.profile.children.excuse.edit[language]}
+                              buttonText={texts.children.excuse.edit[language]}
                             />
                           </HStack>
                         ) : (

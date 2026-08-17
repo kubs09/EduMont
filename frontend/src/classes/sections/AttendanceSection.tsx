@@ -182,7 +182,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       setRows([]);
     } catch (error) {
       toast({
-        title: texts.classes.detail.attendanceError[language],
+        title: texts.classes.errors.attendanceFetchFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -251,7 +251,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       await loadAttendance();
     } catch (error) {
       toast({
-        title: texts.classes.detail.checkInError[language],
+        title: texts.classes.errors.checkInFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -268,7 +268,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       await loadAttendance();
     } catch (error) {
       toast({
-        title: texts.classes.detail.checkOutError[language],
+        title: texts.classes.errors.checkOutFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -324,14 +324,14 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
               <Tr>
                 {showActionColumn && (
                   <Th display={{ base: 'table-cell', md: 'none' }}>
-                    {texts.classes.action[language]}
+                    {texts.common.actions[language]}
                   </Th>
                 )}
                 <Th display={{ base: 'table-cell', md: 'none' }}>
                   {texts.classes.student[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.name[language]}
+                  {texts.common.childrenTable.name[language]}
                 </Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.detail.checkIn[language]}
@@ -341,7 +341,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 </Th>
                 {showActionColumn && (
                   <Th display={{ base: 'none', md: 'table-cell' }}>
-                    {texts.classes.action[language]}
+                    {texts.common.actions[language]}
                   </Th>
                 )}
               </Tr>
@@ -369,13 +369,13 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 const excuseTooltip = excuseForDate ? (
                   <Box>
                     <Text fontWeight="semibold">
-                      {texts.profile.children.excuse.reason[language]}: {excuseForDate.reason}
+                      {texts.children.excuse.reason[language]}: {excuseForDate.reason}
                     </Text>
                     <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
-                      {texts.profile.children.excuse.dateRange[language]}: {excuseDateRange || '-'}
+                      {texts.children.excuse.dateRange[language]}: {excuseDateRange || '-'}
                     </Text>
                     <Text fontSize="xs" color={tooltipTextColor} opacity={0.85}>
-                      {texts.profile.children.excuse.submittedBy[language]}: {parentName || '-'}
+                      {texts.children.excuse.submittedBy[language]}: {parentName || '-'}
                     </Text>
                   </Box>
                 ) : null;
@@ -391,7 +391,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                     borderColor={tooltipBorderColor}
                   >
                     <Text color={color} fontSize="sm">
-                      {texts.profile.children.excuse.status[language]}
+                      {texts.children.excuse.status[language]}
                     </Text>
                   </Tooltip>
                 );
@@ -410,7 +410,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
                               isLoading={actionChildId === row.id}
                             >
-                              {texts.classes.detail.checkInAction[language]}
+                              {texts.classes.detail.checkIn[language]}
                             </Button>
                             <Button
                               size="sm"
@@ -421,7 +421,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               }
                               isLoading={actionChildId === row.id}
                             >
-                              {texts.classes.detail.checkOutAction[language]}
+                              {texts.classes.detail.checkOut[language]}
                             </Button>
                           </HStack>
                         )}
@@ -458,7 +458,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
                               isLoading={actionChildId === row.id}
                             >
-                              {texts.classes.detail.checkInAction[language]}
+                              {texts.classes.detail.checkIn[language]}
                             </Button>
                             <Button
                               size="sm"
@@ -469,7 +469,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               }
                               isLoading={actionChildId === row.id}
                             >
-                              {texts.classes.detail.checkOutAction[language]}
+                              {texts.classes.detail.checkOut[language]}
                             </Button>
                           </HStack>
                         )}

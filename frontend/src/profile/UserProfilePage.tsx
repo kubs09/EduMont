@@ -76,7 +76,7 @@ const UserProfilePage = () => {
         <Grid templateColumns="auto 1fr auto" alignItems="center" mb={6} gap={2}>
           <GridItem>
             <IconButton
-              aria-label={texts.profile.children.backButton[language]}
+              aria-label={texts.children.backButton[language]}
               icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
@@ -90,7 +90,7 @@ const UserProfilePage = () => {
           </GridItem>
           <GridItem>
             <IconButton
-              aria-label={texts.profile.children.backButton[language]}
+              aria-label={texts.children.backButton[language]}
               icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
@@ -118,7 +118,7 @@ const UserProfilePage = () => {
           <Box bg={subtleBg} p={3} borderRadius="md">
             <Text fontWeight="bold">{texts.profile.role[language]}</Text>
             <Text>
-              {texts.userTable.roles[user.role as keyof typeof texts.userTable.roles][language]}
+              {texts.user.userTable.roles[user.role as keyof typeof texts.user.userTable.roles][language]}
             </Text>
           </Box>
         </Stack>

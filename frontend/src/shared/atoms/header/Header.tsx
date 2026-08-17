@@ -202,8 +202,8 @@ const Header = () => {
                 {!isTeacher && <>{texts.classes.menuItem[language]}</>}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
-                {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
-                {isAdmin && <>{texts.students[language]}</>}
+                {isParent && <>{texts.children.menuItem[language]}</>}{' '}
+                {isAdmin && <>{texts.classes.students[language]}</>}
                 {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
               </MenuItem>
               {isAdmin && (
@@ -212,7 +212,7 @@ const Header = () => {
                     {texts.presentation.menuItem[language]}
                   </MenuItem>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
-                    {texts.userDashboard.menuItem[language]}
+                    {texts.user.userDashboard.menuItem[language]}
                   </MenuItem>
                 </>
               )}

@@ -170,7 +170,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
           </ModalBody>
           <ModalFooter>
             <Button mr={3} onClick={onClose} variant="secondary">
-              {texts.classes.cancel[language]}
+              {texts.common.cancel[language]}
             </Button>
             <Button type="submit" variant="brand" isLoading={isSubmitting}>
               {t.send[language]}

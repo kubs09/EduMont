@@ -37,7 +37,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
     try {
       await api.post('/api/users', { email, role, language });
       toast({
-        title: texts.userDashboard.success[language],
+        title: texts.user.userDashboard.success[language],
         status: 'success',
         duration: 3000,
       });
@@ -55,12 +55,12 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
       }
       const errorResponse =
         error instanceof Error && 'response' in error ? (error as ApiError).response?.data : null;
-      let errorMessage = texts.userDashboard.errorTitle[language];
+      let errorMessage = texts.user.userDashboard.errorTitle[language];
 
       if (errorResponse?.error === 'user_exists') {
-        errorMessage = texts.userDashboard.userExists[language];
+        errorMessage = texts.user.userDashboard.userExists[language];
       } else if (errorResponse?.error === 'invitation_exists') {
-        errorMessage = texts.userDashboard.invitationExists[language];
+        errorMessage = texts.user.userDashboard.invitationExists[language];
       }
 
       toast({
@@ -77,10 +77,10 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent as="form" onSubmit={handleSubmit}>
-        <ModalHeader>{texts.userDashboard.addUser[language]}</ModalHeader>
+        <ModalHeader>{texts.user.userDashboard.addUser[language]}</ModalHeader>
         <ModalBody>
           <FormControl isRequired>
-            <FormLabel>{texts.userDashboard.emailLabel[language]}</FormLabel>
+            <FormLabel>{texts.user.userDashboard.emailLabel[language]}</FormLabel>
             <Input
               type="email"
               value={email}
@@ -89,25 +89,25 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
             />
           </FormControl>
           <FormControl mt={4} isRequired>
-            <FormLabel>{texts.userDashboard.roleLabel[language]}</FormLabel>
+            <FormLabel>{texts.user.userDashboard.roleLabel[language]}</FormLabel>
             <Select
               value={role}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setRole(e.target.value as 'admin' | 'teacher' | 'parent')
               }
             >
-              <option value="admin">{texts.userTable.roles.admin[language]}</option>
-              <option value="teacher">{texts.userTable.roles.teacher[language]}</option>
-              <option value="parent">{texts.userTable.roles.parent[language]}</option>
+              <option value="admin">{texts.user.userTable.roles.admin[language]}</option>
+              <option value="teacher">{texts.user.userTable.roles.teacher[language]}</option>
+              <option value="parent">{texts.user.userTable.roles.parent[language]}</option>
             </Select>
           </FormControl>
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={onClose}>
-            {texts.userDashboard.cancel[language]}
+            {texts.user.userDashboard.cancel[language]}
           </Button>
           <Button colorScheme="blue" type="submit" isLoading={isSubmitting}>
-            {texts.userDashboard.submit[language]}
+            {texts.user.userDashboard.submit[language]}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -44,7 +44,7 @@ const ProfilePage = () => {
     },
     {
       key: 'children' as const,
-      label: texts.profile.children.menuItem[language],
+      label: texts.children.menuItem[language],
       isVisible: userRole === 'parent',
     },
     {

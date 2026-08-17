@@ -33,7 +33,7 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
       />
 
       <Grid templateColumns="repeat(3, 1fr)" gap={2} width="100%">
-        {texts.datePicker.months[language].map((month, index) => (
+        {texts.common.datePicker.months[language].map((month, index) => (
           <GridItem key={index}>
             <Button
               size="sm"

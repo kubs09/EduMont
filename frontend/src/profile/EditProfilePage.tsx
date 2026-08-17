@@ -135,7 +135,7 @@ const EditProfilePage = () => {
             <FormControl>
               <FormLabel>{texts.profile.role[language]}</FormLabel>
               <Text>
-                {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}
+                {texts.user.userTable.roles[userRole as keyof typeof texts.user.userTable.roles][language]}
               </Text>
             </FormControl>
             <ButtonGroup spacing={4}>

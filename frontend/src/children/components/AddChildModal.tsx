@@ -190,13 +190,11 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           error.message === 'selectedClassNotSuitable' || error.message.includes('not suitable');
 
         toast({
-          title: isNoSuitableClass
-            ? texts.profile.children.error.title[language]
-            : isSelectedClassNotSuitable
-              ? texts.profile.children.error.noSuitableClass[language]
-              : texts.profile.children.addChild.error[language],
+          title: isSelectedClassNotSuitable
+            ? texts.children.errors.noSuitableClassForAge[language]
+            : texts.children.errors.addFailed[language],
           description: isNoSuitableClass
-            ? texts.profile.children.error.noSuitableClass[language]
+            ? texts.children.errors.noSuitableClassForAge[language]
             : error.message,
           status: 'error',
           duration: 5000,
@@ -212,11 +210,11 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{texts.profile.children.addChild.title[language]}</ModalHeader>
+        <ModalHeader>{texts.children.addChild.title[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
-            <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.parent[language]}</FormLabel>
             <Combobox
               options={parentOptions.map((parent) => ({
                 label: parent.label,
@@ -228,24 +226,24 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
                   Array.isArray(values) ? values.map((value) => Number(value)) : []
                 )
               }
-              placeholder={texts.childrenTable.parent[language]}
+              placeholder={texts.common.childrenTable.parent[language]}
               isMulti
               isDisabled={isLoadingParents}
             />
             <FormErrorMessage>{errors.parent_ids}</FormErrorMessage>
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>
-            <FormLabel>{texts.childrenTable.firstname[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.firstname[language]}</FormLabel>
             <Input name="firstname" value={formData.firstname} onChange={handleChange} />
             <FormErrorMessage>{errors.firstname}</FormErrorMessage>
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.surname} mb={4}>
-            <FormLabel>{texts.childrenTable.surname[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.surname[language]}</FormLabel>
             <Input name="surname" value={formData.surname} onChange={handleChange} />
             <FormErrorMessage>{errors.surname}</FormErrorMessage>
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.date_of_birth} mb={4}>
-            <FormLabel>{texts.profile.children.dateOfBirth[language]}</FormLabel>
+            <FormLabel>{texts.children.dateOfBirth[language]}</FormLabel>
             <DatePicker
               viewType="day"
               value={formData.date_of_birth}
@@ -258,7 +256,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
             <FormControl isRequired isInvalid={!!errors.class_id} mb={4}>
               <FormLabel>{texts.presentation.class[language]}</FormLabel>
               {isLoadingClasses ? (
-                <Box p={2}>Loading available classes...</Box>
+                <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
               ) : availableClasses.length > 0 ? (
                 <Select
                   value={selectedClassId ? selectedClassId.toString() : ''}
@@ -276,14 +274,14 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
                 </Select>
               ) : (
                 <Box p={2} color="red.500">
-                  No suitable classes found for this age.
+                  {texts.children.classSelection.noneFound[language]}
                 </Box>
               )}
               <FormErrorMessage>{errors.class_id}</FormErrorMessage>
             </FormControl>
           )}
           <FormControl isInvalid={!!errors.notes} mb={4}>
-            <FormLabel>{texts.childrenTable.notes[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.notes[language]}</FormLabel>
             <Textarea name="notes" value={formData.notes} onChange={handleChange} />
             <FormErrorMessage>{errors.notes}</FormErrorMessage>
           </FormControl>
@@ -293,7 +291,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
             {texts.common.cancel[language]}
           </Button>
           <Button colorScheme="blue" onClick={handleSubmit} isLoading={isSubmitting}>
-            {texts.profile.children.addChild.submit[language]}
+            {texts.children.addChild.submit[language]}
           </Button>
         </ModalFooter>
       </ModalContent>

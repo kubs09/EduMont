@@ -177,7 +177,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
 
         toast({
           title: isSelectedClassNotSuitable
-            ? texts.profile.children.error.noSuitableClass[language]
+            ? texts.children.errors.noSuitableClassForAge[language]
             : texts.profile.error.title[language],
           description: error.message,
           status: 'error',
@@ -194,12 +194,12 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{texts.profile.children.addChild.title[language]}</ModalHeader>
+        <ModalHeader>{texts.children.editChild.title[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           {isAdmin && (
             <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
-              <FormLabel>{texts.childrenTable.parent[language]}</FormLabel>
+              <FormLabel>{texts.common.childrenTable.parent[language]}</FormLabel>
               <Combobox
                 options={parentOptions.map((parent) => ({
                   label: parent.label,
@@ -211,7 +211,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
                     Array.isArray(values) ? values.map((value) => Number(value)) : []
                   )
                 }
-                placeholder={texts.childrenTable.parent[language]}
+                placeholder={texts.common.childrenTable.parent[language]}
                 isMulti
                 isDisabled={isLoadingParents}
               />
@@ -219,29 +219,29 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
             </FormControl>
           )}
           <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>
-            <FormLabel>{texts.childrenTable.firstname[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.firstname[language]}</FormLabel>
             <Input name="firstname" value={formData.firstname} onChange={handleChange} />
             <FormErrorMessage>{errors.firstname}</FormErrorMessage>
           </FormControl>
           <FormControl isRequired isInvalid={!!errors.surname} mb={4}>
-            <FormLabel>{texts.childrenTable.surname[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.surname[language]}</FormLabel>
             <Input name="surname" value={formData.surname} onChange={handleChange} />
             <FormErrorMessage>{errors.surname}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.notes} mb={4}>
-            <FormLabel>{texts.childrenTable.notes[language]}</FormLabel>
+            <FormLabel>{texts.common.childrenTable.notes[language]}</FormLabel>
             <Textarea name="notes" value={formData.notes} onChange={handleChange} />
             <FormErrorMessage>{errors.notes}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.class_id} mb={4}>
-            <FormLabel>Class</FormLabel>
+            <FormLabel>{texts.presentation.class[language]}</FormLabel>
             {isLoadingClasses ? (
-              <Box p={2}>Loading available classes...</Box>
+              <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
             ) : availableClasses.length > 0 ? (
               <Select
                 value={selectedClassId ? selectedClassId.toString() : ''}
                 onChange={(e) => setSelectedClassId(e.target.value ? Number(e.target.value) : null)}
-                placeholder="Select a class"
+                placeholder={texts.classes.selectClass[language]}
                 isDisabled={isLoadingClasses}
               >
                 {availableClasses.map((cls) => (
@@ -252,7 +252,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
               </Select>
             ) : (
               <Box p={2} color="red.500">
-                No suitable classes found for this age.
+                {texts.children.classSelection.noneFound[language]}
               </Box>
             )}
             <FormErrorMessage>{errors.class_id}</FormErrorMessage>

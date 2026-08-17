@@ -90,8 +90,7 @@ const ClassDetailPage = () => {
             }
 
             toast({
-              title: 'Error',
-              description: 'Failed to load class data',
+              title: texts.classes.errors.fetchFailed[language],
               status: 'error',
               duration: 5000,
               isClosable: true,
@@ -154,8 +153,7 @@ const ClassDetailPage = () => {
         }
       } catch (error) {
         toast({
-          title: 'Error',
-          description: 'Failed to load data',
+          title: texts.classes.errors.fetchFailed[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -164,7 +162,7 @@ const ClassDetailPage = () => {
     };
 
     fetchData();
-  }, [id, navigate, toast]);
+  }, [id, language, navigate, toast]);
 
   useEffect(() => {
     if (!classData?.children?.length) {
@@ -240,7 +238,7 @@ const ClassDetailPage = () => {
       setClassData(updatedClass.data);
 
       toast({
-        title: texts.classes.updateSuccess[language],
+        title: texts.classes.success.updated[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -248,7 +246,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       const errorMessage =
         (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        texts.classes.updateError[language];
+        texts.classes.errors.updateFailed[language];
       console.error('Update error:', error);
       toast({
         title: errorMessage,
@@ -290,7 +288,7 @@ const ClassDetailPage = () => {
       setClassData(updatedClass.data);
 
       toast({
-        title: texts.classes.detail.permissionAccepted[language],
+        title: texts.classes.success.permissionAccepted[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -298,7 +296,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       console.error('Accept permission error:', error);
       toast({
-        title: texts.classes.detail.permissionAcceptError[language],
+        title: texts.classes.errors.permissionAcceptFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -315,7 +313,7 @@ const ClassDetailPage = () => {
       await refreshPermissionState(class_id);
 
       toast({
-        title: texts.classes.detail.permissionDenied[language],
+        title: texts.classes.success.permissionDenied[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -323,7 +321,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       console.error('Deny permission error:', error);
       toast({
-        title: texts.classes.detail.permissionDenyError[language],
+        title: texts.classes.errors.permissionDenyFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,

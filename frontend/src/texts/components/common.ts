@@ -1,28 +1,68 @@
+export type Gender = 'masc' | 'fem' | 'neut';
+
+export type Entity = {
+  label: { cs: string; en: string };
+  accusative: string;
+  gender: Gender;
+};
+
+const beSuffix: Record<Gender, string> = { masc: '', fem: 'a', neut: 'o' };
+const participleSuffix = beSuffix;
+const requiredAdjective: Record<Gender, string> = {
+  masc: 'povinný',
+  fem: 'povinná',
+  neut: 'povinné',
+};
+
+const characterCountNoun = (n: number) => {
+  if (n === 1) return 'znak';
+  if (n >= 2 && n <= 4) return 'znaky';
+  return 'znaků';
+};
+
+const successPhrase = (participleStem: string, verbEn: string, entity: Entity) => ({
+  cs: `${entity.label.cs} byl${beSuffix[entity.gender]} úspěšně ${participleStem}${participleSuffix[entity.gender]}`,
+  en: `${entity.label.en} ${verbEn} successfully`,
+});
+
+const failedToPhrase = (verbCs: string, verbEn: string, entity: Entity) => ({
+  cs: `Nepodařilo se ${verbCs} ${entity.accusative}`,
+  en: `Failed to ${verbEn} ${entity.label.en.toLowerCase()}`,
+});
+
 export const common = {
-  static_pages: {
-    unauthorized_title: {
-      cs: 'Přístup zamítnut',
-      en: 'Access Denied',
+  entities: {} as Record<string, Entity>,
+  templates: {
+    success: {
+      created: (entity: Entity) => successPhrase('vytvořen', 'created', entity),
+      updated: (entity: Entity) => successPhrase('aktualizován', 'updated', entity),
+      deleted: (entity: Entity) => successPhrase('smazán', 'deleted', entity),
+      added: (entity: Entity) => successPhrase('přidán', 'added', entity),
     },
-    notFound_title: {
-      cs: 'Stránka nenalezena',
-      en: 'Page Not Found',
+    errors: {
+      failedToLoad: (entity: Entity) => failedToPhrase('načíst', 'load', entity),
+      failedToCreate: (entity: Entity) => failedToPhrase('vytvořit', 'create', entity),
+      failedToUpdate: (entity: Entity) => failedToPhrase('aktualizovat', 'update', entity),
+      failedToDelete: (entity: Entity) => failedToPhrase('smazat', 'delete', entity),
+      failedToAdd: (entity: Entity) => failedToPhrase('přidat', 'add', entity),
     },
-    loginMessage: {
-      cs: 'Pro přístup k těmto stránkám se prosím přihlašte.',
-      en: 'Please sign in to access these pages.',
-    },
-    backMessage: {
-      cs: 'Nemáte oprávnění k zobrazení této stránky.',
-      en: 'You do not have permission to view this page.',
-    },
-    loginButton: {
-      cs: 'Přihlásit se',
-      en: 'Sign In',
-    },
-    backButton: {
-      cs: 'Zpět na domovskou stránku',
-      en: 'Go Back to Home',
+    validation: {
+      required: (fieldLabel: { cs: string; en: string }, gender: Gender) => ({
+        cs: `${fieldLabel.cs} je ${requiredAdjective[gender]}`,
+        en: `${fieldLabel.en} is required`,
+      }),
+      minLength: (fieldLabel: { cs: string; en: string }, n: number) => ({
+        cs: `${fieldLabel.cs} musí mít alespoň ${n} ${characterCountNoun(n)}`,
+        en: `${fieldLabel.en} must be at least ${n} characters`,
+      }),
+      maxLength: (fieldLabel: { cs: string; en: string }, n: number) => ({
+        cs: `${fieldLabel.cs} nesmí být delší než ${n} ${characterCountNoun(n)}`,
+        en: `${fieldLabel.en} must not exceed ${n} characters`,
+      }),
+      invalidEmail: {
+        cs: 'Zadejte platnou emailovou adresu',
+        en: 'Please enter a valid email address',
+      },
     },
   },
   dashboard: {
@@ -109,68 +149,6 @@ export const common = {
       en: 'Switch to Dark Mode',
     },
   },
-  home: {
-    hero: {
-      title: {
-        cs: 'EduMont - Montessori Vzdělávací Platforma',
-        en: 'EduMont - Montessori Education Platform',
-      },
-      subtitle: {
-        cs: 'Propojujeme rodiče, učitele a děti v duchu Montessori vzdělávání',
-        en: 'Connecting parents, teachers, and children in the spirit of Montessori education',
-      },
-      getStarted: {
-        cs: 'Připojit se',
-        en: 'Join Us',
-      },
-    },
-    features: {
-      qualityEducation: {
-        title: {
-          cs: 'Montessori Přístup',
-          en: 'Montessori Approach',
-        },
-        description: {
-          cs: 'Respektujeme individuální tempo a potřeby každého dítěte',
-          en: 'Respecting individual pace and needs of each child',
-        },
-      },
-      expertTeachers: {
-        title: {
-          cs: 'Aktivní Komunikace',
-          en: 'Active Communication',
-        },
-        description: {
-          cs: 'Pravidelné sdílení pokroku a aktivit vašeho dítěte',
-          en: "Regular updates on your child's progress and activities",
-        },
-      },
-      interactiveLearning: {
-        title: {
-          cs: 'Připravené Prostředí',
-          en: 'Prepared Environment',
-        },
-        description: {
-          cs: 'Sledujte rozvoj dítěte v pečlivě připraveném Montessori prostředí',
-          en: "Track your child's development in carefully prepared Montessori environment",
-        },
-      },
-    },
-    cta: {
-      title: {
-        cs: 'Připraveni začít se učit?',
-        en: 'Ready to Start Learning?',
-      },
-      subtitle: {
-        cs: 'Připojte se k naší vzdělávací komunitě ještě dnes',
-        en: 'Join our community of learners today',
-      },
-      button: {
-        cs: 'Registrujte se nyní',
-        en: 'Sign Up Now',
-      },
-    },
-  },
   communication: {
     title: {
       cs: 'Komunikace',
@@ -191,32 +169,6 @@ export const common = {
     newMessage: {
       cs: 'Nová zpráva',
       en: 'New Message',
-    },
-  },
-  invitation: {
-    emailSubject: {
-      cs: 'Pozvánka do systému EduMont',
-      en: 'Invitation to EduMont',
-    },
-    emailTitle: {
-      cs: 'Vítejte v EduMont',
-      en: 'Welcome to EduMont',
-    },
-    emailMessage: {
-      cs: 'Byli jste pozváni do systému EduMont jako',
-      en: 'You have been invited to join EduMont as a',
-    },
-    emailAction: {
-      cs: 'Pro dokončení registrace klikněte na tento odkaz:',
-      en: 'Please click the link below to complete your registration:',
-    },
-    emailExpiry: {
-      cs: 'Tento odkaz vyprší za 48 hodin.',
-      en: 'This link will expire in 48 hours.',
-    },
-    invalid: {
-      cs: 'Neplatná nebo expirovaná pozvánka',
-      en: 'Invalid or expired invitation',
     },
   },
   inviteSignup: {

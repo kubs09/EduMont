@@ -129,8 +129,8 @@ const ChildDetailPage = () => {
         }
 
         toast({
-          title: texts.child.error.fetchTitle[language],
-          description: texts.child.error.fetchDescription[language],
+          title: texts.children.errors.fetchFailed.title[language],
+          description: texts.children.errors.fetchFailed.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -195,7 +195,7 @@ const ChildDetailPage = () => {
 
       if (!response.already_requested) {
         toast({
-          title: texts.classes.detail.permissionRequestSent[language],
+          title: texts.classes.success.permissionRequestSent[language],
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -203,7 +203,7 @@ const ChildDetailPage = () => {
       }
     } catch (error) {
       toast({
-        title: texts.classes.detail.permissionRequestError[language],
+        title: texts.classes.errors.permissionRequestFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -244,14 +244,14 @@ const ChildDetailPage = () => {
       setChildData(response.data);
       setIsEditModalOpen(false);
       toast({
-        title: texts.profile.success[language],
+        title: texts.children.success.updated[language],
         status: 'success',
         duration: 3000,
       });
     } catch (error) {
       toast({
-        title: texts.child.error.updateTitle[language],
-        description: texts.child.error.updateDescription[language],
+        title: texts.children.errors.updateFailed.title[language],
+        description: texts.children.errors.updateFailed.description[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -265,7 +265,7 @@ const ChildDetailPage = () => {
     try {
       await api.delete(`/api/children/${id}`);
       toast({
-        title: texts.profile.children.deleteSuccess[language],
+        title: texts.children.success.deleted[language],
         status: 'success',
         duration: 3000,
       });
@@ -273,8 +273,8 @@ const ChildDetailPage = () => {
     } catch (error) {
       console.error('Failed to delete child:', error);
       toast({
-        title: texts.child.error.deleteTitle[language],
-        description: texts.child.error.deleteDescription[language],
+        title: texts.children.errors.deleteFailed.title[language],
+        description: texts.children.errors.deleteFailed.description[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -290,7 +290,7 @@ const ChildDetailPage = () => {
   const sectionItems = [
     {
       id: 'information',
-      label: texts.profile.children.title[language],
+      label: texts.children.title[language],
       content: (
         <InformationSection
           childData={childData}
@@ -337,7 +337,7 @@ const ChildDetailPage = () => {
     },
     {
       id: 'excuses',
-      label: texts.profile.children.excuse.historyTitle[language],
+      label: texts.children.excuse.historyTitle[language],
       content: (
         <ExcusesSection
           childId={id ? parseInt(id, 10) : 0}
@@ -351,7 +351,7 @@ const ChildDetailPage = () => {
     },
     {
       id: 'documents',
-      label: texts.document.title[language],
+      label: texts.children.documents.title[language],
       content: (
         <DocumentsSection
           documents={documents}
@@ -380,7 +380,7 @@ const ChildDetailPage = () => {
           <Flex align="center" mb={4} wrap="wrap" gap={2}>
             <Box display={{ base: 'block', md: 'none' }} order={{ base: 1, md: 1 }}>
               <IconButton
-                aria-label={texts.profile.children.backButton[language]}
+                aria-label={texts.children.backButton[language]}
                 icon={<ChevronLeftIcon />}
                 size="sm"
                 onClick={() => navigate(ROUTES.CHILDREN)}
@@ -394,7 +394,7 @@ const ChildDetailPage = () => {
                 px={4}
                 minW="auto"
               >
-                {texts.profile.children.backButton[language]}
+                {texts.children.backButton[language]}
               </Button>
             </Box>
             <Box flex={{ base: '0 0 auto', md: '1' }} display={{ base: 'none', md: 'block' }} />
@@ -436,7 +436,7 @@ const ChildDetailPage = () => {
           <Grid templateColumns={{ base: '1fr', md: '240px 1fr' }} gap={6} alignItems="start">
             <GridItem>
               <SectionMenu
-                title={texts.profile.children.title[language]}
+                title={texts.children.title[language]}
                 sections={menuSections}
                 activeKey={activeSectionId}
                 onChange={setActiveSectionId}
@@ -471,8 +471,8 @@ const ChildDetailPage = () => {
           leastDestructiveRef={cancelRef}
           onClose={() => setIsDeleteConfirmOpen(false)}
           onConfirm={handleDeleteChild}
-          title={texts.profile.children.deleteConfirm.title[language]}
-          message={`${texts.profile.children.deleteConfirm.message[language]} ${childData.firstname} ${childData.surname}?`}
+          title={texts.children.deleteConfirm.title[language]}
+          message={`${texts.children.deleteConfirm.message[language]} ${childData.firstname} ${childData.surname}?`}
           cancelLabel={texts.common.cancel[language]}
           confirmLabel={texts.common.delete[language]}
           confirmColorScheme="red"

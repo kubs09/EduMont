@@ -60,14 +60,13 @@ const ClassesPage = () => {
       setCurrentPage(1);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to load data',
+        title: texts.classes.errors.fetchClassesFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     }
-  }, [toast]);
+  }, [toast, language]);
 
   useEffect(() => {
     fetchClasses();

@@ -120,9 +120,11 @@ const InfoTab: React.FC<InfoTabProps> = ({
           <AlertIcon />
           <Box flex="1">
             <Text>
-              {language === 'cs'
-                ? `Administrátor ${requestingAdmin.firstname} ${requestingAdmin.surname} žádá o oprávnění k prezentacím.`
-                : `Administrator ${requestingAdmin.firstname} ${requestingAdmin.surname} has requested permission to access presentations.`}
+              {
+                texts.classes.detail.permissionRequestFrom(
+                  `${requestingAdmin.firstname} ${requestingAdmin.surname}`
+                )[language]
+              }
             </Text>
             <Stack mt={3} direction={{ base: 'column', sm: 'row' }} spacing={3}>
               <Button

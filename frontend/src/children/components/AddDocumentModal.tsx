@@ -73,8 +73,8 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
     const maxBytes = 5 * 1024 * 1024;
     if (uploadFile.size > maxBytes) {
       toast({
-        title: texts.document.error.title[language],
-        description: texts.document.error.fileTooLarge[language],
+        title: texts.children.errors.documentTooLarge.title[language],
+        description: texts.children.errors.documentTooLarge.description[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -148,15 +148,14 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
       await onDocumentsUpdate();
 
       toast({
-        title: texts.profile.success[language],
-        description: texts.document.error.uploadSuccess[language],
+        title: texts.children.success.documentUploaded[language],
         status: 'success',
         duration: 3000,
       });
     } catch (error) {
       toast({
-        title: texts.document.error.title[language],
-        description: texts.document.error.uploadFailed[language],
+        title: texts.children.errors.documentUploadFailed.title[language],
+        description: texts.children.errors.documentUploadFailed.description[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -224,28 +223,28 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
     <Modal isOpen={isOpen} onClose={handleClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{texts.document.uploadDocument[language]}</ModalHeader>
+        <ModalHeader>{texts.children.documents.uploadDocument[language]}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack align="stretch" spacing={4}>
             <FormControl>
-              <FormLabel>{texts.document.documentTitle[language]}</FormLabel>
+              <FormLabel>{texts.children.documents.documentTitle[language]}</FormLabel>
               <Input
                 value={uploadTitle}
                 onChange={(event) => setUploadTitle(event.target.value)}
-                placeholder={texts.document.placeholder.title[language]}
+                placeholder={texts.children.documents.placeholder.title[language]}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>{texts.document.documentDescription[language]}</FormLabel>
+              <FormLabel>{texts.children.documents.documentDescription[language]}</FormLabel>
               <Textarea
                 value={uploadDescription}
                 onChange={(event) => setUploadDescription(event.target.value)}
-                placeholder={texts.document.placeholder.description[language]}
+                placeholder={texts.children.documents.placeholder.description[language]}
               />
             </FormControl>
             <FormControl>
-              <FormLabel>{texts.document.file[language]}</FormLabel>
+              <FormLabel>{texts.children.documents.file[language]}</FormLabel>
               <Box
                 border="2px dashed"
                 borderColor={isDragging ? 'brand.primary.500' : 'border-color'}
@@ -274,10 +273,10 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                       <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
                     </Box>
                     <Text fontWeight="medium" color="text-primary">
-                      {texts.document.placeholder?.dragDrop?.[language]}
+                      {texts.children.documents.placeholder?.dragDrop?.[language]}
                     </Text>
                     <Text fontSize="sm" color="text-secondary">
-                      {texts.document.placeholder?.orClick?.[language]}
+                      {texts.children.documents.placeholder?.orClick?.[language]}
                     </Text>
                     <Text fontSize="xs" color="text-muted">
                       PDF, DOC, TXT, PNG, JPG (max 5MB)
@@ -321,7 +320,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
             isDisabled={!uploadFile}
             colorScheme="blue"
           >
-            {texts.document.uploadDocument[language]}
+            {texts.children.documents.uploadDocument[language]}
           </Button>
         </ModalFooter>
         {isUploading && uploadProgress > 0 && (

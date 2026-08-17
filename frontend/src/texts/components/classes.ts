@@ -1,7 +1,117 @@
+import { common, type Entity } from './common';
+
+const classEntity: Entity = {
+  label: { cs: 'Třída', en: 'Class' },
+  accusative: 'třídu',
+  gender: 'fem',
+};
+
+const permissionRequestFrom = (name: string) => ({
+  cs: `Administrátor ${name} žádá o oprávnění k prezentacím.`,
+  en: `Administrator ${name} has requested permission to access presentations.`,
+});
+
 export const classes = {
-  action: {
-    cs: 'Akce',
-    en: 'Action',
+  errors: {
+    fetchFailed: common.templates.errors.failedToLoad(classEntity),
+    fetchClassesFailed: {
+      cs: 'Nepodařilo se načíst třídy',
+      en: 'Failed to fetch classes',
+    },
+    fetchTeachersFailed: {
+      cs: 'Nepodařilo se načíst učitele',
+      en: 'Failed to fetch teachers',
+    },
+    createFailed: common.templates.errors.failedToCreate(classEntity),
+    updateFailed: common.templates.errors.failedToUpdate(classEntity),
+    savingTeachersFailed: {
+      cs: 'Nepodařilo se uložit učitele',
+      en: 'Failed to save teachers',
+    },
+    permissionRequestFailed: {
+      cs: 'Nepodařilo se odeslat žádost o oprávnění',
+      en: 'Failed to send permission request',
+    },
+    permissionAcceptFailed: {
+      cs: 'Nepodařilo se přijmout oprávnění',
+      en: 'Failed to accept permission',
+    },
+    permissionDenyFailed: {
+      cs: 'Nepodařilo se odmítnout oprávnění',
+      en: 'Failed to deny permission',
+    },
+    attendanceFetchFailed: {
+      cs: 'Nepodařilo se načíst docházku',
+      en: 'Failed to load attendance',
+    },
+    checkInFailed: {
+      cs: 'Nepodařilo se zapsat příchod',
+      en: 'Failed to check in',
+    },
+    checkOutFailed: {
+      cs: 'Nepodařilo se zapsat odchod',
+      en: 'Failed to check out',
+    },
+  },
+  success: {
+    updated: common.templates.success.updated(classEntity),
+    permissionRequestSent: {
+      cs: 'Žádost o oprávnění byla odeslána',
+      en: 'Permission request has been sent',
+    },
+    permissionAccepted: {
+      cs: 'Oprávnění přijato',
+      en: 'Permission accepted',
+    },
+    permissionDenied: {
+      cs: 'Oprávnění odmítnuto',
+      en: 'Permission denied',
+    },
+  },
+  validation: {
+    classNameRequired: common.templates.validation.required({ cs: 'Název třídy', en: 'Class name' }, 'masc'),
+    classNameMin: common.templates.validation.minLength({ cs: 'Název třídy', en: 'Class name' }, 2),
+    classNameMax: common.templates.validation.maxLength({ cs: 'Název třídy', en: 'Class name' }, 100),
+    classDescriptionRequired: common.templates.validation.required(
+      { cs: 'Popis třídy', en: 'Class description' },
+      'masc',
+    ),
+    classDescriptionMin: common.templates.validation.minLength(
+      { cs: 'Popis třídy', en: 'Class description' },
+      5,
+    ),
+    classDescriptionMax: common.templates.validation.maxLength(
+      { cs: 'Popis třídy', en: 'Class description' },
+      500,
+    ),
+    teacherValid: {
+      cs: 'Učitel musí být platná volba',
+      en: 'Teacher must be a valid selection',
+    },
+    assistantValid: {
+      cs: 'Asistent musí být platná volba',
+      en: 'Assistant must be a valid selection',
+    },
+    teacherRequired: {
+      cs: 'Třída musí mít alespoň jednoho učitele',
+      en: 'Class must have at least one teacher',
+    },
+    assistantRequired: {
+      cs: 'Třída musí mít alespoň jednoho asistenta',
+      en: 'Class must have at least one assistant',
+    },
+    assistantSameAsTeacher: {
+      cs: 'Asistent nesmí být stejný jako učitel',
+      en: 'Assistant cannot be the same as the main teacher',
+    },
+    childRequired: {
+      cs: 'Třída musí mít alespoň jedno dítě',
+      en: 'Class must have at least one child',
+    },
+    teacherAlreadyAssigned: {
+      cs: 'Tento učitel je již přiřazen k jiné třídě',
+      en: 'This teacher is already assigned to another class',
+    },
   },
   menuItem: {
     cs: 'Třídy',
@@ -55,18 +165,6 @@ export const classes = {
     cs: 'Studenti',
     en: 'Students',
   },
-  manageClass: {
-    cs: 'Správa třídy',
-    en: 'Manage Class',
-  },
-  saveChanges: {
-    cs: 'Uložit změny',
-    en: 'Save Changes',
-  },
-  cancel: {
-    cs: 'Zrušit',
-    en: 'Cancel',
-  },
   selectClass: {
     cs: 'Vyberte třídu',
     en: 'Select Class',
@@ -75,21 +173,9 @@ export const classes = {
     cs: 'Vybrat učitele',
     en: 'Select Teacher',
   },
-  SelectAssistant: {
+  selectAssistant: {
     cs: 'Vybrat asistenta',
     en: 'Select Assistant',
-  },
-  selectChildren: {
-    cs: 'Vybrat děti',
-    en: 'Select Children',
-  },
-  updateSuccess: {
-    cs: 'Třída byla úspěšně aktualizována',
-    en: 'Class updated successfully',
-  },
-  updateError: {
-    cs: 'Nepodařilo se aktualizovat třídu',
-    en: 'Failed to update class',
   },
   createClassTitle: {
     cs: 'Vytvořit třídu',
@@ -98,68 +184,6 @@ export const classes = {
   createClass: {
     cs: 'Vytvořit',
     en: 'Create',
-  },
-  createSuccess: {
-    cs: 'Třída byla úspěšně vytvořena',
-    en: 'Class created successfully',
-  },
-  createError: {
-    cs: 'Nepodařilo se vytvořit třídu',
-    en: 'Failed to create class',
-  },
-  validation: {
-    classNameRequired: {
-      cs: 'Název třídy je povinný',
-      en: 'Class name is required',
-    },
-    classNameMin: {
-      cs: 'Název třídy musí být alespoň 2 znaky',
-      en: 'Class name must be at least 2 characters',
-    },
-    classNameMax: {
-      cs: 'Název třídy nesmí být delší než 100 znaků',
-      en: 'Class name cannot exceed 100 characters',
-    },
-    classDescriptionRequired: {
-      cs: 'Popis třídy je povinný',
-      en: 'Class description is required',
-    },
-    classDescriptionMin: {
-      cs: 'Popis třídy musí být alespoň 5 znaků',
-      en: 'Class description must be at least 5 characters',
-    },
-    classDescriptionMax: {
-      cs: 'Popis třídy nesmí být delší než 500 znaků',
-      en: 'Class description cannot exceed 500 characters',
-    },
-    teacherValid: {
-      cs: 'Učitel musí být platná volba',
-      en: 'Teacher must be a valid selection',
-    },
-    assistantValid: {
-      cs: 'Asistent musí být platná volba',
-      en: 'Assistant must be a valid selection',
-    },
-    teacherRequired: {
-      cs: 'Třída musí mít alespoň jednoho učitele',
-      en: 'Class must have at least one teacher',
-    },
-    assistantRequired: {
-      cs: 'Třída musí mít alespoň jednoho asistenta',
-      en: 'Class must have at least one assistant',
-    },
-    assistantSameAsTeacher: {
-      cs: 'Asistent nesmí být stejný jako učitel',
-      en: 'Assistant cannot be the same as the main teacher',
-    },
-    childRequired: {
-      cs: 'Třída musí mít alespoň jedno dítě',
-      en: 'Class must have at least one child',
-    },
-    teacherAlreadyAssigned: {
-      cs: 'Tento učitel je již přiřazen k jiné třídě',
-      en: 'This teacher is already assigned to another class',
-    },
   },
   detail: {
     title: {
@@ -234,14 +258,6 @@ export const classes = {
       cs: 'Žádost odeslána',
       en: 'Request Sent',
     },
-    permissionRequestSent: {
-      cs: 'Žádost o oprávnění byla odeslána',
-      en: 'Permission request has been sent',
-    },
-    permissionRequestError: {
-      cs: 'Nepodařilo se odeslat žádost o oprávnění',
-      en: 'Failed to send permission request',
-    },
     permissionAcceptButton: {
       cs: 'Přijmout oprávnění',
       en: 'Accept Permission',
@@ -250,25 +266,10 @@ export const classes = {
       cs: 'Odmítnout oprávnění',
       en: 'Deny Permission',
     },
+    permissionRequestFrom,
     permissionRequestMessage: {
       cs: 'Administrátor požádal o oprávnění přístupu k prezentacím dětí v této třídě. Přijměte nebo odmítněte žádost.',
       en: 'An administrator has requested permission to access child presentations in this class. Please accept or deny the request.',
-    },
-    permissionAccepted: {
-      cs: 'Oprávnění přijato',
-      en: 'Permission accepted',
-    },
-    permissionDenied: {
-      cs: 'Oprávnění odmítnuto',
-      en: 'Permission denied',
-    },
-    permissionAcceptError: {
-      cs: 'Nepodařilo se přijmout oprávnění',
-      en: 'Failed to accept permission',
-    },
-    permissionDenyError: {
-      cs: 'Nepodařilo se odmítnout oprávnění',
-      en: 'Failed to deny permission',
     },
     attendance: {
       cs: 'Docházka',
@@ -298,14 +299,6 @@ export const classes = {
       cs: 'Odchod',
       en: 'Check Out',
     },
-    checkInAction: {
-      cs: 'Příchod',
-      en: 'Check In',
-    },
-    checkOutAction: {
-      cs: 'Odchod',
-      en: 'Check Out',
-    },
     notCheckedIn: {
       cs: 'Nezapsáno',
       en: 'Not checked in',
@@ -322,18 +315,6 @@ export const classes = {
       cs: 'Načítám docházku...',
       en: 'Loading attendance...',
     },
-    attendanceError: {
-      cs: 'Nepodařilo se načíst docházku',
-      en: 'Failed to load attendance',
-    },
-    checkInError: {
-      cs: 'Nepodařilo se zapsat příchod',
-      en: 'Failed to check in',
-    },
-    checkOutError: {
-      cs: 'Nepodařilo se zapsat odchod',
-      en: 'Failed to check out',
-    },
   },
   editInfo: {
     cs: 'Upravit informace',
@@ -342,10 +323,6 @@ export const classes = {
   editClassTitle: {
     cs: 'Upravit informace o třídě',
     en: 'Edit Class Information',
-  },
-  autoAssign: {
-    cs: 'Automaticky přiřadit děti',
-    en: 'Auto-assign Children',
   },
   ageRange: {
     cs: 'Věkové rozmezí',
@@ -392,77 +369,5 @@ export const classes = {
   manageTeachersTitle: {
     cs: 'Správa učitelů třídy',
     en: 'Manage Class Teachers',
-  },
-  error: {
-    errorCreateClass: {
-      cs: 'Nepodařilo se vytvořit třídu',
-      en: 'Failed to create class',
-    },
-    errorFetchTeachers: {
-      cs: 'Nepodařilo se načíst učitele',
-      en: 'Failed to fetch teachers',
-    },
-    errorFetchAssistants: {
-      cs: 'Nepodařilo se načíst asistenty',
-      en: 'Failed to fetch assistants',
-    },
-    errorFetchClass: {
-      cs: 'Nepodařilo se načíst třídu',
-      en: 'Failed to fetch class',
-    },
-    errorFetchClasses: {
-      cs: 'Nepodařilo se načíst třídy',
-      en: 'Failed to fetch classes',
-    },
-    errorSavingClass: {
-      cs: 'Nepodařilo se uložit třídu',
-      en: 'Failed to save class',
-    },
-    errorSavingTeachers: {
-      cs: 'Nepodařilo se uložit učitele',
-      en: 'Failed to save teachers',
-    },
-    errorChild: {
-      cs: 'Nepodařilo se potvrdit dítě do třídy',
-      en: 'Failed to confirm child in class',
-    },
-    errorClass: {
-      cs: 'Nepodařilo se potvrdit třídu',
-      en: 'Failed to confirm class',
-    },
-  },
-  confirmation: {
-    status: {
-      cs: 'Potvrzeno',
-      en: 'Confirmed',
-    },
-    pending: {
-      cs: 'Čeká na potvrzení',
-      en: 'Pending Confirmation',
-    },
-    accepted: {
-      cs: 'Přijato',
-      en: 'Accepted',
-    },
-    denied: {
-      cs: 'Zamítnuto',
-      en: 'Denied',
-    },
-    accept: {
-      cs: 'Přijmout',
-      en: 'Accept',
-    },
-    deny: {
-      cs: 'Zamítnout',
-      en: 'Deny',
-    },
-    confirm: {
-      cs: 'Potvrdit',
-      en: 'Confirm',
-    },
-    success: {
-      cs: 'Dítě bylo úspěšně potvrzeno do třídy',
-      en: 'Child was successfully confirmed in the class',
-    },
   },
 };

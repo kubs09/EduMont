@@ -78,7 +78,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       } else {
         setPermissionRequested(true);
         toast({
-          title: texts.classes.detail.permissionRequestSent[language],
+          title: texts.classes.success.permissionRequestSent[language],
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -86,7 +86,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       }
     } catch (error) {
       toast({
-        title: texts.classes.detail.permissionRequestError[language],
+        title: texts.classes.errors.permissionRequestFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -226,7 +226,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
             <Table variant="simple" size="md">
               <Thead>
                 <Tr>
-                  <Th>{texts.childrenTable.name[language]}</Th>
+                  <Th>{texts.common.childrenTable.name[language]}</Th>
                   <Th>{texts.classes.detail.category[language]}</Th>
                   <Th>{texts.classes.detail.presentation[language]}</Th>
                   {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}

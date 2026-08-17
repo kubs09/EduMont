@@ -74,7 +74,7 @@ export const ManageClassTeachersModal = ({
           const classes = await getClasses();
           setAllClasses(classes);
         } catch (error) {
-          console.error(texts.classes.error.errorFetchClasses[language], error);
+          console.error(texts.classes.errors.fetchClassesFailed[language], error);
         }
       };
 
@@ -129,7 +129,7 @@ export const ManageClassTeachersModal = ({
         });
         setErrors(newErrors);
       } else {
-        console.error(texts.classes.error.errorSavingTeachers[language], error);
+        console.error(texts.classes.errors.savingTeachersFailed[language], error);
       }
     } finally {
       setIsSubmitting(false);
@@ -170,7 +170,7 @@ export const ManageClassTeachersModal = ({
                 <FormControl isInvalid={!!errors.assistantId} isRequired>
                   <FormLabel>{texts.classes.assistant[language]}</FormLabel>
                   <Select
-                    placeholder={texts.classes.SelectAssistant[language]}
+                    placeholder={texts.classes.selectAssistant[language]}
                     value={assistantId ?? ''}
                     onChange={(e) => {
                       const value = e.target.value ? Number(e.target.value) : null;

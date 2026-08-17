@@ -48,16 +48,16 @@ const InformationTab: React.FC<InformationTabProps> = ({
         <GridItem>
           <VStack align="stretch" spacing={4}>
             <Box>
-              <Text fontWeight="bold">{texts.childrenTable.age[language]}</Text>
+              <Text fontWeight="bold">{texts.common.childrenTable.age[language]}</Text>
               <Text>{age}</Text>
             </Box>
             <Box>
-              <Text fontWeight="bold">{texts.profile.children.dateOfBirth[language]}</Text>
+              <Text fontWeight="bold">{texts.children.dateOfBirth[language]}</Text>
               <Text>{formatDate(new Date(childData.date_of_birth), language)}</Text>
             </Box>
             {childData.notes && (
               <Box>
-                <Text fontWeight="bold">{texts.childrenTable.notes[language]}</Text>
+                <Text fontWeight="bold">{texts.common.childrenTable.notes[language]}</Text>
                 <Text>{childData.notes}</Text>
               </Box>
             )}
@@ -67,7 +67,7 @@ const InformationTab: React.FC<InformationTabProps> = ({
         <GridItem>
           <VStack align="stretch" spacing={4}>
             <Box>
-              <Text fontWeight="bold">{texts.childrenTable.class[language]}</Text>
+              <Text fontWeight="bold">{texts.common.childrenTable.class[language]}</Text>
               {childData.class_id ? (
                 <HStack spacing={2} align="center">
                   <Text>{childData.class_name}</Text>
@@ -84,11 +84,11 @@ const InformationTab: React.FC<InformationTabProps> = ({
                   />
                 </HStack>
               ) : (
-                <Text>{texts.childrenTable.noClass[language]}</Text>
+                <Text>{texts.common.childrenTable.noClass[language]}</Text>
               )}
             </Box>
             <Box>
-              <Text fontWeight="bold">{texts.childrenTable.parent[language]}</Text>
+              <Text fontWeight="bold">{texts.common.childrenTable.parent[language]}</Text>
               <VStack align="start" spacing={1}>
                 {childData.parents.map((parent) => {
                   const fullName = `${parent.firstname} ${parent.surname}`;

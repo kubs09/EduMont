@@ -83,10 +83,10 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>{texts.userTable.name[language]}</Th>
-              <Th>{texts.userTable.email[language]}</Th>
-              <Th>{texts.userTable.role[language]}</Th>
-              <Th>{texts.userTable.actions[language]}</Th>
+              <Th>{texts.user.userTable.name[language]}</Th>
+              <Th>{texts.user.userTable.email[language]}</Th>
+              <Th>{texts.user.userTable.role[language]}</Th>
+              <Th>{texts.user.userTable.actions[language]}</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -102,10 +102,10 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
                   </ChakraLink>
                 </Td>
                 <Td>{user.email}</Td>
-                <Td>{texts.userTable.roles[user.role][language]}</Td>
+                <Td>{texts.user.userTable.roles[user.role][language]}</Td>
                 <Td>
                   <IconButton
-                    aria-label={texts.userTable.deleteButton[language]}
+                    aria-label={texts.user.userTable.deleteButton[language]}
                     icon={<DeleteIcon />}
                     size="sm"
                     colorScheme="red"
@@ -130,11 +130,11 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {texts.userTable.deleteConfirmTitle[language]}
+              {texts.user.userTable.deleteConfirmTitle[language]}
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              {texts.userTable.deleteConfirmMessage[language]}{' '}
+              {texts.user.userTable.deleteConfirmMessage[language]}{' '}
               <strong>
                 {selectedUser?.firstname} {selectedUser?.surname}
               </strong>
@@ -143,10 +143,10 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={onClose}>
-                {texts.userDashboard.cancel[language]}
+                {texts.user.userDashboard.cancel[language]}
               </Button>
               <Button colorScheme="red" onClick={handleConfirmDelete} ml={3}>
-                {texts.userTable.deleteButton[language]}
+                {texts.user.userTable.deleteButton[language]}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>
