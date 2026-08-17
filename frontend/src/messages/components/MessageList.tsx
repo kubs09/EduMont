@@ -111,14 +111,15 @@ const MessageList: React.FC<MessageListProps> = ({
                     <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" noOfLines={1}>
                       {message.from_user_id === currentUserId ? (
                         <>
-                          To:{' '}
+                          {t.to[language]}:{' '}
                           {message.recipients
                             ?.map((recipient) => `${recipient.firstname} ${recipient.surname}`)
                             .join(', ')}
                         </>
                       ) : (
                         <>
-                          From: {message.from_user?.firstname} {message.from_user?.surname}
+                          {t.from[language]}: {message.from_user?.firstname}{' '}
+                          {message.from_user?.surname}
                         </>
                       )}
                     </Text>

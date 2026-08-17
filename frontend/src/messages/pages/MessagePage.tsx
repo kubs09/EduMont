@@ -52,7 +52,7 @@ const Messages: React.FC = () => {
       const data = await getMessages();
       setMessages(data);
     } catch (error) {
-      enqueueSnackbar(texts.messages.fetchingMessagesError[language], { variant: 'error' });
+      enqueueSnackbar(texts.messages.errors.fetchFailed[language], { variant: 'error' });
     } finally {
       setIsRefreshing(false);
     }
@@ -63,7 +63,7 @@ const Messages: React.FC = () => {
       const data = await getMessageUsers();
       setUsers(data);
     } catch (error) {
-      enqueueSnackbar(texts.messages.fetchUsersError[language] || 'Failed to fetch users', {
+      enqueueSnackbar(texts.messages.errors.fetchUsersFailed[language], {
         variant: 'error',
         autoHideDuration: 5000,
       });
@@ -84,7 +84,7 @@ const Messages: React.FC = () => {
       setSelectedMessage(message);
       fetchMessages();
     } catch (error) {
-      enqueueSnackbar(enqueueSnackbar(texts.messages.fetchUsersError[language]), {
+      enqueueSnackbar(texts.messages.errors.fetchMessageFailed[language], {
         variant: 'error',
       });
     }
@@ -95,9 +95,9 @@ const Messages: React.FC = () => {
       await deleteMessage(id);
       fetchMessages();
       setSelectedMessage(null);
-      enqueueSnackbar(texts.messages.messageDeleted[language], { variant: 'success' });
+      enqueueSnackbar(texts.messages.success.deleted[language], { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
+      enqueueSnackbar(texts.messages.errors.deleteFailed[language], { variant: 'error' });
     }
   };
 
@@ -220,6 +220,7 @@ const Messages: React.FC = () => {
                 to: t.to[language],
                 title: t.title[language],
                 compose: t.compose[language],
+                delete: texts.common.delete[language],
               }}
             />
           </Box>
@@ -233,9 +234,9 @@ const Messages: React.FC = () => {
           try {
             await sendMessage({ ...data, language });
             fetchMessages();
-            enqueueSnackbar(texts.messages.messageSent[language], { variant: 'success' });
+            enqueueSnackbar(texts.messages.success.sent[language], { variant: 'success' });
           } catch (error) {
-            enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
+            enqueueSnackbar(texts.messages.errors.sendFailed[language], { variant: 'error' });
           }
         }}
         users={users}

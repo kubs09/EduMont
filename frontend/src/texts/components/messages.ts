@@ -1,4 +1,54 @@
+import { common } from './common';
+
 export const messages = {
+  errors: {
+    fetchFailed: {
+      cs: 'Nepodařilo se načíst zprávy',
+      en: 'Failed to fetch messages',
+    },
+    fetchUsersFailed: {
+      cs: 'Nepodařilo se načíst seznam uživatelů',
+      en: 'Failed to fetch users',
+    },
+    fetchMessageFailed: {
+      cs: 'Nepodařilo se načíst zprávu',
+      en: 'Failed to fetch message',
+    },
+    deleteFailed: {
+      cs: 'Nepodařilo se smazat zprávu',
+      en: 'Failed to delete message',
+    },
+    sendFailed: {
+      cs: 'Nepodařilo se odeslat zprávu',
+      en: 'Failed to send message',
+    },
+  },
+  success: {
+    sent: {
+      cs: 'Zpráva byla úspěšně odeslána',
+      en: 'Message sent successfully',
+    },
+    deleted: {
+      cs: 'Zpráva byla úspěšně smazána',
+      en: 'Message deleted successfully',
+    },
+  },
+  validation: {
+    recipientsRequired: {
+      cs: 'Je vyžadován alespoň jeden příjemce',
+      en: 'At least one recipient is required',
+    },
+    subject: common.templates.validation.required({ cs: 'Předmět', en: 'Subject' }, 'masc'),
+    subjectMaxLength: common.templates.validation.maxLength({ cs: 'Předmět', en: 'Subject' }, 255),
+    content: common.templates.validation.required(
+      { cs: 'Obsah zprávy', en: 'Message content' },
+      'masc',
+    ),
+    contentMaxLength: common.templates.validation.maxLength(
+      { cs: 'Obsah zprávy', en: 'Message content' },
+      5000,
+    ),
+  },
   title: {
     cs: 'Zprávy',
     en: 'Messages',
@@ -27,10 +77,6 @@ export const messages = {
     cs: 'Komu',
     en: 'To',
   },
-  date: {
-    cs: 'Datum',
-    en: 'Date',
-  },
   content: {
     cs: 'Obsah zprávy',
     en: 'Message Content',
@@ -43,41 +89,9 @@ export const messages = {
     cs: 'Odeslat',
     en: 'Send',
   },
-  reply: {
-    cs: 'Odpovědět',
-    en: 'Reply',
-  },
-  delete: {
-    cs: 'Smazat',
-    en: 'Delete',
-  },
-  messageSent: {
-    cs: 'Zpráva byla úspěšně odeslána',
-    en: 'Message sent successfully',
-  },
-  messageDeleted: {
-    cs: 'Zpráva byla úspěšně smazána',
-    en: 'Message deleted successfully',
-  },
   noMessages: {
     cs: 'Žádné zprávy',
     en: 'No messages',
-  },
-  fetchingMessagesError: {
-    cs: 'Nepodařilo se načíst zprávy',
-    en: 'Failed to fetch messages',
-  },
-  fetchUsersError: {
-    cs: 'Nepodařilo se načíst seznam uživatelů',
-    en: 'Failed to fetch users',
-  },
-  noUsersAvailable: {
-    cs: 'Žádní uživatelé nejsou k dispozici',
-    en: 'No users available',
-  },
-  selectUser: {
-    cs: 'Vyberte příjemce',
-    en: 'Select recipient',
   },
   search: {
     cs: 'Hledat zprávy...',
@@ -90,62 +104,6 @@ export const messages = {
   noMessagesFound: {
     cs: 'Žádné zprávy nenalezeny',
     en: 'No messages found',
-  },
-  validation: {
-    toUserIds: {
-      cs: 'Je vyžadován alespoň jeden příjemce',
-      en: 'At least one recipient is required',
-    },
-    subject: {
-      cs: 'Předmět je povinný',
-      en: 'Subject is required',
-    },
-    subjectMaxLength: {
-      cs: 'Předmět musí být kratší než 255 znaků',
-      en: 'Subject must be less than 255 characters',
-    },
-    content: {
-      cs: 'Obsah zprávy je povinný',
-      en: 'Message content is required',
-    },
-    contentMaxLength: {
-      cs: 'Obsah zprávy musí být kratší než 5000 znaků',
-      en: 'Message content must be less than 5000 characters',
-    },
-  },
-  error: {
-    deleteError: {
-      cs: 'Nepodařilo se smazat zprávu',
-      en: 'Failed to delete message',
-    },
-  },
-  notification: {
-    subject: {
-      cs: 'Nová zpráva od',
-      en: 'New message from',
-    },
-    viewMessage: {
-      cs: 'Zobrazit zprávu',
-      en: 'View Message',
-    },
-  },
-  roleGroups: {
-    admin: {
-      cs: 'Administrátoři',
-      en: 'Administrators',
-    },
-    teacher: {
-      cs: 'Učitelé',
-      en: 'Teachers',
-    },
-    parent: {
-      cs: 'Rodiče',
-      en: 'Parents',
-    },
-  },
-  classLabel: {
-    cs: 'Třída:',
-    en: 'Class:',
   },
   allUsers: {
     cs: 'Všichni uživatelé',

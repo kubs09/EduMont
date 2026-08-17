@@ -40,5 +40,6 @@ export interface MessageDetailProps {
     to: string;
     title: string;
     compose: string;
+    delete: string;
   };
 }
