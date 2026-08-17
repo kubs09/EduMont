@@ -45,10 +45,10 @@ const UserDashboard: React.FC = () => {
       setUsers(response.data);
       setError(null);
     } catch (error) {
-      const errorMessage = texts.user.userDashboard.fetchError[language];
+      const errorMessage = texts.userDashboard.errors.fetchListFailed[language];
       setError(errorMessage);
       toast({
-        title: texts.user.userDashboard.errorTitle[language],
+        title: texts.userDashboard.errors.genericTitle[language],
         description: errorMessage,
         status: 'error',
         duration: 5000,
@@ -67,7 +67,7 @@ const UserDashboard: React.FC = () => {
     try {
       await api.delete(`/api/users/${userId}`);
       toast({
-        title: texts.user.userTable.deleteSuccess[language],
+        title: texts.userDashboard.success.deleted[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -76,16 +76,16 @@ const UserDashboard: React.FC = () => {
     } catch (error: unknown) {
       const errorMsg = (error as { response?: { data?: { error?: string } } }).response?.data
         ?.error;
-      let description = texts.user.userTable.deleteError[language];
+      let description = texts.userDashboard.errors.deleteFailed[language];
 
       if (errorMsg === 'You cannot delete your own account') {
-        description = texts.user.userTable.cannotDeleteSelf[language];
+        description = texts.userDashboard.errors.cannotDeleteSelf[language];
       } else if (errorMsg) {
         description = errorMsg;
       }
 
       toast({
-        title: texts.user.userDashboard.errorTitle[language],
+        title: texts.userDashboard.errors.genericTitle[language],
         description,
         status: 'error',
         duration: 5000,
@@ -99,15 +99,15 @@ const UserDashboard: React.FC = () => {
       <Card>
         <CardHeader>
           <HStack justify="space-between">
-            <Heading>{texts.user.userDashboard.title[language]}</Heading>
+            <Heading>{texts.userDashboard.title[language]}</Heading>
             <Button colorScheme="blue" onClick={() => setIsAddUserOpen(true)}>
-              {texts.user.userDashboard.addUserButton[language]}
+              {texts.userDashboard.addUserButton[language]}
             </Button>
           </HStack>
         </CardHeader>
         <CardBody>
           <SearchBar
-            placeholder={texts.user.userDashboard.searchPlaceholder[language]}
+            placeholder={texts.userDashboard.searchPlaceholder[language]}
             value={searchQuery}
             onChange={setSearchQuery}
           />

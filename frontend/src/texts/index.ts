@@ -3,7 +3,7 @@ import { classes } from './components/classes';
 import { messages } from './components/messages';
 import { schedule } from './components/schedule';
 import { common } from './components/common';
-import { user } from './components/user';
+import { userDashboard } from './components/userDashboard';
 import { children } from './components/children';
 import { home } from './components/home';
 import { staticPages } from './components/staticPages';
@@ -16,7 +16,7 @@ export const texts = {
   messages,
   schedule,
   common,
-  user,
+  userDashboard,
   children,
   home,
   staticPages,

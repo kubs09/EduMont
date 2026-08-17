@@ -118,7 +118,11 @@ const UserProfilePage = () => {
           <Box bg={subtleBg} p={3} borderRadius="md">
             <Text fontWeight="bold">{texts.profile.role[language]}</Text>
             <Text>
-              {texts.user.userTable.roles[user.role as keyof typeof texts.user.userTable.roles][language]}
+              {
+                texts.userDashboard.table.roles[
+                  user.role as keyof typeof texts.userDashboard.table.roles
+                ][language]
+              }
             </Text>
           </Box>
         </Stack>

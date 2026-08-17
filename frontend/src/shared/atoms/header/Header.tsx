@@ -212,7 +212,7 @@ const Header = () => {
                     {texts.schedule.menuItem[language]}
                   </MenuItem>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
-                    {texts.user.userDashboard.menuItem[language]}
+                    {texts.userDashboard.menuItem[language]}
                   </MenuItem>
                 </>
               )}
