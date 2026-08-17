@@ -35,8 +35,8 @@ const UserProfilePage = () => {
       const userId = parseInt(id, 10);
       if (Number.isNaN(userId)) {
         toast({
-          title: texts.profile.error.title[language],
-          description: texts.profile.error.description[language],
+          title: texts.common.genericError.title[language],
+          description: texts.common.genericError.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -54,8 +54,8 @@ const UserProfilePage = () => {
         }
 
         toast({
-          title: texts.profile.error.title[language],
-          description: texts.profile.error.description[language],
+          title: texts.common.genericError.title[language],
+          description: texts.common.genericError.description[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -76,7 +76,7 @@ const UserProfilePage = () => {
         <Grid templateColumns="auto 1fr auto" alignItems="center" mb={6} gap={2}>
           <GridItem>
             <IconButton
-              aria-label={texts.profile.children.backButton[language]}
+              aria-label={texts.children.backButton[language]}
               icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
@@ -90,7 +90,7 @@ const UserProfilePage = () => {
           </GridItem>
           <GridItem>
             <IconButton
-              aria-label={texts.profile.children.backButton[language]}
+              aria-label={texts.children.backButton[language]}
               icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
@@ -118,7 +118,11 @@ const UserProfilePage = () => {
           <Box bg={subtleBg} p={3} borderRadius="md">
             <Text fontWeight="bold">{texts.profile.role[language]}</Text>
             <Text>
-              {texts.userTable.roles[user.role as keyof typeof texts.userTable.roles][language]}
+              {
+                texts.userDashboard.table.roles[
+                  user.role as keyof typeof texts.userDashboard.table.roles
+                ][language]
+              }
             </Text>
           </Box>
         </Stack>

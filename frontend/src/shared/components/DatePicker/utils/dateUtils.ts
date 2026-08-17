@@ -5,7 +5,7 @@ export const formatMonthYear = (dateString: string, language: 'cs' | 'en'): stri
   const monthIndex = date.getMonth();
   const year = date.getFullYear();
 
-  const monthName = texts.datePicker.months[language][monthIndex];
+  const monthName = texts.common.datePicker.months[language][monthIndex];
 
   return `${monthName} ${year}`;
 };

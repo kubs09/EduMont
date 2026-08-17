@@ -36,3 +36,21 @@ export interface UpdateChildData {
   notes?: string;
   class_id?: number;
 }
+
+export interface CreateChildExcuseData {
+  date_from: string;
+  date_to: string;
+  reason: string;
+}
+
+export interface ChildExcuse {
+  id: number;
+  child_id: number;
+  parent_id: number;
+  date_from: string;
+  date_to: string;
+  reason: string;
+  created_at: string;
+  parent_firstname?: string;
+  parent_surname?: string;
+}

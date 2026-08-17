@@ -46,7 +46,11 @@ const ContactSection = ({
         <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.role[language]}</Text>
           <Text>
-            {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}
+            {
+              texts.userDashboard.table.roles[
+                userRole as keyof typeof texts.userDashboard.table.roles
+              ][language]
+            }
           </Text>
         </Box>
         <Button variant="brand" onClick={onEditProfile}>

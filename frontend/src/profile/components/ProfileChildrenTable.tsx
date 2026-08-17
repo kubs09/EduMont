@@ -15,10 +15,10 @@ const ProfileChildrenTable = ({ children }: ProfileChildrenTableProps) => {
       <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
         <Thead>
           <Tr>
-            <Th whiteSpace="nowrap">{texts.childrenTable.firstname[language]}</Th>
-            <Th whiteSpace="nowrap">{texts.childrenTable.surname[language]}</Th>
-            <Th whiteSpace="nowrap">{texts.childrenTable.age[language]}</Th>
-            <Th whiteSpace="nowrap">{texts.childrenTable.notes[language]}</Th>
+            <Th whiteSpace="nowrap">{texts.common.childrenTable.firstname[language]}</Th>
+            <Th whiteSpace="nowrap">{texts.common.childrenTable.surname[language]}</Th>
+            <Th whiteSpace="nowrap">{texts.common.childrenTable.age[language]}</Th>
+            <Th whiteSpace="nowrap">{texts.common.childrenTable.notes[language]}</Th>
           </Tr>
         </Thead>
         <Tbody>{children}</Tbody>

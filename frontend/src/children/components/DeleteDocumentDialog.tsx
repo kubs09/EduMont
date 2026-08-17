@@ -39,7 +39,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
       await api.delete(`/api/documents/${documentId}`);
 
       toast({
-        title: texts.document.success.delete[language],
+        title: texts.children.success.documentDeleted[language],
         status: 'success',
         duration: 3000,
       });
@@ -48,8 +48,8 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
       await onDocumentDeleted();
     } catch (error) {
       toast({
-        title: texts.document.error.title[language],
-        description: texts.document.error.deleteFailed[language],
+        title: texts.children.errors.documentDeleteFailed.title[language],
+        description: texts.children.errors.documentDeleteFailed.description[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -64,9 +64,9 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
       <AlertDialogOverlay>
         <AlertDialogContent>
           <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {texts.document.deleteConfirmation[language]}
+            {texts.children.documents.deleteConfirmation[language]}
           </AlertDialogHeader>
-          <AlertDialogBody>{texts.document.deleteMessage[language]}</AlertDialogBody>
+          <AlertDialogBody>{texts.children.documents.deleteMessage[language]}</AlertDialogBody>
           <AlertDialogFooter>
             <Button ref={cancelRef} variant="secondary" onClick={onClose}>
               {texts.common.cancel[language]}

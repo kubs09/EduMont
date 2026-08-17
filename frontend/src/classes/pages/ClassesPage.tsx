@@ -20,22 +20,8 @@ import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
-import { ClassTeacher } from '@frontend/types/class';
+import { Class } from '@frontend/types/class';
 import CreateClassModal from '../components/CreateClassModal';
-
-interface Child {
-  id: number;
-  firstname: string;
-  surname: string;
-}
-
-interface Class {
-  id: number;
-  name: string;
-  description: string;
-  teachers: ClassTeacher[];
-  children: Child[];
-}
 
 const ClassesPage = () => {
   const navigate = useNavigate();
@@ -55,19 +41,18 @@ const ClassesPage = () => {
 
   const fetchClasses = useCallback(async () => {
     try {
-      const classesResponse = await api.get('/api/classes');
+      const classesResponse = await api.get<Class[]>('/api/classes');
       setClasses(classesResponse.data);
       setCurrentPage(1);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to load data',
+        title: texts.classes.errors.fetchClassesFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     }
-  }, [toast]);
+  }, [toast, language]);
 
   useEffect(() => {
     fetchClasses();

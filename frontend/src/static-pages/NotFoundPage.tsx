@@ -22,16 +22,16 @@ const NotFoundPage = () => {
     <Center h="100vh">
       <VStack spacing={6}>
         <Icon as={WarningIcon} color="red.500" boxSize={16} />
-        <Heading size="xl">{texts.static_pages.notFound_title[language]}</Heading>
+        <Heading size="xl">{texts.staticPages.notFoundTitle[language]}</Heading>
         <Text>
           {isAuthenticated
-            ? texts.static_pages.backMessage[language]
-            : texts.static_pages.loginMessage[language]}
+            ? texts.staticPages.backMessage[language]
+            : texts.staticPages.loginMessage[language]}
         </Text>
         <Button colorScheme="blue" onClick={handleButtonClick}>
           {isAuthenticated
-            ? texts.static_pages.backButton[language]
-            : texts.static_pages.loginButton[language]}
+            ? texts.staticPages.backButton[language]
+            : texts.staticPages.loginButton[language]}
         </Button>
       </VStack>
     </Center>

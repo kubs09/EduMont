@@ -19,7 +19,8 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { DatePicker } from '@frontend/shared/components/DatePicker';
-import { ChildExcuse, createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
+import { createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 
 interface ChildExcuseActionProps {
   childId: number;
@@ -81,11 +82,11 @@ const ChildExcuseAction = ({
     const errors: Record<string, string> = {};
 
     if (!excuseData.date_from) {
-      errors.date_from = texts.profile.children.excuse.validation.dateFromRequired[language];
+      errors.date_from = texts.children.validation.excuseDateFromRequired[language];
     }
 
     if (!excuseData.date_to) {
-      errors.date_to = texts.profile.children.excuse.validation.dateToRequired[language];
+      errors.date_to = texts.children.validation.excuseDateToRequired[language];
     }
 
     if (excuseData.date_from && excuseData.date_to) {
@@ -93,13 +94,13 @@ const ChildExcuseAction = ({
       const toDate = new Date(excuseData.date_to);
       if (!Number.isNaN(fromDate.getTime()) && !Number.isNaN(toDate.getTime())) {
         if (toDate < fromDate) {
-          errors.date_to = texts.profile.children.excuse.validation.dateOrder[language];
+          errors.date_to = texts.children.validation.excuseDateOrder[language];
         }
       }
     }
 
     if (!excuseData.reason.trim()) {
-      errors.reason = texts.profile.children.excuse.validation.reasonRequired[language];
+      errors.reason = texts.children.validation.excuseReasonRequired[language];
     }
 
     setExcuseErrors(errors);
@@ -123,7 +124,7 @@ const ChildExcuseAction = ({
       }
       await onRefreshExcuses(childId);
       toast({
-        title: texts.profile.children.excuse.success[language],
+        title: texts.children.success.excuseSubmitted[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -132,8 +133,8 @@ const ChildExcuseAction = ({
     } catch (error) {
       const message = (error as { message?: string })?.message;
       toast({
-        title: texts.profile.children.excuse.error[language],
-        description: message || texts.profile.children.excuse.error[language],
+        title: texts.children.errors.excuseSubmitFailed[language],
+        description: message || texts.children.errors.excuseSubmitFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -174,7 +175,7 @@ const ChildExcuseAction = ({
       });
       await onRefreshExcuses(childId);
       toast({
-        title: texts.profile.children.excuse.cancelSuccess[language],
+        title: texts.children.success.excuseCancelled[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -183,8 +184,8 @@ const ChildExcuseAction = ({
     } catch (error) {
       const message = (error as { message?: string })?.message;
       toast({
-        title: texts.profile.children.excuse.cancelError[language],
-        description: message || texts.profile.children.excuse.cancelError[language],
+        title: texts.children.errors.excuseCancelFailed[language],
+        description: message || texts.children.errors.excuseCancelFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -213,8 +214,8 @@ const ChildExcuseAction = ({
   const displayText =
     buttonText ||
     (excuse
-      ? texts.profile.children.excuse.excuseEditButton[language]
-      : texts.profile.children.excuse.excuseButton[language]);
+      ? texts.children.excuse.excuseEditButton[language]
+      : texts.children.excuse.excuseButton[language]);
 
   return (
     <>
@@ -225,21 +226,21 @@ const ChildExcuseAction = ({
       )}
       {excuse && canEndExcuse && (
         <Button size={size} variant="secondary" onClick={handleExcuseCancel} ml={2}>
-          {texts.profile.children.excuse.excuseEndButton[language]}
+          {texts.children.excuse.excuseEndButton[language]}
         </Button>
       )}
       <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {texts.profile.children.excuse.title[language]}
+            {texts.children.excuse.title[language]}
             {childName ? ` - ${childName}` : ''}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <Stack spacing={4}>
               <FormControl isRequired isInvalid={!!excuseErrors.date_from}>
-                <FormLabel>{texts.profile.children.excuse.dateFrom[language]}</FormLabel>
+                <FormLabel>{texts.children.excuse.dateFrom[language]}</FormLabel>
                 <DatePicker
                   viewType="day"
                   value={excuseData.date_from}
@@ -254,7 +255,7 @@ const ChildExcuseAction = ({
                 <FormErrorMessage>{excuseErrors.date_from}</FormErrorMessage>
               </FormControl>
               <FormControl isRequired isInvalid={!!excuseErrors.date_to}>
-                <FormLabel>{texts.profile.children.excuse.dateTo[language]}</FormLabel>
+                <FormLabel>{texts.children.excuse.dateTo[language]}</FormLabel>
                 <DatePicker
                   viewType="day"
                   value={excuseData.date_to}
@@ -269,7 +270,7 @@ const ChildExcuseAction = ({
                 <FormErrorMessage>{excuseErrors.date_to}</FormErrorMessage>
               </FormControl>
               <FormControl isRequired isInvalid={!!excuseErrors.reason}>
-                <FormLabel>{texts.profile.children.excuse.reason[language]}</FormLabel>
+                <FormLabel>{texts.children.excuse.reason[language]}</FormLabel>
                 <Textarea
                   value={excuseData.reason}
                   onChange={(event) =>
@@ -285,10 +286,10 @@ const ChildExcuseAction = ({
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onClick={closeModal} mr={3}>
-              {texts.profile.cancel[language]}
+              {texts.common.cancel[language]}
             </Button>
             <Button variant="brand" onClick={handleExcuseSubmit} isLoading={isSubmitting}>
-              {texts.profile.children.excuse.submit[language]}
+              {texts.children.excuse.submit[language]}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -296,15 +297,15 @@ const ChildExcuseAction = ({
       <Modal isOpen={isConfirmOpen} onClose={onConfirmClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>{texts.profile.children.excuse.cancelConfirmTitle[language]}</ModalHeader>
+          <ModalHeader>{texts.children.excuse.cancelConfirmTitle[language]}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>{texts.profile.children.excuse.cancelConfirmMessage[language]}</ModalBody>
+          <ModalBody>{texts.children.excuse.cancelConfirmMessage[language]}</ModalBody>
           <ModalFooter>
             <Button variant="outline" onClick={onConfirmClose} mr={3}>
-              {texts.profile.children.excuse.keep[language]}
+              {texts.children.excuse.keep[language]}
             </Button>
             <Button variant="brand" onClick={handleConfirmDelete} isLoading={isCancelling}>
-              {texts.profile.children.excuse.cancel[language]}
+              {texts.children.excuse.excuseEndButton[language]}
             </Button>
           </ModalFooter>
         </ModalContent>

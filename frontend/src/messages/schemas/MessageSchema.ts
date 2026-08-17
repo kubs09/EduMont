@@ -5,7 +5,7 @@ export const createMessageSchema = (language: 'en' | 'cs') => {
   return z.object({
     to_user_ids: z
       .array(z.number())
-      .min(1, { message: texts.messages.validation.toUserIds[language] }),
+      .min(1, { message: texts.messages.validation.recipientsRequired[language] }),
     subject: z
       .string()
       .min(1, { message: texts.messages.validation.subject[language] })

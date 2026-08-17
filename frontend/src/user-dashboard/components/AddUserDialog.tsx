@@ -37,7 +37,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
     try {
       await api.post('/api/users', { email, role, language });
       toast({
-        title: texts.userDashboard.success[language],
+        title: texts.userDashboard.success.created[language],
         status: 'success',
         duration: 3000,
       });
@@ -55,12 +55,12 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
       }
       const errorResponse =
         error instanceof Error && 'response' in error ? (error as ApiError).response?.data : null;
-      let errorMessage = texts.userDashboard.errorTitle[language];
+      let errorMessage = texts.userDashboard.errors.createFailed[language];
 
       if (errorResponse?.error === 'user_exists') {
-        errorMessage = texts.userDashboard.userExists[language];
+        errorMessage = texts.userDashboard.errors.userExists[language];
       } else if (errorResponse?.error === 'invitation_exists') {
-        errorMessage = texts.userDashboard.invitationExists[language];
+        errorMessage = texts.userDashboard.errors.invitationExists[language];
       }
 
       toast({
@@ -96,15 +96,15 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
                 setRole(e.target.value as 'admin' | 'teacher' | 'parent')
               }
             >
-              <option value="admin">{texts.userTable.roles.admin[language]}</option>
-              <option value="teacher">{texts.userTable.roles.teacher[language]}</option>
-              <option value="parent">{texts.userTable.roles.parent[language]}</option>
+              <option value="admin">{texts.userDashboard.table.roles.admin[language]}</option>
+              <option value="teacher">{texts.userDashboard.table.roles.teacher[language]}</option>
+              <option value="parent">{texts.userDashboard.table.roles.parent[language]}</option>
             </Select>
           </FormControl>
         </ModalBody>
         <ModalFooter>
           <Button variant="ghost" mr={3} onClick={onClose}>
-            {texts.userDashboard.cancel[language]}
+            {texts.common.cancel[language]}
           </Button>
           <Button colorScheme="blue" type="submit" isLoading={isSubmitting}>
             {texts.userDashboard.submit[language]}

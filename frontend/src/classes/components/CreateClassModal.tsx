@@ -76,7 +76,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
         const data = await getUsers('teacher');
         setAvailableTeachers(data);
       } catch (error) {
-        console.error(texts.classes.error.errorFetchTeachers[language], error);
+        console.error(texts.classes.errors.fetchTeachersFailed[language], error);
       }
     };
 
@@ -85,7 +85,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
         const classes = await getClasses();
         setAllClasses(classes);
       } catch (error) {
-        console.error(texts.classes.error.errorFetchClass[language], error);
+        console.error(texts.classes.errors.fetchClassesFailed[language], error);
       }
     };
 
@@ -192,7 +192,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
       }
 
       const apiError = error as { message?: string } | null | undefined;
-      console.error(texts.classes.error.errorCreateClass[language], apiError);
+      console.error(texts.classes.errors.createFailed[language], apiError);
     } finally {
       setIsSubmitting(false);
     }
@@ -264,7 +264,7 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
           <FormControl mt={4} isInvalid={!!errors.assistantId}>
             <FormLabel>{texts.classes.assistant[language]}</FormLabel>
             <Select
-              placeholder={texts.classes.SelectAssistant[language]}
+              placeholder={texts.classes.selectAssistant[language]}
               value={assistantId ?? ''}
               onChange={(e) => {
                 const value = e.target.value ? Number(e.target.value) : null;

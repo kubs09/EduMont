@@ -4,8 +4,8 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ChildExcuseAction, Section } from '@frontend/shared/components';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
-import { ChildExcuse, getChildExcuses, getChildren } from '@frontend/services/api';
-import { Child } from '@frontend/types/child';
+import { getChildExcuses, getChildren } from '@frontend/services/api';
+import { Child, ChildExcuse } from '@frontend/types/child';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 
@@ -121,7 +121,7 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
   };
 
   return (
-    <Section title={texts.profile.children.titleParent[language]} cardProps={{ mb: 6 }}>
+    <Section title={texts.children.titleParent[language]} cardProps={{ mb: 6 }}>
       <Stack spacing={4}>
         {children.length > 0 ? (
           <VStack align="start" spacing={2} w="full">
@@ -141,7 +141,7 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
                         </Button>
                         {activeExcuse && (
                           <Text fontSize="sm" color="orange.500">
-                            {texts.profile.children.excuse.status[language]} (
+                            {texts.children.excuse.status[language]} (
                             {formatExcuseDate(activeExcuse.date_from)}
                             {' - '}
                             {formatExcuseDate(activeExcuse.date_to)})
@@ -164,11 +164,11 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
             ))}
           </VStack>
         ) : (
-          <Text variant="empty">{texts.profile.children.noChildren[language]}</Text>
+          <Text variant="empty">{texts.children.noChildren[language]}</Text>
         )}
         <HStack justify="flex-start">
           <Button variant="brand" onClick={onOpenChildren}>
-            {texts.profile.children.viewDashboard[language]}
+            {texts.children.viewDashboard[language]}
           </Button>
         </HStack>
       </Stack>

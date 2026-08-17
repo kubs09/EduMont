@@ -21,7 +21,7 @@ export const createProfileSchema = (language: 'cs' | 'en') => {
     email: z
       .string()
       .nonempty(texts.profile.validation.emailRequired[language])
-      .email(texts.profile.validation.emailInvalid[language]),
+      .email(texts.profile.validation.invalidEmail[language]),
     phone: z
       .string()
       .regex(

@@ -47,15 +47,15 @@ const InviteSignupPage: React.FC = () => {
         password: data.password,
       });
       toast({
-        title: texts.inviteSignup.success.title[language],
-        description: texts.inviteSignup.success.description[language],
+        title: texts.signUp.success.registered.title[language],
+        description: texts.signUp.success.registered.description[language],
         status: 'success',
       });
       navigate(ROUTES.LOGIN);
     } catch (error) {
       toast({
-        title: texts.inviteSignup.error.title[language],
-        description: texts.inviteSignup.error.description[language],
+        title: texts.signUp.errors.registrationFailed.title[language],
+        description: texts.signUp.errors.registrationFailed.description[language],
         status: 'error',
       });
     } finally {
@@ -67,24 +67,24 @@ const InviteSignupPage: React.FC = () => {
     <Container maxW="lg">
       <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
         <CardHeader>
-          <Heading>{texts.inviteSignup.title[language]}</Heading>
+          <Heading>{texts.signUp.title[language]}</Heading>
         </CardHeader>
-        <Text textAlign="center">{texts.common.inviteSignup.description[language]}</Text>
+        <Text textAlign="center">{texts.signUp.description[language]}</Text>
         <CardBody>
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <VStack spacing={4}>
               <FormControl isRequired isInvalid={!!errors.firstName}>
-                <FormLabel>{texts.inviteSignup.form.firstName[language]}</FormLabel>
+                <FormLabel>{texts.signUp.form.firstName[language]}</FormLabel>
                 <Input {...register('firstName')} />
                 <FormErrorMessage>{errors.firstName?.message}</FormErrorMessage>
               </FormControl>
               <FormControl isRequired isInvalid={!!errors.lastName}>
-                <FormLabel>{texts.inviteSignup.form.lastName[language]}</FormLabel>
+                <FormLabel>{texts.signUp.form.lastName[language]}</FormLabel>
                 <Input {...register('lastName')} />
                 <FormErrorMessage>{errors.lastName?.message}</FormErrorMessage>
               </FormControl>
               <FormControl isRequired isInvalid={!!errors.password}>
-                <FormLabel>{texts.inviteSignup.form.password[language]}</FormLabel>
+                <FormLabel>{texts.signUp.form.password[language]}</FormLabel>
                 <Input type="password" {...register('password')} />
                 <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
               </FormControl>
@@ -94,7 +94,7 @@ const InviteSignupPage: React.FC = () => {
                 <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
               </FormControl>
               <Button mt={5} type="submit" colorScheme="blue" width="full" isLoading={isLoading}>
-                {texts.inviteSignup.form.submit[language]}
+                {texts.signUp.form.submit[language]}
               </Button>
             </VStack>
           </form>

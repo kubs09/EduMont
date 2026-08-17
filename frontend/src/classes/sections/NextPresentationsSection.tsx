@@ -15,10 +15,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
-import { NextPresentation } from '@frontend/services/api/class';
-import { Class } from '@frontend/types/class';
+import { Class, NextPresentation } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
-import { ChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
 import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
 
@@ -78,7 +77,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       } else {
         setPermissionRequested(true);
         toast({
-          title: texts.classes.detail.permissionRequestSent[language],
+          title: texts.classes.success.permissionRequestSent[language],
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -86,7 +85,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       }
     } catch (error) {
       toast({
-        title: texts.classes.detail.permissionRequestError[language],
+        title: texts.classes.errors.permissionRequestFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -226,7 +225,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
             <Table variant="simple" size="md">
               <Thead>
                 <Tr>
-                  <Th>{texts.childrenTable.name[language]}</Th>
+                  <Th>{texts.common.childrenTable.name[language]}</Th>
                   <Th>{texts.classes.detail.category[language]}</Th>
                   <Th>{texts.classes.detail.presentation[language]}</Th>
                   {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
