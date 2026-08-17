@@ -1,7 +1,7 @@
 import { profile } from './components/profile';
 import { classes } from './components/classes';
 import { messages } from './components/messages';
-import { presentation } from './components/presentation';
+import { schedule } from './components/schedule';
 import { common } from './components/common';
 import { user } from './components/user';
 import { children } from './components/children';
@@ -14,7 +14,7 @@ export const texts = {
   profile,
   classes,
   messages,
-  presentation,
+  schedule,
   common,
   user,
   children,

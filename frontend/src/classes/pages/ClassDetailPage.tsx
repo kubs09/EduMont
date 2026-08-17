@@ -35,13 +35,7 @@ import { SectionMenu } from '@frontend/shared/components';
 import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } from '../sections';
 
 import { Class } from '@frontend/types/class';
-
-interface User {
-  id: number;
-  firstname: string;
-  surname: string;
-  role: string;
-}
+import { User } from '@frontend/types/user';
 
 const transformClassData = (data: Class): Class => data;
 

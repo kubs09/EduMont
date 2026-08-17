@@ -21,15 +21,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
 import { Combobox } from '@frontend/shared/components';
-
-interface User {
-  id: number;
-  firstname: string;
-  surname: string;
-  role: string;
-  class_names?: string;
-  class_ids?: number[];
-}
+import { User } from '@frontend/types/user';
 
 interface Props {
   isOpen: boolean;

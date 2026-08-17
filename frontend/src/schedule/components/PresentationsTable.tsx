@@ -72,18 +72,15 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
   const getStatusText = (status: string): string => {
     switch (status) {
       case 'prerequisites not met':
-        return (
-          texts.presentation.status?.options.prerequisitesNotMet[language] ||
-          'Prerequisites Not Met'
-        );
+        return texts.schedule.status.options.prerequisitesNotMet[language];
       case 'to be presented':
-        return texts.presentation.status?.options.toBePresented[language] || 'To Be Presented';
+        return texts.schedule.status.options.toBePresented[language];
       case 'presented':
-        return texts.presentation.status?.options.presented[language] || 'Presented';
+        return texts.schedule.status.options.presented[language];
       case 'practiced':
-        return texts.presentation.status?.options.practiced[language] || 'Practiced';
+        return texts.schedule.status.options.practiced[language];
       case 'mastered':
-        return texts.presentation.status?.options.mastered[language] || 'Mastered';
+        return texts.schedule.status.options.mastered[language];
       default:
         return status;
     }
@@ -92,7 +89,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
   if (presentations.length === 0) {
     return (
       <Box textAlign="center" py={8}>
-        <Text color="gray.500">{texts.presentation.noEntries[language]}</Text>
+        <Text color="gray.500">{texts.schedule.noEntries[language]}</Text>
       </Box>
     );
   }
@@ -102,12 +99,12 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
       <Table variant="simple" size="md">
         <Thead>
           <Tr>
-            <Th>{texts.presentation.name?.[language] || 'Name'}</Th>
-            <Th>{texts.presentation.category?.[language] || 'Category'}</Th>
-            <Th>{texts.presentation.status?.label?.[language] || 'Status'}</Th>
-            {showChild && <Th>{texts.presentation.child[language]}</Th>}
-            {showClass && <Th>{texts.presentation.class[language]}</Th>}
-            <Th>{texts.presentation.notes[language]}</Th>
+            <Th>{texts.schedule.name[language]}</Th>
+            <Th>{texts.schedule.category[language]}</Th>
+            <Th>{texts.schedule.status.label[language]}</Th>
+            {showChild && <Th>{texts.schedule.child[language]}</Th>}
+            {showClass && <Th>{texts.schedule.class[language]}</Th>}
+            <Th>{texts.schedule.notes[language]}</Th>
             {canEdit && <Th>{texts.common.actions[language]}</Th>}
           </Tr>
         </Thead>
@@ -158,7 +155,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                 <Td>
                   <HStack spacing={2}>
                     <IconButton
-                      aria-label={texts.presentation.editEntry[language]}
+                      aria-label={texts.schedule.editEntry[language]}
                       icon={<EditIcon />}
                       size="sm"
                       colorScheme="blue"
@@ -166,7 +163,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                       onClick={() => onEdit?.(presentation)}
                     />
                     <IconButton
-                      aria-label={texts.presentation.editEntry[language]}
+                      aria-label={texts.schedule.deleteEntry[language]}
                       icon={<DeleteIcon />}
                       size="sm"
                       colorScheme="red"

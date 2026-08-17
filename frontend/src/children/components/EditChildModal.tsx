@@ -234,7 +234,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
             <FormErrorMessage>{errors.notes}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!!errors.class_id} mb={4}>
-            <FormLabel>{texts.presentation.class[language]}</FormLabel>
+            <FormLabel>{texts.schedule.class[language]}</FormLabel>
             {isLoadingClasses ? (
               <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
             ) : availableClasses.length > 0 ? (

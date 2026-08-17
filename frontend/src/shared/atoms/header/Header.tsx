@@ -209,7 +209,7 @@ const Header = () => {
               {isAdmin && (
                 <>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handlepresentation}>
-                    {texts.presentation.menuItem[language]}
+                    {texts.schedule.menuItem[language]}
                   </MenuItem>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
                     {texts.user.userDashboard.menuItem[language]}

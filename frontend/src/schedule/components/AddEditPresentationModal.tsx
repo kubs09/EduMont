@@ -89,7 +89,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
       if (validatedData.display_order < 1) {
         setErrors((prev) => ({
           ...prev,
-          display_order: texts.presentation.validation.presentationOrderValid[language],
+          display_order: texts.schedule.validation.orderValid[language],
         }));
         return;
       }
@@ -113,14 +113,14 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
       <ModalContent>
         <ModalHeader>
           {editingPresentation
-            ? texts.presentation.curriculum.editPresentation[language]
-            : texts.presentation.curriculum.addPresentation[language]}
+            ? texts.schedule.curriculum.editPresentation[language]
+            : texts.schedule.curriculum.addPresentation[language]}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4}>
             <FormControl isRequired isInvalid={!!errors.category}>
-              <FormLabel>{texts.presentation.category[language]}</FormLabel>
+              <FormLabel>{texts.schedule.category[language]}</FormLabel>
               <Select
                 value={formData.category || ''}
                 onChange={(e) => {
@@ -130,7 +130,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                   }
                 }}
               >
-                <option value="">-- {texts.presentation.select[language]} --</option>
+                <option value="">-- {texts.common.select[language]} --</option>
                 {categories.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
@@ -141,7 +141,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.age_group}>
-              <FormLabel>{texts.presentation.ageGroup[language]}</FormLabel>
+              <FormLabel>{texts.schedule.ageGroup[language]}</FormLabel>
               <Select
                 value={formData.age_group || ''}
                 onChange={(e) => {
@@ -151,7 +151,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
                   }
                 }}
               >
-                <option value="">-- {texts.presentation.select[language]} --</option>
+                <option value="">-- {texts.common.select[language]} --</option>
                 <option value="Infant">{texts.classes.ageGroups.infant[language]} (0-1)</option>
                 <option value="Toddler">{texts.classes.ageGroups.toddler[language]} (1-3)</option>
                 <option value="Early Childhood">
@@ -171,9 +171,9 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.name}>
-              <FormLabel>{texts.presentation.name[language]}</FormLabel>
+              <FormLabel>{texts.schedule.name[language]}</FormLabel>
               <Input
-                placeholder={texts.presentation.placeholders.name[language]}
+                placeholder={texts.schedule.placeholders.name[language]}
                 value={formData.name || ''}
                 onChange={(e) => {
                   onFormDataChange({ ...formData, name: e.target.value });
@@ -186,7 +186,7 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.display_order}>
-              <FormLabel>{texts.presentation.order[language]}</FormLabel>
+              <FormLabel>{texts.schedule.order[language]}</FormLabel>
               <NumberInput
                 min={1}
                 max={maxOrder}
@@ -209,16 +209,16 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
               </NumberInput>
               {!formData.category && (
                 <FormErrorMessage>
-                  {texts.presentation.validation.selectCategoryFirst[language]}
+                  {texts.schedule.validation.selectCategoryFirst[language]}
                 </FormErrorMessage>
               )}
               {errors.display_order && <FormErrorMessage>{errors.display_order}</FormErrorMessage>}
             </FormControl>
 
             <FormControl>
-              <FormLabel>{texts.presentation.notes[language]}</FormLabel>
+              <FormLabel>{texts.schedule.notes[language]}</FormLabel>
               <Textarea
-                placeholder={texts.presentation.placeholders.notes[language]}
+                placeholder={texts.schedule.placeholders.notes[language]}
                 value={formData.notes || ''}
                 onChange={(e) => {
                   onFormDataChange({ ...formData, notes: e.target.value });

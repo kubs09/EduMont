@@ -65,7 +65,7 @@ const SchedulePage: React.FC = () => {
       setPresentations(data);
     } catch (error) {
       toast({
-        title: 'Error loading presentations',
+        title: texts.schedule.errors.fetchFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -73,7 +73,7 @@ const SchedulePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [toast, language]);
 
   useEffect(() => {
     loadPresentations();
@@ -151,7 +151,7 @@ const SchedulePage: React.FC = () => {
           notes: formData.notes,
         });
         toast({
-          title: texts.presentation.messages.updateSuccess[language],
+          title: texts.schedule.success.updated[language],
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -165,7 +165,7 @@ const SchedulePage: React.FC = () => {
           notes: formData.notes,
         });
         toast({
-          title: texts.presentation.messages.createSuccess[language],
+          title: texts.schedule.success.created[language],
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -175,7 +175,7 @@ const SchedulePage: React.FC = () => {
       onClose();
       await loadPresentations();
     } catch (error: unknown) {
-      let errorMessage = texts.presentation.messages.createError[language];
+      let errorMessage = texts.schedule.errors.createFailed[language];
 
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -194,7 +194,7 @@ const SchedulePage: React.FC = () => {
         }
       }
       toast({
-        title: texts.presentation.messages.createError[language],
+        title: texts.schedule.errors.createFailed[language],
         description: errorMessage,
         status: 'error',
         duration: 5000,
@@ -213,7 +213,7 @@ const SchedulePage: React.FC = () => {
       );
       if (newOrder < 1 || newOrder > categoryPresentations.length) {
         toast({
-          title: 'Cannot reorder beyond limits',
+          title: texts.schedule.errors.reorderLimitReached[language],
           status: 'warning',
           duration: 3000,
           isClosable: true,
@@ -236,14 +236,14 @@ const SchedulePage: React.FC = () => {
 
       await loadPresentations();
       toast({
-        title: 'Order updated successfully',
+        title: texts.schedule.success.reordered[language],
         status: 'success',
         duration: 2000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: 'Error updating order',
+        title: texts.schedule.errors.reorderFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -279,7 +279,7 @@ const SchedulePage: React.FC = () => {
             <VStack spacing={4} mb={6} align="stretch">
               <HStack justify="space-between" spacing={2}>
                 <Heading size={{ base: 'md', md: 'lg' }}>
-                  {texts.presentation.curriculum.curriculumManagement[language]}
+                  {texts.schedule.curriculum.curriculumManagement[language]}
                 </Heading>
                 <HStack spacing={2}>
                   <Button
@@ -290,7 +290,7 @@ const SchedulePage: React.FC = () => {
                     px={{ base: '8px', md: 'auto' }}
                   >
                     <Box display={{ base: 'none', md: 'inline' }}>
-                      {texts.presentation.refresh[language]}
+                      {texts.common.refresh[language]}
                     </Box>
                   </Button>
                   <Button
@@ -301,13 +301,13 @@ const SchedulePage: React.FC = () => {
                     px={{ base: '8px', md: 'auto' }}
                   >
                     <Box display={{ base: 'none', md: 'inline' }}>
-                      {texts.presentation.addEntry[language]}
+                      {texts.schedule.addEntry[language]}
                     </Box>
                   </Button>
                 </HStack>
               </HStack>
               <HStack spacing={2}>
-                <Text variant="filter">{texts.presentation.ageGroup[language]}:</Text>
+                <Text variant="filter">{texts.schedule.ageGroup[language]}:</Text>
                 <Select
                   size="sm"
                   value={selectedAgeGroup}

@@ -26,6 +26,7 @@ import ComposeMessageModal from '../components/ComposeMessageModal';
 import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
 import { Message } from '@frontend/types/message';
+import { User } from '@frontend/types/user';
 
 const POLL_INTERVAL = 60 * 1000;
 
@@ -39,9 +40,7 @@ const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [users, setUsers] = useState<
-    Array<{ id: number; firstname: string; surname: string; role: string }>
-  >([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');

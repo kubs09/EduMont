@@ -12,10 +12,6 @@ export const login = {
       cs: 'Nepodařilo se odeslat email',
       en: 'Failed to send email',
     },
-    unknownError: {
-      cs: 'Nastala neznámá chyba',
-      en: 'An unknown error occurred',
-    },
     resetPasswordFailed: {
       cs: 'Nepodařilo se změnit heslo',
       en: 'Failed to reset password',

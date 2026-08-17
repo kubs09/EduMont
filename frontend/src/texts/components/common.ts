@@ -31,6 +31,10 @@ const failedToPhrase = (verbCs: string, verbEn: string, entity: Entity) => ({
 });
 
 export const common = {
+  unknownError: {
+    cs: 'Nastala neznámá chyba',
+    en: 'An unknown error occurred',
+  },
   entities: {} as Record<string, Entity>,
   templates: {
     success: {

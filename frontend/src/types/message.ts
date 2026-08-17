@@ -43,3 +43,14 @@ export interface MessageDetailProps {
     delete: string;
   };
 }
+export interface MessageListProps {
+  messages: Message[];
+  selectedMessageId?: number;
+  currentUserId: number;
+  onMessageClick: (id: number) => void;
+  emptyMessage: string;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  sortDirection: 'asc' | 'desc';
+  onSortChange: (direction: 'asc' | 'desc') => void;
+}

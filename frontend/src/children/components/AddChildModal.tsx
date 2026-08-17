@@ -254,7 +254,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           </FormControl>
           {formData.date_of_birth && (
             <FormControl isRequired isInvalid={!!errors.class_id} mb={4}>
-              <FormLabel>{texts.presentation.class[language]}</FormLabel>
+              <FormLabel>{texts.schedule.class[language]}</FormLabel>
               {isLoadingClasses ? (
                 <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
               ) : availableClasses.length > 0 ? (

@@ -14,21 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { Search2Icon, TriangleDownIcon, TriangleUpIcon, EmailIcon } from '@chakra-ui/icons';
 import { format } from 'date-fns';
-import { Message } from '@frontend/types/message';
+import { MessageListProps } from '@frontend/types/message';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
-
-interface MessageListProps {
-  messages: Message[];
-  selectedMessageId?: number;
-  currentUserId: number;
-  onMessageClick: (id: number) => void;
-  emptyMessage: string;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  sortDirection: 'asc' | 'desc';
-  onSortChange: (direction: 'asc' | 'desc') => void;
-}
 
 const MessageList: React.FC<MessageListProps> = ({
   messages,

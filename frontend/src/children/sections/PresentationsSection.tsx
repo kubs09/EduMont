@@ -58,18 +58,15 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
   const getStatusText = (status: string): string => {
     switch (status) {
       case 'prerequisites not met':
-        return (
-          texts.presentation.status?.options.prerequisitesNotMet[language] ||
-          'Prerequisites Not Met'
-        );
+        return texts.schedule.status.options.prerequisitesNotMet[language];
       case 'to be presented':
-        return texts.presentation.status?.options.toBePresented[language] || 'To Be Presented';
+        return texts.schedule.status.options.toBePresented[language];
       case 'presented':
-        return texts.presentation.status?.options.presented[language] || 'Presented';
+        return texts.schedule.status.options.presented[language];
       case 'practiced':
-        return texts.presentation.status?.options.practiced[language] || 'Practiced';
+        return texts.schedule.status.options.practiced[language];
       case 'mastered':
-        return texts.presentation.status?.options.mastered[language] || 'Mastered';
+        return texts.schedule.status.options.mastered[language];
       default:
         return status || '-';
     }
@@ -200,14 +197,14 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
       }
 
       toast({
-        title: texts.presentation.messages.updateSuccess[language],
+        title: texts.schedule.success.updated[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: texts.presentation.messages.updateError[language],
+        title: texts.schedule.errors.updateFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -220,7 +217,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
   return (
     <Box>
       <HStack mb={3} spacing={2} align="center">
-        <Text variant="filter">{texts.presentation.category[language]}:</Text>
+        <Text variant="filter">{texts.schedule.category[language]}:</Text>
         <Select
           size="sm"
           maxW="220px"
@@ -238,11 +235,11 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
         <Table variant="simple" size="md">
           <Thead>
             <Tr>
-              <Th>{texts.presentation.name[language]}</Th>
-              <Th>{texts.presentation.order[language]}</Th>
-              <Th>{texts.presentation.category[language]}</Th>
-              <Th>{texts.presentation.status.label[language]}</Th>
-              <Th>{texts.presentation.notes[language]}</Th>
+              <Th>{texts.schedule.name[language]}</Th>
+              <Th>{texts.schedule.order[language]}</Th>
+              <Th>{texts.schedule.category[language]}</Th>
+              <Th>{texts.schedule.status.label[language]}</Th>
+              <Th>{texts.schedule.notes[language]}</Th>
               <Th>{texts.common.actions[language]}</Th>
             </Tr>
           </Thead>
@@ -280,7 +277,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                   {canUpdateStatus ? (
                     <VStack spacing={1} align="stretch">
                       <Button
-                        aria-label={texts.presentation.status.changeStatus[language]}
+                        aria-label={texts.schedule.status.changeStatus[language]}
                         size="sm"
                         colorScheme="green"
                         isDisabled={
@@ -298,7 +295,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                         ↑
                       </Button>
                       <Button
-                        aria-label={texts.presentation.status.changeStatus[language]}
+                        aria-label={texts.schedule.status.changeStatus[language]}
                         size="sm"
                         colorScheme="red"
                         isDisabled={

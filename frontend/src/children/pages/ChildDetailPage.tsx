@@ -304,7 +304,7 @@ const ChildDetailPage = () => {
     },
     {
       id: 'presentations',
-      label: texts.presentation.title[language],
+      label: texts.schedule.title[language],
       content: showPresentationPermissionAlert ? (
         <PermissionAlertWindow
           title={texts.classes.detail.presentationsPermissionTitle[language]}

@@ -5,32 +5,32 @@ export const presentationSchema = (language: 'en' | 'cs') =>
   z.object({
     category: z
       .string({
-        invalid_type_error: texts.presentation.validation.presentationCategoryValid[language],
+        invalid_type_error: texts.schedule.validation.categoryValid[language],
       })
-      .min(1, { message: texts.presentation.validation.presentationCategoryRequired[language] }),
+      .min(1, { message: texts.schedule.validation.categoryRequired[language] }),
 
     name: z
       .string()
-      .min(1, { message: texts.presentation.validation.presentationNameRequired[language] })
-      .min(2, { message: texts.presentation.validation.presentationNameMin[language] })
-      .max(100, { message: texts.presentation.validation.presentationNameMax[language] }),
+      .min(1, { message: texts.schedule.validation.nameRequired[language] })
+      .min(2, { message: texts.schedule.validation.nameMinLength[language] })
+      .max(100, { message: texts.schedule.validation.nameMaxLength[language] }),
 
     age_group: z
       .string({
-        invalid_type_error: texts.presentation.validation.presentationAgeGroupValid[language],
+        invalid_type_error: texts.schedule.validation.ageGroupValid[language],
       })
-      .min(1, { message: texts.presentation.validation.presentationAgeGroupRequired[language] }),
+      .min(1, { message: texts.schedule.validation.ageGroupRequired[language] }),
 
     display_order: z
       .number({
-        invalid_type_error: texts.presentation.validation.presentationOrderValid[language],
+        invalid_type_error: texts.schedule.validation.orderValid[language],
       })
-      .int({ message: texts.presentation.validation.presentationOrderValid[language] })
-      .positive({ message: texts.presentation.validation.presentationOrderValid[language] }),
+      .int({ message: texts.schedule.validation.orderValid[language] })
+      .positive({ message: texts.schedule.validation.orderValid[language] }),
 
     notes: z
       .string()
-      .max(500, { message: texts.presentation.validation.presentationNotesMax[language] })
+      .max(500, { message: texts.schedule.validation.notesMaxLength[language] })
       .optional(),
   });
 
