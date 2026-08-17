@@ -171,54 +171,6 @@ export const common = {
       en: 'New Message',
     },
   },
-  inviteSignup: {
-    title: {
-      cs: 'Dokončení registrace',
-      en: 'Complete Registration',
-    },
-    description: {
-      cs: 'Pro registraci zadejte své údaje a vytvořte si účet.',
-      en: 'For registration, enter your details and create an account.',
-    },
-    success: {
-      title: {
-        cs: 'Registrace dokončena',
-        en: 'Registration Complete',
-      },
-      description: {
-        cs: 'Váš účet byl úspěšně vytvořen. Nyní se můžete přihlásit.',
-        en: 'Your account has been created successfully. You can now log in.',
-      },
-    },
-    error: {
-      title: {
-        cs: 'Chyba při registraci',
-        en: 'Registration Error',
-      },
-      description: {
-        cs: 'Nepodařilo se dokončit registraci. Zkuste to prosím později.',
-        en: 'Failed to complete registration. Please try again later.',
-      },
-    },
-    form: {
-      firstName: {
-        cs: 'Jméno',
-        en: 'First Name',
-      },
-      lastName: {
-        cs: 'Příjmení',
-        en: 'Last Name',
-      },
-      password: {
-        cs: 'Heslo',
-        en: 'Password',
-      },
-      submit: {
-        cs: 'Dokončit registraci',
-        en: 'Complete Registration',
-      },
-    },
-  },
   datePicker: {
     months: {
       cs: [

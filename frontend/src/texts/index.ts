@@ -1,4 +1,3 @@
-import { auth } from './components/auth';
 import { profile } from './components/profile';
 import { classes } from './components/classes';
 import { messages } from './components/messages';
@@ -8,9 +7,10 @@ import { user } from './components/user';
 import { children } from './components/children';
 import { home } from './components/home';
 import { staticPages } from './components/staticPages';
+import { login } from './components/login';
+import { signUp } from './components/signUp';
 
 export const texts = {
-  auth,
   profile,
   classes,
   messages,
@@ -20,6 +20,8 @@ export const texts = {
   children,
   home,
   staticPages,
+  login,
+  signUp,
 };
 
 export type Texts = typeof texts;

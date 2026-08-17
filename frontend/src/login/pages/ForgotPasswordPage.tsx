@@ -54,7 +54,7 @@ const ForgotPasswordPage = () => {
       await requestPasswordReset(data.email, language);
       setSubmitted(true);
       toast({
-        title: texts.auth.forgotPassword.success.title[language],
+        title: texts.login.success.forgotPasswordEmailSent[language],
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -64,11 +64,9 @@ const ForgotPasswordPage = () => {
       console.error('Password reset error:', error);
       setSubmitted(false);
       toast({
-        title: texts.auth.forgotPassword.error[language],
+        title: texts.login.errors.forgotPasswordFailed[language],
         description:
-          error instanceof Error
-            ? error.message
-            : texts.auth.forgotPassword.error.unknown[language],
+          error instanceof Error ? error.message : texts.login.errors.unknownError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -88,17 +86,17 @@ const ForgotPasswordPage = () => {
             </Box>
           </Circle>
           <Heading as="h1" size="lg">
-            {texts.auth.forgotPassword.title[language]}
+            {texts.login.forgotPassword.title[language]}
           </Heading>
 
-          <Text textAlign="center">{texts.auth.forgotPassword.description[language]}</Text>
+          <Text textAlign="center">{texts.login.forgotPassword.description[language]}</Text>
 
           <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
             <VStack spacing={4}>
               <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
                 <Input
                   type="email"
-                  placeholder={texts.auth.forgotPassword.emailPlaceholder[language]}
+                  placeholder={texts.login.forgotPassword.emailPlaceholder[language]}
                   {...register('email')}
                 />
                 <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
@@ -112,16 +110,16 @@ const ForgotPasswordPage = () => {
                 isLoading={loading}
                 disabled={submitted}
               >
-                {texts.auth.forgotPassword.submitButton[language]}
+                {texts.login.forgotPassword.submitButton[language]}
               </Button>
 
               {submitted && (
                 <Text color="green.500" fontSize="sm">
-                  {texts.auth.forgotPassword.checkEmail[language]}
+                  {texts.login.forgotPassword.checkEmail[language]}
                 </Text>
               )}
               <Button variant="secondary" width="100%" mb={4} onClick={() => navigate('/login')}>
-                {texts.auth.forgotPassword.backToLogin[language]}
+                {texts.login.forgotPassword.backToLogin[language]}
               </Button>
             </VStack>
           </Box>
