@@ -21,16 +21,9 @@ import { z } from 'zod';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { Teacher } from '@frontend/types/teacher';
-import { ClassTeacher, Class as ClassType } from '@frontend/types/class';
+import { Class } from '@frontend/types/class';
 import { classTeachersSchema } from '@frontend/shared/validation/classSchema';
 import { getClasses } from '@frontend/services/api/class';
-
-interface Class {
-  id: number;
-  name: string;
-  description: string;
-  teachers: ClassTeacher[];
-}
 
 interface ManageClassTeachersModalProps {
   isOpen: boolean;
@@ -59,7 +52,7 @@ export const ManageClassTeachersModal = ({
   const [assistantId, setAssistantId] = useState<number | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [allClasses, setAllClasses] = useState<ClassType[]>([]);
+  const [allClasses, setAllClasses] = useState<Class[]>([]);
 
   useEffect(() => {
     if (isOpen && classData.teachers) {

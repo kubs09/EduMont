@@ -18,7 +18,7 @@ import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
 import { ROUTES } from '@frontend/shared/route';
 import { ChildExcuseAction, DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
-import { ChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 
 interface StudentsTabProps {

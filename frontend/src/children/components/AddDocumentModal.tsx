@@ -113,7 +113,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
 
         setUploadProgress(75);
 
-        const fileUrl = `${process.env.REACT_APP_SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
+        const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
 
         await createDocument({
           title,

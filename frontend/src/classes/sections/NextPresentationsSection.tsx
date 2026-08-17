@@ -15,10 +15,9 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
-import { NextPresentation } from '@frontend/services/api/class';
-import { Class } from '@frontend/types/class';
+import { Class, NextPresentation } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
-import { ChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
 import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
 

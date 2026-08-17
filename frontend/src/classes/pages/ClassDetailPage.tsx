@@ -18,8 +18,9 @@ import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
-import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
+import { getClassNextPresentations } from '@frontend/services/api/class';
+import { getChildExcuses } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 import {
   acceptPermissionRequest,
   checkPresentationPermission,
@@ -34,7 +35,7 @@ import Section from '@frontend/shared/components/Section/Section';
 import { SectionMenu } from '@frontend/shared/components';
 import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } from '../sections';
 
-import { Class } from '@frontend/types/class';
+import { Class, NextPresentation } from '@frontend/types/class';
 import { User } from '@frontend/types/user';
 
 const transformClassData = (data: Class): Class => data;

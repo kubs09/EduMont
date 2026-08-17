@@ -19,13 +19,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { ChildExcuse, Document, getChildDocuments, getChildExcuses } from '@frontend/services/api';
+import { getChildDocuments, getChildExcuses } from '@frontend/services/api';
+import { Document } from '@frontend/types/document';
 import {
   checkPermissionRequest,
   checkPresentationPermission,
   requestPermission,
 } from '@frontend/services/api/permission';
-import { Child, UpdateChildData } from '@frontend/types/child';
+import { Child, ChildExcuse, UpdateChildData } from '@frontend/types/child';
 import { Presentation } from '@frontend/types/presentation';
 import { ROUTES } from '@frontend/shared/route';
 import { PermissionAlertWindow } from '@frontend/classes/components/PremissionAlertWindow';

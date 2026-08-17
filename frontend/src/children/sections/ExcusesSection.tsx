@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
-import { ChildExcuse } from '@frontend/services/api';
+import { ChildExcuse } from '@frontend/types/child';
 import { ROUTES } from '@frontend/shared/route';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 import { DatePicker } from '@frontend/shared/components';

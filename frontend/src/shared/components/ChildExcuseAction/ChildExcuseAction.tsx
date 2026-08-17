@@ -19,7 +19,8 @@ import {
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { DatePicker } from '@frontend/shared/components/DatePicker';
-import { ChildExcuse, createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
+import { createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 
 interface ChildExcuseActionProps {
   childId: number;

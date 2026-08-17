@@ -1,6 +1,12 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { Child, CreateChildData, UpdateChildData } from '@frontend/types/child';
+import {
+  Child,
+  CreateChildData,
+  UpdateChildData,
+  CreateChildExcuseData,
+  ChildExcuse,
+} from '@frontend/types/child';
 import { ApiError } from '@frontend/types/user';
 
 export const getChildren = async (): Promise<Child[]> => {
@@ -60,24 +66,6 @@ export const deleteChild = async (childId: number): Promise<void> => {
     throw error;
   }
 };
-
-export interface CreateChildExcuseData {
-  date_from: string;
-  date_to: string;
-  reason: string;
-}
-
-export interface ChildExcuse {
-  id: number;
-  child_id: number;
-  parent_id: number;
-  date_from: string;
-  date_to: string;
-  reason: string;
-  created_at: string;
-  parent_firstname?: string;
-  parent_surname?: string;
-}
 
 export const createChildExcuse = async (
   childId: number,

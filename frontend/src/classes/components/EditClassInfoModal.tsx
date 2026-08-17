@@ -18,21 +18,10 @@ import {
 import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
-import { ClassTeacher } from '@frontend/types/class';
+import { Class } from '@frontend/types/class';
 import { classInfoSchema } from '@frontend/shared/validation/classSchema';
 import { classAgeGroups } from '../utils/ageGroups';
 import { z } from 'zod';
-
-interface Class {
-  id: number;
-  name: string;
-  description: string;
-  age_group: string;
-  min_age: number;
-  max_age: number;
-  teachers: ClassTeacher[];
-  children: Array<{ id: number; firstname: string; surname: string }>;
-}
 
 interface EditClassInfoModalProps {
   isOpen: boolean;

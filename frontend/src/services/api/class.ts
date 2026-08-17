@@ -1,6 +1,12 @@
 import { AxiosError } from 'axios';
 import api from '../apiConfig';
-import { Class, CreateClassData, UpdateClassData } from '@frontend/types/class';
+import {
+  Class,
+  CreateClassData,
+  UpdateClassData,
+  NextPresentation,
+  ClassAttendanceRow,
+} from '@frontend/types/class';
 import { ApiError } from '@frontend/types/user';
 
 export const getClasses = async (): Promise<Class[]> => {
@@ -109,35 +115,6 @@ export const autoAssignClasses = async (): Promise<void> => {
     throw error;
   }
 };
-
-export interface NextPresentation {
-  id: number;
-  child_id: number;
-  class_id: number;
-  name: string;
-  category?: string;
-  status: string;
-  notes?: string;
-  class_name: string;
-  child_firstname: string;
-  child_surname: string;
-  created_by_firstname?: string;
-  created_by_surname?: string;
-  updated_by_firstname?: string;
-  updated_by_surname?: string;
-}
-
-export interface ClassAttendanceRow {
-  id: number;
-  firstname: string;
-  surname: string;
-  attendance_date: string | null;
-  check_in_at: string | null;
-  check_out_at: string | null;
-  checked_in_by: number | null;
-  checked_out_by: number | null;
-  notes: string | null;
-}
 
 export const getClassNextPresentations = async (classId: number): Promise<NextPresentation[]> => {
   try {

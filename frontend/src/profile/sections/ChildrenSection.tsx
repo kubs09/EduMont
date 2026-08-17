@@ -4,8 +4,8 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ChildExcuseAction, Section } from '@frontend/shared/components';
 import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
-import { ChildExcuse, getChildExcuses, getChildren } from '@frontend/services/api';
-import { Child } from '@frontend/types/child';
+import { getChildExcuses, getChildren } from '@frontend/services/api';
+import { Child, ChildExcuse } from '@frontend/types/child';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 

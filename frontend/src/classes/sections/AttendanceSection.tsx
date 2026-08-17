@@ -16,20 +16,15 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
-import { Class } from '@frontend/types/class';
+import { Class, ClassAttendanceRow } from '@frontend/types/class';
 import {
   Combobox,
   DatePicker,
   DEFAULT_PAGE_SIZE,
   TablePagination,
 } from '@frontend/shared/components';
-import {
-  checkInChild,
-  checkOutChild,
-  ClassAttendanceRow,
-  getClassAttendance,
-} from '@frontend/services/api/class';
-import { ChildExcuse } from '@frontend/services/api/child';
+import { checkInChild, checkOutChild, getClassAttendance } from '@frontend/services/api/class';
+import { ChildExcuse } from '@frontend/types/child';
 
 interface AttendanceTabProps {
   classData: Class;

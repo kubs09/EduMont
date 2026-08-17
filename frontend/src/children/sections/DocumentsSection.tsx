@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
-import { Document } from '@frontend/services/api';
+import { Document } from '@frontend/types/document';
 import { Child } from '@frontend/types/child';
 import AddDocumentModal from '../components/AddDocumentModal';
 import DeleteDocumentDialog from '../components/DeleteDocumentDialog';
