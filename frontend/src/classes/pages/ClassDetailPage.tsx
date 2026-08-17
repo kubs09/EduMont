@@ -18,8 +18,9 @@ import { ChevronLeftIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
-import { getClassNextPresentations, NextPresentation } from '@frontend/services/api/class';
-import { ChildExcuse, getChildExcuses } from '@frontend/services/api/child';
+import { getClassNextPresentations } from '@frontend/services/api/class';
+import { getChildExcuses } from '@frontend/services/api/child';
+import { ChildExcuse } from '@frontend/types/child';
 import {
   acceptPermissionRequest,
   checkPresentationPermission,
@@ -34,14 +35,8 @@ import Section from '@frontend/shared/components/Section/Section';
 import { SectionMenu } from '@frontend/shared/components';
 import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } from '../sections';
 
-import { Class } from '@frontend/types/class';
-
-interface User {
-  id: number;
-  firstname: string;
-  surname: string;
-  role: string;
-}
+import { Class, NextPresentation } from '@frontend/types/class';
+import { User } from '@frontend/types/user';
 
 const transformClassData = (data: Class): Class => data;
 
@@ -90,8 +85,7 @@ const ClassDetailPage = () => {
             }
 
             toast({
-              title: 'Error',
-              description: 'Failed to load class data',
+              title: texts.classes.errors.fetchFailed[language],
               status: 'error',
               duration: 5000,
               isClosable: true,
@@ -154,8 +148,7 @@ const ClassDetailPage = () => {
         }
       } catch (error) {
         toast({
-          title: 'Error',
-          description: 'Failed to load data',
+          title: texts.classes.errors.fetchFailed[language],
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -164,7 +157,7 @@ const ClassDetailPage = () => {
     };
 
     fetchData();
-  }, [id, navigate, toast]);
+  }, [id, language, navigate, toast]);
 
   useEffect(() => {
     if (!classData?.children?.length) {
@@ -240,7 +233,7 @@ const ClassDetailPage = () => {
       setClassData(updatedClass.data);
 
       toast({
-        title: texts.classes.updateSuccess[language],
+        title: texts.classes.success.updated[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -248,7 +241,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       const errorMessage =
         (error as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        texts.classes.updateError[language];
+        texts.classes.errors.updateFailed[language];
       console.error('Update error:', error);
       toast({
         title: errorMessage,
@@ -290,7 +283,7 @@ const ClassDetailPage = () => {
       setClassData(updatedClass.data);
 
       toast({
-        title: texts.classes.detail.permissionAccepted[language],
+        title: texts.classes.success.permissionAccepted[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -298,7 +291,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       console.error('Accept permission error:', error);
       toast({
-        title: texts.classes.detail.permissionAcceptError[language],
+        title: texts.classes.errors.permissionAcceptFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -315,7 +308,7 @@ const ClassDetailPage = () => {
       await refreshPermissionState(class_id);
 
       toast({
-        title: texts.classes.detail.permissionDenied[language],
+        title: texts.classes.success.permissionDenied[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -323,7 +316,7 @@ const ClassDetailPage = () => {
     } catch (error) {
       console.error('Deny permission error:', error);
       toast({
-        title: texts.classes.detail.permissionDenyError[language],
+        title: texts.classes.errors.permissionDenyFailed[language],
         status: 'error',
         duration: 5000,
         isClosable: true,

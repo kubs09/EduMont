@@ -59,7 +59,7 @@ const EditProfilePage = () => {
       await updateUser(userId, formData);
 
       toast({
-        title: texts.profile.success[language],
+        title: texts.profile.success.updated[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -75,8 +75,8 @@ const EditProfilePage = () => {
         setErrors(validationErrors);
       } else {
         toast({
-          title: texts.profile.error.title[language],
-          description: error.message || 'Update failed',
+          title: texts.profile.errors.updateFailed.title[language],
+          description: error.message || texts.profile.errors.updateFailed.description[language],
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -135,7 +135,11 @@ const EditProfilePage = () => {
             <FormControl>
               <FormLabel>{texts.profile.role[language]}</FormLabel>
               <Text>
-                {texts.userTable.roles[userRole as keyof typeof texts.userTable.roles][language]}
+                {
+                  texts.userDashboard.table.roles[
+                    userRole as keyof typeof texts.userDashboard.table.roles
+                  ][language]
+                }
               </Text>
             </FormControl>
             <ButtonGroup spacing={4}>
@@ -143,7 +147,7 @@ const EditProfilePage = () => {
                 {texts.profile.save[language]}
               </Button>
               <Button variant="secondary" onClick={() => navigate(ROUTES.PROFILE)}>
-                {texts.profile.cancel[language]}
+                {texts.common.cancel[language]}
               </Button>
             </ButtonGroup>
           </Stack>

@@ -84,7 +84,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
       />
 
       <Grid templateColumns="repeat(7, 1fr)" gap={1} width="100%" maxW="280px">
-        {texts.datePicker.weekdays[language].map((day, index) => (
+        {texts.common.datePicker.weekdays[language].map((day, index) => (
           <GridItem key={`header-${index}`}>
             <Text fontSize="xs" textAlign="center" fontWeight="bold" color="gray.500" mb={1}>
               {day}

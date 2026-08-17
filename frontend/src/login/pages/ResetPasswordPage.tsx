@@ -44,7 +44,7 @@ const ResetPasswordPage = () => {
 
     if (!token) {
       toast({
-        title: texts.auth.resetPassword.error.invalidToken[language],
+        title: texts.login.errors.invalidResetToken[language],
         status: 'error',
         duration: 5000,
       });
@@ -55,16 +55,16 @@ const ResetPasswordPage = () => {
     try {
       await resetPassword(token, data.password);
       toast({
-        title: texts.auth.resetPassword.success[language],
+        title: texts.login.success.resetPasswordSuccess[language],
         status: 'success',
         duration: 5000,
       });
       navigate('/login');
     } catch (error) {
-      let errorMessage = texts.auth.resetPassword.error[language];
+      let errorMessage = texts.login.errors.resetPasswordFailed[language];
       if (error instanceof Error) {
         if (error.message.includes('Token is invalid')) {
-          errorMessage = texts.auth.resetPassword.error.invalidToken[language];
+          errorMessage = texts.login.errors.invalidResetToken[language];
         }
       }
       toast({
@@ -82,7 +82,7 @@ const ResetPasswordPage = () => {
         <CardBody>
           <VStack spacing={8} mt={20}>
             <Heading as="h1" size="lg">
-              {texts.auth.resetPassword.title[language]}
+              {texts.login.resetPassword.title[language]}
             </Heading>
 
             <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
@@ -90,7 +90,7 @@ const ResetPasswordPage = () => {
                 <FormControl isInvalid={!!errors.password}>
                   <Input
                     type="password"
-                    placeholder={texts.auth.resetPassword.passwordPlaceholder[language]}
+                    placeholder={texts.login.resetPassword.passwordPlaceholder[language]}
                     {...register('password')}
                   />
                   <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
@@ -99,7 +99,7 @@ const ResetPasswordPage = () => {
                 <FormControl isInvalid={!!errors.confirmPassword}>
                   <Input
                     type="password"
-                    placeholder={texts.auth.resetPassword.confirmPasswordPlaceholder[language]}
+                    placeholder={texts.login.resetPassword.confirmPasswordPlaceholder[language]}
                     {...register('confirmPassword')}
                   />
                   <FormErrorMessage>
@@ -108,7 +108,7 @@ const ResetPasswordPage = () => {
                 </FormControl>
 
                 <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
-                  {texts.auth.resetPassword.submitButton[language]}
+                  {texts.login.resetPassword.submitButton[language]}
                 </Button>
               </VStack>
             </Box>

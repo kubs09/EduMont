@@ -202,14 +202,14 @@ const Header = () => {
                 {!isTeacher && <>{texts.classes.menuItem[language]}</>}
               </MenuItem>
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
-                {isParent && <>{texts.profile.children.menuItem[language]}</>}{' '}
-                {isAdmin && <>{texts.students[language]}</>}
+                {isParent && <>{texts.children.menuItem[language]}</>}{' '}
+                {isAdmin && <>{texts.classes.students[language]}</>}
                 {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
               </MenuItem>
               {isAdmin && (
                 <>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handlepresentation}>
-                    {texts.presentation.menuItem[language]}
+                    {texts.schedule.menuItem[language]}
                   </MenuItem>
                   <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
                     {texts.userDashboard.menuItem[language]}
@@ -217,13 +217,13 @@ const Header = () => {
                 </>
               )}
               <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleLogout}>
-                {texts.auth.signIn.logout[language]}
+                {texts.login.signIn.logout[language]}
               </MenuItem>
             </MenuList>
           </Menu>
         ) : (
           <Button variant="brand" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
-            {texts.auth.signIn.loginButton[language]}
+            {texts.login.signIn.loginButton[language]}
           </Button>
         )}
       </Flex>

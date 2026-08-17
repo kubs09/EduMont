@@ -73,13 +73,13 @@ const TablePagination: React.FC<TablePaginationProps> = ({
       </HStack>
       {startRecord && endRecord && totalCount && (
         <Text fontSize="sm" color="gray.500">
-          {texts.pagination.showing[language]} {startRecord}-{endRecord}{' '}
-          {texts.pagination.ofPage[language]} {totalCount}
+          {texts.common.pagination.showing[language]} {startRecord}-{endRecord}{' '}
+          {texts.common.pagination.ofPage[language]} {totalCount}
         </Text>
       )}
       {!startRecord && (
         <Text fontSize="sm" color="gray.500">
-          {texts.pagination.page[language]} {safeCurrentPage} {texts.pagination.ofPage[language]}{' '}
+          {texts.common.pagination.page[language]} {safeCurrentPage} {texts.common.pagination.ofPage[language]}{' '}
           {totalPages}
         </Text>
       )}

@@ -40,7 +40,7 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
   language,
 }) => {
   if (categories.length === 0) {
-    return <Text variant="empty">{texts.presentation.noEntries[language]}</Text>;
+    return <Text variant="empty">{texts.schedule.noEntries[language]}</Text>;
   }
 
   return (
@@ -62,10 +62,10 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
                 <Table variant="simple" size="sm">
                   <Thead>
                     <Tr>
-                      <Th>{texts.presentation.ageGroup[language]}</Th>
-                      <Th>{texts.presentation.order[language]}</Th>
-                      <Th>{texts.presentation.name[language]}</Th>
-                      <Th>{texts.presentation.notes[language]}</Th>
+                      <Th>{texts.schedule.ageGroup[language]}</Th>
+                      <Th>{texts.schedule.order[language]}</Th>
+                      <Th>{texts.schedule.name[language]}</Th>
+                      <Th>{texts.schedule.notes[language]}</Th>
                       <Th>{texts.common.actions[language]}</Th>
                     </Tr>
                   </Thead>
@@ -79,27 +79,27 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
                         <Td>
                           <HStack spacing={2}>
                             <IconButton
-                              aria-label="Move up"
+                              aria-label={texts.schedule.curriculum.moveUp[language]}
                               icon={<ArrowUpIcon />}
                               size="sm"
                               isDisabled={index === 0}
                               onClick={() => onReorder(presentation, 'up')}
                             />
                             <IconButton
-                              aria-label="Move down"
+                              aria-label={texts.schedule.curriculum.moveDown[language]}
                               icon={<ArrowDownIcon />}
                               size="sm"
                               isDisabled={index === categoryPresentations.length - 1}
                               onClick={() => onReorder(presentation, 'down')}
                             />
                             <IconButton
-                              aria-label="Edit"
+                              aria-label={texts.common.edit[language]}
                               icon={<EditIcon />}
                               size="sm"
                               onClick={() => onEdit(presentation)}
                             />
                             <IconButton
-                              aria-label="Delete"
+                              aria-label={texts.common.delete[language]}
                               icon={<DeleteIcon />}
                               size="sm"
                               colorScheme="red"

@@ -30,7 +30,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
     if (viewType === 'month') {
       const [year, month] = value.substring(0, 7).split('-');
       const monthIndex = parseInt(month) - 1;
-      return `${texts.datePicker.months[language][monthIndex]} ${year}`;
+      return `${texts.common.datePicker.months[language][monthIndex]} ${year}`;
     } else if (viewType === 'week') {
       const date = new Date(value);
       return formatWeekRange(date, language);
@@ -112,14 +112,14 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
           readOnly
           placeholder={
             viewType === 'month'
-              ? texts.datePicker.selectMonth[language]
-              : texts.datePicker.selectDate[language]
+              ? texts.common.datePicker.selectMonth[language]
+              : texts.common.datePicker.selectDate[language]
           }
         />
         <InputRightElement>
           <PopoverTrigger>
             <IconButton
-              aria-label={texts.datePicker.openPicker[language]}
+              aria-label={texts.common.datePicker.openPicker[language]}
               icon={<CalendarIcon />}
               size="sm"
               variant="ghost"
@@ -134,12 +134,12 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
 
           <HStack spacing={2} width="100%" mt={4}>
             <Button size="sm" variant="outline" onClick={handleClear} flex={1}>
-              {texts.datePicker.clear[language]}
+              {texts.common.datePicker.clear[language]}
             </Button>
             <Button size="sm" variant="outline" onClick={handleToday} flex={1}>
               {viewType === 'month'
-                ? texts.datePicker.thisMonth[language]
-                : texts.datePicker.today[language]}
+                ? texts.common.datePicker.thisMonth[language]
+                : texts.common.datePicker.today[language]}
             </Button>
           </HStack>
         </PopoverBody>

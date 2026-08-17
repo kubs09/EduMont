@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
 import { texts } from '@frontend/texts';
-import { Document } from '@frontend/services/api';
+import { Document } from '@frontend/types/document';
 import { Child } from '@frontend/types/child';
 import AddDocumentModal from '../components/AddDocumentModal';
 import DeleteDocumentDialog from '../components/DeleteDocumentDialog';
@@ -49,10 +49,10 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
           <Table variant="simple" size="md">
             <Thead>
               <Tr>
-                <Th>{texts.document.title[language]}</Th>
-                <Th>{texts.document.file[language]}</Th>
-                <Th>{texts.document.type[language]}</Th>
-                <Th>{texts.document.createdAt[language]}</Th>
+                <Th>{texts.children.documents.title[language]}</Th>
+                <Th>{texts.children.documents.file[language]}</Th>
+                <Th>{texts.children.documents.type[language]}</Th>
+                <Th>{texts.children.documents.createdAt[language]}</Th>
                 <Th>{texts.common.actions[language]}</Th>
               </Tr>
             </Thead>
@@ -109,13 +109,13 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
           </Table>
         </TableContainer>
       ) : (
-        <Text variant="empty">{texts.document.noDocuments[language]}</Text>
+        <Text variant="empty">{texts.children.documents.noDocuments[language]}</Text>
       )}
 
       {canUpload && (
         <Box>
           <Button leftIcon={<AddIcon />} variant="brand" onClick={() => setIsModalOpen(true)}>
-            {texts.document.uploadDocument[language]}
+            {texts.children.documents.uploadDocument[language]}
           </Button>
         </Box>
       )}

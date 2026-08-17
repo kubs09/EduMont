@@ -98,19 +98,17 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
     const newErrors: FormErrors = {};
 
     if (!formData.child_id) {
-      newErrors.child_id = texts.presentation.validation.childRequired[language];
+      newErrors.child_id = texts.schedule.validation.childRequired[language];
     }
 
     if (!formData.name || !formData.name.trim()) {
-      newErrors.name =
-        texts.presentation.validation?.nameRequired?.[language] || 'Name is required';
+      newErrors.name = texts.schedule.validation.nameRequired[language];
     } else if (formData.name.length > 200) {
-      newErrors.name = texts.presentation.validation?.nameTooLong?.[language] || 'Name is too long';
+      newErrors.name = texts.schedule.validation.nameTooLong[language];
     }
 
     if (formData.category && formData.category.length > 100) {
-      newErrors.category =
-        texts.presentation.validation?.categoryTooLong?.[language] || 'Category is too long';
+      newErrors.category = texts.schedule.validation.categoryTooLong[language];
     }
 
     setErrors(newErrors);
@@ -125,7 +123,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
       const selectedChild = childrenData.find((child) => child.id === parseInt(formData.child_id));
       if (!selectedChild) {
         toast({
-          title: 'Child not found',
+          title: texts.schedule.errors.childNotFound[language],
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -153,8 +151,8 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
 
       toast({
         title: presentation
-          ? texts.presentation.messages.updateSuccess[language]
-          : texts.presentation.messages.createSuccess[language],
+          ? texts.schedule.success.updated[language]
+          : texts.schedule.success.created[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -163,8 +161,8 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
       onClose();
     } catch (error: unknown) {
       const errorMessage = presentation
-        ? texts.presentation.messages.updateError[language]
-        : texts.presentation.messages.createError[language];
+        ? texts.schedule.errors.updateFailed[language]
+        : texts.schedule.errors.createFailed[language];
 
       toast({
         title: errorMessage,
@@ -172,7 +170,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
           error && typeof error === 'object' && 'response' in error
             ? (error as { response?: { data?: { error?: string } } }).response?.data?.error ||
               (error as { message?: string }).message
-            : 'Unknown error',
+            : texts.common.unknownError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -194,19 +192,17 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          {presentation
-            ? texts.presentation.editEntry[language]
-            : texts.presentation.addEntry[language]}
+          {presentation ? texts.schedule.editEntry[language] : texts.schedule.addEntry[language]}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4}>
             <FormControl isRequired isInvalid={!!errors.child_id}>
-              <FormLabel>{texts.presentation.child[language]}</FormLabel>
+              <FormLabel>{texts.schedule.child[language]}</FormLabel>
               <Select
                 value={formData.child_id}
                 onChange={(e) => handleChange('child_id', e.target.value)}
-                placeholder={`${texts.presentation.select[language]} ${texts.presentation.child[language].toLowerCase()}`}
+                placeholder={`${texts.common.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
               >
                 {childrenData.map((child: Child) => (
                   <option key={child.id} value={child.id}>
@@ -218,61 +214,50 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.name}>
-              <FormLabel>{texts.presentation.name?.[language] || 'Name'}</FormLabel>
+              <FormLabel>{texts.schedule.name[language]}</FormLabel>
               <Input
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder={texts.presentation.placeholders?.name?.[language] || 'Enter task name'}
+                placeholder={texts.schedule.placeholders.name[language]}
               />
               <FormErrorMessage>{errors.name}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!!errors.category}>
-              <FormLabel>{texts.presentation.category?.[language] || 'Category'}</FormLabel>
+              <FormLabel>{texts.schedule.category[language]}</FormLabel>
               <Input
                 value={formData.category}
                 onChange={(e) => handleChange('category', e.target.value)}
-                placeholder={
-                  texts.presentation.placeholders?.category?.[language] ||
-                  'Enter category (optional)'
-                }
+                placeholder={texts.schedule.placeholders.category[language]}
               />
               <FormErrorMessage>{errors.category}</FormErrorMessage>
             </FormControl>
 
             <FormControl isRequired isInvalid={!!errors.status}>
-              <FormLabel>{texts.presentation.status?.label?.[language] || 'Status'}</FormLabel>
+              <FormLabel>{texts.schedule.status.label[language]}</FormLabel>
               <Select
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
               >
                 <option value="prerequisites not met">
-                  {texts.presentation.status?.options?.prerequisitesNotMet?.[language] ||
-                    'Prerequisites Not Met'}
+                  {texts.schedule.status.options.prerequisitesNotMet[language]}
                 </option>
                 <option value="to be presented">
-                  {texts.presentation.status?.options?.toBePresented?.[language] ||
-                    'To Be Presented'}
+                  {texts.schedule.status.options.toBePresented[language]}
                 </option>
-                <option value="presented">
-                  {texts.presentation.status?.options?.presented?.[language] || 'Presented'}
-                </option>
-                <option value="practiced">
-                  {texts.presentation.status?.options?.practiced?.[language] || 'Practiced'}
-                </option>
-                <option value="mastered">
-                  {texts.presentation.status?.options?.mastered?.[language] || 'Mastered'}
-                </option>
+                <option value="presented">{texts.schedule.status.options.presented[language]}</option>
+                <option value="practiced">{texts.schedule.status.options.practiced[language]}</option>
+                <option value="mastered">{texts.schedule.status.options.mastered[language]}</option>
               </Select>
               <FormErrorMessage>{errors.status}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!!errors.notes}>
-              <FormLabel>{texts.presentation.notes[language]}</FormLabel>
+              <FormLabel>{texts.schedule.notes[language]}</FormLabel>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
-                placeholder={texts.presentation.placeholders.notes[language]}
+                placeholder={texts.schedule.placeholders.notes[language]}
                 rows={3}
               />
               <FormErrorMessage>{errors.notes}</FormErrorMessage>

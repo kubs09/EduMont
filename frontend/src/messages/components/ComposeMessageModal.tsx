@@ -21,15 +21,7 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
 import { Combobox } from '@frontend/shared/components';
-
-interface User {
-  id: number;
-  firstname: string;
-  surname: string;
-  role: string;
-  class_names?: string;
-  class_ids?: number[];
-}
+import { User } from '@frontend/types/user';
 
 interface Props {
   isOpen: boolean;
@@ -170,7 +162,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
           </ModalBody>
           <ModalFooter>
             <Button mr={3} onClick={onClose} variant="secondary">
-              {texts.classes.cancel[language]}
+              {texts.common.cancel[language]}
             </Button>
             <Button type="submit" variant="brand" isLoading={isSubmitting}>
               {t.send[language]}

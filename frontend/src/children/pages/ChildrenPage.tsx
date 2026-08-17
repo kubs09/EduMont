@@ -55,7 +55,8 @@ const ChildrenPage = () => {
     } catch (error) {
       console.error('Failed to fetch children:', error);
       toast({
-        title: texts.child.error.fetchTitle[language],
+        title: texts.children.errors.fetchFailed.title[language],
+        description: texts.children.errors.fetchFailed.description[language],
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -70,7 +71,7 @@ const ChildrenPage = () => {
   const handleAddChildSuccess = async () => {
     await fetchChildren();
     toast({
-      title: texts.child.success.addTitle[language],
+      title: texts.children.success.added[language],
       status: 'success',
       duration: 3000,
     });
@@ -81,13 +82,14 @@ const ChildrenPage = () => {
       await deleteChild(childId);
       await fetchChildren();
       toast({
-        title: texts.profile.children.deleteSuccess[language],
+        title: texts.children.success.deleted[language],
         status: 'success',
         duration: 3000,
       });
     } catch (error) {
       toast({
-        title: texts.profile.children.deleteError[language],
+        title: texts.children.errors.deleteFailed.title[language],
+        description: texts.children.errors.deleteFailed.description[language],
         status: 'error',
         duration: 3000,
       });
@@ -112,38 +114,38 @@ const ChildrenPage = () => {
     <Box p={4}>
       <Box mb={6} display="flex" justifyContent="space-between" alignItems="center">
         {isParent ? (
-          <Heading>{texts.profile.children.titleParent[language]}</Heading>
+          <Heading>{texts.children.titleParent[language]}</Heading>
         ) : (
-          <Heading>{texts.profile.children.title[language]}</Heading>
+          <Heading>{texts.children.title[language]}</Heading>
         )}
         {isAdmin && (
           <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
-            {texts.profile.children.addChild.title[language]}
+            {texts.children.addChild.title[language]}
           </Button>
         )}
       </Box>
 
       {children.length === 0 ? (
-        <Text>{texts.profile.children.noChildren[language]}</Text>
+        <Text>{texts.children.noChildren[language]}</Text>
       ) : (
         <Box overflowX="auto">
           <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
             <Thead display={{ base: 'none', md: 'table-header-group' }}>
               <Tr>
-                <Th>{texts.childrenTable.firstname[language]}</Th>
+                <Th>{texts.common.childrenTable.firstname[language]}</Th>
                 <Th display={{ base: 'none', md: 'table-cell' }}>
-                  {texts.childrenTable.surname[language]}
+                  {texts.common.childrenTable.surname[language]}
                 </Th>
                 <Th display={{ base: 'none', lg: 'table-cell' }}>
-                  {texts.childrenTable.age[language]}
+                  {texts.common.childrenTable.age[language]}
                 </Th>
                 {!isParent && (
                   <>
                     <Th display={{ base: 'none', xl: 'table-cell' }}>
-                      {texts.childrenTable.parent[language]}
+                      {texts.common.childrenTable.parent[language]}
                     </Th>
                     <Th display={{ base: 'none', xl: 'table-cell' }}>
-                      {texts.childrenTable.parentEmail[language]}
+                      {texts.common.childrenTable.parentEmail[language]}
                     </Th>
                   </>
                 )}
@@ -244,8 +246,8 @@ const ChildrenPage = () => {
           leastDestructiveRef={cancelRef}
           onClose={onClose}
           onConfirm={() => childToDelete && handleDeleteChild(childToDelete.id)}
-          title={texts.profile.children.deleteConfirm.title[language]}
-          message={`${texts.profile.children.deleteConfirm.message[language]}${childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}`}
+          title={texts.children.deleteConfirm.title[language]}
+          message={`${texts.children.deleteConfirm.message[language]}${childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}`}
           cancelLabel={texts.common.cancel[language]}
           confirmLabel={texts.common.delete[language]}
           confirmColorScheme="red"

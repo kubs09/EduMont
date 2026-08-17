@@ -1,4 +1,88 @@
+import { common, type Entity } from './common';
+
+const profileEntity: Entity = {
+  label: { cs: 'Profil', en: 'Profile' },
+  accusative: 'profil',
+  gender: 'masc',
+};
+
+const passwordEntity: Entity = {
+  label: { cs: 'Heslo', en: 'Password' },
+  accusative: 'heslo',
+  gender: 'neut',
+};
+
+const notificationSettingsEntity: Entity = {
+  label: { cs: 'Nastavení upozornění', en: 'Notification settings' },
+  accusative: 'nastavení upozornění',
+  gender: 'neut',
+};
+
 export const profile = {
+  errors: {
+    updateFailed: {
+      title: common.templates.errors.failedToUpdate(profileEntity),
+      description: {
+        cs: 'Nastala chyba při aktualizaci profilu. Zkuste to prosím později.',
+        en: 'An error occurred while updating the profile. Please try again later.',
+      },
+    },
+    passwordChangeFailed: common.templates.errors.failedToChange(passwordEntity),
+    incorrectCurrentPassword: {
+      cs: 'Současné heslo není správné',
+      en: 'Current password is incorrect',
+    },
+    notificationsUpdateFailed: common.templates.errors.failedToUpdate(notificationSettingsEntity),
+  },
+  success: {
+    updated: common.templates.success.updated(profileEntity),
+    passwordChanged: common.templates.success.changed(passwordEntity),
+    notificationsUpdated: common.templates.success.updated(notificationSettingsEntity),
+  },
+  validation: {
+    currentPasswordRequired: common.templates.validation.required(
+      { cs: 'Současné heslo', en: 'Current password' },
+      'neut',
+    ),
+    newPasswordRequired: common.templates.validation.required(
+      { cs: 'Nové heslo', en: 'New password' },
+      'neut',
+    ),
+    newPasswordLength: common.templates.validation.minLength(
+      { cs: 'Nové heslo', en: 'New password' },
+      8,
+    ),
+    confirmPasswordRequired: {
+      cs: 'Potvrďte prosím nové heslo',
+      en: 'Please confirm your new password',
+    },
+    passwordsDoNotMatch: {
+      cs: 'Hesla se neshodují',
+      en: "Passwords don't match",
+    },
+    firstNameRequired: common.templates.validation.required(
+      { cs: 'Jméno', en: 'First name' },
+      'neut',
+    ),
+    firstNameLength: common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2),
+    lastNameRequired: common.templates.validation.required(
+      { cs: 'Příjmení', en: 'Last name' },
+      'neut',
+    ),
+    lastNameLength: common.templates.validation.minLength(
+      { cs: 'Příjmení', en: 'Last name' },
+      2,
+    ),
+    emailRequired: common.templates.validation.required(
+      { cs: 'Emailová adresa', en: 'Email address' },
+      'fem',
+    ),
+    invalidEmail: common.templates.validation.invalidEmail,
+    invalidPhone: {
+      cs: 'Zadejte platné telefonní číslo',
+      en: 'Please enter a valid phone number',
+    },
+  },
   title: {
     cs: 'Můj profil',
     en: 'My Profile',
@@ -43,14 +127,6 @@ export const profile = {
     cs: 'Uložit změny',
     en: 'Save Changes',
   },
-  cancel: {
-    cs: 'Zrušit',
-    en: 'Cancel',
-  },
-  success: {
-    cs: 'Profil byl úspěšně aktualizován',
-    en: 'Profile updated successfully',
-  },
   password: {
     cs: 'Heslo',
     en: 'Password',
@@ -71,336 +147,6 @@ export const profile = {
     cs: 'Potvrďte nové heslo',
     en: 'Confirm New Password',
   },
-  passwordChanged: {
-    cs: 'Heslo bylo úspěšně změněno',
-    en: 'Password changed successfully',
-  },
-  passwordError: {
-    cs: 'Nepodařilo se změnit heslo',
-    en: 'Failed to change password',
-  },
-  currentPasswordRequired: {
-    cs: 'Zadejte současné heslo',
-    en: 'Current password is required',
-  },
-  newPasswordRequired: {
-    cs: 'Zadejte nové heslo',
-    en: 'New password is required',
-  },
-  passwordsDoNotMatch: {
-    cs: 'Hesla se neshodují',
-    en: 'Passwords do not match',
-  },
-  incorrectCurrentPassword: {
-    cs: 'Současné heslo není správné',
-    en: 'Current password is incorrect',
-  },
-  error: {
-    title: {
-      cs: 'Nepodařilo se aktualizovat profil',
-      en: 'Failed to update profile',
-    },
-    description: {
-      cs: 'Nastala chyba při aktualizaci profilu. Zkuste to prosím později.',
-      en: 'An error occurred while updating the profile. Please try again later.',
-    },
-  },
-  validation: {
-    currentPasswordRequired: {
-      cs: 'Současné heslo je povinné',
-      en: 'Current password is required',
-    },
-    newPasswordRequired: {
-      cs: 'Nové heslo je povinné',
-      en: 'New password is required',
-    },
-    newPasswordLength: {
-      cs: 'Nové heslo musí mít alespoň 8 znaků',
-      en: 'New password must be at least 8 characters',
-    },
-    confirmPasswordRequired: {
-      cs: 'Potvrďte prosím nové heslo',
-      en: 'Please confirm your new password',
-    },
-    passwordsDoNotMatch: {
-      cs: 'Hesla se neshodují',
-      en: "Passwords don't match",
-    },
-    firstNameRequired: {
-      cs: 'Jméno je povinné',
-      en: 'First name is required',
-    },
-    firstNameLength: {
-      cs: 'Jméno musí mít alespoň 2 znaky',
-      en: 'First name must be at least 2 characters',
-    },
-    lastNameRequired: {
-      cs: 'Příjmení je povinné',
-      en: 'Last name is required',
-    },
-    lastNameLength: {
-      cs: 'Příjmení musí mít alespoň 2 znaky',
-      en: 'Last name must be at least 2 characters',
-    },
-    emailRequired: {
-      cs: 'Email je povinný',
-      en: 'Email is required',
-    },
-    emailInvalid: {
-      cs: 'Zadejte platnou emailovou adresu',
-      en: 'Please enter a valid email address',
-    },
-    passwordUppercase: {
-      cs: 'Heslo musí obsahovat alespoň jedno velké písmeno',
-      en: 'Password must contain at least one uppercase letter',
-    },
-    passwordNumber: {
-      cs: 'Heslo musí obsahovat alespoň jedno číslo',
-      en: 'Password must contain at least one number',
-    },
-    passwordMatch: {
-      cs: 'Hesla se musí shodovat',
-      en: 'Passwords must match',
-    },
-    invalidPhone: {
-      cs: 'Zadejte platné telefonní číslo',
-      en: 'Please enter a valid phone number',
-    },
-  },
-  children: {
-    backButton: {
-      cs: 'Zpět',
-      en: 'Back',
-    },
-    menuItem: {
-      cs: 'Moje děti',
-      en: 'My Children',
-    },
-    viewDashboard: {
-      cs: 'Zobrazit panel dětí',
-      en: "View Children's Dashboard",
-    },
-    excuse: {
-      historyTitle: {
-        cs: 'Omluvenky',
-        en: 'Excuses',
-      },
-      editTitle: {
-        cs: 'Upravit omluvenku',
-        en: 'Edit Excuse',
-      },
-      historyEmpty: {
-        cs: 'Žádné omluvenky k zobrazení.',
-        en: 'No excuses to display.',
-      },
-      excuseButton: {
-        cs: 'Omluvit nepřítomnost',
-        en: 'Excuse Absence',
-      },
-      excuseEditButton: {
-        cs: 'Upravit omluvenku',
-        en: 'Edit Excuse',
-      },
-      excuseEndButton: {
-        cs: 'Zrušit omluvenku',
-        en: 'Cancel Excuse',
-      },
-      edit: {
-        cs: 'Upravit',
-        en: 'Edit',
-      },
-      actions: {
-        cs: 'Akce',
-        en: 'Actions',
-      },
-      cancel: {
-        cs: 'Zrušit omluvenku',
-        en: 'Cancel Excuse',
-      },
-      title: {
-        cs: 'Omluvenka',
-        en: 'Excuse from School',
-      },
-      dateFrom: {
-        cs: 'Od',
-        en: 'From',
-      },
-      dateTo: {
-        cs: 'Do',
-        en: 'To',
-      },
-      dateRange: {
-        cs: 'Datum od - do',
-        en: 'Date From - To',
-      },
-      submittedBy: {
-        cs: 'Zadal/a',
-        en: 'Submitted by',
-      },
-      status: {
-        cs: 'Omluven/a',
-        en: 'Excused',
-      },
-      reason: {
-        cs: 'Důvod',
-        en: 'Reason',
-      },
-      submit: {
-        cs: 'Odeslat omluvenku',
-        en: 'Submit Excuse',
-      },
-      success: {
-        cs: 'Omluvenka byla odeslána',
-        en: 'Excuse submitted',
-      },
-      error: {
-        cs: 'Nepodařilo se odeslat omluvenku',
-        en: 'Failed to submit excuse',
-      },
-      cancelConfirmTitle: {
-        cs: 'Zrušit omluvenku',
-        en: 'Cancel Excuse',
-      },
-      cancelConfirmMessage: {
-        cs: 'Opravdu chcete zrušit tuto omluvenku?',
-        en: 'Are you sure you want to cancel this excuse?',
-      },
-      keep: {
-        cs: 'Nezrušit',
-        en: 'Keep Excuse',
-      },
-      cancelSuccess: {
-        cs: 'Omluvenka byla zrušena',
-        en: 'Excuse cancelled',
-      },
-      cancelError: {
-        cs: 'Nepodařilo se zrušit omluvenku',
-        en: 'Failed to cancel excuse',
-      },
-      validation: {
-        dateFromRequired: {
-          cs: 'Zadejte datum od',
-          en: 'Please select a start date',
-        },
-        dateToRequired: {
-          cs: 'Zadejte datum do',
-          en: 'Please select an end date',
-        },
-        dateOrder: {
-          cs: 'Datum do musí být po datu od',
-          en: 'End date must be on or after start date',
-        },
-        reasonRequired: {
-          cs: 'Zadejte důvod omluvenky',
-          en: 'Please provide a reason',
-        },
-      },
-    },
-    titleParent: {
-      cs: 'Moje děti',
-      en: 'My Children',
-    },
-    title: {
-      cs: 'Přehled',
-      en: 'Overview',
-    },
-    noChildren: {
-      cs: 'Zatím nemáte přiřazené žádné děti',
-      en: 'No children assigned yet',
-    },
-    addChild: {
-      title: {
-        cs: 'Přidat dítě',
-        en: 'Add Child',
-      },
-      submit: {
-        cs: 'Přidat',
-        en: 'Add',
-      },
-      success: {
-        cs: 'Dítě bylo úspěšně přidáno',
-        en: 'Child added successfully',
-      },
-      error: {
-        cs: 'Chyba při přidávání dítěte',
-        en: 'Error Adding Child',
-      },
-    },
-    dateOfBirth: {
-      cs: 'Datum narození',
-      en: 'Date of Birth',
-    },
-    deleteConfirm: {
-      title: {
-        cs: 'Smazat dítě',
-        en: 'Delete Child',
-      },
-      message: {
-        cs: 'Opravdu chcete smazat',
-        en: 'Are you sure you want to delete',
-      },
-    },
-    deleteSuccess: {
-      cs: 'Dítě bylo úspěšně smazáno',
-      en: 'Child deleted successfully',
-    },
-    deleteError: {
-      cs: 'Nepodařilo se smazat dítě',
-      en: 'Failed to delete child',
-    },
-    validation: {
-      firstNameLength: {
-        cs: 'Jméno musí mít alespoň 2 znaky',
-        en: 'First name must be at least 2 characters',
-      },
-      firstNameMaxLength: {
-        cs: 'Jméno nesmí být delší než 100 znaků',
-        en: 'First name must not exceed 100 characters',
-      },
-      surnameLength: {
-        cs: 'Příjmení musí mít alespoň 2 znaky',
-        en: 'Surname must be at least 2 characters',
-      },
-      surnameMaxLength: {
-        cs: 'Příjmení nesmí být delší než 100 znaků',
-        en: 'Surname must not exceed 100 characters',
-      },
-      dateFormat: {
-        cs: 'Neplatný formát data. Použijte RRRR-MM-DD',
-        en: 'Invalid date format. Use YYYY-MM-DD',
-      },
-      ageRange: {
-        cs: 'Věk dítěte musí být mezi 0 a 18 lety',
-        en: 'Child age must be between 0 and 18 years',
-      },
-      contactRequired: {
-        cs: 'Kontakt musí mít alespoň 5 znaků',
-        en: 'Contact must be at least 5 characters',
-      },
-      contactMaxLength: {
-        cs: 'Kontakt nesmí být delší než 50 znaků',
-        en: 'Contact must not exceed 50 characters',
-      },
-      notesMaxLength: {
-        cs: 'Poznámky nesmí být delší než 1000 znaků',
-        en: 'Notes must not exceed 1000 characters',
-      },
-      parentRequired: {
-        cs: 'Vyberte alespoň jednoho rodiče',
-        en: 'Please select at least one parent',
-      },
-    },
-    error: {
-      title: {
-        cs: 'Nastala chyba při přidávání dítěte',
-        en: 'Error Adding Child',
-      },
-      noSuitableClass: {
-        cs: 'Pro tento věk není k dispozici žádná třída',
-        en: 'No class available for this age',
-      },
-    },
-  },
   notifications: {
     title: {
       cs: 'Nastavení upozornění',
@@ -409,14 +155,6 @@ export const profile = {
     messages: {
       cs: 'Emailová upozornění na nové zprávy',
       en: 'Email notifications for new messages',
-    },
-    updateSuccess: {
-      cs: 'Nastavení upozornění bylo aktualizováno',
-      en: 'Notification settings updated successfully',
-    },
-    updateError: {
-      cs: 'Nepodařilo se aktualizovat nastavení upozornění',
-      en: 'Failed to update notification settings',
     },
   },
 };

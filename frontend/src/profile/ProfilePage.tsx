@@ -44,7 +44,7 @@ const ProfilePage = () => {
     },
     {
       key: 'children' as const,
-      label: texts.profile.children.menuItem[language],
+      label: texts.children.menuItem[language],
       isVisible: userRole === 'parent',
     },
     {
@@ -79,14 +79,14 @@ const ProfilePage = () => {
         JSON.stringify({ messageNotifications: !messageNotifications })
       );
       toast({
-        title: texts.profile.notifications.updateSuccess[language],
+        title: texts.profile.success.notificationsUpdated[language],
         status: 'success',
         duration: 3000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: texts.profile.notifications.updateError[language],
+        title: texts.profile.errors.notificationsUpdateFailed[language],
         status: 'error',
         duration: 3000,
         isClosable: true,

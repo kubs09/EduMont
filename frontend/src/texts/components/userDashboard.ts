@@ -1,53 +1,22 @@
-export const user = {
-  userDashboard: {
-    title: {
-      cs: 'Seznam uživatelů',
-      en: 'User List',
-    },
-    menuItem: {
-      cs: 'Správa uživatelů',
-      en: 'User Management',
-    },
-    errorTitle: {
+import { common, type Entity } from './common';
+
+const userEntity: Entity = {
+  label: { cs: 'Uživatel', en: 'User' },
+  accusative: 'uživatele',
+  gender: 'masc',
+};
+
+export const userDashboard = {
+  errors: {
+    genericTitle: {
       cs: 'Chyba',
       en: 'Error',
     },
-    fetchError: {
+    fetchListFailed: {
       cs: 'Nepodařilo se načíst seznam uživatelů. Zkuste to prosím později.',
       en: 'Failed to load user list. Please try again later.',
     },
-    addUser: {
-      cs: 'Přidat uživatele',
-      en: 'Add User',
-    },
-    addUserButton: {
-      cs: 'Nový uživatel',
-      en: 'New User',
-    },
-    searchPlaceholder: {
-      cs: 'Hledat uživatele...',
-      en: 'Search users...',
-    },
-    emailLabel: {
-      cs: 'Email',
-      en: 'Email',
-    },
-    roleLabel: {
-      cs: 'Role',
-      en: 'Role',
-    },
-    cancel: {
-      cs: 'Zrušit',
-      en: 'Cancel',
-    },
-    submit: {
-      cs: 'Vytvořit',
-      en: 'Create',
-    },
-    success: {
-      cs: 'Uživatel byl úspěšně vytvořen',
-      en: 'User created successfully',
-    },
+    createFailed: common.templates.errors.failedToCreate(userEntity),
     userExists: {
       cs: 'Uživatel s tímto emailem již existuje',
       en: 'User with this email already exists',
@@ -56,8 +25,49 @@ export const user = {
       cs: 'Pozvánka pro tento email již byla odeslána',
       en: 'An invitation has already been sent to this email',
     },
+    deleteFailed: common.templates.errors.failedToDelete(userEntity),
+    cannotDeleteSelf: {
+      cs: 'Nemůžete smazat svůj vlastní účet',
+      en: 'You cannot delete your own account',
+    },
   },
-  userTable: {
+  success: {
+    created: common.templates.success.created(userEntity),
+    deleted: common.templates.success.deleted(userEntity),
+  },
+  title: {
+    cs: 'Seznam uživatelů',
+    en: 'User List',
+  },
+  menuItem: {
+    cs: 'Správa uživatelů',
+    en: 'User Management',
+  },
+  addUser: {
+    cs: 'Přidat uživatele',
+    en: 'Add User',
+  },
+  addUserButton: {
+    cs: 'Nový uživatel',
+    en: 'New User',
+  },
+  searchPlaceholder: {
+    cs: 'Hledat uživatele...',
+    en: 'Search users...',
+  },
+  emailLabel: {
+    cs: 'Email',
+    en: 'Email',
+  },
+  roleLabel: {
+    cs: 'Role',
+    en: 'Role',
+  },
+  submit: {
+    cs: 'Vytvořit',
+    en: 'Create',
+  },
+  table: {
     name: {
       cs: 'Jméno',
       en: 'Name',
@@ -85,18 +95,6 @@ export const user = {
     deleteConfirmMessage: {
       cs: 'Opravdu chcete smazat uživatele',
       en: 'Are you sure you want to delete user',
-    },
-    deleteSuccess: {
-      cs: 'Uživatel byl úspěšně smazán',
-      en: 'User deleted successfully',
-    },
-    deleteError: {
-      cs: 'Nepodařilo se smazat uživatele',
-      en: 'Failed to delete user',
-    },
-    cannotDeleteSelf: {
-      cs: 'Nemůžete smazat svůj vlastní účet',
-      en: 'You cannot delete your own account',
     },
     roles: {
       admin: {

@@ -47,7 +47,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
             flexShrink={0}
             size={{ base: 'sm', md: 'md' }}
             icon={<DeleteIcon />}
-            aria-label="Delete"
+            aria-label={translations.delete}
             onClick={() => onDelete(message.id)}
             colorScheme="red"
             variant="ghost"

@@ -117,7 +117,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
       />
 
       <Text fontSize="sm" color="gray.600" textAlign="center">
-        {texts.datePicker.selectWeek[language]}
+        {texts.common.datePicker.selectWeek[language]}
       </Text>
 
       <Grid templateColumns="repeat(7, 1fr)" gap={1} width="100%" maxW="280px">

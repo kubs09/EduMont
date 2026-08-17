@@ -86,8 +86,8 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
         <IconButton
           aria-label={
             showMonth
-              ? texts.datePicker.previousMonth[language]
-              : texts.datePicker.previousYear[language]
+              ? texts.common.datePicker.previousMonth[language]
+              : texts.common.datePicker.previousYear[language]
           }
           icon={<ChevronLeftIcon />}
           size="sm"
@@ -120,13 +120,13 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                   fontWeight="bold"
                   _hover={{ bg: 'gray.100' }}
                 >
-                  {texts.datePicker.months[language][displayMonth]}
+                  {texts.common.datePicker.months[language][displayMonth]}
                 </Button>
               </PopoverTrigger>
               <PopoverContent width="200px">
                 <PopoverBody p={2}>
                   <Grid templateColumns="repeat(1, 1fr)" gap={1}>
-                    {texts.datePicker.months[language].map((month, index) => (
+                    {texts.common.datePicker.months[language].map((month, index) => (
                       <GridItem key={index}>
                         <Button
                           size="sm"
@@ -202,7 +202,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
 
         <IconButton
           aria-label={
-            showMonth ? texts.datePicker.nextMonth[language] : texts.datePicker.nextYear[language]
+            showMonth ? texts.common.datePicker.nextMonth[language] : texts.common.datePicker.nextYear[language]
           }
           icon={<ChevronRightIcon />}
           size="sm"

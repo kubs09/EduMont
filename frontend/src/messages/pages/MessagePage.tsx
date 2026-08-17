@@ -26,6 +26,7 @@ import ComposeMessageModal from '../components/ComposeMessageModal';
 import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
 import { Message } from '@frontend/types/message';
+import { User } from '@frontend/types/user';
 
 const POLL_INTERVAL = 60 * 1000;
 
@@ -39,9 +40,7 @@ const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [users, setUsers] = useState<
-    Array<{ id: number; firstname: string; surname: string; role: string }>
-  >([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -52,7 +51,7 @@ const Messages: React.FC = () => {
       const data = await getMessages();
       setMessages(data);
     } catch (error) {
-      enqueueSnackbar(texts.messages.fetchingMessagesError[language], { variant: 'error' });
+      enqueueSnackbar(texts.messages.errors.fetchFailed[language], { variant: 'error' });
     } finally {
       setIsRefreshing(false);
     }
@@ -63,7 +62,7 @@ const Messages: React.FC = () => {
       const data = await getMessageUsers();
       setUsers(data);
     } catch (error) {
-      enqueueSnackbar(texts.messages.fetchUsersError[language] || 'Failed to fetch users', {
+      enqueueSnackbar(texts.messages.errors.fetchUsersFailed[language], {
         variant: 'error',
         autoHideDuration: 5000,
       });
@@ -84,7 +83,7 @@ const Messages: React.FC = () => {
       setSelectedMessage(message);
       fetchMessages();
     } catch (error) {
-      enqueueSnackbar(enqueueSnackbar(texts.messages.fetchUsersError[language]), {
+      enqueueSnackbar(texts.messages.errors.fetchMessageFailed[language], {
         variant: 'error',
       });
     }
@@ -95,9 +94,9 @@ const Messages: React.FC = () => {
       await deleteMessage(id);
       fetchMessages();
       setSelectedMessage(null);
-      enqueueSnackbar(texts.messages.messageDeleted[language], { variant: 'success' });
+      enqueueSnackbar(texts.messages.success.deleted[language], { variant: 'success' });
     } catch (error) {
-      enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
+      enqueueSnackbar(texts.messages.errors.deleteFailed[language], { variant: 'error' });
     }
   };
 
@@ -220,6 +219,7 @@ const Messages: React.FC = () => {
                 to: t.to[language],
                 title: t.title[language],
                 compose: t.compose[language],
+                delete: texts.common.delete[language],
               }}
             />
           </Box>
@@ -233,9 +233,9 @@ const Messages: React.FC = () => {
           try {
             await sendMessage({ ...data, language });
             fetchMessages();
-            enqueueSnackbar(texts.messages.messageSent[language], { variant: 'success' });
+            enqueueSnackbar(texts.messages.success.sent[language], { variant: 'success' });
           } catch (error) {
-            enqueueSnackbar(texts.messages.error.deleteError[language], { variant: 'error' });
+            enqueueSnackbar(texts.messages.errors.sendFailed[language], { variant: 'error' });
           }
         }}
         users={users}

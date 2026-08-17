@@ -13,6 +13,8 @@ export interface User {
   email: string;
   role: 'teacher' | 'parent' | 'admin';
   phone?: string;
+  class_names?: string;
+  class_ids?: number[];
 }
 
 export interface UpdateUserData {
@@ -20,6 +22,8 @@ export interface UpdateUserData {
   surname: string;
   email: string;
   phone?: string;
+  class_names?: string;
+  class_ids?: number[];
 }
 
 export interface UserTableProps {
