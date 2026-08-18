@@ -53,7 +53,9 @@ describe('classes routes: history (integration)', () => {
         .set('Authorization', authHeader(admin));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: history.id, class_id: testClass.id })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: history.id, class_id: testClass.id }),
+      ]);
     });
 
     test('200 for teacher', async () => {
@@ -67,7 +69,9 @@ describe('classes routes: history (integration)', () => {
         .set('Authorization', authHeader(teacher));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: history.id, class_id: testClass.id })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: history.id, class_id: testClass.id }),
+      ]);
     });
 
     test('403 for a parent with no child in the class', async () => {
@@ -95,7 +99,9 @@ describe('classes routes: history (integration)', () => {
         .set('Authorization', authHeader(parent));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: history.id, class_id: testClass.id })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: history.id, class_id: testClass.id }),
+      ]);
     });
   });
 
@@ -122,11 +128,22 @@ describe('classes routes: history (integration)', () => {
         .send({ date: '2026-01-10', notes: 'Admin note' });
 
       expect(res.status).toBe(201);
-      expect(res.body).toMatchObject({ classId: testClass.id, notes: 'Admin note', createdBy: admin.id });
+      expect(res.body).toMatchObject({
+        classId: testClass.id,
+        notes: 'Admin note',
+        createdBy: admin.id,
+      });
       track('classHistory', res.body);
 
-      const [persisted] = await db.select().from(classHistory).where(eq(classHistory.id, res.body.id));
-      expect(persisted).toMatchObject({ classId: testClass.id, notes: 'Admin note', createdBy: admin.id });
+      const [persisted] = await db
+        .select()
+        .from(classHistory)
+        .where(eq(classHistory.id, res.body.id));
+      expect(persisted).toMatchObject({
+        classId: testClass.id,
+        notes: 'Admin note',
+        createdBy: admin.id,
+      });
     });
 
     test('201 on success for teacher, verified by re-querying', async () => {
@@ -140,11 +157,22 @@ describe('classes routes: history (integration)', () => {
         .send({ date: '2026-01-10', notes: 'Teacher note' });
 
       expect(res.status).toBe(201);
-      expect(res.body).toMatchObject({ classId: testClass.id, notes: 'Teacher note', createdBy: teacher.id });
+      expect(res.body).toMatchObject({
+        classId: testClass.id,
+        notes: 'Teacher note',
+        createdBy: teacher.id,
+      });
       track('classHistory', res.body);
 
-      const [persisted] = await db.select().from(classHistory).where(eq(classHistory.id, res.body.id));
-      expect(persisted).toMatchObject({ classId: testClass.id, notes: 'Teacher note', createdBy: teacher.id });
+      const [persisted] = await db
+        .select()
+        .from(classHistory)
+        .where(eq(classHistory.id, res.body.id));
+      expect(persisted).toMatchObject({
+        classId: testClass.id,
+        notes: 'Teacher note',
+        createdBy: teacher.id,
+      });
     });
   });
 
@@ -161,7 +189,10 @@ describe('classes routes: history (integration)', () => {
 
       expect(res.status).toBe(403);
 
-      const [stillThere] = await db.select().from(classHistory).where(eq(classHistory.id, history.id));
+      const [stillThere] = await db
+        .select()
+        .from(classHistory)
+        .where(eq(classHistory.id, history.id));
       expect(stillThere).toBeDefined();
     });
 

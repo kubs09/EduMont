@@ -202,7 +202,9 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
 
         <IconButton
           aria-label={
-            showMonth ? texts.common.datePicker.nextMonth[language] : texts.common.datePicker.nextYear[language]
+            showMonth
+              ? texts.common.datePicker.nextMonth[language]
+              : texts.common.datePicker.nextYear[language]
           }
           icon={<ChevronRightIcon />}
           size="sm"

@@ -7,9 +7,7 @@ export const createLoginSchema = (language: 'en' | 'cs') => {
       .string()
       .min(1, { message: texts.login.validation.emailRequired[language] })
       .email({ message: texts.login.validation.invalidEmail[language] }),
-    password: z
-      .string()
-      .min(1, { message: texts.login.validation.passwordRequired[language] }),
+    password: z.string().min(1, { message: texts.login.validation.passwordRequired[language] }),
   });
 };
 

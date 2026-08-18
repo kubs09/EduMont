@@ -48,9 +48,7 @@ describe('children routes: DELETE', () => {
     });
 
     test("403 when a parent isn't linked", async () => {
-      dbMock.select
-        .mockReturnValueOnce(makeChain([{ id: 1 }]))
-        .mockReturnValueOnce(makeChain([]));
+      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(makeChain([]));
 
       const res = await request(app)
         .delete('/api/children/1')
@@ -98,9 +96,7 @@ describe('children routes: DELETE', () => {
     });
 
     test("403 when a parent isn't linked", async () => {
-      dbMock.select
-        .mockReturnValueOnce(makeChain([{ id: 1 }]))
-        .mockReturnValueOnce(makeChain([]));
+      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(makeChain([]));
 
       const res = await request(app)
         .delete('/api/children/1/classes/2')

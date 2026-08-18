@@ -251,12 +251,8 @@
           "name": "child_excuses_child_id_children_id_fk",
           "tableFrom": "child_excuses",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -264,12 +260,8 @@
           "name": "child_excuses_parent_id_users_id_fk",
           "tableFrom": "child_excuses",
           "tableTo": "users",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -331,12 +323,8 @@
           "name": "child_parents_child_id_children_id_fk",
           "tableFrom": "child_parents",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -344,12 +332,8 @@
           "name": "child_parents_parent_id_users_id_fk",
           "tableFrom": "child_parents",
           "tableTo": "users",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -357,10 +341,7 @@
       "compositePrimaryKeys": {
         "child_parents_child_id_parent_id_pk": {
           "name": "child_parents_child_id_parent_id_pk",
-          "columns": [
-            "child_id",
-            "parent_id"
-          ]
+          "columns": ["child_id", "parent_id"]
         }
       },
       "uniqueConstraints": {},
@@ -561,12 +542,8 @@
           "name": "class_attendance_class_id_classes_id_fk",
           "tableFrom": "class_attendance",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -574,12 +551,8 @@
           "name": "class_attendance_child_id_children_id_fk",
           "tableFrom": "class_attendance",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -587,12 +560,8 @@
           "name": "class_attendance_checked_in_by_users_id_fk",
           "tableFrom": "class_attendance",
           "tableTo": "users",
-          "columnsFrom": [
-            "checked_in_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["checked_in_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -600,12 +569,8 @@
           "name": "class_attendance_checked_out_by_users_id_fk",
           "tableFrom": "class_attendance",
           "tableTo": "users",
-          "columnsFrom": [
-            "checked_out_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["checked_out_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -662,12 +627,8 @@
           "name": "class_children_class_id_classes_id_fk",
           "tableFrom": "class_children",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -675,12 +636,8 @@
           "name": "class_children_child_id_children_id_fk",
           "tableFrom": "class_children",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -688,10 +645,7 @@
       "compositePrimaryKeys": {
         "class_children_class_id_child_id_pk": {
           "name": "class_children_class_id_child_id_pk",
-          "columns": [
-            "class_id",
-            "child_id"
-          ]
+          "columns": ["class_id", "child_id"]
         }
       },
       "uniqueConstraints": {},
@@ -778,12 +732,8 @@
           "name": "class_history_class_id_classes_id_fk",
           "tableFrom": "class_history",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -791,12 +741,8 @@
           "name": "class_history_created_by_users_id_fk",
           "tableFrom": "class_history",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -880,12 +826,8 @@
           "name": "class_teachers_class_id_classes_id_fk",
           "tableFrom": "class_teachers",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -893,12 +835,8 @@
           "name": "class_teachers_teacher_id_users_id_fk",
           "tableFrom": "class_teachers",
           "tableTo": "users",
-          "columnsFrom": [
-            "teacher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["teacher_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -906,10 +844,7 @@
       "compositePrimaryKeys": {
         "class_teachers_class_id_teacher_id_pk": {
           "name": "class_teachers_class_id_teacher_id_pk",
-          "columns": [
-            "class_id",
-            "teacher_id"
-          ]
+          "columns": ["class_id", "teacher_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1119,12 +1054,8 @@
           "name": "documents_class_id_classes_id_fk",
           "tableFrom": "documents",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1132,12 +1063,8 @@
           "name": "documents_child_id_children_id_fk",
           "tableFrom": "documents",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1145,12 +1072,8 @@
           "name": "documents_created_by_users_id_fk",
           "tableFrom": "documents",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1158,12 +1081,8 @@
           "name": "documents_updated_by_users_id_fk",
           "tableFrom": "documents",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1333,12 +1252,8 @@
           "name": "messages_from_user_id_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
-          "columnsFrom": [
-            "from_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["from_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1346,12 +1261,8 @@
           "name": "messages_to_user_id_users_id_fk",
           "tableFrom": "messages",
           "tableTo": "users",
-          "columnsFrom": [
-            "to_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["to_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1487,12 +1398,8 @@
           "name": "presentation_permissions_admin_id_users_id_fk",
           "tableFrom": "presentation_permissions",
           "tableTo": "users",
-          "columnsFrom": [
-            "admin_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admin_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1500,12 +1407,8 @@
           "name": "presentation_permissions_class_id_classes_id_fk",
           "tableFrom": "presentation_permissions",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1696,12 +1599,8 @@
           "name": "presentations_child_id_children_id_fk",
           "tableFrom": "presentations",
           "tableTo": "children",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1709,12 +1608,8 @@
           "name": "presentations_class_id_classes_id_fk",
           "tableFrom": "presentations",
           "tableTo": "classes",
-          "columnsFrom": [
-            "class_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["class_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1722,12 +1617,8 @@
           "name": "presentations_created_by_users_id_fk",
           "tableFrom": "presentations",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1735,12 +1626,8 @@
           "name": "presentations_updated_by_users_id_fk",
           "tableFrom": "presentations",
           "tableTo": "users",
-          "columnsFrom": [
-            "updated_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["updated_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1748,14 +1635,8 @@
           "name": "fk_presentations_class_child",
           "tableFrom": "presentations",
           "tableTo": "class_children",
-          "columnsFrom": [
-            "class_id",
-            "child_id"
-          ],
-          "columnsTo": [
-            "class_id",
-            "child_id"
-          ],
+          "columnsFrom": ["class_id", "child_id"],
+          "columnsTo": ["class_id", "child_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1882,11 +1763,7 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "teacher",
-        "parent"
-      ]
+      "values": ["admin", "teacher", "parent"]
     }
   },
   "schemas": {},

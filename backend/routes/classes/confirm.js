@@ -2,7 +2,14 @@ import { Router } from 'express';
 const router = Router();
 import { eq, sql } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { childParents, classChildren, classTeachers, classes, children, users } from '#backend/db/schema.js';
+import {
+  childParents,
+  classChildren,
+  classTeachers,
+  classes,
+  children,
+  users,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 // NOTE: `class_children.confirmed` is not defined in db/schema.js (nor the legacy schema.sql

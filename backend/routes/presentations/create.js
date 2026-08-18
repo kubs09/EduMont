@@ -3,7 +3,12 @@ const router = Router();
 import console from 'console';
 import { and, asc, eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { categoryPresentations, classChildren, classes, presentations } from '#backend/db/schema.js';
+import {
+  categoryPresentations,
+  classChildren,
+  classes,
+  presentations,
+} from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =

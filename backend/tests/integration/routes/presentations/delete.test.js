@@ -142,7 +142,11 @@ describe('DELETE /api/presentations/:id (integration)', () => {
     expect(res.body).toEqual({ message: 'presentation entry deleted successfully' });
 
     const remaining = await db
-      .select({ id: presentations.id, displayOrder: presentations.displayOrder, status: presentations.status })
+      .select({
+        id: presentations.id,
+        displayOrder: presentations.displayOrder,
+        status: presentations.status,
+      })
       .from(presentations)
       .where(and(eq(presentations.childId, child.id), eq(presentations.category, category)))
       .orderBy(asc(presentations.displayOrder), asc(presentations.id));

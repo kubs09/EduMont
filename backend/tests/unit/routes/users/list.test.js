@@ -112,7 +112,16 @@ describe('GET /api/users/:id', () => {
 
   test('200 when viewing self', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 1, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'parent', phone: null }])
+      makeChain([
+        {
+          id: 1,
+          firstname: 'A',
+          surname: 'B',
+          email: 'a@example.com',
+          role: 'parent',
+          phone: null,
+        },
+      ])
     );
 
     const res = await request(app)
@@ -124,7 +133,16 @@ describe('GET /api/users/:id', () => {
 
   test('200 when an admin views anyone', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'teacher', phone: null }])
+      makeChain([
+        {
+          id: 5,
+          firstname: 'A',
+          surname: 'B',
+          email: 'a@example.com',
+          role: 'teacher',
+          phone: null,
+        },
+      ])
     );
 
     const res = await request(app)
@@ -136,7 +154,16 @@ describe('GET /api/users/:id', () => {
 
   test('200 when a parent views a teacher', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'teacher', phone: null }])
+      makeChain([
+        {
+          id: 5,
+          firstname: 'A',
+          surname: 'B',
+          email: 'a@example.com',
+          role: 'teacher',
+          phone: null,
+        },
+      ])
     );
 
     const res = await request(app)
@@ -148,7 +175,16 @@ describe('GET /api/users/:id', () => {
 
   test('200 when a teacher views a parent', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'parent', phone: null }])
+      makeChain([
+        {
+          id: 5,
+          firstname: 'A',
+          surname: 'B',
+          email: 'a@example.com',
+          role: 'parent',
+          phone: null,
+        },
+      ])
     );
 
     const res = await request(app)
@@ -160,7 +196,16 @@ describe('GET /api/users/:id', () => {
 
   test('200 when a teacher views another teacher', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'teacher', phone: null }])
+      makeChain([
+        {
+          id: 5,
+          firstname: 'A',
+          surname: 'B',
+          email: 'a@example.com',
+          role: 'teacher',
+          phone: null,
+        },
+      ])
     );
 
     const res = await request(app)
@@ -173,7 +218,16 @@ describe('GET /api/users/:id', () => {
   test('200 when a parent views another parent sharing a child', async () => {
     dbMock.select
       .mockReturnValueOnce(
-        makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'parent', phone: null }])
+        makeChain([
+          {
+            id: 5,
+            firstname: 'A',
+            surname: 'B',
+            email: 'a@example.com',
+            role: 'parent',
+            phone: null,
+          },
+        ])
       )
       .mockReturnValueOnce(makeChain([{ id: 42 }]))
       .mockReturnValueOnce(makeChain([]));
@@ -188,7 +242,16 @@ describe('GET /api/users/:id', () => {
   test('403 when a parent views another parent without a shared child', async () => {
     dbMock.select
       .mockReturnValueOnce(
-        makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'parent', phone: null }])
+        makeChain([
+          {
+            id: 5,
+            firstname: 'A',
+            surname: 'B',
+            email: 'a@example.com',
+            role: 'parent',
+            phone: null,
+          },
+        ])
       )
       .mockReturnValueOnce(makeChain([]))
       .mockReturnValueOnce(makeChain([]));
@@ -202,7 +265,9 @@ describe('GET /api/users/:id', () => {
 
   test('403 for any other disallowed role combination', async () => {
     dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'admin', phone: null }])
+      makeChain([
+        { id: 5, firstname: 'A', surname: 'B', email: 'a@example.com', role: 'admin', phone: null },
+      ])
     );
 
     const res = await request(app)

@@ -4,7 +4,13 @@ import console from 'console';
 import process from 'process';
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { classTeachers, classes, messages, presentationPermissions, users } from '#backend/db/schema.js';
+import {
+  classTeachers,
+  classes,
+  messages,
+  presentationPermissions,
+  users,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.get('/check', auth, async (req, res) => {

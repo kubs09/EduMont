@@ -28,7 +28,9 @@ const buildClassIdSchema = (language: 'en' | 'cs', required?: boolean) =>
     ? z
         .number()
         .nullable()
-        .refine((value) => value !== null, { message: texts.children.validation.classRequired[language] })
+        .refine((value) => value !== null, {
+          message: texts.children.validation.classRequired[language],
+        })
     : z.number().nullable().optional();
 
 export const createChildSchema = (language: 'en' | 'cs', options: ChildSchemaOptions = {}) =>

@@ -51,7 +51,7 @@ describe('DELETE /api/documents/:id', () => {
     expect(dbMock.delete).not.toHaveBeenCalled();
   });
 
-  test("403 for an unlinked teacher", async () => {
+  test('403 for an unlinked teacher', async () => {
     dbMock.select
       .mockReturnValueOnce(makeChain([{ id: 1, childId: 5, classId: null, fileUrl: null }]))
       .mockReturnValueOnce(makeChain([]));
@@ -95,9 +95,7 @@ describe('DELETE /api/documents/:id', () => {
   test('200 on success: storage removal is called with the path extracted from file_url', async () => {
     const fileUrl =
       'https://project.supabase.co/storage/v1/object/public/documents/child-5/1700000000-report.pdf';
-    dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 1, childId: 5, classId: null, fileUrl }])
-    );
+    dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, childId: 5, classId: null, fileUrl }]));
     dbMock.delete.mockReturnValueOnce(makeChain([]));
     supabaseMock.storage.from().remove.mockResolvedValueOnce({ error: null });
 
@@ -115,9 +113,7 @@ describe('DELETE /api/documents/:id', () => {
   test('200 and the DB row is deleted even when the mocked storage .remove() call errors', async () => {
     const fileUrl =
       'https://project.supabase.co/storage/v1/object/public/documents/child-5/1700000000-report.pdf';
-    dbMock.select.mockReturnValueOnce(
-      makeChain([{ id: 1, childId: 5, classId: null, fileUrl }])
-    );
+    dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, childId: 5, classId: null, fileUrl }]));
     dbMock.delete.mockReturnValueOnce(makeChain([]));
     supabaseMock.storage.from().remove.mockResolvedValueOnce({ error: { message: 'boom' } });
 

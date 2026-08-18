@@ -4,7 +4,15 @@ import console from 'console';
 import { and, asc, eq, exists } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '#backend/config/database.js';
-import { childParents, classChildren, classTeachers, classes, children, presentations, users } from '#backend/db/schema.js';
+import {
+  childParents,
+  classChildren,
+  classTeachers,
+  classes,
+  children,
+  presentations,
+  users,
+} from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
 
@@ -71,7 +79,10 @@ router.get('/', authenticateToken, async (req, res) => {
             .select({ id: classTeachers.classId })
             .from(classTeachers)
             .where(
-              and(eq(classTeachers.classId, presentations.classId), eq(classTeachers.teacherId, req.user.id))
+              and(
+                eq(classTeachers.classId, presentations.classId),
+                eq(classTeachers.teacherId, req.user.id)
+              )
             )
         )
       );
@@ -86,7 +97,10 @@ router.get('/', authenticateToken, async (req, res) => {
       query = query.where(and(...conditions));
     }
 
-    const result = await query.orderBy(asc(presentations.category), asc(presentations.displayOrder));
+    const result = await query.orderBy(
+      asc(presentations.category),
+      asc(presentations.displayOrder)
+    );
     res.json(result);
   } catch (err) {
     console.error('Error fetching all presentations:', err);

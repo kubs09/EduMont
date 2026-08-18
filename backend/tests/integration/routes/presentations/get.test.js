@@ -44,7 +44,9 @@ describe('presentations routes: GET (integration)', () => {
     test('403 for a parent', async () => {
       const parent = track('users', await createTestUser('parent'));
 
-      const res = await request(app).get('/api/presentations').set('Authorization', authHeader(parent));
+      const res = await request(app)
+        .get('/api/presentations')
+        .set('Authorization', authHeader(parent));
 
       expect(res.status).toBe(403);
     });

@@ -79,7 +79,7 @@ describe('GET /api/presentations', () => {
       expect(mainChain.where).toHaveBeenCalledTimes(1);
     });
 
-    test("200 for a teacher, scoped to their classes via an exists subquery", async () => {
+    test('200 for a teacher, scoped to their classes via an exists subquery', async () => {
       const subChain = makeChain([]);
       const mainChain = makeChain([{ id: 2, name: 'Sorting' }]);
       dbMock.select.mockReturnValueOnce(subChain).mockReturnValueOnce(mainChain);

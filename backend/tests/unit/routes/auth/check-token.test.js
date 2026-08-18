@@ -34,7 +34,9 @@ describe('GET /api/check-token/:token', () => {
 
   test('returns valid=true, expired=false for a live token', async () => {
     const expiry = new Date(Date.now() + 60 * 60 * 1000);
-    dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, resetToken: 'tok', resetTokenExpiry: expiry }]));
+    dbMock.select.mockReturnValueOnce(
+      makeChain([{ id: 1, resetToken: 'tok', resetTokenExpiry: expiry }])
+    );
 
     const res = await request(app).get('/api/check-token/tok');
 
@@ -44,7 +46,9 @@ describe('GET /api/check-token/:token', () => {
 
   test('returns expired=true for a stale token', async () => {
     const expiry = new Date(Date.now() - 60 * 60 * 1000);
-    dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, resetToken: 'tok', resetTokenExpiry: expiry }]));
+    dbMock.select.mockReturnValueOnce(
+      makeChain([{ id: 1, resetToken: 'tok', resetTokenExpiry: expiry }])
+    );
 
     const res = await request(app).get('/api/check-token/tok');
 

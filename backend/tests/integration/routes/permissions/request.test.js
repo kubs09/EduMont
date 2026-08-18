@@ -92,7 +92,9 @@ describe('permissions routes: request (integration)', () => {
       const testClass = track('classes', await createTestClass());
       track(
         'presentationPermissions',
-        await grantPresentationPermission(admin.id, testClass.id, false, { permissionRequested: true })
+        await grantPresentationPermission(admin.id, testClass.id, false, {
+          permissionRequested: true,
+        })
       );
 
       const res = await request(app)
@@ -151,7 +153,10 @@ describe('permissions routes: request (integration)', () => {
     test('200 has_access: true when the permission has been granted', async () => {
       const admin = track('users', await createTestUser('admin'));
       const testClass = track('classes', await createTestClass());
-      track('presentationPermissions', await grantPresentationPermission(admin.id, testClass.id, true));
+      track(
+        'presentationPermissions',
+        await grantPresentationPermission(admin.id, testClass.id, true)
+      );
 
       const res = await request(app)
         .get('/api/permissions/granted')
@@ -199,7 +204,9 @@ describe('permissions routes: request (integration)', () => {
       const testClass = track('classes', await createTestClass());
       track(
         'presentationPermissions',
-        await grantPresentationPermission(requester.id, testClass.id, false, { permissionRequested: true })
+        await grantPresentationPermission(requester.id, testClass.id, false, {
+          permissionRequested: true,
+        })
       );
 
       const res = await request(app)
@@ -210,7 +217,10 @@ describe('permissions routes: request (integration)', () => {
       expect(res.status).toBe(200);
       expect(res.body.has_pending).toBe(true);
       expect(res.body.requests).toHaveLength(1);
-      expect(res.body.requests[0]).toMatchObject({ admin_id: requester.id, class_id: testClass.id });
+      expect(res.body.requests[0]).toMatchObject({
+        admin_id: requester.id,
+        class_id: testClass.id,
+      });
     });
 
     test('200 with the pending request for a teacher-of-class caller', async () => {
@@ -220,7 +230,9 @@ describe('permissions routes: request (integration)', () => {
       track('classTeachers', await linkTeacher(testClass.id, teacher.id));
       track(
         'presentationPermissions',
-        await grantPresentationPermission(requester.id, testClass.id, false, { permissionRequested: true })
+        await grantPresentationPermission(requester.id, testClass.id, false, {
+          permissionRequested: true,
+        })
       );
 
       const res = await request(app)
@@ -231,7 +243,10 @@ describe('permissions routes: request (integration)', () => {
       expect(res.status).toBe(200);
       expect(res.body.has_pending).toBe(true);
       expect(res.body.requests).toHaveLength(1);
-      expect(res.body.requests[0]).toMatchObject({ admin_id: requester.id, class_id: testClass.id });
+      expect(res.body.requests[0]).toMatchObject({
+        admin_id: requester.id,
+        class_id: testClass.id,
+      });
     });
   });
 
@@ -294,7 +309,9 @@ describe('permissions routes: request (integration)', () => {
       const testClass = track('classes', await createTestClass());
       track(
         'presentationPermissions',
-        await grantPresentationPermission(admin.id, testClass.id, false, { permissionRequested: true })
+        await grantPresentationPermission(admin.id, testClass.id, false, {
+          permissionRequested: true,
+        })
       );
 
       const res = await request(app)
@@ -334,7 +351,10 @@ describe('permissions routes: request (integration)', () => {
         .select()
         .from(presentationPermissions)
         .where(
-          and(eq(presentationPermissions.adminId, admin.id), eq(presentationPermissions.classId, testClass.id))
+          and(
+            eq(presentationPermissions.adminId, admin.id),
+            eq(presentationPermissions.classId, testClass.id)
+          )
         );
       track('presentationPermissions', createdPermission);
       expect(createdPermission).toMatchObject({ granted: false, permissionRequested: true });
@@ -370,7 +390,10 @@ describe('permissions routes: request (integration)', () => {
         .select()
         .from(presentationPermissions)
         .where(
-          and(eq(presentationPermissions.adminId, admin.id), eq(presentationPermissions.classId, testClass.id))
+          and(
+            eq(presentationPermissions.adminId, admin.id),
+            eq(presentationPermissions.classId, testClass.id)
+          )
         );
       track('presentationPermissions', createdPermission);
       expect(createdPermission).toMatchObject({ granted: false, permissionRequested: true });

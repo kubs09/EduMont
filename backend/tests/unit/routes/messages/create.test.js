@@ -66,7 +66,9 @@ describe('POST /api/messages', () => {
     tx.execute.mockResolvedValueOnce({ rows: [{ id: 2 }] });
     tx.select
       .mockReturnValueOnce(makeChain([{ firstname: 'Ada', surname: 'Lovelace' }]))
-      .mockReturnValueOnce(makeChain([{ id: 2, email: 'r2@example.com', messageNotifications: false }]));
+      .mockReturnValueOnce(
+        makeChain([{ id: 2, email: 'r2@example.com', messageNotifications: false }])
+      );
     tx.insert.mockReturnValueOnce(makeChain([insertedMessage]));
     dbMock.transaction.mockImplementation((cb) => cb(tx));
 

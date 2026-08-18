@@ -49,9 +49,13 @@ describe('POST /api/reset-password', () => {
 
   test('rejects an expired token', async () => {
     const tx = {
-      select: jest.fn().mockReturnValueOnce(
-        makeChain([{ id: 1, resetToken: validToken, resetTokenExpiry: new Date(Date.now() - 1000) }])
-      ),
+      select: jest
+        .fn()
+        .mockReturnValueOnce(
+          makeChain([
+            { id: 1, resetToken: validToken, resetTokenExpiry: new Date(Date.now() - 1000) },
+          ])
+        ),
       update: jest.fn(),
     };
     dbMock.transaction.mockImplementationOnce((cb) => cb(tx));
@@ -67,9 +71,13 @@ describe('POST /api/reset-password', () => {
 
   test('resets the password for a valid token', async () => {
     const tx = {
-      select: jest.fn().mockReturnValueOnce(
-        makeChain([{ id: 1, resetToken: validToken, resetTokenExpiry: new Date(Date.now() + 60000) }])
-      ),
+      select: jest
+        .fn()
+        .mockReturnValueOnce(
+          makeChain([
+            { id: 1, resetToken: validToken, resetTokenExpiry: new Date(Date.now() + 60000) },
+          ])
+        ),
       update: jest.fn().mockReturnValueOnce(makeChain([{ id: 1 }])),
     };
     dbMock.transaction.mockImplementationOnce((cb) => cb(tx));

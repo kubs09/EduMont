@@ -235,7 +235,7 @@ describe('PUT /api/documents/:id', () => {
     expect(res.body).toEqual(updated);
   });
 
-  test("403 when a parent tries to edit a document belonging to a different child", async () => {
+  test('403 when a parent tries to edit a document belonging to a different child', async () => {
     dbMock.select
       .mockReturnValueOnce(makeChain([{ id: 1, childId: 99, classId: null }]))
       .mockReturnValueOnce(makeChain([]));

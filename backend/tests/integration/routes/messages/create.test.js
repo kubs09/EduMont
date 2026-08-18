@@ -122,6 +122,8 @@ describe('POST /api/messages (integration)', () => {
     persistedRows.forEach((row) => track('messages', row));
 
     expect(mailMock.sendEmail).toHaveBeenCalledTimes(1);
-    expect(mailMock.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: notifyOn.email }));
+    expect(mailMock.sendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: notifyOn.email })
+    );
   });
 });

@@ -19,7 +19,9 @@ jest.unstable_mockModule('#backend/config/database.js', () => ({
 
 const { default: app } = await import('#backend/server.js');
 
-const { children, childParents, classTeachers, messages, users } = await import('#backend/db/schema.js');
+const { children, childParents, classTeachers, messages, users } = await import(
+  '#backend/db/schema.js'
+);
 
 const authHeader = (user) => `Bearer ${signTestToken(user)}`;
 

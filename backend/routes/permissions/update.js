@@ -4,7 +4,13 @@ import console from 'console';
 import process from 'process';
 import { and, eq } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { classTeachers, classes, messages, presentationPermissions, users } from '#backend/db/schema.js';
+import {
+  classTeachers,
+  classes,
+  messages,
+  presentationPermissions,
+  users,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.post('/accept', auth, async (req, res) => {
@@ -46,7 +52,10 @@ router.post('/accept', auth, async (req, res) => {
         .for('update');
 
       if (permissionCheck.length === 0) {
-        return { status: 404, body: { error: 'No pending permission request found for this class' } };
+        return {
+          status: 404,
+          body: { error: 'No pending permission request found for this class' },
+        };
       }
 
       const requester_id = permissionCheck[0].adminId;
@@ -136,7 +145,10 @@ router.post('/deny', auth, async (req, res) => {
         .for('update');
 
       if (permissionCheck.length === 0) {
-        return { status: 404, body: { error: 'No pending permission request found for this class' } };
+        return {
+          status: 404,
+          body: { error: 'No pending permission request found for this class' },
+        };
       }
 
       const requester_id = permissionCheck[0].adminId;

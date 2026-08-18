@@ -97,7 +97,9 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
     () =>
       classAgeGroups.map((group) => ({
         value: `${group.minAge}-${group.maxAge}`,
-        label: `${texts.classes.ageGroups[group.key][language]} - ${group.minAge} - ${group.maxAge} ${texts.classes.years[language]}`,
+        label: `${texts.classes.ageGroups[group.key][language]} - ${group.minAge} - ${
+          group.maxAge
+        } ${texts.classes.years[language]}`,
         minAge: group.minAge,
         maxAge: group.maxAge,
       })),
