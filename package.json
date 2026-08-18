@@ -2,9 +2,6 @@
   "name": "edumont-react",
   "version": "1.0.0",
   "type": "module",
-<<<<<<< HEAD
-  "private": true,
-=======
   "main": "server.js",
   "dependencies": {
     "@craco/craco": "^5.9.0",
@@ -18,7 +15,6 @@
     "nodemailer": "^8.0.1",
     "pg": "^8.11.0"
   },
->>>>>>> parent of f7eaf052 (deployment fix)
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.6.8",
