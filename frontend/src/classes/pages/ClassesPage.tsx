@@ -44,7 +44,7 @@ const ClassesPage = () => {
       const classesResponse = await api.get<Class[]>('/api/classes');
       setClasses(classesResponse.data);
       setCurrentPage(1);
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.fetchClassesFailed[language],
         status: 'error',
@@ -129,8 +129,8 @@ const ClassesPage = () => {
                         ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
                           ? 'blue.400'
                           : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
-                          ? 'purple.400'
-                          : 'teal.400',
+                            ? 'purple.400'
+                            : 'teal.400',
                       md: 'transparent',
                     }}
                     bg={{

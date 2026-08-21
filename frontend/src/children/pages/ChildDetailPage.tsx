@@ -52,7 +52,7 @@ const ChildDetailPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('information');
-  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
@@ -70,7 +70,7 @@ const ChildDetailPage = () => {
     try {
       const documentsResponse = await getChildDocuments(childId);
       setDocuments(documentsResponse || []);
-    } catch (err) {
+    } catch {
       setDocuments([]);
     }
   };
@@ -79,7 +79,7 @@ const ChildDetailPage = () => {
     try {
       const excusesResponse = await getChildExcuses(childId);
       setExcuses(excusesResponse || []);
-    } catch (err) {
+    } catch {
       setExcuses([]);
     }
   };
@@ -108,19 +108,19 @@ const ChildDetailPage = () => {
             const presentationsResponse = await api.get(`/api/children/${id}/presentations`);
             setPresentations(presentationsResponse.data || []);
           }
-        } catch (err) {
+        } catch {
           setPresentations([]);
         }
 
         try {
           await loadDocuments(parseInt(id));
-        } catch (err) {
+        } catch {
           setDocuments([]);
         }
 
         try {
           await loadExcuses(parseInt(id));
-        } catch (err) {
+        } catch {
           setExcuses([]);
         }
       } catch (error) {
@@ -155,7 +155,7 @@ const ChildDetailPage = () => {
       try {
         const result = await checkPresentationPermission(classId);
         setHasGrantedPresentationPermission(result.has_access);
-      } catch (error) {
+      } catch {
         setHasGrantedPresentationPermission(false);
       }
     };
@@ -172,7 +172,7 @@ const ChildDetailPage = () => {
       try {
         const result = await checkPermissionRequest(childData.class_id);
         setPermissionRequested(result.already_requested);
-      } catch (error) {
+      } catch {
         setPermissionRequested(false);
       }
     };
@@ -202,7 +202,7 @@ const ChildDetailPage = () => {
           isClosable: true,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.permissionRequestFailed[language],
         status: 'error',
@@ -249,7 +249,7 @@ const ChildDetailPage = () => {
         status: 'success',
         duration: 3000,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.children.errors.updateFailed.title[language],
         description: texts.children.errors.updateFailed.description[language],

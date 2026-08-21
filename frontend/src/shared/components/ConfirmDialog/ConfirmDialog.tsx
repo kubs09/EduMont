@@ -19,7 +19,7 @@ export interface ConfirmDialogProps {
   confirmLabel: string;
   cancelLabel: string;
   confirmColorScheme?: string;
-  leastDestructiveRef?: React.RefObject<HTMLButtonElement>;
+  leastDestructiveRef?: React.RefObject<HTMLButtonElement | null>;
   isConfirmLoading?: boolean;
 }
 

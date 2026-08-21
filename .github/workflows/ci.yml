@@ -40,7 +40,7 @@ jobs:
       - name: Install deps
         run: npm ci --prefix frontend
       - name: Test
-        run: npm test --prefix frontend -- --watchAll=false
+        run: npm test --prefix frontend
         env:
           CI: 'true'
       - name: Build

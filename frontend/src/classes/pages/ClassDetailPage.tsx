@@ -98,7 +98,7 @@ const ClassDetailPage = () => {
             if (!id) return;
             const presentations = await getClassNextPresentations(parseInt(id));
             setNextPresentations(presentations);
-          } catch (error) {
+          } catch {
             toast({
               title: 'Error',
               description: 'Failed to load next presentations',
@@ -146,7 +146,7 @@ const ClassDetailPage = () => {
           const teachersResponse = await api.get('/api/users?role=teacher');
           setAvailableTeachers(teachersResponse.data);
         }
-      } catch (error) {
+      } catch {
         toast({
           title: texts.classes.errors.fetchFailed[language],
           status: 'error',
@@ -173,7 +173,7 @@ const ClassDetailPage = () => {
           try {
             const excuses = await getChildExcuses(child.id);
             return [child.id, excuses] as const;
-          } catch (error) {
+          } catch {
             return [child.id, []] as const;
           }
         })
@@ -198,7 +198,7 @@ const ClassDetailPage = () => {
         ...prev,
         [childId]: excuses,
       }));
-    } catch (error) {
+    } catch {
       setExcusesByChildId((prev) => ({
         ...prev,
         [childId]: [],

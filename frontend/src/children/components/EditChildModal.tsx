@@ -115,7 +115,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
         setIsLoadingParents(true);
         const data = await getUsers('parent');
         setParents(data);
-      } catch (error) {
+      } catch {
         toast({
           title: texts.common.genericError.title[language],
           description: texts.common.genericError.description[language],

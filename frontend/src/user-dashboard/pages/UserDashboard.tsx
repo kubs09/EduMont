@@ -44,7 +44,7 @@ const UserDashboard: React.FC = () => {
       const response = await api.get('/api/users');
       setUsers(response.data);
       setError(null);
-    } catch (error) {
+    } catch {
       const errorMessage = texts.userDashboard.errors.fetchListFailed[language];
       setError(errorMessage);
       toast({

@@ -26,14 +26,7 @@ interface InformationTabProps {
   onDeleteClick: () => void;
 }
 
-const InformationTab: React.FC<InformationTabProps> = ({
-  childData,
-  language,
-  canEdit,
-  canViewParentProfile,
-  onEditClick,
-  onDeleteClick,
-}) => {
+const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
   const linkColor = useColorModeValue('blue.600', 'blue.300');

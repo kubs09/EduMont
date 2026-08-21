@@ -11,7 +11,7 @@ const { canEditDocumentByIds } = validation;
 let supabase;
 try {
   supabase = (await import('#backend/config/supabase.js')).default;
-} catch (error) {
+} catch {
   supabase = null;
 }
 

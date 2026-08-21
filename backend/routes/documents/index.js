@@ -10,35 +10,35 @@ let uploadUrlRouter = null;
 try {
   const module = await import('./get.js');
   getRouter = module.default;
-} catch (error) {
-  getRouter = null;
+} catch {
+  // getRouter stays null
 }
 
 try {
   const module = await import('./create.js');
   createRouter = module.default;
-} catch (error) {
-  createRouter = null;
+} catch {
+  // createRouter stays null
 }
 
 try {
   const module = await import('./update.js');
   updateRouter = module.default || module;
-} catch (error) {
-  updateRouter = null;
+} catch {
+  // updateRouter stays null
 }
 
 try {
   const module = await import('./delete.js');
   deleteRouter = module.default;
-} catch (error) {
-  deleteRouter = null;
+} catch {
+  // deleteRouter stays null
 }
 
 try {
   const module = await import('./upload-url.js');
   uploadUrlRouter = module.default;
-} catch (error) {
+} catch {
   uploadUrlRouter = null;
 }
 

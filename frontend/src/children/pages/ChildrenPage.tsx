@@ -36,7 +36,7 @@ const ChildrenPage = () => {
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
   const userRole = localStorage.getItem('userRole');
   const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';
@@ -86,7 +86,7 @@ const ChildrenPage = () => {
         status: 'success',
         duration: 3000,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.children.errors.deleteFailed.title[language],
         description: texts.children.errors.deleteFailed.description[language],
@@ -166,8 +166,8 @@ const ChildrenPage = () => {
                       ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
                         ? 'blue.400'
                         : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
-                        ? 'purple.400'
-                        : 'teal.400',
+                          ? 'purple.400'
+                          : 'teal.400',
                     md: 'transparent',
                   }}
                   bg={{

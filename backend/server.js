@@ -32,7 +32,7 @@ const importWithFallback = async (relativePath) => {
   try {
     return await import(new URL(relativePath, import.meta.url));
   } catch (error) {
-    throw new Error(`Failed to load module ${relativePath}: ${error.message}`);
+    throw new Error(`Failed to load module ${relativePath}: ${error.message}`, { cause: error });
   }
 };
 
@@ -104,7 +104,12 @@ if (isVercel || process.env.NODE_ENV !== 'production') {
 const app = express();
 const apiRouter = express.Router();
 
-const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
+const corsOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'http://localhost:5174',
+].filter(Boolean);
 
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
 if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
@@ -128,7 +133,7 @@ app.use(json({ limit: '10mb' }));
 const publicPath = join(__dirname, 'public');
 try {
   app.use(express.static(publicPath));
-} catch (err) {
+} catch {
   console.warn('Public directory not accessible:', publicPath);
 }
 
