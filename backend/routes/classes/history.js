@@ -45,7 +45,7 @@ router.get('/:id/history', auth, async (req, res) => {
       .orderBy(desc(classHistory.date));
 
     res.json(result);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch class history' });
   }
 });
@@ -69,7 +69,7 @@ router.post('/:id/history', auth, async (req, res) => {
       })
       .returning();
     res.status(201).json(result[0]);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to create history entry' });
   }
 });
@@ -91,7 +91,7 @@ router.delete('/:classId/history/:historyId', auth, async (req, res) => {
         )
       );
     res.json({ message: 'History entry deleted successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to delete history entry' });
   }
 });

@@ -25,7 +25,6 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
   isOpen,
   onClose,
   documentId,
-  documentTitle,
   language,
   onDocumentDeleted,
 }) => {
@@ -46,7 +45,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
 
       onClose();
       await onDocumentDeleted();
-    } catch (error) {
+    } catch {
       toast({
         title: texts.children.errors.documentDeleteFailed.title[language],
         description: texts.children.errors.documentDeleteFailed.description[language],

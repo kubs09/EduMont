@@ -15,9 +15,5 @@ const AppComponent = (
 );
 
 root.render(
-  process.env.NODE_ENV === 'development' ? (
-    <React.StrictMode>{AppComponent}</React.StrictMode>
-  ) : (
-    AppComponent
-  )
+  import.meta.env.DEV ? <React.StrictMode>{AppComponent}</React.StrictMode> : AppComponent
 );

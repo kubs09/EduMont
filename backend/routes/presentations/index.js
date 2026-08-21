@@ -18,7 +18,7 @@ const loadOptionalRouter = async (relativePath) => {
   try {
     const moduleNamespace = await import(relativePath);
     return resolveRouter(moduleNamespace);
-  } catch (error) {
+  } catch {
     return null;
   }
 };

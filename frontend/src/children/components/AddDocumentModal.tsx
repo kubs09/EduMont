@@ -65,7 +65,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
       reader.readAsDataURL(file);
     });
 
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = import.meta.env.PROD;
 
   const handleUploadDocument = async () => {
     if (!childData.id || !uploadFile) return;
@@ -113,7 +113,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
 
         setUploadProgress(75);
 
-        const fileUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
+        const fileUrl = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/documents/${filePath}`;
 
         await createDocument({
           title,
@@ -152,7 +152,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
         status: 'success',
         duration: 3000,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.children.errors.documentUploadFailed.title[language],
         description: texts.children.errors.documentUploadFailed.description[language],

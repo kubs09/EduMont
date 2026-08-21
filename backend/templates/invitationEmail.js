@@ -85,8 +85,8 @@ const getInvitationEmail = (role, inviteUrl, language = 'en') => {
             </div>
             <div class="content">
               <p>${emailTexts.emailMessage[language]} ${sharedTexts.roles[role][
-      language
-    ].toLowerCase()}.</p>
+                language
+              ].toLowerCase()}.</p>
               <p>${emailTexts.emailAction[language]}</p>
               <div style="text-align: center;">
                 <a href="${inviteUrl}" class="button">

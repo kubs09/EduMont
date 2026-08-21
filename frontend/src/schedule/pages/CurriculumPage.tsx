@@ -63,7 +63,7 @@ const SchedulePage: React.FC = () => {
       setLoading(true);
       const data = await getAllCategoryPresentations();
       setPresentations(data);
-    } catch (error) {
+    } catch {
       toast({
         title: texts.schedule.errors.fetchFailed[language],
         status: 'error',
@@ -241,7 +241,7 @@ const SchedulePage: React.FC = () => {
         duration: 2000,
         isClosable: true,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.schedule.errors.reorderFailed[language],
         status: 'error',

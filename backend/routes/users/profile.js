@@ -90,7 +90,7 @@ router.put('/:id/password', auth, async (req, res) => {
     await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
 
     res.json({ message: 'Password updated successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to change password' });
   }
 });

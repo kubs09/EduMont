@@ -85,6 +85,6 @@ export const getMessageUsers = async (): Promise<User[]> => {
         error.response?.status
       );
     }
-    throw new Error('Failed to fetch users');
+    throw new Error('Failed to fetch users', { cause: error });
   }
 };

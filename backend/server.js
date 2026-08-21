@@ -32,7 +32,7 @@ const importWithFallback = async (relativePath) => {
   try {
     return await import(new URL(relativePath, import.meta.url));
   } catch (error) {
-    throw new Error(`Failed to load module ${relativePath}: ${error.message}`);
+    throw new Error(`Failed to load module ${relativePath}: ${error.message}`, { cause: error });
   }
 };
 
@@ -128,7 +128,7 @@ app.use(json({ limit: '10mb' }));
 const publicPath = join(__dirname, 'public');
 try {
   app.use(express.static(publicPath));
-} catch (err) {
+} catch {
   console.warn('Public directory not accessible:', publicPath);
 }
 

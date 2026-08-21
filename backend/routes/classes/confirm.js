@@ -83,7 +83,7 @@ router.post('/:classId/children/:childId/confirm', auth, async (req, res) => {
     });
 
     res.json(result);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to confirm class assignment' });
   }
 });
@@ -109,7 +109,7 @@ router.post('/:classId/children/:childId/deny', auth, async (req, res) => {
     });
 
     res.json(result);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to confirm class assignment' });
   }
 });

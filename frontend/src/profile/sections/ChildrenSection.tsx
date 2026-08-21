@@ -32,14 +32,14 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
             try {
               const excuses = await getChildExcuses(child.id);
               return [child.id, excuses] as const;
-            } catch (error) {
+            } catch {
               return [child.id, []] as const;
             }
           })
         );
 
         setExcusesByChildId(Object.fromEntries(excusesEntries));
-      } catch (error) {
+      } catch {
         setChildren([]);
       }
     };
@@ -54,7 +54,7 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
         ...prev,
         [childId]: excuses,
       }));
-    } catch (error) {
+    } catch {
       setExcusesByChildId((prev) => ({
         ...prev,
         [childId]: [],
