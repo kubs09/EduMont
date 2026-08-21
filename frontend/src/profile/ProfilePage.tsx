@@ -95,7 +95,6 @@ const ProfilePage = () => {
   };
 
   const handleEditProfile = () => navigate(ROUTES.PROFILE_EDIT);
-  const handleOpenClasses = () => navigate(ROUTES.CLASSES);
   const handleOpenChildren = () => navigate(ROUTES.CHILDREN);
 
   return (
@@ -122,7 +121,7 @@ const ProfilePage = () => {
           )}
 
           {activeSection === 'class' && userRole === 'teacher' && (
-            <ClassSection onOpenClasses={handleOpenClasses} subtleBg={subtleBg} />
+            <ClassSection subtleBg={subtleBg} />
           )}
 
           {activeSection === 'children' && userRole === 'parent' && (

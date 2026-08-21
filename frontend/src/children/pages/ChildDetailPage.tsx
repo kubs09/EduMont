@@ -292,16 +292,7 @@ const ChildDetailPage = () => {
     {
       id: 'information',
       label: texts.children.title[language],
-      content: (
-        <InformationSection
-          childData={childData}
-          language={language}
-          canEdit={canEdit}
-          canViewParentProfile={canViewParentProfile}
-          onEditClick={() => setIsEditModalOpen(true)}
-          onDeleteClick={() => setIsDeleteConfirmOpen(true)}
-        />
-      ),
+      content: <InformationSection childData={childData} language={language} />,
     },
     {
       id: 'presentations',

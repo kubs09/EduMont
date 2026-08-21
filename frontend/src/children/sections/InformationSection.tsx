@@ -20,10 +20,6 @@ import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 interface InformationTabProps {
   childData: Child;
   language: 'cs' | 'en';
-  canEdit: boolean;
-  canViewParentProfile: boolean;
-  onEditClick: () => void;
-  onDeleteClick: () => void;
 }
 
 const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) => {

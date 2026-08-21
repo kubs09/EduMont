@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 
 interface ClassSectionProps {
-  onOpenClasses: () => void;
   subtleBg?: string;
 }
 
