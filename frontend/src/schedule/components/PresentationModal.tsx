@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
   Button,
-  FormControl,
-  FormLabel,
   Input,
   Textarea,
-  Select,
+  NativeSelect,
   VStack,
-  FormErrorMessage,
+  Field,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -184,105 +177,119 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          {presentation ? texts.schedule.editEntry[language] : texts.schedule.addEntry[language]}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4}>
-            <FormControl isRequired isInvalid={!!errors.child_id}>
-              <FormLabel>{texts.schedule.child[language]}</FormLabel>
-              <Select
-                value={formData.child_id}
-                onChange={(e) => handleChange('child_id', e.target.value)}
-                placeholder={`${texts.common.select[language]} ${texts.schedule.child[
-                  language
-                ].toLowerCase()}`}
+    <Dialog.Root open={isOpen} size='lg' onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
+
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              {presentation ? texts.schedule.editEntry[language] : texts.schedule.addEntry[language]}
+            </Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <VStack gap={4}>
+                <Field.Root required invalid={!!errors.child_id}>
+                  <Field.Label>{texts.schedule.child[language]}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      value={formData.child_id}
+                      onChange={(e) => handleChange('child_id', e.target.value)}
+                      placeholder={`${texts.common.select[language]} ${texts.schedule.child[
+                        language
+                      ].toLowerCase()}`}>
+                      {childrenData.map((child: Child) => (
+                        <option key={child.id} value={child.id}>
+                          {child.firstname} {child.surname}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                  <Field.ErrorText>{errors.child_id}</Field.ErrorText>
+                </Field.Root>
+
+                <Field.Root required invalid={!!errors.name}>
+                  <Field.Label>{texts.schedule.name[language]}</Field.Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    placeholder={texts.schedule.placeholders.name[language]}
+                  />
+                  <Field.ErrorText>{errors.name}</Field.ErrorText>
+                </Field.Root>
+
+                <Field.Root invalid={!!errors.category}>
+                  <Field.Label>{texts.schedule.category[language]}</Field.Label>
+                  <Input
+                    value={formData.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                    placeholder={texts.schedule.placeholders.category[language]}
+                  />
+                  <Field.ErrorText>{errors.category}</Field.ErrorText>
+                </Field.Root>
+
+                <Field.Root required invalid={!!errors.status}>
+                  <Field.Label>{texts.schedule.status.label[language]}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      value={formData.status}
+                      onChange={(e) => handleChange('status', e.target.value)}>
+                      <option value="prerequisites not met">
+                        {texts.schedule.status.options.prerequisitesNotMet[language]}
+                      </option>
+                      <option value="to be presented">
+                        {texts.schedule.status.options.toBePresented[language]}
+                      </option>
+                      <option value="presented">
+                        {texts.schedule.status.options.presented[language]}
+                      </option>
+                      <option value="practiced">
+                        {texts.schedule.status.options.practiced[language]}
+                      </option>
+                      <option value="mastered">{texts.schedule.status.options.mastered[language]}</option>
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                  <Field.ErrorText>{errors.status}</Field.ErrorText>
+                </Field.Root>
+
+                <Field.Root invalid={!!errors.notes}>
+                  <Field.Label>{texts.schedule.notes[language]}</Field.Label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    placeholder={texts.schedule.placeholders.notes[language]}
+                    rows={3}
+                  />
+                  <Field.ErrorText>{errors.notes}</Field.ErrorText>
+                </Field.Root>
+              </VStack>
+            </Dialog.Body>
+
+            <Dialog.Footer>
+              <Button
+                colorPalette="blue"
+                mr={3}
+                onClick={handleSubmit}
+                loading={isSubmitting}
+                loadingText={texts.common.save[language]}
               >
-                {childrenData.map((child: Child) => (
-                  <option key={child.id} value={child.id}>
-                    {child.firstname} {child.surname}
-                  </option>
-                ))}
-              </Select>
-              <FormErrorMessage>{errors.child_id}</FormErrorMessage>
-            </FormControl>
+                {texts.common.save[language]}
+              </Button>
+              <Button onClick={onClose} disabled={isSubmitting}>
+                {texts.common.cancel[language]}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
 
-            <FormControl isRequired isInvalid={!!errors.name}>
-              <FormLabel>{texts.schedule.name[language]}</FormLabel>
-              <Input
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                placeholder={texts.schedule.placeholders.name[language]}
-              />
-              <FormErrorMessage>{errors.name}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={!!errors.category}>
-              <FormLabel>{texts.schedule.category[language]}</FormLabel>
-              <Input
-                value={formData.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-                placeholder={texts.schedule.placeholders.category[language]}
-              />
-              <FormErrorMessage>{errors.category}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!errors.status}>
-              <FormLabel>{texts.schedule.status.label[language]}</FormLabel>
-              <Select
-                value={formData.status}
-                onChange={(e) => handleChange('status', e.target.value)}
-              >
-                <option value="prerequisites not met">
-                  {texts.schedule.status.options.prerequisitesNotMet[language]}
-                </option>
-                <option value="to be presented">
-                  {texts.schedule.status.options.toBePresented[language]}
-                </option>
-                <option value="presented">
-                  {texts.schedule.status.options.presented[language]}
-                </option>
-                <option value="practiced">
-                  {texts.schedule.status.options.practiced[language]}
-                </option>
-                <option value="mastered">{texts.schedule.status.options.mastered[language]}</option>
-              </Select>
-              <FormErrorMessage>{errors.status}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={!!errors.notes}>
-              <FormLabel>{texts.schedule.notes[language]}</FormLabel>
-              <Textarea
-                value={formData.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                placeholder={texts.schedule.placeholders.notes[language]}
-                rows={3}
-              />
-              <FormErrorMessage>{errors.notes}</FormErrorMessage>
-            </FormControl>
-          </VStack>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button
-            colorScheme="blue"
-            mr={3}
-            onClick={handleSubmit}
-            isLoading={isSubmitting}
-            loadingText={texts.common.save[language]}
-          >
-            {texts.common.save[language]}
-          </Button>
-          <Button onClick={onClose} isDisabled={isSubmitting}>
-            {texts.common.cancel[language]}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

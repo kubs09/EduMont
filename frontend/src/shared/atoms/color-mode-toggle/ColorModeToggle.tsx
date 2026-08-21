@@ -1,5 +1,7 @@
 import React from 'react';
-import { IconButton, useColorMode, useColorModeValue, Tooltip } from '@chakra-ui/react';
+import { useColorMode, useColorModeValue } from "../../../components/ui/color-mode";
+import { IconButton } from '@chakra-ui/react';
+import { Tooltip } from '@frontend/components/ui/tooltip';
 import { FiSun, FiMoon } from 'react-icons/fi';
 import texts from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -19,10 +21,11 @@ const ColorModeToggle: React.FC<ColorModeToggleProps> = ({ size = 'md', variant 
   );
 
   return (
-    <Tooltip label={label} placement="bottom">
+    <Tooltip content={label} positioning={{
+      placement: "bottom"
+    }}>
       <IconButton
         aria-label={label}
-        icon={React.createElement(Icon as React.ElementType)}
         onClick={toggleColorMode}
         size={size}
         variant={variant}
@@ -31,8 +34,7 @@ const ColorModeToggle: React.FC<ColorModeToggleProps> = ({ size = 'md', variant 
           bg: 'bg-surface',
           transform: 'scale(1.05)',
         }}
-        transition="all 0.2s"
-      />
+        transition="all 0.2s">{React.createElement(Icon as React.ElementType)}</IconButton>
     </Tooltip>
   );
 };

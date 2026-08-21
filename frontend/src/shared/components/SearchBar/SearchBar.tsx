@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
-  IconButton,
-  Icon,
-} from '@chakra-ui/react';
+import { Input, InputGroup, IconButton, Icon } from '@chakra-ui/react';
 import { FiSearch, FiX } from 'react-icons/fi';
 
 interface SearchBarProps {
@@ -30,10 +23,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <InputGroup maxW="400px">
-      <InputLeftElement pointerEvents="none">
-        <Icon as={FiSearch} color="gray.400" />
-      </InputLeftElement>
+    <InputGroup
+      maxW="400px"
+      startElement={<Icon as={FiSearch} color="gray.400" />}
+      endElement={
+        value ? (
+          <IconButton aria-label="Clear search" size="xs" variant="ghost" onClick={handleClear}>
+            <FiX />
+          </IconButton>
+        ) : undefined
+      }
+    >
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -41,17 +41,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
         pr="2.5rem"
         mb={4}
       />
-      {value && (
-        <InputRightElement>
-          <IconButton
-            aria-label="Clear search"
-            icon={<FiX />}
-            size="xs"
-            variant="ghost"
-            onClick={handleClear}
-          />
-        </InputRightElement>
-      )}
     </InputGroup>
   );
 };

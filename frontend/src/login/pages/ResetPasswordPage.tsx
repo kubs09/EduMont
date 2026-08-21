@@ -2,18 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  Container,
-  FormControl,
-  FormErrorMessage,
-  Input,
-  VStack,
-  Heading,
-  Card,
-  CardBody,
-} from '@chakra-ui/react';
+import { Box, Button, Container, Input, VStack, Heading, Card, Field } from '@chakra-ui/react';
 import { resetPassword } from '@frontend/services/api/auth';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -78,43 +67,43 @@ const ResetPasswordPage = () => {
 
   return (
     <Container maxW="md">
-      <Card p={8} mt={20} boxShadow="lg" borderRadius="md">
-        <CardBody>
-          <VStack spacing={8} mt={20}>
+      <Card.Root p={8} mt={20} boxShadow="lg" borderRadius="md">
+        <Card.Body>
+          <VStack gap={8} mt={20}>
             <Heading as="h1" size="lg">
               {texts.login.resetPassword.title[language]}
             </Heading>
 
             <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-              <VStack spacing={4}>
-                <FormControl isInvalid={!!errors.password}>
+              <VStack gap={4}>
+                <Field.Root invalid={!!errors.password}>
                   <Input
                     type="password"
                     placeholder={texts.login.resetPassword.passwordPlaceholder[language]}
                     {...register('password')}
                   />
-                  <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
-                </FormControl>
+                  <Field.ErrorText>{errors.password && errors.password.message}</Field.ErrorText>
+                </Field.Root>
 
-                <FormControl isInvalid={!!errors.confirmPassword}>
+                <Field.Root invalid={!!errors.confirmPassword}>
                   <Input
                     type="password"
                     placeholder={texts.login.resetPassword.confirmPasswordPlaceholder[language]}
                     {...register('confirmPassword')}
                   />
-                  <FormErrorMessage>
+                  <Field.ErrorText>
                     {errors.confirmPassword && errors.confirmPassword.message}
-                  </FormErrorMessage>
-                </FormControl>
+                  </Field.ErrorText>
+                </Field.Root>
 
-                <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
+                <Button type="submit" variant="brand" width="100%" mt={4} loading={loading}>
                   {texts.login.resetPassword.submitButton[language]}
                 </Button>
               </VStack>
             </Box>
           </VStack>
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
     </Container>
   );
 };

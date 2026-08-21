@@ -1,22 +1,7 @@
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Input,
-  Textarea,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Input, Textarea, VStack, Field, Dialog, Portal } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
@@ -112,67 +97,77 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'xl' }}>
-      <ModalOverlay />
-      <ModalContent maxWidth={{ base: '100%', md: '800px' }} m={{ base: 0, md: 4 }}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader>{t.compose[language]}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4}>
-              <FormControl isInvalid={!!errors.to_user_ids}>
-                <FormLabel>{t.to[language]}</FormLabel>
-                <Controller
-                  name="to_user_ids"
-                  control={control}
-                  render={({ field: { value, onChange } }) => (
-                    <Combobox
-                      options={buildComboboxOptions()}
-                      value={value}
-                      onChange={(newValue) => {
-                        const expanded = handleComboboxChange(newValue);
-                        onChange(expanded || []);
-                      }}
-                      placeholder={t.recipients[language]}
-                      isMulti
+    <Dialog.Root open={isOpen} size={{ base: 'full', md: 'xl' }} onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
+
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content maxWidth={{ base: '100%', md: '800px' }} m={{ base: 0, md: 4 }}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Dialog.Header>{t.compose[language]}</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <VStack gap={4}>
+                  <Field.Root invalid={!!errors.to_user_ids}>
+                    <Field.Label>{t.to[language]}</Field.Label>
+                    <Controller
+                      name="to_user_ids"
+                      control={control}
+                      render={({ field: { value, onChange } }) => (
+                        <Combobox
+                          options={buildComboboxOptions()}
+                          value={value}
+                          onChange={(newValue) => {
+                            const expanded = handleComboboxChange(newValue);
+                            onChange(expanded || []);
+                          }}
+                          placeholder={t.recipients[language]}
+                          isMulti
+                        />
+                      )}
                     />
-                  )}
-                />
-                <FormErrorMessage>{errors.to_user_ids?.message}</FormErrorMessage>
-              </FormControl>
+                    <Field.ErrorText>{errors.to_user_ids?.message}</Field.ErrorText>
+                  </Field.Root>
 
-              <FormControl isInvalid={!!errors.subject}>
-                <FormLabel>{t.subject[language]}</FormLabel>
-                <Controller
-                  name="subject"
-                  control={control}
-                  render={({ field }) => <Input variant="filled" {...field} />}
-                />
-                <FormErrorMessage>{errors.subject?.message}</FormErrorMessage>
-              </FormControl>
+                  <Field.Root invalid={!!errors.subject}>
+                    <Field.Label>{t.subject[language]}</Field.Label>
+                    <Controller
+                      name="subject"
+                      control={control}
+                      render={({ field }) => <Input variant="subtle" {...field} />}
+                    />
+                    <Field.ErrorText>{errors.subject?.message}</Field.ErrorText>
+                  </Field.Root>
 
-              <FormControl isInvalid={!!errors.content}>
-                <FormLabel>{t.content[language]}</FormLabel>
-                <Controller
-                  name="content"
-                  control={control}
-                  render={({ field }) => <Textarea variant="filled" rows={4} {...field} />}
-                />
-                <FormErrorMessage>{errors.content?.message}</FormErrorMessage>
-              </FormControl>
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button mr={3} onClick={onClose} variant="secondary">
-              {texts.common.cancel[language]}
-            </Button>
-            <Button type="submit" variant="brand" isLoading={isSubmitting}>
-              {t.send[language]}
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
-    </Modal>
+                  <Field.Root invalid={!!errors.content}>
+                    <Field.Label>{t.content[language]}</Field.Label>
+                    <Controller
+                      name="content"
+                      control={control}
+                      render={({ field }) => <Textarea variant="subtle" rows={4} {...field} />}
+                    />
+                    <Field.ErrorText>{errors.content?.message}</Field.ErrorText>
+                  </Field.Root>
+                </VStack>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button mr={3} onClick={onClose} variant="secondary">
+                  {texts.common.cancel[language]}
+                </Button>
+                <Button type="submit" variant="brand" loading={isSubmitting}>
+                  {t.send[language]}
+                </Button>
+              </Dialog.Footer>
+            </form>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

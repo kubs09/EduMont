@@ -1,20 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import {
-  Box,
-  HStack,
-  Text,
-  Badge,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  Select,
-  Button,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, HStack, Text, Badge, Table, NativeSelect, Button, VStack } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Presentation } from '@frontend/types/presentation';
 import { updateChildPresentationStatus } from '@frontend/services/api/presentation';
@@ -216,53 +201,53 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
 
   return (
     <Box>
-      <HStack mb={3} spacing={2} align="center">
+      <HStack mb={3} gap={2} align="center">
         <Text variant="filter">{texts.schedule.category[language]}:</Text>
-        <Select
-          size="sm"
-          maxW="220px"
-          value={selectedCategory}
-          onChange={(event) => setSelectedCategory(event.target.value)}
-        >
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </Select>
+        <NativeSelect.Root size="sm" maxW="220px">
+          <NativeSelect.Field
+            value={selectedCategory}
+            onChange={(event) => setSelectedCategory(event.target.value)}>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
       </HStack>
-      <TableContainer>
-        <Table variant="simple" size="md">
-          <Thead>
-            <Tr>
-              <Th>{texts.schedule.name[language]}</Th>
-              <Th>{texts.schedule.order[language]}</Th>
-              <Th>{texts.schedule.category[language]}</Th>
-              <Th>{texts.schedule.status.label[language]}</Th>
-              <Th>{texts.schedule.notes[language]}</Th>
-              <Th>{texts.common.actions[language]}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollArea>
+        <Table.Root variant="simple" size="md">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>{texts.schedule.name[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.schedule.order[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.schedule.category[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.schedule.status.label[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.schedule.notes[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {visiblepresentations.map((presentation) => (
-              <Tr key={presentation.id}>
-                <Td>
+              <Table.Row key={presentation.id}>
+                <Table.Cell>
                   <Text fontWeight="medium">{presentation.name}</Text>
-                </Td>
-                <Td>
-                  <Badge colorScheme="blue" variant="outlined">
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge colorPalette="blue" variant="outline">
                     {presentation.display_order}
                   </Badge>
-                </Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>
                   <Text>{presentation.category || '-'}</Text>
-                </Td>
-                <Td>
-                  <Badge colorScheme={getStatusColor(presentation.status)} variant="subtle">
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge colorPalette={getStatusColor(presentation.status)} variant="subtle">
                     {getStatusText(presentation.status)}
                   </Badge>
-                </Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>
                   <Text
                     maxW="250px"
                     overflow="hidden"
@@ -272,15 +257,15 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                   >
                     {presentation.notes || '-'}
                   </Text>
-                </Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>
                   {canUpdateStatus ? (
-                    <VStack spacing={1} align="stretch">
+                    <VStack gap={1} align="stretch">
                       <Button
                         aria-label={texts.schedule.status.changeStatus[language]}
                         size="sm"
-                        colorScheme="green"
-                        isDisabled={
+                        colorPalette="green"
+                        disabled={
                           updatingpresentationId === presentation.id ||
                           isPresentationDisabled(presentation.id) ||
                           getNextStatus(presentation.status) === null
@@ -297,8 +282,8 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                       <Button
                         aria-label={texts.schedule.status.changeStatus[language]}
                         size="sm"
-                        colorScheme="red"
-                        isDisabled={
+                        colorPalette="red"
+                        disabled={
                           updatingpresentationId === presentation.id ||
                           isPresentationDisabled(presentation.id) ||
                           getPreviousStatus(presentation.status) === null
@@ -316,12 +301,12 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                   ) : (
                     <Text color="gray.500">-</Text>
                   )}
-                </Td>
-              </Tr>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </Tbody>
-        </Table>
-      </TableContainer>
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
     </Box>
   );
 };

@@ -1,26 +1,16 @@
 import React, { useEffect } from 'react';
+import { useColorModeValue } from "../../components/ui/color-mode";
 import {
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
   Spinner,
   Center,
   Text,
   IconButton,
   useDisclosure,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
   Button,
   Link as ChakraLink,
-  useColorModeValue,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { FiTrash2 } from 'react-icons/fi';
 import { Link as RouterLink } from 'react-router-dom';
@@ -32,7 +22,7 @@ import { User, UserTableProps } from '@frontend/types/user';
 
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const linkColor = useColorModeValue('blue.600', 'blue.300');
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -79,44 +69,40 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
 
   return (
     <>
-      <TableContainer>
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>{texts.userDashboard.table.name[language]}</Th>
-              <Th>{texts.userDashboard.table.email[language]}</Th>
-              <Th>{texts.userDashboard.table.role[language]}</Th>
-              <Th>{texts.userDashboard.table.actions[language]}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollArea>
+        <Table.Root variant="simple">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>{texts.userDashboard.table.name[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.userDashboard.table.email[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.userDashboard.table.role[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.userDashboard.table.actions[language]}</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {paginatedUsers.map((user) => (
-              <Tr key={user.id}>
-                <Td>
-                  <ChakraLink
-                    as={RouterLink}
-                    to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}
-                    color={linkColor}
-                  >
-                    {`${user.firstname} ${user.surname}`}
+              <Table.Row key={user.id}>
+                <Table.Cell>
+                  <ChakraLink asChild color={linkColor}>
+                    <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}>
+                      {`${user.firstname} ${user.surname}`}
+                    </RouterLink>
                   </ChakraLink>
-                </Td>
-                <Td>{user.email}</Td>
-                <Td>{texts.userDashboard.table.roles[user.role][language]}</Td>
-                <Td>
+                </Table.Cell>
+                <Table.Cell>{user.email}</Table.Cell>
+                <Table.Cell>{texts.userDashboard.table.roles[user.role][language]}</Table.Cell>
+                <Table.Cell>
                   <IconButton
                     aria-label={texts.userDashboard.table.deleteButton[language]}
-                    icon={<FiTrash2 />}
                     size="sm"
-                    colorScheme="red"
+                    colorPalette="red"
                     variant="ghost"
-                    onClick={() => handleDeleteClick(user)}
-                  />
-                </Td>
-              </Tr>
+                    onClick={() => handleDeleteClick(user)}><FiTrash2 /></IconButton>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </Tbody>
-        </Table>
+          </Table.Body>
+        </Table.Root>
         <TablePagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -124,34 +110,48 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
           pageSize={PAGE_SIZE}
           totalCount={data.length}
         />
-      </TableContainer>
+      </Table.ScrollArea>
 
-      <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              {texts.userDashboard.table.deleteConfirmTitle[language]}
-            </AlertDialogHeader>
+      <Dialog.Root
+        open={open}
+        initialFocusEl={() => cancelRef.current}
+        role='alertdialog'
+        onOpenChange={e => {
+          if (!e.open) {
+            onClose();
+          }
+        }}>
+        <Portal>
 
-            <AlertDialogBody>
-              {texts.userDashboard.table.deleteConfirmMessage[language]}{' '}
-              <strong>
-                {selectedUser?.firstname} {selectedUser?.surname}
-              </strong>
-              ?
-            </AlertDialogBody>
+          <Dialog.Backdrop>
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header fontSize="lg" fontWeight="bold">
+                  {texts.userDashboard.table.deleteConfirmTitle[language]}
+                </Dialog.Header>
 
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                {texts.common.cancel[language]}
-              </Button>
-              <Button colorScheme="red" onClick={handleConfirmDelete} ml={3}>
-                {texts.userDashboard.table.deleteButton[language]}
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+                <Dialog.Body>
+                  {texts.userDashboard.table.deleteConfirmMessage[language]}{' '}
+                  <strong>
+                    {selectedUser?.firstname} {selectedUser?.surname}
+                  </strong>
+                  ?
+                </Dialog.Body>
+
+                <Dialog.Footer>
+                  <Button ref={cancelRef} onClick={onClose}>
+                    {texts.common.cancel[language]}
+                  </Button>
+                  <Button colorPalette="red" onClick={handleConfirmDelete} ml={3}>
+                    {texts.userDashboard.table.deleteButton[language]}
+                  </Button>
+                </Dialog.Footer>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Dialog.Backdrop>
+
+        </Portal>
+</Dialog.Root>
     </>
   );
 };

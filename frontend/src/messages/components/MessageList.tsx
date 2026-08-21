@@ -1,18 +1,6 @@
 import React from 'react';
-import {
-  List,
-  ListItem,
-  Text,
-  VStack,
-  Divider,
-  useColorModeValue,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  HStack,
-  Button,
-  Icon,
-} from '@chakra-ui/react';
+import { useColorModeValue } from "../../components/ui/color-mode";
+import { List, Text, VStack, Input, InputGroup, HStack, Button, Icon, Separator } from '@chakra-ui/react';
 import { FiSearch, FiChevronDown, FiChevronUp, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageListProps } from '@frontend/types/message';
@@ -38,16 +26,13 @@ const MessageList: React.FC<MessageListProps> = ({
   const unreadFontWeight = 'bold';
 
   return (
-    <VStack spacing={0}>
+    <VStack gap={0}>
       <VStack w="full" p={2}>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <Icon as={FiSearch} color="gray.500" />
-          </InputLeftElement>
+        <InputGroup startElement={<Icon as={FiSearch} color="gray.500" />}>
           <Input
             placeholder={t.search[language]}
             value={searchQuery}
-            variant="filled"
+            variant="subtle"
             onChange={(e) => onSearchChange(e.target.value)}
             size="sm"
           />
@@ -56,27 +41,23 @@ const MessageList: React.FC<MessageListProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            leftIcon={sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}
-            onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}
-          >
-            {t.sortDate[language]}
-          </Button>
+            onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}>{sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}{t.sortDate[language]}</Button>
         </HStack>
       </VStack>
       {messages.length === 0 ? (
-        <VStack p={3} spacing={3}>
+        <VStack p={3} gap={3}>
           <Icon as={FiMail} boxSize={12} color="gray.400" />
           <Text color="gray.500" fontWeight="medium">
             {searchQuery ? t.noMessagesFound[language] : emptyMessage}
           </Text>
         </VStack>
       ) : (
-        <List spacing={0} w="full">
+        <List.Root gap={0} w="full">
           {messages.map((message) => {
             const isUnread = message.to_user_id === currentUserId && !message.read_at;
             return (
               <React.Fragment key={message.id}>
-                <ListItem
+                <List.Item
                   p={{ base: 2, md: 3 }}
                   cursor="pointer"
                   bg={
@@ -89,15 +70,15 @@ const MessageList: React.FC<MessageListProps> = ({
                   _hover={{ bg: selectedMessageId === message.id ? selectedBg : hoverBg }}
                   onClick={() => onMessageClick(message.id)}
                 >
-                  <VStack align="stretch" spacing={{ base: 0.5, md: 1 }}>
+                  <VStack align="stretch" gap={{ base: 0.5, md: 1 }}>
                     <Text
                       fontWeight={isUnread ? unreadFontWeight : 'normal'}
                       fontSize={{ base: 'sm', md: 'md' }}
-                      noOfLines={1}
+                      lineClamp={1}
                     >
                       {message.subject}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" noOfLines={1}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" lineClamp={1}>
                       {message.from_user_id === currentUserId ? (
                         <>
                           {t.to[language]}:{' '}
@@ -116,12 +97,12 @@ const MessageList: React.FC<MessageListProps> = ({
                       {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
                     </Text>
                   </VStack>
-                </ListItem>
-                <Divider />
+                </List.Item>
+                <Separator />
               </React.Fragment>
             );
           })}
-        </List>
+        </List.Root>
       )}
     </VStack>
   );

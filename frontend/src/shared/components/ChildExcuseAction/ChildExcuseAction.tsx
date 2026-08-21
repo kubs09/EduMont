@@ -2,19 +2,12 @@ import { useState } from 'react';
 import {
   Button,
   ButtonProps,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Stack,
   Textarea,
   useDisclosure,
+  Field,
+  Dialog,
+  Portal,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { DatePicker } from '@frontend/shared/components/DatePicker';
@@ -45,7 +38,7 @@ const ChildExcuseAction = ({
 }: ChildExcuseActionProps) => {
   const toast = useAppToast();
   const [isOpen, setIsOpen] = useState(false);
-  const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
+  const { open: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
   const [excuseData, setExcuseData] = useState({
     date_from: '',
     date_to: '',
@@ -229,87 +222,107 @@ const ChildExcuseAction = ({
           {texts.children.excuse.excuseEndButton[language]}
         </Button>
       )}
-      <Modal isOpen={isOpen} onClose={closeModal}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            {texts.children.excuse.title[language]}
-            {childName ? ` - ${childName}` : ''}
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Stack spacing={4}>
-              <FormControl isRequired isInvalid={!!excuseErrors.date_from}>
-                <FormLabel>{texts.children.excuse.dateFrom[language]}</FormLabel>
-                <DatePicker
-                  viewType="day"
-                  value={excuseData.date_from}
-                  onChange={(date) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      date_from: date,
-                    }))
-                  }
-                  language={language}
-                />
-                <FormErrorMessage>{excuseErrors.date_from}</FormErrorMessage>
-              </FormControl>
-              <FormControl isRequired isInvalid={!!excuseErrors.date_to}>
-                <FormLabel>{texts.children.excuse.dateTo[language]}</FormLabel>
-                <DatePicker
-                  viewType="day"
-                  value={excuseData.date_to}
-                  onChange={(date) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      date_to: date,
-                    }))
-                  }
-                  language={language}
-                />
-                <FormErrorMessage>{excuseErrors.date_to}</FormErrorMessage>
-              </FormControl>
-              <FormControl isRequired isInvalid={!!excuseErrors.reason}>
-                <FormLabel>{texts.children.excuse.reason[language]}</FormLabel>
-                <Textarea
-                  value={excuseData.reason}
-                  onChange={(event) =>
-                    setExcuseData((prev) => ({
-                      ...prev,
-                      reason: event.target.value,
-                    }))
-                  }
-                />
-                <FormErrorMessage>{excuseErrors.reason}</FormErrorMessage>
-              </FormControl>
-            </Stack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" onClick={closeModal} mr={3}>
-              {texts.common.cancel[language]}
-            </Button>
-            <Button variant="brand" onClick={handleExcuseSubmit} isLoading={isSubmitting}>
-              {texts.children.excuse.submit[language]}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      <Modal isOpen={isConfirmOpen} onClose={onConfirmClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{texts.children.excuse.cancelConfirmTitle[language]}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>{texts.children.excuse.cancelConfirmMessage[language]}</ModalBody>
-          <ModalFooter>
-            <Button variant="outline" onClick={onConfirmClose} mr={3}>
-              {texts.children.excuse.keep[language]}
-            </Button>
-            <Button variant="brand" onClick={handleConfirmDelete} isLoading={isCancelling}>
-              {texts.children.excuse.excuseEndButton[language]}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <Dialog.Root open={isOpen} onOpenChange={e => {
+        if (!e.open) {
+          closeModal();
+        }
+      }}>
+        <Portal>
+
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                {texts.children.excuse.title[language]}
+                {childName ? ` - ${childName}` : ''}
+              </Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>
+                <Stack gap={4}>
+                  <Field.Root required invalid={!!excuseErrors.date_from}>
+                    <Field.Label>{texts.children.excuse.dateFrom[language]}</Field.Label>
+                    <DatePicker
+                      viewType="day"
+                      value={excuseData.date_from}
+                      onChange={(date) =>
+                        setExcuseData((prev) => ({
+                          ...prev,
+                          date_from: date,
+                        }))
+                      }
+                      language={language}
+                    />
+                    <Field.ErrorText>{excuseErrors.date_from}</Field.ErrorText>
+                  </Field.Root>
+                  <Field.Root required invalid={!!excuseErrors.date_to}>
+                    <Field.Label>{texts.children.excuse.dateTo[language]}</Field.Label>
+                    <DatePicker
+                      viewType="day"
+                      value={excuseData.date_to}
+                      onChange={(date) =>
+                        setExcuseData((prev) => ({
+                          ...prev,
+                          date_to: date,
+                        }))
+                      }
+                      language={language}
+                    />
+                    <Field.ErrorText>{excuseErrors.date_to}</Field.ErrorText>
+                  </Field.Root>
+                  <Field.Root required invalid={!!excuseErrors.reason}>
+                    <Field.Label>{texts.children.excuse.reason[language]}</Field.Label>
+                    <Textarea
+                      value={excuseData.reason}
+                      onChange={(event) =>
+                        setExcuseData((prev) => ({
+                          ...prev,
+                          reason: event.target.value,
+                        }))
+                      }
+                    />
+                    <Field.ErrorText>{excuseErrors.reason}</Field.ErrorText>
+                  </Field.Root>
+                </Stack>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="ghost" onClick={closeModal} mr={3}>
+                  {texts.common.cancel[language]}
+                </Button>
+                <Button variant="brand" onClick={handleExcuseSubmit} loading={isSubmitting}>
+                  {texts.children.excuse.submit[language]}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
+      <Dialog.Root open={isConfirmOpen} onOpenChange={e => {
+        if (!e.open) {
+          onConfirmClose();
+        }
+      }}>
+        <Portal>
+
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>{texts.children.excuse.cancelConfirmTitle[language]}</Dialog.Header>
+              <Dialog.CloseTrigger />
+              <Dialog.Body>{texts.children.excuse.cancelConfirmMessage[language]}</Dialog.Body>
+              <Dialog.Footer>
+                <Button variant="outline" onClick={onConfirmClose} mr={3}>
+                  {texts.children.excuse.keep[language]}
+                </Button>
+                <Button variant="brand" onClick={handleConfirmDelete} loading={isCancelling}>
+                  {texts.children.excuse.excuseEndButton[language]}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+
+        </Portal>
+      </Dialog.Root>
     </>
   );
 };

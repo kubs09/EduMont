@@ -1,18 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Box,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  Tabs,
-  TabList,
-  Tab,
-} from '@chakra-ui/react';
+import { Box, Table, Text, Tabs } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class, NextPresentation } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
@@ -194,17 +181,18 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       ) : (
         <Box>
           {categoryOptions.length > 1 && (
-            <Tabs
-              index={Math.max(categoryOptions.indexOf(activeCategory || ''), 0)}
-              onChange={(index) => setActiveCategory(categoryOptions[index])}
-              variant="soft-rounded"
-              colorScheme="blue"
+            <Tabs.Root
+              value={activeCategory || categoryOptions[0] || ''}
+              onValueChange={(details) => setActiveCategory(details.value)}
+              variant='subtle'
+              colorPalette="blue"
               mb={4}
             >
-              <TabList flexWrap="wrap" gap={2}>
+              <Tabs.List flexWrap="wrap" gap={2}>
                 {categoryOptions.map((category) => (
-                  <Tab
+                  <Tabs.Trigger
                     key={category}
+                    value={category}
                     _selected={{
                       bg: 'blue.500',
                       color: 'white',
@@ -216,35 +204,35 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
                     color={{ base: 'gray.700', _dark: 'gray.200' }}
                   >
                     {category}
-                  </Tab>
+                  </Tabs.Trigger>
                 ))}
-              </TabList>
-            </Tabs>
+              </Tabs.List>
+            </Tabs.Root>
           )}
-          <TableContainer>
-            <Table variant="simple" size="md">
-              <Thead>
-                <Tr>
-                  <Th>{texts.common.childrenTable.name[language]}</Th>
-                  <Th>{texts.classes.detail.category[language]}</Th>
-                  <Th>{texts.classes.detail.presentation[language]}</Th>
-                  {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
-                </Tr>
-              </Thead>
-              <Tbody>
+          <Table.ScrollArea>
+            <Table.Root variant="simple" size="md">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader>{texts.common.childrenTable.name[language]}</Table.ColumnHeader>
+                  <Table.ColumnHeader>{texts.classes.detail.category[language]}</Table.ColumnHeader>
+                  <Table.ColumnHeader>{texts.classes.detail.presentation[language]}</Table.ColumnHeader>
+                  {(isAdmin || isTeacher) && <Table.ColumnHeader>{texts.classes.detail.notes[language]}</Table.ColumnHeader>}
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
                 {paginatedPresentations.map((presentation) => (
-                  <Tr key={`${presentation.child_id}-${presentation.id}`}>
-                    <Td>
+                  <Table.Row key={`${presentation.child_id}-${presentation.id}`}>
+                    <Table.Cell>
                       {presentation.child_firstname} {presentation.child_surname}
-                    </Td>
-                    <Td>{presentation.category}</Td>
-                    <Td>{presentation.name}</Td>
-                    {(isAdmin || isTeacher) && <Td>{presentation.notes || '-'}</Td>}
-                  </Tr>
+                    </Table.Cell>
+                    <Table.Cell>{presentation.category}</Table.Cell>
+                    <Table.Cell>{presentation.name}</Table.Cell>
+                    {(isAdmin || isTeacher) && <Table.Cell>{presentation.notes || '-'}</Table.Cell>}
+                  </Table.Row>
                 ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+              </Table.Body>
+            </Table.Root>
+          </Table.ScrollArea>
         </Box>
       )}
       {visiblePresentations.length > 0 && (

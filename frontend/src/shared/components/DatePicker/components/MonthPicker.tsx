@@ -24,7 +24,7 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
   };
 
   return (
-    <VStack spacing={4}>
+    <VStack gap={4}>
       <DatePickerHeader
         displayYear={displayYear}
         onYearChange={onYearChange}
@@ -40,7 +40,7 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
               variant="outline"
               width="100%"
               onClick={() => handleMonthSelect(index)}
-              colorScheme={
+              colorPalette={
                 value.substring(0, 7) ===
                 `${displayYear}-${(index + 1).toString().padStart(2, '0')}`
                   ? 'blue'

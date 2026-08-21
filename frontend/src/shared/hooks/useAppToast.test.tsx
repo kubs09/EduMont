@@ -1,10 +1,11 @@
 import { renderHook } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
+import system from '../../design/theme';
 import { useAppToast } from './useAppToast';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <ChakraProvider>{children}</ChakraProvider>
+  <ChakraProvider value={system}>{children}</ChakraProvider>
 );
 
 describe('useAppToast', () => {

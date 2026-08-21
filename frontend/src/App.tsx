@@ -1,7 +1,8 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import React from 'react';
-import theme from './design/theme';
+import system from './design/theme';
+import { Toaster } from './components/ui/toaster';
 import Routes from './Routes';
 import { ROUTES } from './shared/route';
 import { LanguageProvider } from './shared/contexts/LanguageContext';
@@ -19,8 +20,8 @@ function App(): React.ReactElement {
 
   return (
     <React.StrictMode>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <ChakraProvider theme={theme}>
+
+      <ChakraProvider value={system}>
         <LanguageProvider>
           <SnackbarProvider maxSnack={3}>
             <BrowserRouter>
@@ -30,6 +31,7 @@ function App(): React.ReactElement {
             </BrowserRouter>
           </SnackbarProvider>
         </LanguageProvider>
+        <Toaster />
       </ChakraProvider>
     </React.StrictMode>
   );

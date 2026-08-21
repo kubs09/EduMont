@@ -1,19 +1,4 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Select,
-  FormErrorMessage,
-} from '@chakra-ui/react';
+import { Button, Input, Textarea, NativeSelect, Field, Dialog, Portal } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { texts } from '@frontend/texts';
@@ -201,97 +186,113 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={{ base: 'full', md: 'lg' }}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{texts.classes.createClassTitle[language]}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FormControl isInvalid={!!errors.name} isRequired>
-            <FormLabel>{texts.classes.name[language]}</FormLabel>
-            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
-            {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
-          </FormControl>
-          <FormControl mt={4} isInvalid={!!errors.description} isRequired>
-            <FormLabel>{texts.classes.description[language]}</FormLabel>
-            <Textarea
-              value={description}
-              onChange={(e) => handleDescriptionChange(e.target.value)}
-            />
-            {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
-          </FormControl>
-          <FormControl mt={4} isRequired>
-            <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
-            <Select
-              value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
-              onChange={(e) => {
-                const option = groupOptions.find((group) => group.value === e.target.value);
-                if (!option) return;
+    <Dialog.Root open={isOpen} size={{ base: 'full', md: 'lg' }} onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
 
-                const matchedGroup = classAgeGroups.find(
-                  (group) => group.minAge === option.minAge && group.maxAge === option.maxAge
-                );
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>{texts.classes.createClassTitle[language]}</Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <Field.Root invalid={!!errors.name} required>
+                <Field.Label>{texts.classes.name[language]}</Field.Label>
+                <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
+                {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
+              </Field.Root>
+              <Field.Root mt={4} invalid={!!errors.description} required>
+                <Field.Label>{texts.classes.description[language]}</Field.Label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                />
+                {errors.description && <Field.ErrorText>{errors.description}</Field.ErrorText>}
+              </Field.Root>
+              <Field.Root mt={4} required>
+                <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+                    onChange={(e) => {
+                      const option = groupOptions.find((group) => group.value === e.target.value);
+                      if (!option) return;
 
-                if (matchedGroup) {
-                  setSelectedGroup(matchedGroup);
-                  setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
-                }
-              }}
-            >
-              {groupOptions.map((group) => (
-                <option key={group.value} value={group.value}>
-                  {group.label}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl mt={4} isInvalid={!!errors.teacherId} isRequired>
-            <FormLabel>{texts.classes.teacher[language]}</FormLabel>
-            <Select
-              placeholder={texts.classes.selectTeacher[language]}
-              value={teacherId ?? ''}
-              onChange={(e) => {
-                const value = e.target.value ? Number(e.target.value) : null;
-                handleTeacherChange(value);
-              }}
-            >
-              {availableTeachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.firstname} {teacher.surname}
-                </option>
-              ))}
-            </Select>
-            {errors.teacherId && <FormErrorMessage>{errors.teacherId}</FormErrorMessage>}
-          </FormControl>
-          <FormControl mt={4} isInvalid={!!errors.assistantId}>
-            <FormLabel>{texts.classes.assistant[language]}</FormLabel>
-            <Select
-              placeholder={texts.classes.selectAssistant[language]}
-              value={assistantId ?? ''}
-              onChange={(e) => {
-                const value = e.target.value ? Number(e.target.value) : null;
-                handleAssistantChange(value);
-              }}
-            >
-              {availableTeachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
-                  {teacher.firstname} {teacher.surname}
-                </option>
-              ))}
-            </Select>
-            {errors.assistantId && <FormErrorMessage>{errors.assistantId}</FormErrorMessage>}
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            {texts.common.cancel[language]}
-          </Button>
-          <Button colorScheme="blue" onClick={handleSubmit} isLoading={isSubmitting}>
-            {texts.classes.createClass[language]}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                      const matchedGroup = classAgeGroups.find(
+                        (group) => group.minAge === option.minAge && group.maxAge === option.maxAge
+                      );
+
+                      if (matchedGroup) {
+                        setSelectedGroup(matchedGroup);
+                        setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+                      }
+                    }}>
+                    {groupOptions.map((group) => (
+                      <option key={group.value} value={group.value}>
+                        {group.label}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              </Field.Root>
+              <Field.Root mt={4} invalid={!!errors.teacherId} required>
+                <Field.Label>{texts.classes.teacher[language]}</Field.Label>
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    placeholder={texts.classes.selectTeacher[language]}
+                    value={teacherId ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? Number(e.target.value) : null;
+                      handleTeacherChange(value);
+                    }}>
+                    {availableTeachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.firstname} {teacher.surname}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+                {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
+              </Field.Root>
+              <Field.Root mt={4} invalid={!!errors.assistantId}>
+                <Field.Label>{texts.classes.assistant[language]}</Field.Label>
+                <NativeSelect.Root>
+                  <NativeSelect.Field
+                    placeholder={texts.classes.selectAssistant[language]}
+                    value={assistantId ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value ? Number(e.target.value) : null;
+                      handleAssistantChange(value);
+                    }}>
+                    {availableTeachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
+                        {teacher.firstname} {teacher.surname}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+                {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
+              </Field.Root>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose}>
+                {texts.common.cancel[language]}
+              </Button>
+              <Button colorPalette="blue" onClick={handleSubmit} loading={isSubmitting}>
+                {texts.classes.createClass[language]}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 
