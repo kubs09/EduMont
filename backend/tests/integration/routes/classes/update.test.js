@@ -91,7 +91,9 @@ describe('PUT /api/classes/:id (integration)', () => {
     const otherClass = track('classes', await createTestClass());
     const targetClass = track('classes', await createTestClass());
     track('classTeachers', { classId: otherClass.id, teacherId: teacher.id });
-    await db.insert(classTeachers).values({ classId: otherClass.id, teacherId: teacher.id, role: 'teacher' });
+    await db
+      .insert(classTeachers)
+      .values({ classId: otherClass.id, teacherId: teacher.id, role: 'teacher' });
 
     const res = await request(app)
       .put(`/api/classes/${targetClass.id}`)
@@ -99,7 +101,9 @@ describe('PUT /api/classes/:id (integration)', () => {
       .send({ ...validBody(), teacherId: teacher.id });
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('teacher is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('teacher is already assigned'),
+    });
   });
 
   test('400 when the new assistant is already assigned to a different class', async () => {

@@ -2,7 +2,11 @@ import { jest, describe, afterEach, afterAll, test, expect } from '@jest/globals
 import request from 'supertest';
 import { eq } from 'drizzle-orm';
 import { signTestToken } from '../../../helpers/auth.js';
-import { createTestUser, createTestMessage, createCleanupTracker } from '../../../helpers/fixtures.js';
+import {
+  createTestUser,
+  createTestMessage,
+  createCleanupTracker,
+} from '../../../helpers/fixtures.js';
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,

@@ -83,7 +83,9 @@ describe('permissions routes: update (integration)', () => {
       track('classTeachers', await linkTeacher(testClass.id, teacher.id));
       const permission = track(
         'presentationPermissions',
-        await grantPresentationPermission(requester.id, testClass.id, false, { permissionRequested: true })
+        await grantPresentationPermission(requester.id, testClass.id, false, {
+          permissionRequested: true,
+        })
       );
 
       const res = await request(app)
@@ -100,7 +102,10 @@ describe('permissions routes: update (integration)', () => {
         .where(eq(presentationPermissions.id, permission.id));
       expect(updated.granted).toBe(true);
 
-      const messageRows = await db.select().from(messages).where(eq(messages.toUserId, requester.id));
+      const messageRows = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.toUserId, requester.id));
       messageRows.forEach((row) => track('messages', row));
       expect(messageRows).toHaveLength(1);
       expect(messageRows[0]).toMatchObject({
@@ -178,7 +183,10 @@ describe('permissions routes: update (integration)', () => {
         .where(eq(presentationPermissions.id, permission.id));
       expect(remaining).toHaveLength(0);
 
-      const messageRows = await db.select().from(messages).where(eq(messages.toUserId, requester.id));
+      const messageRows = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.toUserId, requester.id));
       messageRows.forEach((row) => track('messages', row));
       expect(messageRows).toHaveLength(1);
       expect(messageRows[0]).toMatchObject({

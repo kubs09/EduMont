@@ -69,20 +69,26 @@ export const classes = {
     },
   },
   validation: {
-    classNameRequired: common.templates.validation.required({ cs: 'Název třídy', en: 'Class name' }, 'masc'),
+    classNameRequired: common.templates.validation.required(
+      { cs: 'Název třídy', en: 'Class name' },
+      'masc'
+    ),
     classNameMin: common.templates.validation.minLength({ cs: 'Název třídy', en: 'Class name' }, 2),
-    classNameMax: common.templates.validation.maxLength({ cs: 'Název třídy', en: 'Class name' }, 100),
+    classNameMax: common.templates.validation.maxLength(
+      { cs: 'Název třídy', en: 'Class name' },
+      100
+    ),
     classDescriptionRequired: common.templates.validation.required(
       { cs: 'Popis třídy', en: 'Class description' },
-      'masc',
+      'masc'
     ),
     classDescriptionMin: common.templates.validation.minLength(
       { cs: 'Popis třídy', en: 'Class description' },
-      5,
+      5
     ),
     classDescriptionMax: common.templates.validation.maxLength(
       { cs: 'Popis třídy', en: 'Class description' },
-      500,
+      500
     ),
     teacherValid: {
       cs: 'Učitel musí být platná volba',

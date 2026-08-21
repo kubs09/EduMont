@@ -54,10 +54,10 @@ describe('common.templates', () => {
 
   it('applies correct Czech numeral agreement in minLength', () => {
     expect(common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2).cs).toBe(
-      'Jméno musí mít alespoň 2 znaky',
+      'Jméno musí mít alespoň 2 znaky'
     );
     expect(common.templates.validation.minLength({ cs: 'Heslo', en: 'Password' }, 8).cs).toBe(
-      'Heslo musí mít alespoň 8 znaků',
+      'Heslo musí mít alespoň 8 znaků'
     );
   });
 
@@ -74,22 +74,22 @@ describe('common.templates', () => {
 
   it('matches childSchema.ts firstNameMaxLength wording in maxLength', () => {
     expect(common.templates.validation.maxLength({ cs: 'Jméno', en: 'First name' }, 100).cs).toBe(
-      'Jméno nesmí být delší než 100 znaků',
+      'Jméno nesmí být delší než 100 znaků'
     );
     expect(common.templates.validation.maxLength({ cs: 'Jméno', en: 'First name' }, 100).en).toBe(
-      'First name must not exceed 100 characters',
+      'First name must not exceed 100 characters'
     );
   });
 
   it('applies gendered adjective agreement in required', () => {
     expect(common.templates.validation.required({ cs: 'Email', en: 'Email' }, 'masc').cs).toBe(
-      'Email je povinný',
+      'Email je povinný'
     );
     expect(
-      common.templates.validation.required({ cs: 'Emailová adresa', en: 'Email address' }, 'fem').cs,
+      common.templates.validation.required({ cs: 'Emailová adresa', en: 'Email address' }, 'fem').cs
     ).toBe('Emailová adresa je povinná');
     expect(common.templates.validation.required({ cs: 'Heslo', en: 'Password' }, 'neut').cs).toBe(
-      'Heslo je povinné',
+      'Heslo je povinné'
     );
   });
 });

@@ -65,11 +65,11 @@ export const schedule = {
     },
     nameMinLength: common.templates.validation.minLength(
       { cs: 'Název prezentace', en: 'Presentation name' },
-      2,
+      2
     ),
     nameMaxLength: common.templates.validation.maxLength(
       { cs: 'Název prezentace', en: 'Presentation name' },
-      100,
+      100
     ),
     nameTooLong: {
       cs: 'Název prezentace je příliš dlouhý',

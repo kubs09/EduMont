@@ -152,7 +152,11 @@ describe('classes routes: attendance', () => {
   });
 
   describe('POST /api/classes/:id/attendance/check-in', () => {
-    const validBody = { child_id: 3, attendance_date: '2026-01-10', check_in_at: '2026-01-10T08:00:00.000Z' };
+    const validBody = {
+      child_id: 3,
+      attendance_date: '2026-01-10',
+      check_in_at: '2026-01-10T08:00:00.000Z',
+    };
 
     test('400 for invalid class id', async () => {
       const res = await request(app)
@@ -256,7 +260,13 @@ describe('classes routes: attendance', () => {
     });
 
     test('201 creating a new attendance row when none exists yet for that date', async () => {
-      const created = { id: 5, classId: 1, childId: 3, attendanceDate: '2026-01-10', checkInAt: validBody.check_in_at };
+      const created = {
+        id: 5,
+        classId: 1,
+        childId: 3,
+        attendanceDate: '2026-01-10',
+        checkInAt: validBody.check_in_at,
+      };
       dbMock.select
         .mockReturnValueOnce(makeChain([{ classId: 1 }])) // isChildInClass
         .mockReturnValueOnce(makeChain([])); // existing - none
@@ -273,7 +283,13 @@ describe('classes routes: attendance', () => {
     });
 
     test('200 updating the existing row when one exists for that date but has no check_in_at', async () => {
-      const updated = { id: 5, classId: 1, childId: 3, attendanceDate: '2026-01-10', checkInAt: validBody.check_in_at };
+      const updated = {
+        id: 5,
+        classId: 1,
+        childId: 3,
+        attendanceDate: '2026-01-10',
+        checkInAt: validBody.check_in_at,
+      };
       dbMock.select
         .mockReturnValueOnce(makeChain([{ classId: 1 }])) // isChildInClass
         .mockReturnValueOnce(makeChain([{ id: 5, checkInAt: null }])); // existing without check-in
@@ -291,7 +307,11 @@ describe('classes routes: attendance', () => {
   });
 
   describe('POST /api/classes/:id/attendance/check-out', () => {
-    const validBody = { child_id: 3, attendance_date: '2026-01-10', check_out_at: '2026-01-10T17:00:00.000Z' };
+    const validBody = {
+      child_id: 3,
+      attendance_date: '2026-01-10',
+      check_out_at: '2026-01-10T17:00:00.000Z',
+    };
 
     test('400 for invalid class id', async () => {
       const res = await request(app)

@@ -29,7 +29,9 @@ describe('POST /api/users (invitations)', () => {
   });
 
   test('401 without a token', async () => {
-    const res = await request(app).post('/api/users').send({ email: 'x@example.com', role: 'parent' });
+    const res = await request(app)
+      .post('/api/users')
+      .send({ email: 'x@example.com', role: 'parent' });
 
     expect(res.status).toBe(401);
     expect(dbMock.select).not.toHaveBeenCalled();
@@ -141,9 +143,11 @@ describe('POST /api/users/register/:token', () => {
       makeChain([{ id: 9, email: 'invitee@example.com', role: 'teacher' }])
     );
     const tx = {
-      insert: jest.fn().mockReturnValueOnce(
-        makeChain([{ id: 50, email: 'invitee@example.com', role: 'teacher' }])
-      ),
+      insert: jest
+        .fn()
+        .mockReturnValueOnce(
+          makeChain([{ id: 50, email: 'invitee@example.com', role: 'teacher' }])
+        ),
       delete: jest.fn().mockReturnValueOnce(makeChain([])),
     };
     dbMock.transaction.mockImplementation((cb) => cb(tx));

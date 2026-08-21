@@ -166,8 +166,8 @@ const ChildrenPage = () => {
                       ((currentPage - 1) * PAGE_SIZE + index) % 3 === 0
                         ? 'blue.400'
                         : ((currentPage - 1) * PAGE_SIZE + index) % 3 === 1
-                          ? 'purple.400'
-                          : 'teal.400',
+                        ? 'purple.400'
+                        : 'teal.400',
                     md: 'transparent',
                   }}
                   bg={{
@@ -247,7 +247,9 @@ const ChildrenPage = () => {
           onClose={onClose}
           onConfirm={() => childToDelete && handleDeleteChild(childToDelete.id)}
           title={texts.children.deleteConfirm.title[language]}
-          message={`${texts.children.deleteConfirm.message[language]}${childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''}`}
+          message={`${texts.children.deleteConfirm.message[language]}${
+            childToDelete ? ` ${childToDelete.firstname} ${childToDelete.surname}?` : ''
+          }`}
           cancelLabel={texts.common.cancel[language]}
           confirmLabel={texts.common.delete[language]}
           confirmColorScheme="red"

@@ -3,7 +3,13 @@ const router = Router();
 import console from 'console';
 import { and, asc, eq, exists } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { childParents, classChildren, classTeachers, children, presentations } from '#backend/db/schema.js';
+import {
+  childParents,
+  classChildren,
+  classTeachers,
+  children,
+  presentations,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 router.get('/class/:id/next-presentations', auth, async (req, res) => {

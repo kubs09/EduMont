@@ -83,7 +83,9 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
     users.forEach((user) => {
       options.push({
         value: user.id,
-        label: `${user.firstname} ${user.surname} (${user.role}${user.class_names ? ` - ${user.class_names}` : ''})`,
+        label: `${user.firstname} ${user.surname} (${user.role}${
+          user.class_names ? ` - ${user.class_names}` : ''
+        })`,
       });
     });
 

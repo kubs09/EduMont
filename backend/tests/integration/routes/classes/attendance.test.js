@@ -104,7 +104,9 @@ describe('classes routes: attendance (integration)', () => {
       const [persisted] = await db
         .select()
         .from(classAttendance)
-        .where(and(eq(classAttendance.classId, testClass.id), eq(classAttendance.childId, child.id)));
+        .where(
+          and(eq(classAttendance.classId, testClass.id), eq(classAttendance.childId, child.id))
+        );
       expect(persisted).toMatchObject({ checkedInBy: admin.id });
       expect(persisted.checkInAt).not.toBeNull();
     });
@@ -240,7 +242,9 @@ describe('classes routes: attendance (integration)', () => {
       const [persisted] = await db
         .select()
         .from(classAttendance)
-        .where(and(eq(classAttendance.classId, testClass.id), eq(classAttendance.childId, child.id)));
+        .where(
+          and(eq(classAttendance.classId, testClass.id), eq(classAttendance.childId, child.id))
+        );
       expect(persisted.checkOutAt).not.toBeNull();
       expect(persisted.checkedOutBy).toBe(admin.id);
     });

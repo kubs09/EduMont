@@ -2,7 +2,11 @@ import { jest, describe, afterEach, afterAll, test, expect } from '@jest/globals
 import request from 'supertest';
 import { eq } from 'drizzle-orm';
 import { signTestToken } from '../../../helpers/auth.js';
-import { createTestUser, createTestInvitation, createCleanupTracker } from '../../../helpers/fixtures.js';
+import {
+  createTestUser,
+  createTestInvitation,
+  createCleanupTracker,
+} from '../../../helpers/fixtures.js';
 
 const mailMock = { sendEmail: jest.fn() };
 
@@ -32,7 +36,9 @@ describe('users invitations (integration)', () => {
 
   describe('POST /api/users', () => {
     test('401 without a token', async () => {
-      const res = await request(app).post('/api/users').send({ email: 'x@example.com', role: 'parent' });
+      const res = await request(app)
+        .post('/api/users')
+        .send({ email: 'x@example.com', role: 'parent' });
 
       expect(res.status).toBe(401);
     });
@@ -63,7 +69,10 @@ describe('users invitations (integration)', () => {
 
     test('409 invitation_exists for a non-expired pending invitation', async () => {
       const admin = track('users', await createTestUser('admin'));
-      const pending = track('invitations', await createTestInvitation({ email: 'pending@example.com' }));
+      const pending = track(
+        'invitations',
+        await createTestInvitation({ email: 'pending@example.com' })
+      );
 
       const res = await request(app)
         .post('/api/users')

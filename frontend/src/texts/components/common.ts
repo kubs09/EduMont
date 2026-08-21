@@ -21,7 +21,9 @@ const characterCountNoun = (n: number) => {
 };
 
 const successPhrase = (participleStem: string, verbEn: string, entity: Entity) => ({
-  cs: `${entity.label.cs} byl${beSuffix[entity.gender]} úspěšně ${participleStem}${participleSuffix[entity.gender]}`,
+  cs: `${entity.label.cs} byl${beSuffix[entity.gender]} úspěšně ${participleStem}${
+    participleSuffix[entity.gender]
+  }`,
   en: `${entity.label.en} ${verbEn} successfully`,
 });
 

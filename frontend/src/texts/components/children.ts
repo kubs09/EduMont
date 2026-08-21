@@ -107,13 +107,10 @@ export const children = {
     firstNameLength: common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2),
     firstNameMaxLength: common.templates.validation.maxLength(
       { cs: 'Jméno', en: 'First name' },
-      100,
+      100
     ),
     surnameLength: common.templates.validation.minLength({ cs: 'Příjmení', en: 'Surname' }, 2),
-    surnameMaxLength: common.templates.validation.maxLength(
-      { cs: 'Příjmení', en: 'Surname' },
-      100,
-    ),
+    surnameMaxLength: common.templates.validation.maxLength({ cs: 'Příjmení', en: 'Surname' }, 100),
     notesMaxLength: common.templates.validation.maxLength({ cs: 'Poznámky', en: 'Notes' }, 1000),
     dateFormat: {
       cs: 'Neplatný formát data. Použijte RRRR-MM-DD',

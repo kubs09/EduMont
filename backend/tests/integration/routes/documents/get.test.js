@@ -84,7 +84,7 @@ describe('documents routes: get (integration)', () => {
       expect(res.status).toBe(400);
     });
 
-    test("403 for a teacher not linked to the requested class_id", async () => {
+    test('403 for a teacher not linked to the requested class_id', async () => {
       const teacher = track('users', await createTestUser('teacher'));
       const testClass = track('classes', await createTestClass());
 
@@ -95,7 +95,7 @@ describe('documents routes: get (integration)', () => {
       expect(res.status).toBe(403);
     });
 
-    test("403 for a parent not linked to the requested child_id", async () => {
+    test('403 for a parent not linked to the requested child_id', async () => {
       const parent = track('users', await createTestUser('parent'));
       const child = track('children', await createTestChild());
 
@@ -241,7 +241,9 @@ describe('documents routes: get (integration)', () => {
         .set('Authorization', authHeader(teacher));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual(expect.objectContaining({ id: document.id, class_id: testClass.id }));
+      expect(res.body).toEqual(
+        expect.objectContaining({ id: document.id, class_id: testClass.id })
+      );
     });
 
     test('200 for admin', async () => {

@@ -99,7 +99,7 @@ describe('documents routes: get', () => {
       expect(dbMock.select).not.toHaveBeenCalled();
     });
 
-    test("403 for a teacher not linked to the requested class_id", async () => {
+    test('403 for a teacher not linked to the requested class_id', async () => {
       dbMock.select.mockReturnValueOnce(makeChain([]));
 
       const res = await request(app)
@@ -110,7 +110,7 @@ describe('documents routes: get', () => {
       expect(dbMock.select).toHaveBeenCalledTimes(1);
     });
 
-    test("403 for a parent not linked to the requested child_id", async () => {
+    test('403 for a parent not linked to the requested child_id', async () => {
       dbMock.select.mockReturnValueOnce(makeChain([]));
 
       const res = await request(app)

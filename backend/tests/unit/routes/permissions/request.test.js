@@ -221,7 +221,9 @@ describe('GET /api/permissions/pending', () => {
       surname: 'Lovelace',
       email: 'ada@example.com',
     };
-    dbMock.select.mockReturnValueOnce(makeChain([{ classId: 5 }])).mockReturnValueOnce(makeChain([pendingRow]));
+    dbMock.select
+      .mockReturnValueOnce(makeChain([{ classId: 5 }]))
+      .mockReturnValueOnce(makeChain([pendingRow]));
 
     const res = await request(app)
       .get('/api/permissions/pending')
@@ -306,7 +308,9 @@ describe('POST /api/permissions/request', () => {
     const tx = makeTxMock();
     tx.select
       .mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }]))
-      .mockReturnValueOnce(makeChain([{ id: 20, firstname: 'T', surname: 'One', email: 't1@example.com' }]));
+      .mockReturnValueOnce(
+        makeChain([{ id: 20, firstname: 'T', surname: 'One', email: 't1@example.com' }])
+      );
     tx.insert.mockReturnValueOnce(makeChain([]));
     dbMock.transaction.mockImplementation((cb) => cb(tx));
 
@@ -328,14 +332,12 @@ describe('POST /api/permissions/request', () => {
       makeChain([{ firstname: 'Ada', surname: 'Lovelace', email: 'ada@example.com' }])
     );
     const tx = makeTxMock();
-    tx.select
-      .mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }]))
-      .mockReturnValueOnce(
-        makeChain([
-          { id: 20, firstname: 'T', surname: 'One', email: 't1@example.com', class_role: 'teacher' },
-          { id: 21, firstname: 'T', surname: 'Two', email: 't2@example.com', class_role: 'teacher' },
-        ])
-      );
+    tx.select.mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }])).mockReturnValueOnce(
+      makeChain([
+        { id: 20, firstname: 'T', surname: 'One', email: 't1@example.com', class_role: 'teacher' },
+        { id: 21, firstname: 'T', surname: 'Two', email: 't2@example.com', class_role: 'teacher' },
+      ])
+    );
     const messagesChain = makeChain([]);
     tx.insert.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(messagesChain);
     dbMock.transaction.mockImplementation((cb) => cb(tx));
@@ -376,14 +378,12 @@ describe('POST /api/permissions/request', () => {
       makeChain([{ firstname: 'Ada', surname: 'Lovelace', email: 'ada@example.com' }])
     );
     const tx = makeTxMock();
-    tx.select
-      .mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }]))
-      .mockReturnValueOnce(
-        makeChain([
-          { id: 20, firstname: 'T', surname: 'One', email: 't1@example.com', class_role: 'teacher' },
-          { id: 21, firstname: 'T', surname: 'Two', email: 't2@example.com', class_role: 'teacher' },
-        ])
-      );
+    tx.select.mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }])).mockReturnValueOnce(
+      makeChain([
+        { id: 20, firstname: 'T', surname: 'One', email: 't1@example.com', class_role: 'teacher' },
+        { id: 21, firstname: 'T', surname: 'Two', email: 't2@example.com', class_role: 'teacher' },
+      ])
+    );
     const messagesChain = makeChain([]);
     tx.insert.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(messagesChain);
     dbMock.transaction.mockImplementation((cb) => cb(tx));
@@ -391,7 +391,11 @@ describe('POST /api/permissions/request', () => {
     const res = await request(app)
       .post('/api/permissions/request')
       .set('Authorization', authHeader({ id: 10, role: 'admin' }))
-      .send({ ...validBody, resource_type: 'presentation', reason: 'Need access for parent conference' });
+      .send({
+        ...validBody,
+        resource_type: 'presentation',
+        reason: 'Need access for parent conference',
+      });
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual({
@@ -404,13 +408,17 @@ describe('POST /api/permissions/request', () => {
         fromUserId: 10,
         toUserId: 20,
         subject: 'Permission Request',
-        content: expect.stringContaining('Resource Type: presentation\nReason: Need access for parent conference'),
+        content: expect.stringContaining(
+          'Resource Type: presentation\nReason: Need access for parent conference'
+        ),
       },
       {
         fromUserId: 10,
         toUserId: 21,
         subject: 'Permission Request',
-        content: expect.stringContaining('Resource Type: presentation\nReason: Need access for parent conference'),
+        content: expect.stringContaining(
+          'Resource Type: presentation\nReason: Need access for parent conference'
+        ),
       },
     ]);
   });
@@ -420,7 +428,9 @@ describe('POST /api/permissions/request', () => {
       makeChain([{ firstname: 'Ada', surname: 'Lovelace', email: 'ada@example.com' }])
     );
     const tx = makeTxMock();
-    tx.select.mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }])).mockReturnValueOnce(makeChain([]));
+    tx.select
+      .mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }]))
+      .mockReturnValueOnce(makeChain([]));
     const messagesChain = makeChain([]);
     tx.insert.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(messagesChain);
     dbMock.transaction.mockImplementation((cb) => cb(tx));
@@ -451,11 +461,17 @@ describe('POST /api/permissions/request', () => {
       makeChain([{ firstname: 'Ada', surname: 'Lovelace', email: 'ada@example.com' }])
     );
     const tx = makeTxMock();
-    tx.select
-      .mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }]))
-      .mockReturnValueOnce(
-        makeChain([{ id: 20, firstname: 'T', surname: 'One', email: 't1@example.com', class_role: 'teacher' }])
-      );
+    tx.select.mockReturnValueOnce(makeChain([{ id: 5, name: 'Sunflowers' }])).mockReturnValueOnce(
+      makeChain([
+        {
+          id: 20,
+          firstname: 'T',
+          surname: 'One',
+          email: 't1@example.com',
+          class_role: 'teacher',
+        },
+      ])
+    );
     const messagesChain = makeChain([]);
     tx.insert.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(messagesChain);
     dbMock.transaction.mockImplementation((cb) => cb(tx));

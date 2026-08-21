@@ -52,7 +52,11 @@ router.post('/', auth, async (req, res) => {
       const messageIdByRecipient = new Map(insertedMessages.map((row) => [row.to_user_id, row.id]));
 
       const recipientsResult = await tx
-        .select({ id: users.id, email: users.email, messageNotifications: users.messageNotifications })
+        .select({
+          id: users.id,
+          email: users.email,
+          messageNotifications: users.messageNotifications,
+        })
         .from(users)
         .where(inArray(users.id, to_user_ids));
 

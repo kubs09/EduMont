@@ -2,7 +2,13 @@ import { Router } from 'express';
 const router = Router();
 import { and, asc, eq, sql } from 'drizzle-orm';
 import { db } from '#backend/config/database.js';
-import { classAttendance, classChildren, classTeachers, childParents, children } from '#backend/db/schema.js';
+import {
+  classAttendance,
+  classChildren,
+  classTeachers,
+  childParents,
+  children,
+} from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 
 const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);

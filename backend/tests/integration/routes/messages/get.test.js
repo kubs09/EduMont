@@ -55,7 +55,10 @@ describe('messages routes: get (integration)', () => {
       await sendMessage(sender, [recipient1.id, recipient2.id], {
         subject: 'Group Conversation',
       });
-      const persistedRows = await db.select().from(messages).where(eq(messages.fromUserId, sender.id));
+      const persistedRows = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.fromUserId, sender.id));
       persistedRows.forEach((row) => track('messages', row));
 
       const res = await request(app)
@@ -70,7 +73,7 @@ describe('messages routes: get (integration)', () => {
       expect(recipientIds).toEqual([recipient1.id, recipient2.id].sort());
     });
 
-    test('excludes messages soft-deleted on the caller\'s side while still showing them to the other party', async () => {
+    test("excludes messages soft-deleted on the caller's side while still showing them to the other party", async () => {
       const sender = track('users', await createTestUser('admin'));
       const recipient = track('users', await createTestUser('teacher'));
 

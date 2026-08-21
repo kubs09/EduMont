@@ -57,7 +57,10 @@ describe('POST /api/classes/auto-assign (integration)', () => {
   test('assigns children whose age fits a class range and leaves the rest unassigned', async () => {
     const admin = track('users', await createTestUser('admin'));
     const fittingClass = track('classes', await createTestClass({ minAge: 76, maxAge: 78 }));
-    const fittingChild = track('children', await createTestChild({ dateOfBirth: dateOfBirthForAge(77) }));
+    const fittingChild = track(
+      'children',
+      await createTestChild({ dateOfBirth: dateOfBirthForAge(77) })
+    );
     const strandedChild = track(
       'children',
       await createTestChild({ dateOfBirth: dateOfBirthForAge(131) })

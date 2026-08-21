@@ -105,8 +105,14 @@ describe('presentations status/reorder routes (integration)', () => {
       expect(res.body.status).toBe('mastered');
 
       const [persistedP2, persistedP3] = await Promise.all([
-        db.select({ status: presentations.status }).from(presentations).where(eq(presentations.id, p2.id)),
-        db.select({ status: presentations.status }).from(presentations).where(eq(presentations.id, p3.id)),
+        db
+          .select({ status: presentations.status })
+          .from(presentations)
+          .where(eq(presentations.id, p2.id)),
+        db
+          .select({ status: presentations.status })
+          .from(presentations)
+          .where(eq(presentations.id, p3.id)),
       ]);
       // p2 is still the earliest un-presented row in the category, so it stays
       // "to be presented"; p3 gets demoted back down since it comes after p2.

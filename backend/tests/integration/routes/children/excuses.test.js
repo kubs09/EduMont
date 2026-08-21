@@ -308,7 +308,10 @@ describe('children routes: excuses (integration)', () => {
       });
       track('childExcuses', res.body);
 
-      const [persisted] = await db.select().from(childExcuses).where(eq(childExcuses.id, res.body.id));
+      const [persisted] = await db
+        .select()
+        .from(childExcuses)
+        .where(eq(childExcuses.id, res.body.id));
       expect(persisted).toMatchObject({
         childId: child.id,
         parentId: parent.id,
@@ -523,7 +526,10 @@ describe('children routes: excuses (integration)', () => {
         reason: updatedFields.reason,
       });
 
-      const [persisted] = await db.select().from(childExcuses).where(eq(childExcuses.id, excuse.id));
+      const [persisted] = await db
+        .select()
+        .from(childExcuses)
+        .where(eq(childExcuses.id, excuse.id));
       expect(persisted).toMatchObject({
         dateFrom: updatedFields.date_from,
         dateTo: updatedFields.date_to,

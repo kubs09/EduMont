@@ -50,9 +50,7 @@ describe('POST /api/forgot-password', () => {
     );
     dbMock.update.mockReturnValueOnce(makeChain(undefined));
 
-    const res = await request(app)
-      .post('/api/forgot-password')
-      .send({ email: 'user@example.com' });
+    const res = await request(app).post('/api/forgot-password').send({ email: 'user@example.com' });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ success: true });

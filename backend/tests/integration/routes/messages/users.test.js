@@ -54,7 +54,7 @@ describe('GET /api/messages/users (integration)', () => {
     expect(ids).not.toContain(admin.id);
   });
 
-  test('teacher sees all admins, all other teachers, and parents of children in the teacher\'s classes', async () => {
+  test("teacher sees all admins, all other teachers, and parents of children in the teacher's classes", async () => {
     const teacher = track('users', await createTestUser('teacher'));
     const testClass = track('classes', await createTestClass());
     track('classTeachers', await linkTeacher(testClass.id, teacher.id));

@@ -125,7 +125,9 @@ describe('POST /api/classes (integration)', () => {
       });
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('teacher is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('teacher is already assigned'),
+    });
 
     const orphans = await db.select().from(classes).where(eq(classes.name, uniqueName));
     expect(orphans).toHaveLength(0);

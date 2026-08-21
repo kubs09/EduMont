@@ -365,8 +365,11 @@ describe('presentations status/reorder routes', () => {
       dbMock.select.mockReturnValueOnce(
         makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2 }])
       );
-      const { chain: adjacentChain, getWhere: getAdjacentWhere, getOrderBy: getAdjacentOrderBy } =
-        makeAdjacentRowChain([{ id: 88 }]); // adjacent sibling found
+      const {
+        chain: adjacentChain,
+        getWhere: getAdjacentWhere,
+        getOrderBy: getAdjacentOrderBy,
+      } = makeAdjacentRowChain([{ id: 88 }]); // adjacent sibling found
       tx.select.mockReturnValueOnce(adjacentChain);
 
       // Hand-built update chain that captures the set()/where() arguments for
@@ -412,14 +415,10 @@ describe('presentations status/reorder routes', () => {
       expect(tx.update).toHaveBeenCalledTimes(2);
       // Moving up: the target presentation (id 1, currently at order 2) takes
       // the adjacent sibling's slot (order 1)...
-      expect(updateSetCalls[0]).toEqual(
-        expect.objectContaining({ displayOrder: 1, updatedBy: 1 })
-      );
+      expect(updateSetCalls[0]).toEqual(expect.objectContaining({ displayOrder: 1, updatedBy: 1 }));
       expect(updateWhereCalls[0]).toEqual(eq(presentations.id, 1));
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
-      expect(updateSetCalls[1]).toEqual(
-        expect.objectContaining({ displayOrder: 2, updatedBy: 1 })
-      );
+      expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
     });
 
@@ -428,8 +427,11 @@ describe('presentations status/reorder routes', () => {
       dbMock.select.mockReturnValueOnce(
         makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2 }])
       );
-      const { chain: adjacentChain, getWhere: getAdjacentWhere, getOrderBy: getAdjacentOrderBy } =
-        makeAdjacentRowChain([{ id: 88 }]); // adjacent sibling found
+      const {
+        chain: adjacentChain,
+        getWhere: getAdjacentWhere,
+        getOrderBy: getAdjacentOrderBy,
+      } = makeAdjacentRowChain([{ id: 88 }]); // adjacent sibling found
       tx.select.mockReturnValueOnce(adjacentChain);
 
       // Hand-built update chain that captures the set()/where() arguments for
@@ -474,14 +476,10 @@ describe('presentations status/reorder routes', () => {
       expect(tx.update).toHaveBeenCalledTimes(2);
       // Moving down: the target presentation (id 1, currently at order 2)
       // takes the adjacent sibling's slot (order 3)...
-      expect(updateSetCalls[0]).toEqual(
-        expect.objectContaining({ displayOrder: 3, updatedBy: 1 })
-      );
+      expect(updateSetCalls[0]).toEqual(expect.objectContaining({ displayOrder: 3, updatedBy: 1 }));
       expect(updateWhereCalls[0]).toEqual(eq(presentations.id, 1));
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
-      expect(updateSetCalls[1]).toEqual(
-        expect.objectContaining({ displayOrder: 2, updatedBy: 1 })
-      );
+      expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
     });
 

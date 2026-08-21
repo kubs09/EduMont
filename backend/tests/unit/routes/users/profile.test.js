@@ -134,7 +134,12 @@ describe('PUT /api/users/:id', () => {
     const res = await request(app)
       .put('/api/users/1')
       .set('Authorization', authHeader({ id: 1, role: 'parent' }))
-      .send({ firstname: 'Jane', surname: 'Doe', email: 'jane@example.com', phone: '555-123-4567' });
+      .send({
+        firstname: 'Jane',
+        surname: 'Doe',
+        email: 'jane@example.com',
+        phone: '555-123-4567',
+      });
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({

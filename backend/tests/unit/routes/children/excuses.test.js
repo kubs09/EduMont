@@ -500,7 +500,7 @@ describe('children routes: excuses', () => {
       expect(dbMock.delete).not.toHaveBeenCalled();
     });
 
-    test("parent: 403 when the excuse belongs to another parent", async () => {
+    test('parent: 403 when the excuse belongs to another parent', async () => {
       dbMock.select
         .mockReturnValueOnce(makeChain([{ id: 1, child_id: 1, parent_id: 8 }]))
         .mockReturnValueOnce(makeChain([{ id: 1 }]));

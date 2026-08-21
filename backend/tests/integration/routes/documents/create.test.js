@@ -95,11 +95,15 @@ describe('POST /api/documents (integration)', () => {
       .send({ title: 'Report Card', file_url: 'https://x/report.pdf', child_id: child.id });
 
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ title: 'Report Card', childId: child.id, createdBy: parent.id });
+    expect(res.body).toMatchObject({
+      title: 'Report Card',
+      childId: child.id,
+      createdBy: parent.id,
+    });
     track('documents', res.body);
   });
 
-  test("201 when a teacher with an assistant role creates a document for their class", async () => {
+  test('201 when a teacher with an assistant role creates a document for their class', async () => {
     const teacher = track('users', await createTestUser('teacher'));
     const testClass = track('classes', await createTestClass());
     track('classTeachers', await linkTeacher(testClass.id, teacher.id, 'assistant'));

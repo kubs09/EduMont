@@ -124,7 +124,7 @@ describe('DELETE /api/documents/:id (integration)', () => {
     expect(remaining).toHaveLength(0);
   });
 
-  test("200 and the row is still deleted even when the mocked storage .remove() call errors", async () => {
+  test('200 and the row is still deleted even when the mocked storage .remove() call errors', async () => {
     const admin = track('users', await createTestUser('admin'));
     const child = track('children', await createTestChild());
     const fileUrl =

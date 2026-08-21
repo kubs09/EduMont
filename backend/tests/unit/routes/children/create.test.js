@@ -156,9 +156,7 @@ describe('POST /api/children', () => {
   test('400 invalidParentIds when a parent id does not resolve to a parent user', async () => {
     const tx = makeTxMock();
     tx.insert.mockReturnValueOnce(makeChain([{ id: 10 }])).mockReturnValueOnce(makeChain([]));
-    tx.select
-      .mockReturnValueOnce(makeChain([{ id: 3 }]))
-      .mockReturnValueOnce(makeChain([]));
+    tx.select.mockReturnValueOnce(makeChain([{ id: 3 }])).mockReturnValueOnce(makeChain([]));
     dbMock.transaction.mockImplementation((cb) => cb(tx));
 
     const res = await request(app)
