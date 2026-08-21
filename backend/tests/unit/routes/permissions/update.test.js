@@ -21,7 +21,12 @@ const { default: app } = await import('#backend/server.js');
 
 const authHeader = (user) => `Bearer ${signTestToken(user)}`;
 
-const makeTxMock = () => ({ select: jest.fn(), update: jest.fn(), delete: jest.fn(), insert: jest.fn() });
+const makeTxMock = () => ({
+  select: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  insert: jest.fn(),
+});
 
 describe('POST /api/permissions/accept', () => {
   beforeEach(() => {
@@ -68,7 +73,9 @@ describe('POST /api/permissions/accept', () => {
       .send({ class_id: 5 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: 'You do not have permission to approve requests for this class' });
+    expect(res.body).toEqual({
+      error: 'You do not have permission to approve requests for this class',
+    });
   });
 
   test('404 when there is no pending permission request for the class', async () => {
@@ -195,7 +202,9 @@ describe('POST /api/permissions/deny', () => {
       .send({ class_id: 5 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: 'You do not have permission to deny requests for this class' });
+    expect(res.body).toEqual({
+      error: 'You do not have permission to deny requests for this class',
+    });
   });
 
   test('404 when there is no pending permission request for the class', async () => {

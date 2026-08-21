@@ -36,7 +36,7 @@ export const login = {
   validation: {
     emailRequired: common.templates.validation.required(
       { cs: 'Emailová adresa', en: 'Email address' },
-      'fem',
+      'fem'
     ),
     passwordRequired: {
       cs: 'Heslo je povinné',
@@ -45,7 +45,7 @@ export const login = {
     invalidEmail: common.templates.validation.invalidEmail,
     newPasswordLength: common.templates.validation.minLength(
       { cs: 'Nové heslo', en: 'New password' },
-      8,
+      8
     ),
     passwordUppercase: {
       cs: 'Heslo musí obsahovat alespoň jedno velké písmeno',

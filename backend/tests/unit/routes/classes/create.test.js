@@ -111,15 +111,15 @@ describe('POST /api/classes', () => {
       .send(validClass);
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('teacher is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('teacher is already assigned'),
+    });
   });
 
   test('400 when the chosen assistant is already assigned to another class', async () => {
     const tx = makeCreateTxMock();
     tx.insert.mockReturnValueOnce(makeChain([{ id: 10 }]));
-    tx.select
-      .mockReturnValueOnce(makeChain([]))
-      .mockReturnValueOnce(makeChain([{ classId: 3 }]));
+    tx.select.mockReturnValueOnce(makeChain([])).mockReturnValueOnce(makeChain([{ classId: 3 }]));
     dbMock.transaction.mockImplementation((cb) => cb(tx));
 
     const res = await request(app)
@@ -128,7 +128,9 @@ describe('POST /api/classes', () => {
       .send({ ...validClass, assistantId: 8 });
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('assistant is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('assistant is already assigned'),
+    });
   });
 
   test('201 on success without an assistant', async () => {

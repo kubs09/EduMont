@@ -20,7 +20,9 @@ jest.unstable_mockModule('#backend/config/mail.js', () => ({
 
 const { default: app } = await import('#backend/server.js');
 const { default: pool, db } = await import('#backend/config/database.js');
-const { children, childParents, classTeachers, messages, users } = await import('#backend/db/schema.js');
+const { children, childParents, classTeachers, messages, users } = await import(
+  '#backend/db/schema.js'
+);
 
 const authHeader = (user) => `Bearer ${signTestToken(user)}`;
 
@@ -109,10 +111,16 @@ describe('DELETE /api/users/:id (integration)', () => {
       .where(eq(childParents.parentId, parent.id));
     expect(remainingChildParents).toHaveLength(0);
 
-    const [remainingOrphan] = await db.select().from(children).where(eq(children.id, orphanedChild.id));
+    const [remainingOrphan] = await db
+      .select()
+      .from(children)
+      .where(eq(children.id, orphanedChild.id));
     expect(remainingOrphan).toBeUndefined();
 
-    const [remainingKeptChild] = await db.select().from(children).where(eq(children.id, keptChild.id));
+    const [remainingKeptChild] = await db
+      .select()
+      .from(children)
+      .where(eq(children.id, keptChild.id));
     expect(remainingKeptChild).toBeDefined();
 
     const remainingMessages = await db

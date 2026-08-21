@@ -64,7 +64,11 @@ describe('POST /api/presentations (integration)', () => {
       .select()
       .from(presentations)
       .where(eq(presentations.id, res.body.id));
-    expect(persisted).toMatchObject({ childId: child.id, classId: testClass.id, name: 'Pouring Exercise' });
+    expect(persisted).toMatchObject({
+      childId: child.id,
+      classId: testClass.id,
+      name: 'Pouring Exercise',
+    });
   });
 
   test('400 when the child is not assigned to the class', async () => {

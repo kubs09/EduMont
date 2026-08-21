@@ -3,7 +3,6 @@ import { existsSync, mkdirSync } from 'fs';
 import { URL, fileURLToPath, pathToFileURL } from 'url';
 import process from 'process';
 import console from 'console';
-import express from 'express';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,31 +38,15 @@ console.log('Database configuration:', {
   vercel: process.env.VERCEL,
 });
 
-// Set up module alias resolution for the backend
-import moduleAlias, { addAliases } from 'module-alias';
-
 // Get the correct backend path
 const backendPath = join(__dirname, '..', 'backend');
-
-// Add aliases for backend modules - use absolute paths
-addAliases({
-  '@config': join(backendPath, 'config'),
-  '@db': join(backendPath, 'db'),
-  '@routes': join(backendPath, 'routes'),
-  '@middleware': join(backendPath, 'middleware'),
-  '@utils': join(backendPath, 'utils'),
-});
-
-// Register the aliases
-moduleAlias();
 
 let app;
 try {
   const serverModule = await import(pathToFileURL(join(backendPath, 'server.js')).href);
   app = serverModule.default ?? serverModule;
 } catch (error) {
-  app = express();
-  app.use((req, res) => {
+  app = (req, res) => {
     const isDev = process.env.NODE_ENV === 'development';
     res.status(500).json({
       error: 'Server initialization failed',
@@ -77,7 +60,7 @@ try {
           }
         : undefined,
     });
-  });
+  };
 }
 
 // Reconstructs the Express-relative path (e.g. "/api/children/5") from a

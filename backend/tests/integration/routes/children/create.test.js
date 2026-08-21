@@ -2,7 +2,11 @@ import { jest, describe, afterEach, afterAll, test, expect } from '@jest/globals
 import request from 'supertest';
 import { and, eq } from 'drizzle-orm';
 import { signTestToken } from '../../../helpers/auth.js';
-import { createTestUser, createTestClass, createCleanupTracker } from '../../../helpers/fixtures.js';
+import {
+  createTestUser,
+  createTestClass,
+  createCleanupTracker,
+} from '../../../helpers/fixtures.js';
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
@@ -33,11 +37,13 @@ describe('POST /api/children (integration)', () => {
   });
 
   test('401 without a token', async () => {
-    const res = await request(app).post('/api/children').send({
-      firstname: 'Ada',
-      surname: 'Lovelace',
-      date_of_birth: dateOfBirthForAge(4),
-    });
+    const res = await request(app)
+      .post('/api/children')
+      .send({
+        firstname: 'Ada',
+        surname: 'Lovelace',
+        date_of_birth: dateOfBirthForAge(4),
+      });
 
     expect(res.status).toBe(401);
   });

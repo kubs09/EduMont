@@ -21,9 +21,20 @@ const { default: app } = await import('#backend/server.js');
 
 const authHeader = (user) => `Bearer ${signTestToken(user)}`;
 
-const makeTxMock = () => ({ update: jest.fn(), select: jest.fn(), delete: jest.fn(), insert: jest.fn() });
+const makeTxMock = () => ({
+  update: jest.fn(),
+  select: jest.fn(),
+  delete: jest.fn(),
+  insert: jest.fn(),
+});
 
-const validBody = { name: 'Sunflowers', description: 'A class', teacherId: 5, min_age: 2, max_age: 6 };
+const validBody = {
+  name: 'Sunflowers',
+  description: 'A class',
+  teacherId: 5,
+  min_age: 2,
+  max_age: 6,
+};
 
 describe('PUT /api/classes/:id', () => {
   beforeEach(() => {
@@ -162,15 +173,15 @@ describe('PUT /api/classes/:id', () => {
       .send(validBody);
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('teacher is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('teacher is already assigned'),
+    });
   });
 
   test('400 when the new assistant is already assigned to a different class', async () => {
     const tx = makeTxMock();
     tx.update.mockReturnValueOnce(makeChain([{ id: 1 }]));
-    tx.select
-      .mockReturnValueOnce(makeChain([]))
-      .mockReturnValueOnce(makeChain([{ classId: 3 }]));
+    tx.select.mockReturnValueOnce(makeChain([])).mockReturnValueOnce(makeChain([{ classId: 3 }]));
     dbMock.transaction.mockImplementation((cb) => cb(tx));
 
     const res = await request(app)
@@ -179,7 +190,9 @@ describe('PUT /api/classes/:id', () => {
       .send({ ...validBody, assistantId: 8 });
 
     expect(res.status).toBe(400);
-    expect(res.body).toMatchObject({ error: expect.stringContaining('assistant is already assigned') });
+    expect(res.body).toMatchObject({
+      error: expect.stringContaining('assistant is already assigned'),
+    });
   });
 
   test('200 sets permission_requested true for teacher and assistant that both changed', async () => {

@@ -65,8 +65,7 @@ const ForgotPasswordPage = () => {
       setSubmitted(false);
       toast({
         title: texts.login.errors.forgotPasswordFailed[language],
-        description:
-          error instanceof Error ? error.message : texts.common.unknownError[language],
+        description: error instanceof Error ? error.message : texts.common.unknownError[language],
         status: 'error',
         duration: 5000,
         isClosable: true,

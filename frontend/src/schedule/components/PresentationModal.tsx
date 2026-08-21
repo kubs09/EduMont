@@ -202,7 +202,9 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
               <Select
                 value={formData.child_id}
                 onChange={(e) => handleChange('child_id', e.target.value)}
-                placeholder={`${texts.common.select[language]} ${texts.schedule.child[language].toLowerCase()}`}
+                placeholder={`${texts.common.select[language]} ${texts.schedule.child[
+                  language
+                ].toLowerCase()}`}
               >
                 {childrenData.map((child: Child) => (
                   <option key={child.id} value={child.id}>
@@ -245,8 +247,12 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
                 <option value="to be presented">
                   {texts.schedule.status.options.toBePresented[language]}
                 </option>
-                <option value="presented">{texts.schedule.status.options.presented[language]}</option>
-                <option value="practiced">{texts.schedule.status.options.practiced[language]}</option>
+                <option value="presented">
+                  {texts.schedule.status.options.presented[language]}
+                </option>
+                <option value="practiced">
+                  {texts.schedule.status.options.practiced[language]}
+                </option>
                 <option value="mastered">{texts.schedule.status.options.mastered[language]}</option>
               </Select>
               <FormErrorMessage>{errors.status}</FormErrorMessage>

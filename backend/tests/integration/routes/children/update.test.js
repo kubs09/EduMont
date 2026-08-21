@@ -82,7 +82,12 @@ describe('PUT /api/children/:id (integration)', () => {
       .send({ firstname: 'Grace', surname: 'Hopper', notes: 'Loves puzzles' });
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ id: child.id, firstname: 'Grace', surname: 'Hopper', notes: 'Loves puzzles' });
+    expect(res.body).toMatchObject({
+      id: child.id,
+      firstname: 'Grace',
+      surname: 'Hopper',
+      notes: 'Loves puzzles',
+    });
   });
 
   test('reassigns class and updates classChildren when the child has no existing presentations', async () => {
@@ -110,7 +115,10 @@ describe('PUT /api/children/:id (integration)', () => {
     const newClass = track('classes', await createTestClass({ minAge: 0, maxAge: 10 }));
     const child = track('children', await createTestChild({ dateOfBirth: dateOfBirthForAge(4) }));
     track('classChildren', await linkChildToClass(child.id, oldClass.id));
-    const presentation = track('presentations', await createTestPresentation(child.id, oldClass.id));
+    const presentation = track(
+      'presentations',
+      await createTestPresentation(child.id, oldClass.id)
+    );
 
     const res = await request(app)
       .put(`/api/children/${child.id}`)
@@ -169,9 +177,7 @@ describe('PUT /api/children/:id (integration)', () => {
       .send({ firstname: child.firstname, surname: child.surname, parent_ids: [newParent.id] });
 
     expect(res.status).toBe(200);
-    expect(res.body.parents).toEqual([
-      expect.objectContaining({ id: newParent.id }),
-    ]);
+    expect(res.body.parents).toEqual([expect.objectContaining({ id: newParent.id })]);
 
     const oldLink = await db
       .select()

@@ -1,5 +1,10 @@
 import api from '../apiConfig';
-import { Document, CreateDocumentData, UpdateDocumentData, DocumentFilters } from '@frontend/types/document';
+import {
+  Document,
+  CreateDocumentData,
+  UpdateDocumentData,
+  DocumentFilters,
+} from '@frontend/types/document';
 
 const buildQueryString = (filters?: DocumentFilters) => {
   const params = new URLSearchParams();

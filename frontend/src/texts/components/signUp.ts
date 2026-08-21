@@ -26,13 +26,10 @@ export const signUp = {
     },
   },
   validation: {
-    firstNameMinLength: common.templates.validation.minLength(
-      { cs: 'Jméno', en: 'First name' },
-      2,
-    ),
+    firstNameMinLength: common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2),
     lastNameMinLength: common.templates.validation.minLength(
       { cs: 'Příjmení', en: 'Last name' },
-      2,
+      2
     ),
     passwordLength: common.templates.validation.minLength({ cs: 'Heslo', en: 'Password' }, 8),
     passwordsMatch: {

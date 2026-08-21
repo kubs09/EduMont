@@ -57,17 +57,25 @@ describe('children routes: GET (integration)', () => {
       track('classChildren', await linkChildToClass(childB.id, classB.id));
       track('classTeachers', await linkTeacher(classA.id, teacher.id));
 
-      const adminRes = await request(app).get('/api/children').set('Authorization', authHeader(admin));
+      const adminRes = await request(app)
+        .get('/api/children')
+        .set('Authorization', authHeader(admin));
       expect(adminRes.status).toBe(200);
-      expect(adminRes.body.map((c) => c.id)).toEqual(expect.arrayContaining([childA.id, childB.id]));
+      expect(adminRes.body.map((c) => c.id)).toEqual(
+        expect.arrayContaining([childA.id, childB.id])
+      );
 
-      const parentRes = await request(app).get('/api/children').set('Authorization', authHeader(parent));
+      const parentRes = await request(app)
+        .get('/api/children')
+        .set('Authorization', authHeader(parent));
       expect(parentRes.status).toBe(200);
       const parentIds = parentRes.body.map((c) => c.id);
       expect(parentIds).toContain(childA.id);
       expect(parentIds).not.toContain(childB.id);
 
-      const teacherRes = await request(app).get('/api/children').set('Authorization', authHeader(teacher));
+      const teacherRes = await request(app)
+        .get('/api/children')
+        .set('Authorization', authHeader(teacher));
       expect(teacherRes.status).toBe(200);
       const teacherIds = teacherRes.body.map((c) => c.id);
       expect(teacherIds).toContain(childA.id);
@@ -127,7 +135,9 @@ describe('children routes: GET (integration)', () => {
         .set('Authorization', authHeader(admin));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: testClass.id, name: testClass.name })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: testClass.id, name: testClass.name }),
+      ]);
     });
   });
 
@@ -187,15 +197,23 @@ describe('children routes: GET (integration)', () => {
       const testClass = track('classes', await createTestClass());
       const child = track('children', await createTestChild());
       track('classChildren', await linkChildToClass(child.id, testClass.id));
-      track('presentationPermissions', await grantPresentationPermission(admin.id, testClass.id, true));
-      const presentation = track('presentations', await createTestPresentation(child.id, testClass.id));
+      track(
+        'presentationPermissions',
+        await grantPresentationPermission(admin.id, testClass.id, true)
+      );
+      const presentation = track(
+        'presentations',
+        await createTestPresentation(child.id, testClass.id)
+      );
 
       const res = await request(app)
         .get(`/api/children/${child.id}/presentations`)
         .set('Authorization', authHeader(admin));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: presentation.id, name: presentation.name })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: presentation.id, name: presentation.name }),
+      ]);
     });
 
     test('200 for an authorized teacher', async () => {
@@ -204,14 +222,19 @@ describe('children routes: GET (integration)', () => {
       const child = track('children', await createTestChild());
       track('classChildren', await linkChildToClass(child.id, testClass.id));
       track('classTeachers', await linkTeacher(testClass.id, teacher.id));
-      const presentation = track('presentations', await createTestPresentation(child.id, testClass.id));
+      const presentation = track(
+        'presentations',
+        await createTestPresentation(child.id, testClass.id)
+      );
 
       const res = await request(app)
         .get(`/api/children/${child.id}/presentations`)
         .set('Authorization', authHeader(teacher));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: presentation.id, name: presentation.name })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: presentation.id, name: presentation.name }),
+      ]);
     });
 
     test('200 for an authorized parent', async () => {
@@ -220,14 +243,19 @@ describe('children routes: GET (integration)', () => {
       const child = track('children', await createTestChild());
       track('classChildren', await linkChildToClass(child.id, testClass.id));
       track('childParents', await linkParent(child.id, parent.id));
-      const presentation = track('presentations', await createTestPresentation(child.id, testClass.id));
+      const presentation = track(
+        'presentations',
+        await createTestPresentation(child.id, testClass.id)
+      );
 
       const res = await request(app)
         .get(`/api/children/${child.id}/presentations`)
         .set('Authorization', authHeader(parent));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([expect.objectContaining({ id: presentation.id, name: presentation.name })]);
+      expect(res.body).toEqual([
+        expect.objectContaining({ id: presentation.id, name: presentation.name }),
+      ]);
     });
   });
 });

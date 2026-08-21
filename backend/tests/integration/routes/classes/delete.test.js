@@ -53,9 +53,7 @@ describe('DELETE /api/classes/:id (integration)', () => {
   test('400 for a non-integer/non-positive :id', async () => {
     const admin = track('users', await createTestUser('admin'));
 
-    const res = await request(app)
-      .delete('/api/classes/0')
-      .set('Authorization', authHeader(admin));
+    const res = await request(app).delete('/api/classes/0').set('Authorization', authHeader(admin));
 
     expect(res.status).toBe(400);
   });

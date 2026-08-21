@@ -64,7 +64,7 @@ describe('messages routes: get', () => {
   });
 
   describe('GET /api/messages/:id', () => {
-    test("404 when result.rows is empty", async () => {
+    test('404 when result.rows is empty', async () => {
       dbMock.execute.mockResolvedValueOnce({ rows: [] });
 
       const res = await request(app)

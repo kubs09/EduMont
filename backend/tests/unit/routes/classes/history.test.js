@@ -73,7 +73,9 @@ describe('classes routes: history', () => {
 
     test('200 for a parent with a child in the class', async () => {
       const rows = [{ id: 1, class_id: 1, date: '2026-01-10', notes: 'Note' }];
-      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(makeChain(rows));
+      dbMock.select
+        .mockReturnValueOnce(makeChain([{ id: 1 }]))
+        .mockReturnValueOnce(makeChain(rows));
 
       const res = await request(app)
         .get('/api/classes/1/history')

@@ -40,10 +40,18 @@ describe('profile routes (integration)', () => {
         .send({ firstname: 'Updated', surname: 'Name', email: user.email, phone: '555-123-4567' });
 
       expect(res.status).toBe(200);
-      expect(res.body).toMatchObject({ firstname: 'Updated', surname: 'Name', phone: '555-123-4567' });
+      expect(res.body).toMatchObject({
+        firstname: 'Updated',
+        surname: 'Name',
+        phone: '555-123-4567',
+      });
 
       const [persisted] = await db.select().from(users).where(eq(users.id, user.id));
-      expect(persisted).toMatchObject({ firstname: 'Updated', surname: 'Name', phone: '555-123-4567' });
+      expect(persisted).toMatchObject({
+        firstname: 'Updated',
+        surname: 'Name',
+        phone: '555-123-4567',
+      });
     });
 
     test('400 for a duplicate email against a seeded second user', async () => {
@@ -53,7 +61,12 @@ describe('profile routes (integration)', () => {
       const res = await request(app)
         .put(`/api/users/${user.id}`)
         .set('Authorization', authHeader(user))
-        .send({ firstname: user.firstname, surname: user.surname, email: otherUser.email, phone: '' });
+        .send({
+          firstname: user.firstname,
+          surname: user.surname,
+          email: otherUser.email,
+          phone: '',
+        });
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ error: 'Email already in use' });

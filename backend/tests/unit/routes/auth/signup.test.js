@@ -94,7 +94,13 @@ describe('POST /api/signup', () => {
       select: jest.fn().mockReturnValueOnce(makeChain([])),
       insert: jest.fn().mockReturnValueOnce(
         makeChain([
-          { id: 7, email: 'newuser@example.com', firstname: 'Ada', surname: 'Lovelace', role: 'parent' },
+          {
+            id: 7,
+            email: 'newuser@example.com',
+            firstname: 'Ada',
+            surname: 'Lovelace',
+            role: 'parent',
+          },
         ])
       ),
     };

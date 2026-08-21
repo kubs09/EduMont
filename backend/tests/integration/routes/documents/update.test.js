@@ -121,7 +121,11 @@ describe('PUT /api/documents/:id (integration)', () => {
       .send({ ...validUpdate, child_id: child.id });
 
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ id: document.id, title: validUpdate.title, childId: child.id });
+    expect(res.body).toMatchObject({
+      id: document.id,
+      title: validUpdate.title,
+      childId: child.id,
+    });
 
     const [persisted] = await db.select().from(documents).where(eq(documents.id, document.id));
     expect(persisted).toMatchObject({ title: validUpdate.title });

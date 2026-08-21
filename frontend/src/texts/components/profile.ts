@@ -42,15 +42,15 @@ export const profile = {
   validation: {
     currentPasswordRequired: common.templates.validation.required(
       { cs: 'Současné heslo', en: 'Current password' },
-      'neut',
+      'neut'
     ),
     newPasswordRequired: common.templates.validation.required(
       { cs: 'Nové heslo', en: 'New password' },
-      'neut',
+      'neut'
     ),
     newPasswordLength: common.templates.validation.minLength(
       { cs: 'Nové heslo', en: 'New password' },
-      8,
+      8
     ),
     confirmPasswordRequired: {
       cs: 'Potvrďte prosím nové heslo',
@@ -62,20 +62,17 @@ export const profile = {
     },
     firstNameRequired: common.templates.validation.required(
       { cs: 'Jméno', en: 'First name' },
-      'neut',
+      'neut'
     ),
     firstNameLength: common.templates.validation.minLength({ cs: 'Jméno', en: 'First name' }, 2),
     lastNameRequired: common.templates.validation.required(
       { cs: 'Příjmení', en: 'Last name' },
-      'neut',
+      'neut'
     ),
-    lastNameLength: common.templates.validation.minLength(
-      { cs: 'Příjmení', en: 'Last name' },
-      2,
-    ),
+    lastNameLength: common.templates.validation.minLength({ cs: 'Příjmení', en: 'Last name' }, 2),
     emailRequired: common.templates.validation.required(
       { cs: 'Emailová adresa', en: 'Email address' },
-      'fem',
+      'fem'
     ),
     invalidEmail: common.templates.validation.invalidEmail,
     invalidPhone: {

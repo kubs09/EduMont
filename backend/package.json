@@ -26,7 +26,6 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.36.0",
-    "edumont-react": "file:..",
     "express": "^4.21.2",
     "js": "^0.1.0",
     "jsonwebtoken": "^9.0.2",
@@ -51,5 +50,8 @@
   },
   "imports": {
     "#backend/*": "./*"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

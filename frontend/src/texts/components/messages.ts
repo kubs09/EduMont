@@ -42,11 +42,11 @@ export const messages = {
     subjectMaxLength: common.templates.validation.maxLength({ cs: 'Předmět', en: 'Subject' }, 255),
     content: common.templates.validation.required(
       { cs: 'Obsah zprávy', en: 'Message content' },
-      'masc',
+      'masc'
     ),
     contentMaxLength: common.templates.validation.maxLength(
       { cs: 'Obsah zprávy', en: 'Message content' },
-      5000,
+      5000
     ),
   },
   title: {

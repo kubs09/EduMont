@@ -49,7 +49,9 @@ const InfoTab: React.FC<InfoTabProps> = ({
     (group) => group.minAge === classData.min_age && group.maxAge === classData.max_age
   );
   const ageGroupsLabel = ageGroup
-    ? `${texts.classes.ageGroups[ageGroup.key][language]} - ${classData.min_age} - ${classData.max_age} ${texts.classes.years[language]}`
+    ? `${texts.classes.ageGroups[ageGroup.key][language]} - ${classData.min_age} - ${
+        classData.max_age
+      } ${texts.classes.years[language]}`
     : `${classData.min_age} - ${classData.max_age}`;
 
   const requestingAdmin = pendingPermissions.length > 0 ? pendingPermissions[0] : null;

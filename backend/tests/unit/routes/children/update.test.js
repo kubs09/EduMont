@@ -23,7 +23,12 @@ const authHeader = (user) => `Bearer ${signTestToken(user)}`;
 
 const validUpdate = { firstname: 'Ada', surname: 'Lovelace' };
 
-const makeTxMock = () => ({ update: jest.fn(), select: jest.fn(), insert: jest.fn(), delete: jest.fn() });
+const makeTxMock = () => ({
+  update: jest.fn(),
+  select: jest.fn(),
+  insert: jest.fn(),
+  delete: jest.fn(),
+});
 
 describe('PUT /api/children/:id', () => {
   beforeEach(() => {
@@ -90,9 +95,7 @@ describe('PUT /api/children/:id', () => {
   });
 
   test("403 when a parent isn't linked to the child", async () => {
-    dbMock.select
-      .mockReturnValueOnce(makeChain([{ id: 1 }]))
-      .mockReturnValueOnce(makeChain([]));
+    dbMock.select.mockReturnValueOnce(makeChain([{ id: 1 }])).mockReturnValueOnce(makeChain([]));
 
     const res = await request(app)
       .put('/api/children/1')

@@ -52,7 +52,9 @@ describe('classes routes: GET (integration)', () => {
       track('childParents', await linkParent(childA.id, parent.id));
       track('classTeachers', await linkTeacher(classA.id, teacher.id));
 
-      const adminRes = await request(app).get('/api/classes').set('Authorization', authHeader(admin));
+      const adminRes = await request(app)
+        .get('/api/classes')
+        .set('Authorization', authHeader(admin));
       expect(adminRes.status).toBe(200);
       expect(adminRes.body.map((c) => c.id)).toEqual(
         expect.arrayContaining([classA.id, classB.id])
