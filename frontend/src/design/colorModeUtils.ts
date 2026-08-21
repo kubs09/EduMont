@@ -1,4 +1,4 @@
-import { useColorModeValue } from '@chakra-ui/react';
+import { useColorModeValue } from "../components/ui/color-mode";
 
 // Custom hook for commonly used color mode values
 export const useAppColors = () => {

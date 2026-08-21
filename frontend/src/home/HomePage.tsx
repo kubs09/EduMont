@@ -26,7 +26,7 @@ const HomePage = () => {
           </Text>
           <Button
             size="lg"
-            colorScheme="white"
+            colorPalette="white"
             variant="outline"
             onClick={() => navigate(ROUTES.LOGIN)}
           >
@@ -38,7 +38,7 @@ const HomePage = () => {
       {/* Features Section */}
       <Box bg={bgColor} py={20}>
         <Container maxW="container.xl">
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
+          <SimpleGrid columns={{ base: 1, md: 3 }} gap={10}>
             <FeatureCard
               icon={FaGraduationCap}
               title={texts.home.features.qualityEducation.title[language]}
@@ -76,7 +76,7 @@ const FeatureCard = ({ icon, title, text }: { icon: IconType; title: string; tex
   const { cardBg } = useHomePageColors();
 
   return (
-    <VStack p={8} bg={cardBg} borderRadius="lg" boxShadow="md" align="center" spacing={4}>
+    <VStack p={8} bg={cardBg} borderRadius="lg" boxShadow="md" align="center" gap={4}>
       <Box w={10} h={10} color="brand.primary.900">
         <Icon as={icon as React.ElementType} w={10} h={10} />
       </Box>

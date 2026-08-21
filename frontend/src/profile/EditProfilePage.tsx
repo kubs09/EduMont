@@ -1,19 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Card,
-  CardBody,
-  Heading,
-  Stack,
-  Text,
-  Button,
-  Input,
-  FormControl,
-  FormLabel,
-  ButtonGroup,
-  FormErrorMessage,
-} from '@chakra-ui/react';
+import { Box, Card, Heading, Stack, Text, Button, Input, ButtonGroup, Field } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
@@ -88,52 +75,52 @@ const EditProfilePage = () => {
   return (
     <Box maxW="container.md" mx="auto" py={8} px={4}>
       <Heading mb={6}>{texts.profile.edit[language]}</Heading>
-      <Card>
-        <CardBody>
-          <Stack spacing={4}>
-            <FormControl isRequired isInvalid={!!errors.firstname}>
-              <FormLabel>{texts.profile.firstName[language]}</FormLabel>
+      <Card.Root>
+        <Card.Body>
+          <Stack gap={4}>
+            <Field.Root required invalid={!!errors.firstname}>
+              <Field.Label>{texts.profile.firstName[language]}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 name="firstname"
                 value={formData.firstname}
                 onChange={handleChange}
               />
-              <FormErrorMessage>{errors.firstname}</FormErrorMessage>
-            </FormControl>
-            <FormControl isRequired isInvalid={!!errors.surname}>
-              <FormLabel>{texts.profile.lastName[language]}</FormLabel>
+              <Field.ErrorText>{errors.firstname}</Field.ErrorText>
+            </Field.Root>
+            <Field.Root required invalid={!!errors.surname}>
+              <Field.Label>{texts.profile.lastName[language]}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 name="surname"
                 value={formData.surname}
                 onChange={handleChange}
               />
-              <FormErrorMessage>{errors.surname}</FormErrorMessage>
-            </FormControl>
-            <FormControl isRequired isInvalid={!!errors.email}>
-              <FormLabel>{texts.profile.email[language]}</FormLabel>
+              <Field.ErrorText>{errors.surname}</Field.ErrorText>
+            </Field.Root>
+            <Field.Root required invalid={!!errors.email}>
+              <Field.Label>{texts.profile.email[language]}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
               />
-              <FormErrorMessage>{errors.email}</FormErrorMessage>
-            </FormControl>
-            <FormControl isInvalid={!!errors.phone}>
-              <FormLabel>{texts.profile.phone[language]}</FormLabel>
+              <Field.ErrorText>{errors.email}</Field.ErrorText>
+            </Field.Root>
+            <Field.Root invalid={!!errors.phone}>
+              <Field.Label>{texts.profile.phone[language]}</Field.Label>
               <Input
-                variant="filled"
+                variant="subtle"
                 name="phone"
                 value={formData.phone || ''}
                 onChange={handleChange}
               />
-              <FormErrorMessage>{errors.phone}</FormErrorMessage>
-            </FormControl>
-            <FormControl>
-              <FormLabel>{texts.profile.role[language]}</FormLabel>
+              <Field.ErrorText>{errors.phone}</Field.ErrorText>
+            </Field.Root>
+            <Field.Root>
+              <Field.Label>{texts.profile.role[language]}</Field.Label>
               <Text>
                 {
                   texts.userDashboard.table.roles[
@@ -141,8 +128,8 @@ const EditProfilePage = () => {
                   ][language]
                 }
               </Text>
-            </FormControl>
-            <ButtonGroup spacing={4}>
+            </Field.Root>
+            <ButtonGroup gap={4}>
               <Button variant="brand" onClick={handleSubmit}>
                 {texts.profile.save[language]}
               </Button>
@@ -151,8 +138,8 @@ const EditProfilePage = () => {
               </Button>
             </ButtonGroup>
           </Stack>
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
     </Box>
   );
 };

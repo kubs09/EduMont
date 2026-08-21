@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Card, CardHeader, CardBody, Heading, Button, HStack } from '@chakra-ui/react';
+import { Box, Card, Heading, Button, HStack } from '@chakra-ui/react';
 import UserTable from '../components/UserTable';
 import AddUserDialog from '../components/AddUserDialog';
 import api from '@frontend/services/apiConfig';
@@ -88,16 +88,16 @@ const UserDashboard: React.FC = () => {
 
   return (
     <Box p={6}>
-      <Card>
-        <CardHeader>
+      <Card.Root>
+        <Card.Header>
           <HStack justify="space-between">
             <Heading>{texts.userDashboard.title[language]}</Heading>
-            <Button colorScheme="blue" onClick={() => setIsAddUserOpen(true)}>
+            <Button colorPalette="blue" onClick={() => setIsAddUserOpen(true)}>
               {texts.userDashboard.addUserButton[language]}
             </Button>
           </HStack>
-        </CardHeader>
-        <CardBody>
+        </Card.Header>
+        <Card.Body>
           <SearchBar
             placeholder={texts.userDashboard.searchPlaceholder[language]}
             value={searchQuery}
@@ -109,8 +109,8 @@ const UserDashboard: React.FC = () => {
             error={error}
             onDelete={handleDeleteUser}
           />
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
       <AddUserDialog
         isOpen={isAddUserOpen}
         onClose={() => setIsAddUserOpen(false)}

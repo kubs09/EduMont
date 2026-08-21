@@ -1,18 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AxiosError } from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Flex,
-  Grid,
-  GridItem,
-  IconButton,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, Button, Card, Flex, Grid, GridItem, IconButton, Text, VStack } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -424,27 +413,17 @@ const ClassDetailPage = () => {
 
   return (
     <Box p={{ base: 2, md: 4 }}>
-      <Card>
-        <CardBody>
+      <Card.Root>
+        <Card.Body>
           <Flex align="center" mb={4} wrap="wrap" gap={3}>
             <Box display={{ base: 'block', md: 'none' }}>
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
-                icon={<FiChevronLeft />}
                 onClick={() => navigate(ROUTES.CLASSES)}
-                size="md"
-              />
+                size="md"><FiChevronLeft /></IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button
-                leftIcon={<FiChevronLeft />}
-                onClick={() => navigate(ROUTES.CLASSES)}
-                size="md"
-                px={4}
-                minW="auto"
-              >
-                {texts.classes.detail.backToList[language]}
-              </Button>
+              <Button onClick={() => navigate(ROUTES.CLASSES)} size="md" px={4} minW="auto"><FiChevronLeft />{texts.classes.detail.backToList[language]}</Button>
             </Box>
             <Text flex={1} textAlign="center" fontSize="2xl" fontWeight="bold">
               {classData.name}
@@ -452,15 +431,11 @@ const ClassDetailPage = () => {
             <Box display={{ base: 'block', md: 'none' }}>
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
-                icon={<FiChevronLeft />}
                 size="md"
-                visibility="hidden"
-              />
+                visibility="hidden"><FiChevronLeft /></IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button leftIcon={<FiChevronLeft />} size="md" px={4} minW="auto" visibility="hidden">
-                {texts.classes.detail.backToList[language]}
-              </Button>
+              <Button size="md" px={4} minW="auto" visibility="hidden"><FiChevronLeft />{texts.classes.detail.backToList[language]}</Button>
             </Box>
           </Flex>
           <Grid templateColumns={{ base: '1fr', lg: '240px 1fr' }} gap={6} alignItems="start">
@@ -473,7 +448,7 @@ const ClassDetailPage = () => {
               />
             </GridItem>
             <GridItem minW={0}>
-              <VStack align="stretch" spacing={6}>
+              <VStack align="stretch" gap={6}>
                 {sectionItems
                   .filter((item) => item.id === activeSectionId)
                   .map((item) => (
@@ -484,8 +459,8 @@ const ClassDetailPage = () => {
               </VStack>
             </GridItem>
           </Grid>
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
 
       {isAdmin && classData && (
         <>

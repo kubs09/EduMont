@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Button,
-} from '@chakra-ui/react';
+import { Button, Dialog, Portal } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
 import { useAppToast } from '@frontend/shared/hooks/useAppToast';
@@ -59,24 +51,38 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
   };
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {texts.children.documents.deleteConfirmation[language]}
-          </AlertDialogHeader>
-          <AlertDialogBody>{texts.children.documents.deleteMessage[language]}</AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} variant="secondary" onClick={onClose}>
-              {texts.common.cancel[language]}
-            </Button>
-            <Button variant="delete" onClick={handleDelete} ml={3} isLoading={isDeleting}>
-              {texts.common.delete[language]}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+    <Dialog.Root
+      open={isOpen}
+      initialFocusEl={() => cancelRef.current}
+      role='alertdialog'
+      onOpenChange={e => {
+        if (!e.open) {
+          onClose();
+        }
+      }}>
+      <Portal>
+
+        <Dialog.Backdrop>
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header fontSize="lg" fontWeight="bold">
+                {texts.children.documents.deleteConfirmation[language]}
+              </Dialog.Header>
+              <Dialog.Body>{texts.children.documents.deleteMessage[language]}</Dialog.Body>
+              <Dialog.Footer>
+                <Button ref={cancelRef} variant="secondary" onClick={onClose}>
+                  {texts.common.cancel[language]}
+                </Button>
+                <Button variant="delete" onClick={handleDelete} ml={3} loading={isDeleting}>
+                  {texts.common.delete[language]}
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Dialog.Backdrop>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

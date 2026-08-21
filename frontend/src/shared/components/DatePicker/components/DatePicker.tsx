@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Input,
-  InputGroup,
-  InputRightElement,
-  Button,
-  HStack,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
-  IconButton,
-} from '@chakra-ui/react';
+import { Input, InputGroup, Button, HStack, Popover, IconButton } from '@chakra-ui/react';
 import { FiCalendar } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { CustomDatePickerProps } from '@frontend/shared/components/DatePicker/utils/types';
@@ -105,8 +94,26 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
   };
 
   return (
-    <Popover isOpen={isOpen} onClose={onClose} closeOnBlur={false}>
-      <InputGroup maxW="200px">
+    <Popover.Root open={isOpen} closeOnInteractOutside={false} onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <InputGroup
+        maxW="200px"
+        endElement={
+          <Popover.Trigger asChild>
+            <IconButton
+              aria-label={texts.common.datePicker.openPicker[language]}
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              <FiCalendar />
+            </IconButton>
+          </Popover.Trigger>
+        }
+      >
         <Input
           value={getDisplayValue()}
           readOnly
@@ -116,35 +123,26 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
               : texts.common.datePicker.selectDate[language]
           }
         />
-        <InputRightElement>
-          <PopoverTrigger>
-            <IconButton
-              aria-label={texts.common.datePicker.openPicker[language]}
-              icon={<FiCalendar />}
-              size="sm"
-              variant="ghost"
-              onClick={() => setIsOpen(!isOpen)}
-            />
-          </PopoverTrigger>
-        </InputRightElement>
       </InputGroup>
-      <PopoverContent width="320px">
-        <PopoverBody p={3}>
-          {renderPicker()}
+      <Popover.Positioner>
+        <Popover.Content width="320px">
+          <Popover.Body p={3}>
+            {renderPicker()}
 
-          <HStack spacing={2} width="100%" mt={4}>
-            <Button size="sm" variant="outline" onClick={handleClear} flex={1}>
-              {texts.common.datePicker.clear[language]}
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleToday} flex={1}>
-              {viewType === 'month'
-                ? texts.common.datePicker.thisMonth[language]
-                : texts.common.datePicker.today[language]}
-            </Button>
-          </HStack>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+            <HStack gap={2} width="100%" mt={4}>
+              <Button size="sm" variant="outline" onClick={handleClear} flex={1}>
+                {texts.common.datePicker.clear[language]}
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleToday} flex={1}>
+                {viewType === 'month'
+                  ? texts.common.datePicker.thisMonth[language]
+                  : texts.common.datePicker.today[language]}
+              </Button>
+            </HStack>
+          </Popover.Body>
+        </Popover.Content>
+      </Popover.Positioner>
+    </Popover.Root>
   );
 };
 

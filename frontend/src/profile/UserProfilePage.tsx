@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  GridItem,
-  Heading,
-  IconButton,
-  Stack,
-  Text,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { useColorModeValue } from "../components/ui/color-mode";
+import { Box, Container, Grid, GridItem, Heading, IconButton, Stack, Text } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -77,11 +68,9 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<FiChevronLeft />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
-              onClick={() => navigate(-1)}
-            />
+              onClick={() => navigate(-1)}><FiChevronLeft /></IconButton>
           </GridItem>
           <GridItem>
             <Heading size={{ base: 'md', md: 'lg' }} textAlign="center">
@@ -91,14 +80,12 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<FiChevronLeft />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
-              visibility="hidden"
-            />
+              visibility="hidden"><FiChevronLeft /></IconButton>
           </GridItem>
         </Grid>
-        <Stack spacing={4}>
+        <Stack gap={4}>
           <Box bg={subtleBg} p={3} borderRadius="md">
             <Text fontWeight="bold">{texts.profile.firstName[language]}</Text>
             <Text>{user.firstname}</Text>

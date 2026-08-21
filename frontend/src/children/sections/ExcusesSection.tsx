@@ -1,17 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  Link as ChakraLink,
-  HStack,
-  Box,
-  Flex,
-} from '@chakra-ui/react';
+import { Table, Text, Link as ChakraLink, HStack, Box, Flex } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { ChildExcuse } from '@frontend/types/child';
@@ -118,7 +106,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
           />
         </Flex>
       )}
-      <HStack spacing={4} align="center" flexWrap="wrap" mb={4}>
+      <HStack gap={4} align="center" flexWrap="wrap" mb={4}>
         <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"
@@ -131,17 +119,17 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
         <Text variant="empty">{texts.children.excuse.historyEmpty[language]}</Text>
       ) : (
         <>
-          <Table variant="simple" size="md">
-            <Thead>
-              <Tr>
-                <Th>{texts.children.excuse.dateFrom[language]}</Th>
-                <Th>{texts.children.excuse.dateTo[language]}</Th>
-                <Th>{texts.children.excuse.reason[language]}</Th>
-                <Th>{texts.children.excuse.submittedBy[language]}</Th>
-                {isParent && <Th>{texts.children.excuse.actions[language]}</Th>}
-              </Tr>
-            </Thead>
-            <Tbody>
+          <Table.Root variant="simple" size="md">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>{texts.children.excuse.dateFrom[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.children.excuse.dateTo[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.children.excuse.reason[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.children.excuse.submittedBy[language]}</Table.ColumnHeader>
+                {isParent && <Table.ColumnHeader>{texts.children.excuse.actions[language]}</Table.ColumnHeader>}
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {pagedExcuses.map((excuse) => {
                 const parentName = [excuse.parent_firstname, excuse.parent_surname]
                   .filter(Boolean)
@@ -150,21 +138,19 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                 const hasParentLink = canViewParentProfile && parentId;
                 const isOwnExcuse = isParent && excuse.parent_id === currentUserId;
                 return (
-                  <Tr key={excuse.id}>
-                    <Td>{formatExcuseDate(excuse.date_from, language)}</Td>
-                    <Td>{formatExcuseDate(excuse.date_to, language)}</Td>
-                    <Td>
+                  <Table.Row key={excuse.id}>
+                    <Table.Cell>{formatExcuseDate(excuse.date_from, language)}</Table.Cell>
+                    <Table.Cell>{formatExcuseDate(excuse.date_to, language)}</Table.Cell>
+                    <Table.Cell>
                       <Text whiteSpace="pre-wrap">{excuse.reason || '-'}</Text>
-                    </Td>
-                    <Td>
+                    </Table.Cell>
+                    <Table.Cell>
                       {parentName ? (
                         hasParentLink ? (
-                          <ChakraLink
-                            as={RouterLink}
-                            to={ROUTES.PROFILE_DETAIL.replace(':id', parentId.toString())}
-                            color="blue.500"
-                          >
-                            {parentName}
+                          <ChakraLink asChild color="blue.500">
+                            <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', parentId.toString())}>
+                              {parentName}
+                            </RouterLink>
                           </ChakraLink>
                         ) : (
                           <Text>{parentName}</Text>
@@ -172,11 +158,11 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                       ) : (
                         <Text>-</Text>
                       )}
-                    </Td>
+                    </Table.Cell>
                     {isParent && (
-                      <Td>
+                      <Table.Cell>
                         {isOwnExcuse ? (
-                          <HStack spacing={2}>
+                          <HStack gap={2}>
                             <ChildExcuseAction
                               childId={childId}
                               childName=""
@@ -191,13 +177,13 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                         ) : (
                           <Text>-</Text>
                         )}
-                      </Td>
+                      </Table.Cell>
                     )}
-                  </Tr>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
           <TablePagination
             currentPage={page}
             totalPages={totalPages}

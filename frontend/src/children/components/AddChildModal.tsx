@@ -1,20 +1,4 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  ModalFooter,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  FormErrorMessage,
-  Box,
-  Select,
-} from '@chakra-ui/react';
+import { Button, Input, Textarea, Box, NativeSelect, Field, Dialog, Portal } from '@chakra-ui/react';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createChild } from '@frontend/services/api';
 import { getClassesByAge } from '@frontend/services/api/class';
@@ -207,95 +191,106 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{texts.children.addChild.title[language]}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FormControl isRequired isInvalid={!!errors.parent_ids} mb={4}>
-            <FormLabel>{texts.common.childrenTable.parent[language]}</FormLabel>
-            <Combobox
-              options={parentOptions.map((parent) => ({
-                label: parent.label,
-                value: parent.id,
-              }))}
-              value={selectedParentIds}
-              onChange={(values) =>
-                setSelectedParentIds(
-                  Array.isArray(values) ? values.map((value) => Number(value)) : []
-                )
-              }
-              placeholder={texts.common.childrenTable.parent[language]}
-              isMulti
-              isDisabled={isLoadingParents}
-            />
-            <FormErrorMessage>{errors.parent_ids}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.firstname} mb={4}>
-            <FormLabel>{texts.common.childrenTable.firstname[language]}</FormLabel>
-            <Input name="firstname" value={formData.firstname} onChange={handleChange} />
-            <FormErrorMessage>{errors.firstname}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.surname} mb={4}>
-            <FormLabel>{texts.common.childrenTable.surname[language]}</FormLabel>
-            <Input name="surname" value={formData.surname} onChange={handleChange} />
-            <FormErrorMessage>{errors.surname}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.date_of_birth} mb={4}>
-            <FormLabel>{texts.children.dateOfBirth[language]}</FormLabel>
-            <DatePicker
-              viewType="day"
-              value={formData.date_of_birth}
-              onChange={handleDateChange}
-              language={language}
-            />
-            <FormErrorMessage>{errors.date_of_birth}</FormErrorMessage>
-          </FormControl>
-          {formData.date_of_birth && (
-            <FormControl isRequired isInvalid={!!errors.class_id} mb={4}>
-              <FormLabel>{texts.schedule.class[language]}</FormLabel>
-              {isLoadingClasses ? (
-                <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
-              ) : availableClasses.length > 0 ? (
-                <Select
-                  value={selectedClassId ? selectedClassId.toString() : ''}
-                  onChange={(e) =>
-                    setSelectedClassId(e.target.value ? Number(e.target.value) : null)
+    <Dialog.Root open={isOpen} onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
+
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>{texts.children.addChild.title[language]}</Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <Field.Root required invalid={!!errors.parent_ids} mb={4}>
+                <Field.Label>{texts.common.childrenTable.parent[language]}</Field.Label>
+                <Combobox
+                  options={parentOptions.map((parent) => ({
+                    label: parent.label,
+                    value: parent.id,
+                  }))}
+                  value={selectedParentIds}
+                  onChange={(values) =>
+                    setSelectedParentIds(
+                      Array.isArray(values) ? values.map((value) => Number(value)) : []
+                    )
                   }
-                  placeholder={texts.classes.selectClass[language]}
-                  isDisabled={isLoadingClasses}
-                >
-                  {availableClasses.map((cls) => (
-                    <option key={cls.id} value={cls.id}>
-                      {cls.name} (Ages {cls.min_age}-{cls.max_age})
-                    </option>
-                  ))}
-                </Select>
-              ) : (
-                <Box p={2} color="red.500">
-                  {texts.children.classSelection.noneFound[language]}
-                </Box>
+                  placeholder={texts.common.childrenTable.parent[language]}
+                  isMulti
+                  isDisabled={isLoadingParents}
+                />
+                <Field.ErrorText>{errors.parent_ids}</Field.ErrorText>
+              </Field.Root>
+              <Field.Root required invalid={!!errors.firstname} mb={4}>
+                <Field.Label>{texts.common.childrenTable.firstname[language]}</Field.Label>
+                <Input name="firstname" value={formData.firstname} onChange={handleChange} />
+                <Field.ErrorText>{errors.firstname}</Field.ErrorText>
+              </Field.Root>
+              <Field.Root required invalid={!!errors.surname} mb={4}>
+                <Field.Label>{texts.common.childrenTable.surname[language]}</Field.Label>
+                <Input name="surname" value={formData.surname} onChange={handleChange} />
+                <Field.ErrorText>{errors.surname}</Field.ErrorText>
+              </Field.Root>
+              <Field.Root required invalid={!!errors.date_of_birth} mb={4}>
+                <Field.Label>{texts.children.dateOfBirth[language]}</Field.Label>
+                <DatePicker
+                  viewType="day"
+                  value={formData.date_of_birth}
+                  onChange={handleDateChange}
+                  language={language}
+                />
+                <Field.ErrorText>{errors.date_of_birth}</Field.ErrorText>
+              </Field.Root>
+              {formData.date_of_birth && (
+                <Field.Root required invalid={!!errors.class_id} mb={4}>
+                  <Field.Label>{texts.schedule.class[language]}</Field.Label>
+                  {isLoadingClasses ? (
+                    <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
+                  ) : availableClasses.length > 0 ? (
+                    <NativeSelect.Root disabled={isLoadingClasses}>
+                      <NativeSelect.Field
+                        value={selectedClassId ? selectedClassId.toString() : ''}
+                        onChange={(e) =>
+                          setSelectedClassId(e.target.value ? Number(e.target.value) : null)
+                        }
+                        placeholder={texts.classes.selectClass[language]}>
+                        {availableClasses.map((cls) => (
+                          <option key={cls.id} value={cls.id}>
+                            {cls.name} (Ages {cls.min_age}-{cls.max_age})
+                          </option>
+                        ))}
+                      </NativeSelect.Field>
+                      <NativeSelect.Indicator />
+                    </NativeSelect.Root>
+                  ) : (
+                    <Box p={2} color="red.500">
+                      {texts.children.classSelection.noneFound[language]}
+                    </Box>
+                  )}
+                  <Field.ErrorText>{errors.class_id}</Field.ErrorText>
+                </Field.Root>
               )}
-              <FormErrorMessage>{errors.class_id}</FormErrorMessage>
-            </FormControl>
-          )}
-          <FormControl isInvalid={!!errors.notes} mb={4}>
-            <FormLabel>{texts.common.childrenTable.notes[language]}</FormLabel>
-            <Textarea name="notes" value={formData.notes} onChange={handleChange} />
-            <FormErrorMessage>{errors.notes}</FormErrorMessage>
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            {texts.common.cancel[language]}
-          </Button>
-          <Button colorScheme="blue" onClick={handleSubmit} isLoading={isSubmitting}>
-            {texts.children.addChild.submit[language]}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+              <Field.Root invalid={!!errors.notes} mb={4}>
+                <Field.Label>{texts.common.childrenTable.notes[language]}</Field.Label>
+                <Textarea name="notes" value={formData.notes} onChange={handleChange} />
+                <Field.ErrorText>{errors.notes}</Field.ErrorText>
+              </Field.Root>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose}>
+                {texts.common.cancel[language]}
+              </Button>
+              <Button colorPalette="blue" onClick={handleSubmit} loading={isSubmitting}>
+                {texts.children.addChild.submit[language]}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 

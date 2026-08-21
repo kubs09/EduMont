@@ -1,17 +1,5 @@
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  Button,
-} from '@chakra-ui/react';
-
-type FocusableElement = {
-  focus(options?: FocusOptions): void;
-};
+import { Button, Dialog, Portal } from '@chakra-ui/react';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -38,31 +26,41 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   leastDestructiveRef,
   isConfirmLoading,
 }) => (
-  <AlertDialog
-    isOpen={isOpen}
-    leastDestructiveRef={leastDestructiveRef as React.RefObject<FocusableElement>}
-    onClose={onClose}
-  >
-    <AlertDialogOverlay>
-      <AlertDialogContent>
-        <AlertDialogHeader>{title}</AlertDialogHeader>
-        <AlertDialogBody>{message}</AlertDialogBody>
-        <AlertDialogFooter>
-          <Button ref={leastDestructiveRef} onClick={onClose}>
-            {cancelLabel}
-          </Button>
-          <Button
-            colorScheme={confirmColorScheme}
-            onClick={onConfirm}
-            ml={3}
-            isLoading={isConfirmLoading}
-          >
-            {confirmLabel}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialogOverlay>
-  </AlertDialog>
+  <Dialog.Root
+    open={isOpen}
+    initialFocusEl={() => leastDestructiveRef?.current ?? null}
+    role='alertdialog'
+    onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+    <Portal>
+
+      <Dialog.Backdrop>
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>{title}</Dialog.Header>
+            <Dialog.Body>{message}</Dialog.Body>
+            <Dialog.Footer>
+              <Button ref={leastDestructiveRef} onClick={onClose}>
+                {cancelLabel}
+              </Button>
+              <Button
+                colorPalette={confirmColorScheme}
+                onClick={onConfirm}
+                ml={3}
+                loading={isConfirmLoading}
+              >
+                {confirmLabel}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Dialog.Backdrop>
+
+    </Portal>
+</Dialog.Root>
 );
 
 export default ConfirmDialog;

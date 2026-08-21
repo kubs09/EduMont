@@ -40,36 +40,32 @@ const TablePagination: React.FC<TablePaginationProps> = ({
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <HStack justifyContent="space-between" mt={4} spacing={4} flexWrap="wrap">
-      <HStack spacing={1}>
+    <HStack justifyContent="space-between" mt={4} gap={4} flexWrap="wrap">
+      <HStack gap={1}>
         <IconButton
           aria-label="Previous page"
-          icon={<FiChevronLeft />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage - 1)}
-          isDisabled={!canGoPrevious}
-        />
+          disabled={!canGoPrevious}><FiChevronLeft /></IconButton>
         {pages.map((page) => (
           <Button
             key={page}
             size="sm"
             variant={page === safeCurrentPage ? 'solid' : 'ghost'}
-            colorScheme={page === safeCurrentPage ? 'blue' : 'gray'}
+            colorPalette={page === safeCurrentPage ? 'blue' : 'gray'}
             onClick={() => onPageChange(page)}
-            isDisabled={isDisabled}
+            disabled={isDisabled}
           >
             {page}
           </Button>
         ))}
         <IconButton
           aria-label="Next page"
-          icon={<FiChevronRight />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage + 1)}
-          isDisabled={!canGoNext}
-        />
+          disabled={!canGoNext}><FiChevronRight /></IconButton>
       </HStack>
       {startRecord && endRecord && totalCount && (
         <Text fontSize="sm" color="gray.500">

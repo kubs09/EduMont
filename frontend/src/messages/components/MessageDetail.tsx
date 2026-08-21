@@ -12,33 +12,31 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
 }) => {
   if (!message) {
     return (
-      <VStack h="100%" justify="center" spacing={{ base: 3, md: 4 }}>
+      <VStack h="100%" justify="center" gap={{ base: 3, md: 4 }}>
         <Icon as={FiMail} boxSize={{ base: 12, md: 16 }} color="gray.400" />
         <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.500" textAlign="center">
           {translations.title}
         </Text>
-        <Button leftIcon={<FiMail />} size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
-          {translations.compose}
-        </Button>
+        <Button size={{ base: 'sm', md: 'md' }} onClick={onCompose}><FiMail />{translations.compose}</Button>
       </VStack>
     );
   }
 
   return (
-    <VStack align="stretch" spacing={{ base: 4, md: 6 }} h="100%">
+    <VStack align="stretch" gap={{ base: 4, md: 6 }} h="100%">
       <VStack
         align="stretch"
-        spacing={{ base: 2, md: 3 }}
+        gap={{ base: 2, md: 3 }}
         p={{ base: 3, md: 4 }}
         borderRadius="md"
         borderWidth="1px"
         borderColor="gray.200"
       >
-        <HStack justify="space-between" spacing={{ base: 2, sm: 3 }} align="center">
+        <HStack justify="space-between" gap={{ base: 2, sm: 3 }} align="center">
           <Text
             fontSize={{ base: 'md', sm: 'lg', md: '2xl' }}
             fontWeight="semibold"
-            noOfLines={{ base: 2, md: 1 }}
+            lineClamp={{ base: 2, md: 1 }}
             flex="1"
           >
             {message.subject}
@@ -46,17 +44,15 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           <IconButton
             flexShrink={0}
             size={{ base: 'sm', md: 'md' }}
-            icon={<FiTrash2 />}
             aria-label={translations.delete}
             onClick={() => onDelete(message.id)}
-            colorScheme="red"
-            variant="ghost"
-          />
+            colorPalette="red"
+            variant="ghost"><FiTrash2 /></IconButton>
         </HStack>
 
         <VStack
           align="stretch"
-          spacing={{ base: 0.5, md: 1 }}
+          gap={{ base: 0.5, md: 1 }}
           pt={{ base: 1, md: 2 }}
           borderTopWidth="1px"
           borderColor="gray.200"

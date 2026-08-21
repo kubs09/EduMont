@@ -60,7 +60,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
             height="32px"
             minH="32px"
             onClick={() => handleDaySelect(day)}
-            colorScheme={isSelected ? 'blue' : 'gray'}
+            colorPalette={isSelected ? 'blue' : 'gray'}
             fontSize="sm"
           >
             {day}
@@ -73,7 +73,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
   };
 
   return (
-    <VStack spacing={4}>
+    <VStack gap={4}>
       <DatePickerHeader
         displayYear={displayYear}
         displayMonth={displayMonth}

@@ -76,7 +76,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
             height="32px"
             minH="32px"
             onClick={() => handleWeekSelect(day)}
-            colorScheme={isSelectedWeek ? 'blue' : 'gray'}
+            colorPalette={isSelectedWeek ? 'blue' : 'gray'}
             bg={isSelectedWeek ? 'blue.50' : 'transparent'}
             fontSize="sm"
           >
@@ -106,7 +106,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
   };
 
   return (
-    <VStack spacing={4}>
+    <VStack gap={4}>
       <DatePickerHeader
         displayYear={displayYear}
         displayMonth={displayMonth}

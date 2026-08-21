@@ -1,26 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Select,
-  Textarea,
-  NumberInput,
-  NumberInputField,
-  VStack,
-  FormErrorMessage,
-  NumberInputStepper,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-} from '@chakra-ui/react';
+import { Button, Input, NativeSelect, Textarea, NumberInput, VStack, Field, Dialog, Portal } from '@chakra-ui/react';
 import {
   CategoryPresentation,
   CreateCategoryPresentationData,
@@ -108,140 +87,154 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
     }
   };
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="md">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          {editingPresentation
-            ? texts.schedule.curriculum.editPresentation[language]
-            : texts.schedule.curriculum.addPresentation[language]}
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4}>
-            <FormControl isRequired isInvalid={!!errors.category}>
-              <FormLabel>{texts.schedule.category[language]}</FormLabel>
-              <Select
-                value={formData.category || ''}
-                onChange={(e) => {
-                  onFormDataChange({ ...formData, category: e.target.value });
-                  if (errors.category) {
-                    setErrors((prev) => ({ ...prev, category: undefined }));
-                  }
-                }}
-              >
-                <option value="">-- {texts.common.select[language]} --</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </Select>
-              {errors.category && <FormErrorMessage>{errors.category}</FormErrorMessage>}
-            </FormControl>
+    <Dialog.Root open={isOpen} size='md' onOpenChange={e => {
+      if (!e.open) {
+        onClose();
+      }
+    }}>
+      <Portal>
 
-            <FormControl isRequired isInvalid={!!errors.age_group}>
-              <FormLabel>{texts.schedule.ageGroup[language]}</FormLabel>
-              <Select
-                value={formData.age_group || ''}
-                onChange={(e) => {
-                  onFormDataChange({ ...formData, age_group: e.target.value });
-                  if (errors.age_group) {
-                    setErrors((prev) => ({ ...prev, age_group: undefined }));
-                  }
-                }}
-              >
-                <option value="">-- {texts.common.select[language]} --</option>
-                <option value="Infant">{texts.classes.ageGroups.infant[language]} (0-1)</option>
-                <option value="Toddler">{texts.classes.ageGroups.toddler[language]} (1-3)</option>
-                <option value="Early Childhood">
-                  {texts.classes.ageGroups.earlyChildhood[language]} (3-6)
-                </option>
-                <option value="Lower Elementary">
-                  {texts.classes.ageGroups.lowerElementary[language]} (6-9)
-                </option>
-                <option value="Upper Elementary">
-                  {texts.classes.ageGroups.upperElementary[language]} (9-12)
-                </option>
-                <option value="Middle School">
-                  {texts.classes.ageGroups.middleSchool[language]} (12-15)
-                </option>
-              </Select>
-              {errors.age_group && <FormErrorMessage>{errors.age_group}</FormErrorMessage>}
-            </FormControl>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Header>
+              {editingPresentation
+                ? texts.schedule.curriculum.editPresentation[language]
+                : texts.schedule.curriculum.addPresentation[language]}
+            </Dialog.Header>
+            <Dialog.CloseTrigger />
+            <Dialog.Body>
+              <VStack gap={4}>
+                <Field.Root required invalid={!!errors.category}>
+                  <Field.Label>{texts.schedule.category[language]}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      value={formData.category || ''}
+                      onChange={(e) => {
+                        onFormDataChange({ ...formData, category: e.target.value });
+                        if (errors.category) {
+                          setErrors((prev) => ({ ...prev, category: undefined }));
+                        }
+                      }}>
+                      <option value="">-- {texts.common.select[language]} --</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                  {errors.category && <Field.ErrorText>{errors.category}</Field.ErrorText>}
+                </Field.Root>
 
-            <FormControl isRequired isInvalid={!!errors.name}>
-              <FormLabel>{texts.schedule.name[language]}</FormLabel>
-              <Input
-                placeholder={texts.schedule.placeholders.name[language]}
-                value={formData.name || ''}
-                onChange={(e) => {
-                  onFormDataChange({ ...formData, name: e.target.value });
-                  if (errors.name) {
-                    setErrors((prev) => ({ ...prev, name: undefined }));
-                  }
-                }}
-              />
-              {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
-            </FormControl>
+                <Field.Root required invalid={!!errors.age_group}>
+                  <Field.Label>{texts.schedule.ageGroup[language]}</Field.Label>
+                  <NativeSelect.Root>
+                    <NativeSelect.Field
+                      value={formData.age_group || ''}
+                      onChange={(e) => {
+                        onFormDataChange({ ...formData, age_group: e.target.value });
+                        if (errors.age_group) {
+                          setErrors((prev) => ({ ...prev, age_group: undefined }));
+                        }
+                      }}>
+                      <option value="">-- {texts.common.select[language]} --</option>
+                      <option value="Infant">{texts.classes.ageGroups.infant[language]} (0-1)</option>
+                      <option value="Toddler">{texts.classes.ageGroups.toddler[language]} (1-3)</option>
+                      <option value="Early Childhood">
+                        {texts.classes.ageGroups.earlyChildhood[language]} (3-6)
+                      </option>
+                      <option value="Lower Elementary">
+                        {texts.classes.ageGroups.lowerElementary[language]} (6-9)
+                      </option>
+                      <option value="Upper Elementary">
+                        {texts.classes.ageGroups.upperElementary[language]} (9-12)
+                      </option>
+                      <option value="Middle School">
+                        {texts.classes.ageGroups.middleSchool[language]} (12-15)
+                      </option>
+                    </NativeSelect.Field>
+                    <NativeSelect.Indicator />
+                  </NativeSelect.Root>
+                  {errors.age_group && <Field.ErrorText>{errors.age_group}</Field.ErrorText>}
+                </Field.Root>
 
-            <FormControl isRequired isInvalid={!!errors.display_order}>
-              <FormLabel>{texts.schedule.order[language]}</FormLabel>
-              <NumberInput
-                min={1}
-                max={maxOrder}
-                value={formData.display_order || 0}
-                onChange={(val) => {
-                  const parsedVal = parseInt(val) || 0;
-                  const clampedVal = Math.min(Math.max(parsedVal, 1), maxOrder);
-                  onFormDataChange({ ...formData, display_order: clampedVal });
-                  if (errors.display_order) {
-                    setErrors((prev) => ({ ...prev, display_order: undefined }));
-                  }
-                }}
-                isDisabled={!formData.category}
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              {!formData.category && (
-                <FormErrorMessage>
-                  {texts.schedule.validation.selectCategoryFirst[language]}
-                </FormErrorMessage>
-              )}
-              {errors.display_order && <FormErrorMessage>{errors.display_order}</FormErrorMessage>}
-            </FormControl>
+                <Field.Root required invalid={!!errors.name}>
+                  <Field.Label>{texts.schedule.name[language]}</Field.Label>
+                  <Input
+                    placeholder={texts.schedule.placeholders.name[language]}
+                    value={formData.name || ''}
+                    onChange={(e) => {
+                      onFormDataChange({ ...formData, name: e.target.value });
+                      if (errors.name) {
+                        setErrors((prev) => ({ ...prev, name: undefined }));
+                      }
+                    }}
+                  />
+                  {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
+                </Field.Root>
 
-            <FormControl>
-              <FormLabel>{texts.schedule.notes[language]}</FormLabel>
-              <Textarea
-                placeholder={texts.schedule.placeholders.notes[language]}
-                value={formData.notes || ''}
-                onChange={(e) => {
-                  onFormDataChange({ ...formData, notes: e.target.value });
-                  if (errors.notes) {
-                    setErrors((prev) => ({ ...prev, notes: undefined }));
-                  }
-                }}
-                rows={4}
-              />
-            </FormControl>
-          </VStack>
-        </ModalBody>
+                <Field.Root required invalid={!!errors.display_order}>
+                  <Field.Label>{texts.schedule.order[language]}</Field.Label>
+                  <NumberInput.Root
+                    min={1}
+                    max={maxOrder}
+                    value={String(formData.display_order || 0)}
+                    onValueChange={(details) => {
+                      const parsedVal = details.valueAsNumber || 0;
+                      const clampedVal = Math.min(Math.max(parsedVal, 1), maxOrder);
+                      onFormDataChange({ ...formData, display_order: clampedVal });
+                      if (errors.display_order) {
+                        setErrors((prev) => ({ ...prev, display_order: undefined }));
+                      }
+                    }}
+                    disabled={!formData.category}
+                  >
+                    <NumberInput.Input />
+                    <NumberInput.Control>
+                      <NumberInput.IncrementTrigger />
+                      <NumberInput.DecrementTrigger />
+                    </NumberInput.Control>
+                  </NumberInput.Root>
+                  {!formData.category && (
+                    <Field.ErrorText>
+                      {texts.schedule.validation.selectCategoryFirst[language]}
+                    </Field.ErrorText>
+                  )}
+                  {errors.display_order && <Field.ErrorText>{errors.display_order}</Field.ErrorText>}
+                </Field.Root>
 
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={onClose}>
-            {texts.common.cancel[language]}
-          </Button>
-          <Button variant="primary" onClick={handleSaveWithValidation}>
-            {texts.common.save[language]}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                <Field.Root>
+                  <Field.Label>{texts.schedule.notes[language]}</Field.Label>
+                  <Textarea
+                    placeholder={texts.schedule.placeholders.notes[language]}
+                    value={formData.notes || ''}
+                    onChange={(e) => {
+                      onFormDataChange({ ...formData, notes: e.target.value });
+                      if (errors.notes) {
+                        setErrors((prev) => ({ ...prev, notes: undefined }));
+                      }
+                    }}
+                    rows={4}
+                  />
+                </Field.Root>
+              </VStack>
+            </Dialog.Body>
+
+            <Dialog.Footer>
+              <Button variant="ghost" mr={3} onClick={onClose}>
+                {texts.common.cancel[language]}
+              </Button>
+              <Button variant="brand" onClick={handleSaveWithValidation}>
+                {texts.common.save[language]}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+
+      </Portal>
+    </Dialog.Root>
   );
 };
 
