@@ -82,8 +82,8 @@ const MessageList: React.FC<MessageListProps> = ({
                     selectedMessageId === message.id
                       ? selectedBg
                       : isUnread
-                      ? unreadBg
-                      : 'transparent'
+                        ? unreadBg
+                        : 'transparent'
                   }
                   _hover={{ bg: selectedMessageId === message.id ? selectedBg : hoverBg }}
                   onClick={() => onMessageClick(message.id)}

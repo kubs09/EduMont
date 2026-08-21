@@ -2,12 +2,12 @@ import axios from 'axios';
 
 // Determine the base URL with fallback logic
 const getBaseURL = () => {
-  if (process.env.REACT_APP_API_URL) {
-    console.log('✅ Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-    return process.env.REACT_APP_API_URL;
+  if (import.meta.env.VITE_API_URL) {
+    console.log('✅ Using VITE_API_URL:', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (import.meta.env.PROD) {
     console.log('📦 Production mode: Using relative URLs with /api prefix');
     return '';
   }
@@ -41,7 +41,7 @@ const testConnection = async () => {
     console.log('✅ Server connection successful:', response.data);
     return true;
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.warn('⚠️ Server connection failed:', error.message);
       console.warn('Make sure backend is running on localhost:5000');
       console.warn('Current baseURL:', baseURL);
@@ -50,7 +50,7 @@ const testConnection = async () => {
   }
 };
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   testConnection();
 }
 

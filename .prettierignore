@@ -1,3 +1,1 @@
-build/
-frontend/build/
-**/build/**
+frontend/dist/

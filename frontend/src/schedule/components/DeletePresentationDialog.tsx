@@ -44,7 +44,7 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
 
       onClose();
       await onPresentationDeleted();
-    } catch (error) {
+    } catch {
       toast({
         title: texts.schedule.errors.deleteFailed.title[language],
         description: texts.schedule.errors.deleteFailed.description[language],

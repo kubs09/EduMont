@@ -175,7 +175,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
       }
 
       setRows([]);
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.attendanceFetchFailed[language],
         status: 'error',
@@ -244,7 +244,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     try {
       await checkInChild(classData.id, childId, effectiveDate);
       await loadAttendance();
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.checkInFailed[language],
         status: 'error',
@@ -261,7 +261,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     try {
       await checkOutChild(classData.id, childId, effectiveDate);
       await loadAttendance();
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.checkOutFailed[language],
         status: 'error',

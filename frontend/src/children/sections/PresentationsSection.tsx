@@ -202,7 +202,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
         duration: 3000,
         isClosable: true,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.schedule.errors.updateFailed[language],
         status: 'error',

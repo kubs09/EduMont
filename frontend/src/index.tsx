@@ -1,3 +1,4 @@
+import '@ant-design/v5-patch-for-react-19';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
@@ -14,9 +15,5 @@ const AppComponent = (
 );
 
 root.render(
-  process.env.NODE_ENV === 'development' ? (
-    <React.StrictMode>{AppComponent}</React.StrictMode>
-  ) : (
-    AppComponent
-  )
+  import.meta.env.DEV ? <React.StrictMode>{AppComponent}</React.StrictMode> : AppComponent
 );
