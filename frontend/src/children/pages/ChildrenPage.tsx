@@ -36,7 +36,7 @@ const ChildrenPage = () => {
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
   const userRole = localStorage.getItem('userRole');
   const isParent = userRole === 'parent';
   const isAdmin = userRole === 'admin';

@@ -52,7 +52,7 @@ const ChildDetailPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('information');
-  const cancelRef = React.useRef() as React.MutableRefObject<HTMLButtonElement>;
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
   const isTeacher = userRole === 'teacher';
