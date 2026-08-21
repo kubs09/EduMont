@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, useToast, useColorModeValue, Flex } from '@chakra-ui/react';
+import { Box, useColorModeValue, Flex } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
 import { updateNotificationSettings } from '@frontend/services/api';
 import { SectionMenu } from '@frontend/shared/components';
 import { ClassSection, ContactSection, ChildrenSection, SettingsSection } from './sections';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ProfilePage = () => {
   const { language } = useLanguage();
@@ -15,7 +16,7 @@ const ProfilePage = () => {
   const userName = localStorage.getItem('userName') || '';
   const userRole = localStorage.getItem('userRole') || '';
   const [firstName, lastName] = userName.split(' ');
-  const toast = useToast();
+  const toast = useAppToast();
   const subtleBg = useColorModeValue('gray.50', 'whiteAlpha.50');
   const [messageNotifications, setMessageNotifications] = useState<boolean>(() => {
     const userSettings = localStorage.getItem('userSettings');

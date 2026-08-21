@@ -11,11 +11,11 @@ import {
   ModalBody,
   ModalFooter,
   Select,
-  useToast,
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface AddUserDialogProps {
   isOpen: boolean;
@@ -28,7 +28,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
   const [email, setEmail] = React.useState('');
   const [role, setRole] = React.useState<'admin' | 'teacher' | 'parent'>('teacher');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

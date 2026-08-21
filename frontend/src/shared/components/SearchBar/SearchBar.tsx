@@ -5,8 +5,9 @@ import {
   InputLeftElement,
   InputRightElement,
   IconButton,
+  Icon,
 } from '@chakra-ui/react';
-import { SearchIcon, CloseIcon } from '@chakra-ui/icons';
+import { FiSearch, FiX } from 'react-icons/fi';
 
 interface SearchBarProps {
   value: string;
@@ -31,7 +32,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <InputGroup maxW="400px">
       <InputLeftElement pointerEvents="none">
-        <SearchIcon color="gray.400" />
+        <Icon as={FiSearch} color="gray.400" />
       </InputLeftElement>
       <Input
         value={value}
@@ -44,7 +45,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <InputRightElement>
           <IconButton
             aria-label="Clear search"
-            icon={<CloseIcon />}
+            icon={<FiX />}
             size="xs"
             variant="ghost"
             onClick={handleClear}

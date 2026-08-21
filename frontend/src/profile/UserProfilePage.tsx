@@ -9,9 +9,8 @@ import {
   Stack,
   Text,
   useColorModeValue,
-  useToast,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon } from '@chakra-ui/icons';
+import { FiChevronLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -19,12 +18,13 @@ import { getUserById } from '@frontend/services/api';
 import { ApiError, User } from '@frontend/types/user';
 import { Section } from '@frontend/shared/components';
 import { ROUTES } from '@frontend/shared/route';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const UserProfilePage = () => {
   const { id } = useParams();
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useAppToast();
   const [user, setUser] = useState<User | null>(null);
   const subtleBg = useColorModeValue('gray.50', 'whiteAlpha.50');
 
@@ -77,7 +77,7 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<ChevronLeftIcon />}
+              icon={<FiChevronLeft />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
               onClick={() => navigate(-1)}
@@ -91,7 +91,7 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<ChevronLeftIcon />}
+              icon={<FiChevronLeft />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
               visibility="hidden"

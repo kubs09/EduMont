@@ -10,7 +10,7 @@ import {
   Link as ChakraLink,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
+import { FiExternalLink } from 'react-icons/fi';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Child } from '@frontend/types/child';
@@ -62,7 +62,7 @@ const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) 
                   <Text>{childData.class_name}</Text>
                   <IconButton
                     aria-label={texts.classes.detail.title[language]}
-                    icon={<ExternalLinkIcon />}
+                    icon={<FiExternalLink />}
                     size="sm"
                     variant="ghost"
                     onClick={() => {

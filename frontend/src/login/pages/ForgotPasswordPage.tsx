@@ -11,7 +11,6 @@ import {
   VStack,
   Heading,
   Text,
-  useToast,
   Card,
   Icon,
   Circle,
@@ -26,12 +25,13 @@ import {
   ForgotPasswordFormData,
 } from '../schemas/ForgotPasswordSchema';
 import { useNavigate } from 'react-router';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ForgotPasswordPage = () => {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   const iconBg = useColorModeValue('brand.primary.900', 'brand.primary.700');

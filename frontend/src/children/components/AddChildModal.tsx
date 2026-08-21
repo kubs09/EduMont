@@ -12,7 +12,6 @@ import {
   Input,
   Textarea,
   FormErrorMessage,
-  useToast,
   Box,
   Select,
 } from '@chakra-ui/react';
@@ -27,6 +26,7 @@ import { getUsers } from '@frontend/services/api/user';
 import { User } from '@frontend/types/user';
 import { Class } from '@frontend/types/class';
 import { Combobox } from '@frontend/shared/components/Combobox';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 interface AddChildModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,7 +42,7 @@ interface FormData {
 
 const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const [formData, setFormData] = useState<FormData>({
     firstname: '',
     surname: '',

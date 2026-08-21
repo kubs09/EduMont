@@ -6,7 +6,6 @@ import {
   HStack,
   VStack,
   useDisclosure,
-  useToast,
   Spinner,
   Center,
   Card,
@@ -14,7 +13,7 @@ import {
   Text,
   Select,
 } from '@chakra-ui/react';
-import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
@@ -29,11 +28,12 @@ import {
 import AddEditPresentationModal from '../components/AddEditPresentationModal';
 import PresentationsAccordion from '../components/PresentationsAccordion';
 import DeletePresentationDialog from '../components/DeletePresentationDialog';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const toast = useToast();
+  const toast = useAppToast();
 
   const [presentations, setPresentations] = useState<CategoryPresentation[]>([]);
   const [selectedPresentation, setPresentation] = useState<CategoryPresentation | null>(null);
@@ -283,7 +283,7 @@ const SchedulePage: React.FC = () => {
                 </Heading>
                 <HStack spacing={2}>
                   <Button
-                    leftIcon={<RepeatIcon />}
+                    leftIcon={<FiRefreshCw />}
                     variant="outline"
                     onClick={loadPresentations}
                     size={{ base: 'sm', md: 'md' }}
@@ -294,7 +294,7 @@ const SchedulePage: React.FC = () => {
                     </Box>
                   </Button>
                   <Button
-                    leftIcon={<AddIcon />}
+                    leftIcon={<FiPlus />}
                     colorScheme="blue"
                     onClick={() => handleOpenModal()}
                     size={{ base: 'sm', md: 'md' }}

@@ -15,12 +15,12 @@ import {
   Stack,
   Textarea,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { DatePicker } from '@frontend/shared/components/DatePicker';
 import { createChildExcuse, updateChildExcuse } from '@frontend/services/api/child';
 import { ChildExcuse } from '@frontend/types/child';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface ChildExcuseActionProps {
   childId: number;
@@ -43,7 +43,7 @@ const ChildExcuseAction = ({
   variant = 'outline',
   buttonText,
 }: ChildExcuseActionProps) => {
-  const toast = useToast();
+  const toast = useAppToast();
   const [isOpen, setIsOpen] = useState(false);
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
   const [excuseData, setExcuseData] = useState({

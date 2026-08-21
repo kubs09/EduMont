@@ -12,7 +12,7 @@ import {
   useColorModeValue,
   type CardProps,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 export interface SectionMenuItem {
   key: string;
@@ -57,7 +57,7 @@ const SectionMenu = ({ title, sections, activeKey, onChange, cardProps }: Sectio
           {isMobile && (
             <IconButton
               aria-label={title}
-              icon={isMenuOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
+              icon={isMenuOpen ? <FiChevronUp /> : <FiChevronDown />}
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen((open) => !open)}

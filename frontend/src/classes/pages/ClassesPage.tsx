@@ -12,16 +12,17 @@ import {
   Td,
   Text,
   VStack,
-  useToast,
+  Icon,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+import { FiChevronRight } from 'react-icons/fi';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 import { Class } from '@frontend/types/class';
 import CreateClassModal from '../components/CreateClassModal';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ClassesPage = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const ClassesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
   useEffect(() => {
@@ -171,7 +172,7 @@ const ClassesPage = () => {
                       </VStack>
                     </Td>
                     <Td>
-                      <ChevronRightIcon boxSize={6} color="gray.500" />
+                      <Icon as={FiChevronRight} boxSize={6} color="gray.500" />
                     </Td>
                   </Tr>
                 );

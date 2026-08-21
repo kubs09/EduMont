@@ -12,7 +12,7 @@ import {
   Hide,
   Circle,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
+import { FiChevronDown, FiMail } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -140,7 +140,7 @@ const Header = () => {
           <Button
             position="relative"
             variant="brand"
-            leftIcon={<EmailIcon />}
+            leftIcon={<FiMail />}
             onClick={handleMessages}
             size={{ base: 'sm', md: 'md' }}
             px={{ base: 2, md: 4 }}
@@ -187,7 +187,7 @@ const Header = () => {
             <MenuButton
               variant="brand"
               as={Button}
-              rightIcon={<ChevronDownIcon />}
+              rightIcon={<FiChevronDown />}
               size={{ base: 'sm', md: 'md' }}
             >
               <Hide below="md">{userName}</Hide>

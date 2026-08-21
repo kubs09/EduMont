@@ -10,7 +10,6 @@ import {
   CardBody,
   CardHeader,
   Heading,
-  useToast,
   Text,
   FormErrorMessage,
   Container,
@@ -22,12 +21,13 @@ import { ROUTES } from '@frontend/shared/route';
 import { createSignupSchema, type SignupSchema } from './schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const InviteSignupPage: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useAppToast();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const {

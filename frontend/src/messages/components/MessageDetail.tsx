@@ -1,6 +1,6 @@
 import React from 'react';
-import { VStack, HStack, Text, IconButton, Button, Box } from '@chakra-ui/react';
-import { DeleteIcon, EmailIcon } from '@chakra-ui/icons';
+import { VStack, HStack, Text, IconButton, Button, Box, Icon } from '@chakra-ui/react';
+import { FiTrash2, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageDetailProps } from '@frontend/types/message';
 
@@ -13,11 +13,11 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
   if (!message) {
     return (
       <VStack h="100%" justify="center" spacing={{ base: 3, md: 4 }}>
-        <EmailIcon boxSize={{ base: 12, md: 16 }} color="gray.400" />
+        <Icon as={FiMail} boxSize={{ base: 12, md: 16 }} color="gray.400" />
         <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.500" textAlign="center">
           {translations.title}
         </Text>
-        <Button leftIcon={<EmailIcon />} size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
+        <Button leftIcon={<FiMail />} size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
           {translations.compose}
         </Button>
       </VStack>
@@ -46,7 +46,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           <IconButton
             flexShrink={0}
             size={{ base: 'sm', md: 'md' }}
-            icon={<DeleteIcon />}
+            icon={<FiTrash2 />}
             aria-label={translations.delete}
             onClick={() => onDelete(message.id)}
             colorScheme="red"

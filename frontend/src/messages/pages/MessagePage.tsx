@@ -11,7 +11,7 @@ import {
   TabPanels,
   TabPanel,
 } from '@chakra-ui/react';
-import { EmailIcon, RepeatIcon } from '@chakra-ui/icons';
+import { FiMail, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
@@ -134,7 +134,7 @@ const Messages: React.FC = () => {
         <GridItem colSpan={12}>
           <Button
             variant="brand"
-            leftIcon={<EmailIcon />}
+            leftIcon={<FiMail />}
             onClick={() => setComposeOpen(true)}
             mb={2}
             mr={2}
@@ -143,7 +143,7 @@ const Messages: React.FC = () => {
           </Button>
           <Button
             variant="secondary"
-            leftIcon={<RepeatIcon />}
+            leftIcon={<FiRefreshCw />}
             onClick={fetchMessages}
             isLoading={isRefreshing}
             mb={2}

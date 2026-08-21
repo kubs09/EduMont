@@ -22,7 +22,7 @@ import {
   Link as ChakraLink,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { DeleteIcon } from '@chakra-ui/icons';
+import { FiTrash2 } from 'react-icons/fi';
 import { Link as RouterLink } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -106,7 +106,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
                 <Td>
                   <IconButton
                     aria-label={texts.userDashboard.table.deleteButton[language]}
-                    icon={<DeleteIcon />}
+                    icon={<FiTrash2 />}
                     size="sm"
                     colorScheme="red"
                     variant="ghost"

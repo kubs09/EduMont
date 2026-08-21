@@ -18,7 +18,7 @@ import {
   Card,
   CardBody,
 } from '@chakra-ui/react';
-import { LockIcon } from '@chakra-ui/icons';
+import { FiLock } from 'react-icons/fi';
 import { login } from '@frontend/services/api/auth';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -75,7 +75,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         <CardBody>
           <VStack spacing={8}>
             <Circle size="40px" bg={iconBg} color="white">
-              <Icon as={LockIcon} />
+              <Icon as={FiLock} />
             </Circle>
 
             <Heading as="h1" size="lg" color="text-primary">

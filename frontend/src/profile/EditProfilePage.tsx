@@ -11,7 +11,6 @@ import {
   Input,
   FormControl,
   FormLabel,
-  useToast,
   ButtonGroup,
   FormErrorMessage,
 } from '@chakra-ui/react';
@@ -20,11 +19,12 @@ import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
 import { updateUser } from '@frontend/services/api';
 import { createProfileSchema, type ProfileSchema } from '../shared/validation/profileSchema';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const userEmail = localStorage.getItem('userEmail') || '';
   const userName = localStorage.getItem('userName') || '';
   const userRole = localStorage.getItem('userRole') || '';

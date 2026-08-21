@@ -11,7 +11,6 @@ import {
   Thead,
   Tr,
   Tooltip,
-  useToast,
   HStack,
   useColorModeValue,
 } from '@chakra-ui/react';
@@ -25,6 +24,7 @@ import {
 } from '@frontend/shared/components';
 import { checkInChild, checkOutChild, getClassAttendance } from '@frontend/services/api/class';
 import { ChildExcuse } from '@frontend/types/child';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface AttendanceTabProps {
   classData: Class;
@@ -45,7 +45,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   currentUserId,
   excusesByChildId,
 }) => {
-  const toast = useToast();
+  const toast = useAppToast();
   const [rows, setRows] = useState<ClassAttendanceRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [actionChildId, setActionChildId] = useState<number | null>(null);

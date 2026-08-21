@@ -14,17 +14,18 @@ import {
   Textarea,
   Select,
   VStack,
-  useToast,
   FormErrorMessage,
 } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
   Presentation,
+  PresentationStatus,
   CreatePresentationData,
   UpdatePresentationData,
 } from '@frontend/types/presentation';
 import { Child } from '@frontend/types/child';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface PresentationModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
   defaultChildId,
 }) => {
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     child_id: '',
@@ -137,8 +138,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
         class_id: selectedChild.class_id,
         name: formData.name.trim(),
         category: formData.category.trim() || undefined,
-        status: formData.status as
-          'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered',
+        status: formData.status as PresentationStatus,
         notes: formData.notes.trim() || undefined,
         ...(presentation && { id: presentation.id }),
       };

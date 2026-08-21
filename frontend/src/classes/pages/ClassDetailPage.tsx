@@ -12,9 +12,8 @@ import {
   IconButton,
   Text,
   VStack,
-  useToast,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon } from '@chakra-ui/icons';
+import { FiChevronLeft } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
@@ -37,6 +36,7 @@ import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } fr
 
 import { Class, NextPresentation } from '@frontend/types/class';
 import { User } from '@frontend/types/user';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const transformClassData = (data: Class): Class => data;
 
@@ -44,7 +44,7 @@ const ClassDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const [classData, setClassData] = useState<Class | null>(null);
   const [nextPresentations, setNextPresentations] = useState<NextPresentation[]>([]);
   const [isEditInfoModalOpen, setIsEditInfoModalOpen] = useState(false);
@@ -430,14 +430,14 @@ const ClassDetailPage = () => {
             <Box display={{ base: 'block', md: 'none' }}>
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
-                icon={<ChevronLeftIcon />}
+                icon={<FiChevronLeft />}
                 onClick={() => navigate(ROUTES.CLASSES)}
                 size="md"
               />
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
               <Button
-                leftIcon={<ChevronLeftIcon />}
+                leftIcon={<FiChevronLeft />}
                 onClick={() => navigate(ROUTES.CLASSES)}
                 size="md"
                 px={4}
@@ -452,19 +452,13 @@ const ClassDetailPage = () => {
             <Box display={{ base: 'block', md: 'none' }}>
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
-                icon={<ChevronLeftIcon />}
+                icon={<FiChevronLeft />}
                 size="md"
                 visibility="hidden"
               />
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button
-                leftIcon={<ChevronLeftIcon />}
-                size="md"
-                px={4}
-                minW="auto"
-                visibility="hidden"
-              >
+              <Button leftIcon={<FiChevronLeft />} size="md" px={4} minW="auto" visibility="hidden">
                 {texts.classes.detail.backToList[language]}
               </Button>
             </Box>

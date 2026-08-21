@@ -1,5 +1,4 @@
 import React from 'react';
-import { FocusableElement } from '@chakra-ui/utils';
 import {
   AlertDialog,
   AlertDialogBody,
@@ -9,6 +8,10 @@ import {
   AlertDialogOverlay,
   Button,
 } from '@chakra-ui/react';
+
+type FocusableElement = {
+  focus(options?: FocusOptions): void;
+};
 
 export interface ConfirmDialogProps {
   isOpen: boolean;

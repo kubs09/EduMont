@@ -12,7 +12,6 @@ import {
   Input,
   Textarea,
   FormErrorMessage,
-  useToast,
   Box,
   Select,
 } from '@chakra-ui/react';
@@ -26,6 +25,7 @@ import { getClassesByAge } from '@frontend/services/api/class';
 import { User } from '@frontend/types/user';
 import { Class } from '@frontend/types/class';
 import { Combobox } from '@frontend/shared/components/Combobox';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface EditChildModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ interface FormData {
 
 const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
   const [formData, setFormData] = useState<FormData>({

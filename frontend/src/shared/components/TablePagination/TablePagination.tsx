@@ -1,6 +1,6 @@
 import React from 'react';
 import { HStack, IconButton, Button, Text } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 
@@ -44,7 +44,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
       <HStack spacing={1}>
         <IconButton
           aria-label="Previous page"
-          icon={<ChevronLeftIcon />}
+          icon={<FiChevronLeft />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage - 1)}
@@ -64,7 +64,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
         ))}
         <IconButton
           aria-label="Next page"
-          icon={<ChevronRightIcon />}
+          icon={<FiChevronRight />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage + 1)}

@@ -11,8 +11,9 @@ import {
   Button,
   Grid,
   GridItem,
+  Icon,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiChevronRight, FiChevronDown } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 
 interface DatePickerHeaderProps {
@@ -90,7 +91,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               ? texts.common.datePicker.previousMonth[language]
               : texts.common.datePicker.previousYear[language]
           }
-          icon={<ChevronLeftIcon />}
+          icon={<FiChevronLeft />}
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
@@ -116,7 +117,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  rightIcon={<ChevronDownIcon boxSize={3} />}
+                  rightIcon={<Icon as={FiChevronDown} boxSize={3} />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onMonthOpen();
@@ -167,7 +168,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                rightIcon={<ChevronDownIcon boxSize={3} />}
+                rightIcon={<Icon as={FiChevronDown} boxSize={3} />}
                 onClick={(e) => {
                   e.stopPropagation();
                   onYearOpen();
@@ -211,7 +212,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               ? texts.common.datePicker.nextMonth[language]
               : texts.common.datePicker.nextYear[language]
           }
-          icon={<ChevronRightIcon />}
+          icon={<FiChevronRight />}
           size="sm"
           onClick={(e) => {
             e.stopPropagation();

@@ -12,13 +12,13 @@ import {
   Td,
   TableContainer,
   Select,
-  useToast,
   Button,
   VStack,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Presentation } from '@frontend/types/presentation';
 import { updateChildPresentationStatus } from '@frontend/services/api/presentation';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface PresentationsSectionProps {
   presentations: Presentation[];
@@ -36,7 +36,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
   canUpdateStatus = false,
   onStatusUpdated,
 }) => {
-  const toast = useToast();
+  const toast = useAppToast();
   const [updatingpresentationId, setUpdatingpresentationId] = useState<number | null>(null);
   const getStatusColor = (status: string): string => {
     switch (status) {

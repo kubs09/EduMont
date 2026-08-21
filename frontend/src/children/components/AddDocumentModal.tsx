@@ -4,7 +4,6 @@ import {
   Button,
   Text,
   VStack,
-  useToast,
   FormControl,
   FormLabel,
   Input,
@@ -25,6 +24,7 @@ import { texts } from '@frontend/texts';
 import { createDocument } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface AddDocumentModalProps {
   isOpen: boolean;
@@ -41,7 +41,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
   language,
   onDocumentsUpdate,
 }) => {
-  const toast = useToast();
+  const toast = useAppToast();
   const [uploadFile, setUploadFile] = React.useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = React.useState('');
   const [uploadDescription, setUploadDescription] = React.useState('');

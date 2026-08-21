@@ -41,12 +41,33 @@ export default tseslint.config(
       globals: globals.browser,
     },
     settings: {
-      // Hardcoded, not 'detect': eslint-plugin-react@7.37.5's version-detection
-      // code calls context.getFilename(), which ESLint 10 removed entirely
-      // (replaced by context.filename) — 'detect' crashes ESLint on every
-      // frontend file. No newer eslint-plugin-react release exists yet that
-      // fixes this. Bump this string manually when React's major version
-      // changes.
+      // package.json pins eslint to ^10.8.1 (10.x is installed — the caret range
+      // drifts with every install, so don't rely on this comment for the exact
+      // patch version; check `npm ls eslint` if it matters), but neither
+      // React-related plugin's peer range covers ESLint 10 yet:
+      // eslint-plugin-react@7.37.5 peers on
+      // '^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7', eslint-plugin-jsx-a11y@6.10.2
+      // peers on '^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9' — both are each
+      // package's current latest release, so there's no newer version to move to
+      // yet. package.json's `overrides` block forces npm to install anyway; that
+      // only resolves the peer conflict for `npm install`, it adds no runtime
+      // compatibility.
+      //
+      // One concrete break from this gap is already known and mitigated here:
+      // eslint-plugin-react's 'detect' version-autodetection calls
+      // context.getFilename(), which ESLint 10 removed entirely (replaced by
+      // context.filename) — 'detect' crashes ESLint on every frontend file, so
+      // the version is hardcoded below instead. Bump this string manually when
+      // React's major version changes.
+      //
+      // Whether either plugin calls any *other* ESLint-9-only API is unverified —
+      // neither plugin advertises ESLint 10 support, so nothing rules it out;
+      // `npm run lint` currently completes without crashing, but that only proves
+      // this one path is safe. To close the gap for real: pin `eslint` and
+      // `@eslint/js` to `9.7.x` (the highest version both plugins' peer ranges
+      // cover), or upgrade both plugins once they publish a release with ESLint 10
+      // in their peer range — check with `npm view eslint-plugin-react
+      // peerDependencies` and `npm view eslint-plugin-jsx-a11y peerDependencies`.
       react: { version: '19.2.8' },
     },
   },

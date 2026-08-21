@@ -11,8 +11,9 @@ import {
   IconButton,
   Portal,
   useOutsideClick,
+  Icon,
 } from '@chakra-ui/react';
-import { CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { FiX, FiChevronDown } from 'react-icons/fi';
 import { ComboboxProps, ComboboxOption } from './types';
 
 const Combobox: React.FC<ComboboxProps> = ({
@@ -114,7 +115,7 @@ const Combobox: React.FC<ComboboxProps> = ({
             <InputRightElement width="2.5rem">
               <IconButton
                 aria-label="Clear selection"
-                icon={<CloseIcon />}
+                icon={<FiX />}
                 size="sm"
                 variant="ghost"
                 onClick={handleClear}
@@ -126,7 +127,7 @@ const Combobox: React.FC<ComboboxProps> = ({
           )}
           {!isClearable || !hasValue ? (
             <InputRightElement pointerEvents="none">
-              <ChevronDownIcon color="text-muted" />
+              <Icon as={FiChevronDown} color="text-muted" />
             </InputRightElement>
           ) : null}
         </InputGroup>
@@ -207,7 +208,7 @@ const Combobox: React.FC<ComboboxProps> = ({
               </Text>
               <IconButton
                 aria-label="Remove selection"
-                icon={<CloseIcon />}
+                icon={<FiX />}
                 size="xs"
                 variant="ghost"
                 onClick={() => handleSelectOption(option.value)}

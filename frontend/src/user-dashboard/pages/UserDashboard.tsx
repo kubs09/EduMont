@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Card,
-  CardHeader,
-  CardBody,
-  Heading,
-  useToast,
-  Button,
-  HStack,
-} from '@chakra-ui/react';
+import { Box, Card, CardHeader, CardBody, Heading, Button, HStack } from '@chakra-ui/react';
 import UserTable from '../components/UserTable';
 import AddUserDialog from '../components/AddUserDialog';
 import api from '@frontend/services/apiConfig';
@@ -16,6 +7,7 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { SearchBar } from '@frontend/shared/components/SearchBar';
 import { User } from '@frontend/types/user';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const UserDashboard: React.FC = () => {
   const { language } = useLanguage();
@@ -24,7 +16,7 @@ const UserDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const toast = useToast();
+  const toast = useAppToast();
 
   const filteredUsers = React.useMemo(() => {
     if (!searchQuery) return users;

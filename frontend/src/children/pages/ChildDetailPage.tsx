@@ -12,9 +12,8 @@ import {
   HStack,
   IconButton,
   VStack,
-  useToast,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -39,12 +38,13 @@ import {
   PresentationsSection,
   ExcusesSection,
 } from '../sections';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const [childData, setChildData] = useState<Child | null>(null);
   const [presentations, setPresentations] = useState<Presentation[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -373,14 +373,14 @@ const ChildDetailPage = () => {
             <Box display={{ base: 'block', md: 'none' }} order={{ base: 1, md: 1 }}>
               <IconButton
                 aria-label={texts.children.backButton[language]}
-                icon={<ChevronLeftIcon />}
+                icon={<FiChevronLeft />}
                 size="sm"
                 onClick={() => navigate(ROUTES.CHILDREN)}
               />
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
               <Button
-                leftIcon={<ChevronLeftIcon />}
+                leftIcon={<FiChevronLeft />}
                 onClick={() => navigate(ROUTES.CHILDREN)}
                 size="md"
                 px={4}
@@ -409,14 +409,14 @@ const ChildDetailPage = () => {
                 <HStack spacing={2}>
                   <IconButton
                     aria-label={texts.profile.edit[language]}
-                    icon={<EditIcon />}
+                    icon={<FiEdit2 />}
                     variant="brand"
                     size={{ base: 'sm', md: 'md' }}
                     onClick={() => setIsEditModalOpen(true)}
                   />
                   <IconButton
                     aria-label={texts.common.delete[language]}
-                    icon={<DeleteIcon />}
+                    icon={<FiTrash2 />}
                     variant="delete"
                     size={{ base: 'sm', md: 'md' }}
                     onClick={() => setIsDeleteConfirmOpen(true)}

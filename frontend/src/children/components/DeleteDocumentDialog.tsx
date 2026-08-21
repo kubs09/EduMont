@@ -7,10 +7,10 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   Button,
-  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface DeleteDocumentDialogProps {
   isOpen: boolean;
@@ -29,7 +29,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
   onDocumentDeleted,
 }) => {
   const cancelRef = React.useRef(null);
-  const toast = useToast();
+  const toast = useAppToast();
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDelete = async () => {

@@ -9,13 +9,13 @@ import {
   Th,
   Td,
   Text,
-  useToast,
   IconButton,
   useDisclosure,
   Button,
   VStack,
+  Icon,
 } from '@chakra-ui/react';
-import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { FiTrash2, FiChevronRight } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -26,12 +26,13 @@ import AddChildModal from '../components/AddChildModal';
 import React from 'react';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ChildrenPage = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
-  const toast = useToast();
+  const toast = useAppToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
@@ -207,7 +208,7 @@ const ChildrenPage = () => {
                     {isAdmin && (
                       <IconButton
                         aria-label="Delete child"
-                        icon={<DeleteIcon />}
+                        icon={<FiTrash2 />}
                         colorScheme="red"
                         size="sm"
                         onClick={() => {
@@ -216,7 +217,7 @@ const ChildrenPage = () => {
                         }}
                       />
                     )}
-                    {!isAdmin && <ChevronRightIcon boxSize={6} color="gray.500" />}
+                    {!isAdmin && <Icon as={FiChevronRight} boxSize={6} color="gray.500" />}
                   </Td>
                 </Tr>
               ))}

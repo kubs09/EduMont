@@ -13,7 +13,7 @@ import {
   Badge,
   Box,
 } from '@chakra-ui/react';
-import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { Presentation } from '@frontend/types/presentation';
@@ -156,7 +156,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                   <HStack spacing={2}>
                     <IconButton
                       aria-label={texts.schedule.editEntry[language]}
-                      icon={<EditIcon />}
+                      icon={<FiEdit2 />}
                       size="sm"
                       colorScheme="blue"
                       variant="ghost"
@@ -164,7 +164,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                     />
                     <IconButton
                       aria-label={texts.schedule.deleteEntry[language]}
-                      icon={<DeleteIcon />}
+                      icon={<FiTrash2 />}
                       size="sm"
                       colorScheme="red"
                       variant="ghost"

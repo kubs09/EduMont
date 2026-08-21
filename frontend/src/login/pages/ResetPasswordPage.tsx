@@ -11,7 +11,6 @@ import {
   Input,
   VStack,
   Heading,
-  useToast,
   Card,
   CardBody,
 } from '@chakra-ui/react';
@@ -22,13 +21,14 @@ import {
   createResetPasswordSchema,
   ResetPasswordSchema,
 } from '@frontend/login/schemas/ResetPasswordSchema';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ResetPasswordPage = () => {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useAppToast();
 
   const {
     register,

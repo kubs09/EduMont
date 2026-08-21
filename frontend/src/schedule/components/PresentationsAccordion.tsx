@@ -18,7 +18,7 @@ import {
   Tr,
   Text,
 } from '@chakra-ui/react';
-import { ArrowUpIcon, ArrowDownIcon, EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import { FiArrowUp, FiArrowDown, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { CategoryPresentation } from '@frontend/types/presentation-category';
 
@@ -80,27 +80,27 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
                           <HStack spacing={2}>
                             <IconButton
                               aria-label={texts.schedule.curriculum.moveUp[language]}
-                              icon={<ArrowUpIcon />}
+                              icon={<FiArrowUp />}
                               size="sm"
                               isDisabled={index === 0}
                               onClick={() => onReorder(presentation, 'up')}
                             />
                             <IconButton
                               aria-label={texts.schedule.curriculum.moveDown[language]}
-                              icon={<ArrowDownIcon />}
+                              icon={<FiArrowDown />}
                               size="sm"
                               isDisabled={index === categoryPresentations.length - 1}
                               onClick={() => onReorder(presentation, 'down')}
                             />
                             <IconButton
                               aria-label={texts.common.edit[language]}
-                              icon={<EditIcon />}
+                              icon={<FiEdit2 />}
                               size="sm"
                               onClick={() => onEdit(presentation)}
                             />
                             <IconButton
                               aria-label={texts.common.delete[language]}
-                              icon={<DeleteIcon />}
+                              icon={<FiTrash2 />}
                               size="sm"
                               colorScheme="red"
                               onClick={() => onDelete(presentation.id)}

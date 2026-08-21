@@ -14,7 +14,7 @@ import {
   HStack,
   IconButton,
 } from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { Document } from '@frontend/types/document';
 import { Child } from '@frontend/types/child';
@@ -92,7 +92,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                       <HStack spacing={2}>
                         <IconButton
                           aria-label="delete"
-                          icon={<DeleteIcon />}
+                          icon={<FiTrash2 />}
                           size="sm"
                           variant="delete"
                           onClick={() => {
@@ -114,7 +114,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
       {canUpload && (
         <Box>
-          <Button leftIcon={<AddIcon />} variant="brand" onClick={() => setIsModalOpen(true)}>
+          <Button leftIcon={<FiPlus />} variant="brand" onClick={() => setIsModalOpen(true)}>
             {texts.children.documents.uploadDocument[language]}
           </Button>
         </Box>

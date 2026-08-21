@@ -11,8 +11,9 @@ import {
   InputLeftElement,
   HStack,
   Button,
+  Icon,
 } from '@chakra-ui/react';
-import { Search2Icon, TriangleDownIcon, TriangleUpIcon, EmailIcon } from '@chakra-ui/icons';
+import { FiSearch, FiChevronDown, FiChevronUp, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageListProps } from '@frontend/types/message';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -41,7 +42,7 @@ const MessageList: React.FC<MessageListProps> = ({
       <VStack w="full" p={2}>
         <InputGroup>
           <InputLeftElement pointerEvents="none">
-            <Search2Icon color="gray.500" />
+            <Icon as={FiSearch} color="gray.500" />
           </InputLeftElement>
           <Input
             placeholder={t.search[language]}
@@ -55,7 +56,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            leftIcon={sortDirection === 'desc' ? <TriangleDownIcon /> : <TriangleUpIcon />}
+            leftIcon={sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}
             onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}
           >
             {t.sortDate[language]}
@@ -64,7 +65,7 @@ const MessageList: React.FC<MessageListProps> = ({
       </VStack>
       {messages.length === 0 ? (
         <VStack p={3} spacing={3}>
-          <EmailIcon boxSize={12} color="gray.400" />
+          <Icon as={FiMail} boxSize={12} color="gray.400" />
           <Text color="gray.500" fontWeight="medium">
             {searchQuery ? t.noMessagesFound[language] : emptyMessage}
           </Text>

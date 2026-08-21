@@ -11,7 +11,7 @@ import {
   PopoverBody,
   IconButton,
 } from '@chakra-ui/react';
-import { CalendarIcon } from '@chakra-ui/icons';
+import { FiCalendar } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { CustomDatePickerProps } from '@frontend/shared/components/DatePicker/utils/types';
 import { formatWeekRange, formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
@@ -120,7 +120,7 @@ const DatePicker: React.FC<CustomDatePickerProps> = ({ viewType, value, onChange
           <PopoverTrigger>
             <IconButton
               aria-label={texts.common.datePicker.openPicker[language]}
-              icon={<CalendarIcon />}
+              icon={<FiCalendar />}
               size="sm"
               variant="ghost"
               onClick={() => setIsOpen(!isOpen)}

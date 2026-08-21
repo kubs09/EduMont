@@ -12,7 +12,6 @@ import {
   Tabs,
   TabList,
   Tab,
-  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class, NextPresentation } from '@frontend/types/class';
@@ -20,6 +19,7 @@ import TablePagination from '@frontend/shared/components/TablePagination/TablePa
 import { ChildExcuse } from '@frontend/types/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
 import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -44,7 +44,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [permissionRequested, setPermissionRequested] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const PAGE_SIZE = 4;
 
   useEffect(() => {

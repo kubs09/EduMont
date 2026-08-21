@@ -8,7 +8,6 @@ import {
   Stack,
   Switch,
   VStack,
-  useToast,
 } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -18,6 +17,7 @@ import {
   createPasswordChangeSchema,
   PasswordChangeSchema,
 } from '@frontend/shared/validation/passwordSchema';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface SettingsSectionProps {
   messageNotifications: boolean;
@@ -26,7 +26,7 @@ interface SettingsSectionProps {
 
 const SettingsSection = ({ messageNotifications, onToggleNotifications }: SettingsSectionProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const userId = Number(localStorage.getItem('userId'));
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formData, setFormData] = useState<PasswordChangeSchema>({
