@@ -104,7 +104,12 @@ if (isVercel || process.env.NODE_ENV !== 'production') {
 const app = express();
 const apiRouter = express.Router();
 
-const corsOrigins = ['http://localhost:3000', 'http://localhost:3001'].filter(Boolean);
+const corsOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'http://localhost:5174',
+].filter(Boolean);
 
 if (process.env.FRONTEND_URL) corsOrigins.push(process.env.FRONTEND_URL);
 if (process.env.VERCEL_URL) corsOrigins.push(`https://${process.env.VERCEL_URL}`);
