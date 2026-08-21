@@ -52,7 +52,7 @@ const InviteSignupPage: React.FC = () => {
         status: 'success',
       });
       navigate(ROUTES.LOGIN);
-    } catch (error) {
+    } catch {
       toast({
         title: texts.signUp.errors.registrationFailed.title[language],
         description: texts.signUp.errors.registrationFailed.description[language],

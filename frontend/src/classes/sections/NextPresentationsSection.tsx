@@ -83,7 +83,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
           isClosable: true,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         title: texts.classes.errors.permissionRequestFailed[language],
         status: 'error',

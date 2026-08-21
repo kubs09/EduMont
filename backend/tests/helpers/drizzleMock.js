@@ -15,7 +15,6 @@ export const makeChain = (result) => {
       return target[prop];
     },
   };
-  // eslint-disable-next-line no-undef -- Proxy is a standard JS global; not covered by this repo's eslint env config
   const proxy = new Proxy({}, handler);
   return proxy;
 };

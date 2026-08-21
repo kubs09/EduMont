@@ -1,9 +1,5 @@
 export type PresentationStatus =
-  | 'prerequisites not met'
-  | 'to be presented'
-  | 'presented'
-  | 'practiced'
-  | 'mastered';
+  'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered';
 export interface Presentation {
   id: number;
   child_id: number;

@@ -81,6 +81,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
   };
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- stops click propagation only, not a real interactive element
     <div onClick={(e) => e.stopPropagation()}>
       <HStack justify="space-between" width="100%" spacing={2}>
         <IconButton
@@ -93,7 +94,11 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            showMonth ? handlePrevMonth() : handlePrevYear();
+            if (showMonth) {
+              handlePrevMonth();
+            } else {
+              handlePrevYear();
+            }
           }}
           variant="ghost"
         />
@@ -210,7 +215,11 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
-            showMonth ? handleNextMonth() : handleNextYear();
+            if (showMonth) {
+              handleNextMonth();
+            } else {
+              handleNextYear();
+            }
           }}
           variant="ghost"
         />

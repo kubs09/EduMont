@@ -264,7 +264,7 @@ const theme = extendTheme({
     },
   },
   styles: {
-    global: (props: { colorMode: string }) => ({
+    global: () => ({
       body: {
         bg: 'bg-canvas',
         color: 'text-primary',

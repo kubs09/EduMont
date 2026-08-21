@@ -7,7 +7,7 @@ let supabaseInitAttempted = false;
 try {
   supabase = (await import('#backend/config/supabase.js')).default;
   supabaseInitAttempted = true;
-} catch (error) {
+} catch {
   supabase = null;
 }
 
@@ -16,7 +16,7 @@ router.post('/', authenticateToken, async (req, res) => {
     try {
       supabase = (await import('#backend/config/supabase.js')).default;
       supabaseInitAttempted = true;
-    } catch (error) {
+    } catch {
       supabase = null;
     }
   }

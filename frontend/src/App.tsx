@@ -12,7 +12,7 @@ import { SnackbarProvider } from 'notistack';
 function App(): React.ReactElement {
   const [isAuthenticated, setIsAuthenticated] = React.useState(!!localStorage.getItem('token'));
 
-  const handleLoginSuccess = (token: string) => {
+  const handleLoginSuccess = () => {
     setIsAuthenticated(true);
     window.location.href = ROUTES.DASHBOARD;
   };

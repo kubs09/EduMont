@@ -13,7 +13,7 @@ interface ClassSectionProps {
   subtleBg?: string;
 }
 
-const ClassSection = ({ onOpenClasses, subtleBg }: ClassSectionProps) => {
+const ClassSection = ({ subtleBg }: ClassSectionProps) => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [classes, setClasses] = useState<Class[]>([]);
@@ -23,7 +23,7 @@ const ClassSection = ({ onOpenClasses, subtleBg }: ClassSectionProps) => {
       try {
         const response = await getClasses();
         setClasses(response || []);
-      } catch (error) {
+      } catch {
         setClasses([]);
       }
     };

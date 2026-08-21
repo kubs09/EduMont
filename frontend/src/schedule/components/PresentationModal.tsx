@@ -138,11 +138,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
         name: formData.name.trim(),
         category: formData.category.trim() || undefined,
         status: formData.status as
-          | 'prerequisites not met'
-          | 'to be presented'
-          | 'presented'
-          | 'practiced'
-          | 'mastered',
+          'prerequisites not met' | 'to be presented' | 'presented' | 'practiced' | 'mastered',
         notes: formData.notes.trim() || undefined,
         ...(presentation && { id: presentation.id }),
       };

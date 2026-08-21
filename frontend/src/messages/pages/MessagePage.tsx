@@ -50,7 +50,7 @@ const Messages: React.FC = () => {
     try {
       const data = await getMessages();
       setMessages(data);
-    } catch (error) {
+    } catch {
       enqueueSnackbar(texts.messages.errors.fetchFailed[language], { variant: 'error' });
     } finally {
       setIsRefreshing(false);
@@ -61,7 +61,7 @@ const Messages: React.FC = () => {
     try {
       const data = await getMessageUsers();
       setUsers(data);
-    } catch (error) {
+    } catch {
       enqueueSnackbar(texts.messages.errors.fetchUsersFailed[language], {
         variant: 'error',
         autoHideDuration: 5000,
@@ -82,7 +82,7 @@ const Messages: React.FC = () => {
       const message = await getMessage(id);
       setSelectedMessage(message);
       fetchMessages();
-    } catch (error) {
+    } catch {
       enqueueSnackbar(texts.messages.errors.fetchMessageFailed[language], {
         variant: 'error',
       });
@@ -95,7 +95,7 @@ const Messages: React.FC = () => {
       fetchMessages();
       setSelectedMessage(null);
       enqueueSnackbar(texts.messages.success.deleted[language], { variant: 'success' });
-    } catch (error) {
+    } catch {
       enqueueSnackbar(texts.messages.errors.deleteFailed[language], { variant: 'error' });
     }
   };
@@ -234,7 +234,7 @@ const Messages: React.FC = () => {
             await sendMessage({ ...data, language });
             fetchMessages();
             enqueueSnackbar(texts.messages.success.sent[language], { variant: 'success' });
-          } catch (error) {
+          } catch {
             enqueueSnackbar(texts.messages.errors.sendFailed[language], { variant: 'error' });
           }
         }}

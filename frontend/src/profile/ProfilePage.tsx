@@ -84,7 +84,7 @@ const ProfilePage = () => {
         duration: 3000,
         isClosable: true,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: texts.profile.errors.notificationsUpdateFailed[language],
         status: 'error',
