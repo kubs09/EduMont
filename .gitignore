@@ -15,6 +15,7 @@ frontend/build/
 
 # misc
 .DS_Store
+.worktrees/
 
 # environment files
 .env
