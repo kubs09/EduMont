@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { Box, Grid, GridItem, Button, Tabs } from '@chakra-ui/react';
 import { FiMail, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -122,8 +122,14 @@ const Messages: React.FC = () => {
     <Box p={3}>
       <Grid templateColumns="repeat(12, 1fr)" gap={4}>
         <GridItem colSpan={12}>
-          <Button variant="brand" onClick={() => setComposeOpen(true)} mb={2} mr={2}><FiMail />{t.compose[language]}</Button>
-          <Button variant="secondary" onClick={fetchMessages} loading={isRefreshing} mb={2}><FiRefreshCw />{texts.common.refresh[language]}</Button>
+          <Button variant="brand" onClick={() => setComposeOpen(true)} mb={2} mr={2}>
+            <FiMail />
+            {t.compose[language]}
+          </Button>
+          <Button variant="secondary" onClick={fetchMessages} loading={isRefreshing} mb={2}>
+            <FiRefreshCw />
+            {texts.common.refresh[language]}
+          </Button>
         </GridItem>
 
         <GridItem colSpan={{ base: 12, md: 5, lg: 4 }}>
@@ -135,7 +141,7 @@ const Messages: React.FC = () => {
             h={{ base: 'calc(50vh - 100px)', md: 'calc(100vh - 250px)' }}
             overflow="hidden"
           >
-            <Tabs.Root fitted variant='enclosed' defaultValue="inbox">
+            <Tabs.Root fitted variant="enclosed" defaultValue="inbox">
               <Tabs.List>
                 <Tabs.Trigger value="inbox">{t.inbox[language]}</Tabs.Trigger>
                 <Tabs.Trigger value="sent">{t.sent[language]}</Tabs.Trigger>

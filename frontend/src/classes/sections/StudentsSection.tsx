@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { Table, Text, VStack, Box, Link as ChakraLink } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -96,9 +96,15 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
             <Table.Row>
               <Table.ColumnHeader>{texts.common.childrenTable.name[language]}</Table.ColumnHeader>
               <Table.ColumnHeader>{texts.common.childrenTable.age[language]}</Table.ColumnHeader>
-              {(isAdmin || isTeacher) && <Table.ColumnHeader>{texts.common.childrenTable.parent[language]}</Table.ColumnHeader>}
+              {(isAdmin || isTeacher) && (
+                <Table.ColumnHeader>
+                  {texts.common.childrenTable.parent[language]}
+                </Table.ColumnHeader>
+              )}
               <Table.ColumnHeader>{texts.children.excuse.status[language]}</Table.ColumnHeader>
-              {isParent && <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>}
+              {isParent && (
+                <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -122,7 +128,9 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                             <Text key={`${child.id}-parent-name-${parent.id}`}>
                               {canViewParentProfile ? (
                                 <ChakraLink asChild color={linkColor}>
-                                  <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}>
+                                  <RouterLink
+                                    to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                                  >
                                     {fullName}
                                   </RouterLink>
                                 </ChakraLink>

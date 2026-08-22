@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';

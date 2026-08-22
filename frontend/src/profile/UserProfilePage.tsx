@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useColorModeValue } from "../components/ui/color-mode";
+import { useColorModeValue } from '../shared/contexts/ColorContext';
 import { Box, Container, Grid, GridItem, Heading, IconButton, Stack, Text } from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -70,7 +70,10 @@ const UserProfilePage = () => {
               aria-label={texts.children.backButton[language]}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
-              onClick={() => navigate(-1)}><FiChevronLeft /></IconButton>
+              onClick={() => navigate(-1)}
+            >
+              <FiChevronLeft />
+            </IconButton>
           </GridItem>
           <GridItem>
             <Heading size={{ base: 'md', md: 'lg' }} textAlign="center">
@@ -82,7 +85,10 @@ const UserProfilePage = () => {
               aria-label={texts.children.backButton[language]}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
-              visibility="hidden"><FiChevronLeft /></IconButton>
+              visibility="hidden"
+            >
+              <FiChevronLeft />
+            </IconButton>
           </GridItem>
         </Grid>
         <Stack gap={4}>

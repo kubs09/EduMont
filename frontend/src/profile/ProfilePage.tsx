@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useColorModeValue } from "../components/ui/color-mode";
+import { useColorModeValue } from '../shared/contexts/ColorContext';
 import { useNavigate } from 'react-router-dom';
 import { Box, Flex } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';

@@ -1,4 +1,4 @@
-import { useColorModeValue } from "../components/ui/color-mode";
+import { useColorModeValue } from '../shared/contexts/ColorContext';
 
 // Custom hook for commonly used color mode values
 export const useAppColors = () => {

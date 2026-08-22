@@ -1,4 +1,4 @@
-import { toaster } from '@frontend/components/ui/toaster';
+import { toaster } from '@frontend/shared/ui/toaster';
 
 interface AppToastOptions {
   title: string;

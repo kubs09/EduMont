@@ -72,6 +72,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ['frontend/**/*.{ts,tsx}'],
+    rules: {
+      'react/prop-types': 'off',
+    },
+  },
+  {
     files: ['frontend/**/*.{js,jsx,ts,tsx}'],
     ...react.configs.flat['jsx-runtime'],
   },

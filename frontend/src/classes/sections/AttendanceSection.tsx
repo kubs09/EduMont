@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { Box, Button, Table, Text, HStack } from '@chakra-ui/react';
-import { Tooltip } from '@frontend/components/ui/tooltip';
+import { Tooltip } from '@frontend/shared/ui/tooltip';
 import { texts } from '@frontend/texts';
 import { Class, ClassAttendanceRow } from '@frontend/types/class';
 import {
@@ -374,7 +374,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                       borderColor: tooltipBorderColor,
                     }}
                     positioning={{
-                      placement: "top"
+                      placement: 'top',
                     }}
                   >
                     <Text color={color} fontSize="sm">

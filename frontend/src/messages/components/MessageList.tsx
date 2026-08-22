@@ -1,6 +1,16 @@
 import React from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
-import { List, Text, VStack, Input, InputGroup, HStack, Button, Icon, Separator } from '@chakra-ui/react';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
+import {
+  List,
+  Text,
+  VStack,
+  Input,
+  InputGroup,
+  HStack,
+  Button,
+  Icon,
+  Separator,
+} from '@chakra-ui/react';
 import { FiSearch, FiChevronDown, FiChevronUp, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageListProps } from '@frontend/types/message';
@@ -41,7 +51,11 @@ const MessageList: React.FC<MessageListProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}>{sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}{t.sortDate[language]}</Button>
+            onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}
+          >
+            {sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}
+            {t.sortDate[language]}
+          </Button>
         </HStack>
       </VStack>
       {messages.length === 0 ? (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useColorModeValue } from "../../../components/ui/color-mode";
+import { useColorModeValue } from '../../contexts/ColorContext';
 import {
   Button,
   Card,
@@ -57,7 +57,10 @@ const SectionMenu = ({ title, sections, activeKey, onChange, cardProps }: Sectio
               aria-label={title}
               variant="ghost"
               size="sm"
-              onClick={() => setIsMenuOpen((open) => !open)}>{isMenuOpen ? <FiChevronUp /> : <FiChevronDown />}</IconButton>
+              onClick={() => setIsMenuOpen((open) => !open)}
+            >
+              {isMenuOpen ? <FiChevronUp /> : <FiChevronDown />}
+            </IconButton>
           )}
         </HStack>
         <Collapsible.Root open={!isMobile || isMenuOpen}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import {
   Box,
   Text,
@@ -68,7 +68,10 @@ const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) 
                       if (childData.class_id) {
                         navigate(ROUTES.CLASS_DETAIL.replace(':id', childData.class_id.toString()));
                       }
-                    }}><FiExternalLink /></IconButton>
+                    }}
+                  >
+                    <FiExternalLink />
+                  </IconButton>
                 </HStack>
               ) : (
                 <Text>{texts.common.childrenTable.noClass[language]}</Text>

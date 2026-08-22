@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useColorModeValue } from "../../components/ui/color-mode";
 import {
   Table,
   Spinner,
@@ -8,22 +7,19 @@ import {
   IconButton,
   useDisclosure,
   Button,
-  Link as ChakraLink,
   Dialog,
   Portal,
 } from '@chakra-ui/react';
 import { FiTrash2 } from 'react-icons/fi';
-import { Link as RouterLink } from 'react-router-dom';
-import { ROUTES } from '@frontend/shared/route';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 import { User, UserTableProps } from '@frontend/types/user';
+import { CustomTable } from '@frontend/shared/ui/table';
 
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();
   const { open, onOpen, onClose } = useDisclosure();
-  const linkColor = useColorModeValue('blue.600', 'blue.300');
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -70,39 +66,30 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
   return (
     <>
       <Table.ScrollArea>
-        <Table.Root variant="simple">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader>{texts.userDashboard.table.name[language]}</Table.ColumnHeader>
-              <Table.ColumnHeader>{texts.userDashboard.table.email[language]}</Table.ColumnHeader>
-              <Table.ColumnHeader>{texts.userDashboard.table.role[language]}</Table.ColumnHeader>
-              <Table.ColumnHeader>{texts.userDashboard.table.actions[language]}</Table.ColumnHeader>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {paginatedUsers.map((user) => (
-              <Table.Row key={user.id}>
-                <Table.Cell>
-                  <ChakraLink asChild color={linkColor}>
-                    <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}>
-                      {`${user.firstname} ${user.surname}`}
-                    </RouterLink>
-                  </ChakraLink>
-                </Table.Cell>
-                <Table.Cell>{user.email}</Table.Cell>
-                <Table.Cell>{texts.userDashboard.table.roles[user.role][language]}</Table.Cell>
-                <Table.Cell>
-                  <IconButton
-                    aria-label={texts.userDashboard.table.deleteButton[language]}
-                    size="sm"
-                    colorPalette="red"
-                    variant="ghost"
-                    onClick={() => handleDeleteClick(user)}><FiTrash2 /></IconButton>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+        <CustomTable
+          headers={[
+            texts.userDashboard.table.name[language],
+            texts.userDashboard.table.email[language],
+            texts.userDashboard.table.role[language],
+            texts.userDashboard.table.actions[language],
+          ]}
+          data={paginatedUsers.map((user) => [
+            `${user.firstname} ${user.surname}`,
+            user.email,
+            texts.userDashboard.table.roles[user.role][language],
+          ])}
+          actions={(rowIndex) => (
+            <IconButton
+              aria-label={texts.userDashboard.table.deleteButton[language]}
+              size="sm"
+              colorPalette="red"
+              variant="ghost"
+              onClick={() => handleDeleteClick(paginatedUsers[rowIndex])}
+            >
+              <FiTrash2 />
+            </IconButton>
+          )}
+        />
         <TablePagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -111,18 +98,17 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
           totalCount={data.length}
         />
       </Table.ScrollArea>
-
       <Dialog.Root
         open={open}
         initialFocusEl={() => cancelRef.current}
-        role='alertdialog'
-        onOpenChange={e => {
+        role="alertdialog"
+        onOpenChange={(e) => {
           if (!e.open) {
             onClose();
           }
-        }}>
+        }}
+      >
         <Portal>
-
           <Dialog.Backdrop>
             <Dialog.Positioner>
               <Dialog.Content>
@@ -149,9 +135,8 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
               </Dialog.Content>
             </Dialog.Positioner>
           </Dialog.Backdrop>
-
         </Portal>
-</Dialog.Root>
+      </Dialog.Root>
     </>
   );
 };
