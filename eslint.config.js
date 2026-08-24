@@ -1,14 +1,31 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import react from 'eslint-plugin-react';
+import eslintReact from '@eslint-react/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
+// Pre-1.0 successor to eslint-plugin-jsx-a11y (v0.2.0 as of this migration) — chosen
+// because it's a verified same-rule-set replacement with ESLint 10 support, but it's
+// young. See docs/superpowers/specs/2026-08-24-eslint10-migration-design.md for the
+// full risk rationale if a11y-lint behavior looks off.
+import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
   {
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**'],
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      // Linked git worktrees (this repo and agent-session sandboxes both create
+      // these) have no node_modules of their own, so Node's module resolution
+      // falls through to this checkout's node_modules — meaning a stale worktree
+      // importing a package this checkout no longer has crashes `eslint .` here
+      // instead of just being a stale checkout. Not scoped to a single worktree
+      // name since new ones come and go.
+      '.worktrees/**',
+      '.claude/worktrees/**',
+    ],
   },
   js.configs.recommended,
   // typescript-eslint's rule-bearing config entries here carry no `files`
@@ -35,51 +52,59 @@ export default tseslint.config(
   },
   {
     files: ['frontend/**/*.{js,jsx,ts,tsx}'],
-    ...react.configs.flat.recommended,
+    plugins: { '@eslint-react': eslintReact },
     languageOptions: {
-      ...react.configs.flat.recommended.languageOptions,
+      // Preserved from eslint-plugin-react's old `recommended` config, which also
+      // set this — kept explicitly rather than dropped, even though every current
+      // frontend file is either .tsx (parsed by @typescript-eslint/parser, which
+      // detects JSX from the extension regardless of this flag) or a JSX-free .js
+      // file, so this had no observable effect before or after the swap; kept for
+      // safety against a future plain .jsx file where it would matter.
+      parserOptions: { ecmaFeatures: { jsx: true } },
       globals: globals.browser,
     },
-    settings: {
-      // package.json pins eslint to ^10.8.1 (10.x is installed — the caret range
-      // drifts with every install, so don't rely on this comment for the exact
-      // patch version; check `npm ls eslint` if it matters), but neither
-      // React-related plugin's peer range covers ESLint 10 yet:
-      // eslint-plugin-react@7.37.5 peers on
-      // '^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7', eslint-plugin-jsx-a11y@6.10.2
-      // peers on '^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9' — both are each
-      // package's current latest release, so there's no newer version to move to
-      // yet. package.json's `overrides` block forces npm to install anyway; that
-      // only resolves the peer conflict for `npm install`, it adds no runtime
-      // compatibility.
-      //
-      // One concrete break from this gap is already known and mitigated here:
-      // eslint-plugin-react's 'detect' version-autodetection calls
-      // context.getFilename(), which ESLint 10 removed entirely (replaced by
-      // context.filename) — 'detect' crashes ESLint on every frontend file, so
-      // the version is hardcoded below instead. Bump this string manually when
-      // React's major version changes.
-      //
-      // Whether either plugin calls any *other* ESLint-9-only API is unverified —
-      // neither plugin advertises ESLint 10 support, so nothing rules it out;
-      // `npm run lint` currently completes without crashing, but that only proves
-      // this one path is safe. To close the gap for real: pin `eslint` and
-      // `@eslint/js` to `9.7.x` (the highest version both plugins' peer ranges
-      // cover), or upgrade both plugins once they publish a release with ESLint 10
-      // in their peer range — check with `npm view eslint-plugin-react
-      // peerDependencies` and `npm view eslint-plugin-jsx-a11y peerDependencies`.
-      react: { version: '19.2.8' },
-    },
-  },
-  {
-    files: ['frontend/**/*.{ts,tsx}'],
     rules: {
-      'react/prop-types': 'off',
+      // Hand-picked to match eslint-plugin-react@7.37.5's `recommended` + `jsx-runtime`
+      // coverage exactly (see docs/superpowers/specs/2026-08-24-eslint10-migration-design.md
+      // for the full old-rule -> new-rule mapping and why the packaged
+      // `recommended-typescript` config isn't used: it duplicates the react-hooks
+      // rules below and adds ~15 unrelated rule categories).
+      '@eslint-react/no-missing-component-display-name': 'error',
+      '@eslint-react/no-missing-key': 'error',
+      '@eslint-react/no-duplicate-key': 'error',
+      '@eslint-react/jsx-no-comment-textnodes': 'error',
+      '@eslint-react/dom-no-unsafe-target-blank': 'error',
+      '@eslint-react/jsx-no-children-prop': 'error',
+      '@eslint-react/dom-no-dangerously-set-innerhtml-with-children': 'error',
+      '@eslint-react/no-direct-mutation-state': 'error',
+      '@eslint-react/dom-no-find-dom-node': 'error',
+      '@eslint-react/dom-no-render-return-value': 'error',
+      '@eslint-react/dom-no-unknown-property': 'error',
+      // These 8 replace the lifecycle/render-method portion of eslint-plugin-react's
+      // single blanket `no-deprecated` rule — NOT a complete replacement. That old
+      // rule also flagged React.createClass, React.PropTypes, React.DOM.*,
+      // React.addons.*, and ReactDOM.unmountComponentAtNode (deprecated in React 18
+      // alongside render/hydrate, which ARE covered below); none of those have any
+      // equivalent anywhere in @eslint-react's 140 exported rules (verified by direct
+      // keyword search against the installed package). No current usage of any of
+      // them in this codebase, so not an active problem, but silently unflagged if
+      // one reappears — same accepted-gap treatment as the two rules noted below.
+      '@eslint-react/no-component-will-mount': 'error',
+      '@eslint-react/no-component-will-receive-props': 'error',
+      '@eslint-react/no-component-will-update': 'error',
+      '@eslint-react/no-unsafe-component-will-mount': 'error',
+      '@eslint-react/no-unsafe-component-will-receive-props': 'error',
+      '@eslint-react/no-unsafe-component-will-update': 'error',
+      '@eslint-react/dom-no-hydrate': 'error',
+      '@eslint-react/dom-no-render': 'error',
+      // No @eslint-react equivalent exists for these two either (verified by
+      // exhaustive keyword search of the plugin's 140 exported rules during design;
+      // @eslint-react/kit is a beta build-your-own-rule framework, not a rule
+      // library, so a custom implementation was judged disproportionate here):
+      //   - jsx-no-duplicate-props (duplicate JSX attributes on one element)
+      //   - no-unescaped-entities (raw '>' / '"' etc. in JSX text content)
+      // Revisit any of these if they become a real problem in practice.
     },
-  },
-  {
-    files: ['frontend/**/*.{js,jsx,ts,tsx}'],
-    ...react.configs.flat['jsx-runtime'],
   },
   {
     // Pinned to the 2 classic hooks rules explicitly rather than spreading
@@ -97,9 +122,9 @@ export default tseslint.config(
   },
   {
     files: ['frontend/**/*.{js,jsx,ts,tsx}'],
-    ...jsxA11y.flatConfigs.recommended,
+    ...jsxA11y.configs.recommended,
     languageOptions: {
-      ...jsxA11y.flatConfigs.recommended.languageOptions,
+      ...jsxA11y.configs.recommended.languageOptions,
       globals: globals.browser,
     },
   },

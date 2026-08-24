@@ -79,7 +79,7 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
   };
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- stops click propagation only, not a real interactive element
+    // eslint-disable-next-line jsx-a11y-x/no-static-element-interactions, jsx-a11y-x/click-events-have-key-events -- stops click propagation only, not a real interactive element
     <div onClick={(e) => e.stopPropagation()}>
       <HStack justify="space-between" width="100%" gap={2}>
         <IconButton
@@ -97,22 +97,26 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               handlePrevYear();
             }
           }}
-          variant="ghost"><FiChevronLeft /></IconButton>
+          variant="ghost"
+        >
+          <FiChevronLeft />
+        </IconButton>
 
         <HStack gap={1} flex={1} justify="center">
           {showMonth && displayMonth !== undefined && (
             <Popover.Root
               open={isMonthOpen}
               closeOnInteractOutside={false}
-              onOpenChange={e => {
+              onOpenChange={(e) => {
                 if (!e.open) {
                   onMonthClose();
                 }
               }}
               positioning={{
                 placement: 'bottom',
-                strategy: 'fixed'
-              }}>
+                strategy: 'fixed',
+              }}
+            >
               <Popover.Trigger asChild>
                 <Button
                   variant="ghost"
@@ -123,7 +127,11 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                   }}
                   fontSize="md"
                   fontWeight="bold"
-                  _hover={{ bg: 'gray.100' }}>{texts.common.datePicker.months[language][displayMonth]}<Icon as={FiChevronDown} boxSize={3} /></Button>
+                  _hover={{ bg: 'gray.100' }}
+                >
+                  {texts.common.datePicker.months[language][displayMonth]}
+                  <Icon as={FiChevronDown} boxSize={3} />
+                </Button>
               </Popover.Trigger>
               <Popover.Positioner>
                 <Popover.Content width="200px">
@@ -158,15 +166,16 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
           <Popover.Root
             open={isYearOpen}
             closeOnInteractOutside={false}
-            onOpenChange={e => {
+            onOpenChange={(e) => {
               if (!e.open) {
                 onYearClose();
               }
             }}
             positioning={{
               placement: 'bottom',
-              strategy: 'fixed'
-            }}>
+              strategy: 'fixed',
+            }}
+          >
             <Popover.Trigger asChild>
               <Button
                 variant="ghost"
@@ -177,7 +186,11 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                 }}
                 fontSize="md"
                 fontWeight="bold"
-                _hover={{ bg: 'gray.100' }}>{displayYear}<Icon as={FiChevronDown} boxSize={3} /></Button>
+                _hover={{ bg: 'gray.100' }}
+              >
+                {displayYear}
+                <Icon as={FiChevronDown} boxSize={3} />
+              </Button>
             </Popover.Trigger>
             <Popover.Positioner>
               <Popover.Content width="180px" maxH="250px" overflowY="auto">
@@ -222,7 +235,10 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               handleNextYear();
             }
           }}
-          variant="ghost"><FiChevronRight /></IconButton>
+          variant="ghost"
+        >
+          <FiChevronRight />
+        </IconButton>
       </HStack>
     </div>
   );
