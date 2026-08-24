@@ -10,9 +10,8 @@ import {
   HStack,
   Icon,
   Field,
-  Dialog,
-  Portal,
 } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { createDocument } from '@frontend/services/api';
@@ -214,133 +213,123 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
   };
 
   return (
-    <Dialog.Root open={isOpen} size='lg' onOpenChange={e => {
-      if (!e.open) {
-        handleClose();
+    <CustomModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size="lg"
+      title={texts.children.documents.uploadDocument[language]}
+      buttons={
+        <>
+          <Button variant="ghost" mr={3} onClick={handleClose}>
+            {texts.common?.cancel?.[language] || 'Cancel'}
+          </Button>
+          <Button
+            onClick={handleUploadDocument}
+            loading={isUploading}
+            disabled={!uploadFile}
+            colorPalette="blue"
+          >
+            {texts.children.documents.uploadDocument[language]}
+          </Button>
+        </>
       }
-    }}>
-      <Portal>
-
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>{texts.children.documents.uploadDocument[language]}</Dialog.Header>
-            <Dialog.CloseTrigger />
-            <Dialog.Body>
-              <VStack align="stretch" gap={4}>
-                <Field.Root>
-                  <Field.Label>{texts.children.documents.documentTitle[language]}</Field.Label>
-                  <Input
-                    value={uploadTitle}
-                    onChange={(event) => setUploadTitle(event.target.value)}
-                    placeholder={texts.children.documents.placeholder.title[language]}
-                  />
-                </Field.Root>
-                <Field.Root>
-                  <Field.Label>{texts.children.documents.documentDescription[language]}</Field.Label>
-                  <Textarea
-                    value={uploadDescription}
-                    onChange={(event) => setUploadDescription(event.target.value)}
-                    placeholder={texts.children.documents.placeholder.description[language]}
-                  />
-                </Field.Root>
-                <Field.Root>
-                  <Field.Label>{texts.children.documents.file[language]}</Field.Label>
-                  <Box
-                    border="2px dashed"
-                    borderColor={isDragging ? 'brand.primary.500' : 'border-color'}
-                    borderRadius="md"
-                    p={6}
-                    textAlign="center"
-                    bg={isDragging ? 'brand.primary.300' : 'bg-surface'}
-                    transition="all 0.2s"
-                    cursor="pointer"
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    _hover={{ borderColor: 'brand.primary.500', bg: 'brand.primary.300' }}
-                  >
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      display="none"
-                      onChange={handleFileSelect}
-                      accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
-                    />
-                    {!uploadFile ? (
-                      <VStack gap={2}>
-                        <Box w={12} h={12} color="gray.500">
-                          <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
-                        </Box>
-                        <Text fontWeight="medium" color="text-primary">
-                          {texts.children.documents.placeholder?.dragDrop?.[language]}
-                        </Text>
-                        <Text fontSize="sm" color="text-secondary">
-                          {texts.children.documents.placeholder?.orClick?.[language]}
-                        </Text>
-                        <Text fontSize="xs" color="text-muted">
-                          PDF, DOC, TXT, PNG, JPG (max 5MB)
-                        </Text>
-                      </VStack>
-                    ) : (
-                      <HStack
-                        gap={3}
-                        p={3}
-                        bg="bg-surface"
-                        borderRadius="md"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Box boxSize={6} color="brand.primary.500">
-                          <Icon as={FiFile as React.ElementType} w={6} h={6} />
-                        </Box>
-                        <VStack align="start" flex={1} gap={0}>
-                          <Text fontWeight="medium" fontSize="sm" lineClamp={1}>
-                            {uploadFile.name}
-                          </Text>
-                          <Text fontSize="xs" color="text-muted">
-                            {formatFileSize(uploadFile.size)}
-                          </Text>
-                        </VStack>
-                        <Button size="sm" variant="ghost" colorPalette="red" onClick={handleRemoveFile}>
-                          <Icon as={FiX as React.ElementType} />
-                        </Button>
-                      </HStack>
-                    )}
-                  </Box>
-                </Field.Root>
-              </VStack>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="ghost" mr={3} onClick={handleClose}>
-                {texts.common?.cancel?.[language] || 'Cancel'}
-              </Button>
-              <Button
-                onClick={handleUploadDocument}
-                loading={isUploading}
-                disabled={!uploadFile}
-                colorPalette="blue"
-              >
-                {texts.children.documents.uploadDocument[language]}
-              </Button>
-            </Dialog.Footer>
-            {isUploading && uploadProgress > 0 && (
-              <Box px={6} pb={4}>
-                <Progress.Root value={uploadProgress} size="sm" colorPalette="blue">
-                  <Progress.Track>
-                    <Progress.Range />
-                  </Progress.Track>
-                </Progress.Root>
-                <Text fontSize="sm" color="gray.600" mt={2}>
-                  {uploadProgress}%
+    >
+      <VStack align="stretch" gap={4}>
+        <Field.Root>
+          <Field.Label>{texts.children.documents.documentTitle[language]}</Field.Label>
+          <Input
+            value={uploadTitle}
+            onChange={(event) => setUploadTitle(event.target.value)}
+            placeholder={texts.children.documents.placeholder.title[language]}
+          />
+        </Field.Root>
+        <Field.Root>
+          <Field.Label>{texts.children.documents.documentDescription[language]}</Field.Label>
+          <Textarea
+            value={uploadDescription}
+            onChange={(event) => setUploadDescription(event.target.value)}
+            placeholder={texts.children.documents.placeholder.description[language]}
+          />
+        </Field.Root>
+        <Field.Root>
+          <Field.Label>{texts.children.documents.file[language]}</Field.Label>
+          <Box
+            border="2px dashed"
+            borderColor={isDragging ? 'brand.primary.500' : 'border-color'}
+            borderRadius="md"
+            p={6}
+            textAlign="center"
+            bg={isDragging ? 'brand.primary.300' : 'bg-surface'}
+            transition="all 0.2s"
+            cursor="pointer"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            _hover={{ borderColor: 'brand.primary.500', bg: 'brand.primary.300' }}
+          >
+            <Input
+              ref={fileInputRef}
+              type="file"
+              display="none"
+              onChange={handleFileSelect}
+              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+            />
+            {!uploadFile ? (
+              <VStack gap={2}>
+                <Box w={12} h={12} color="gray.500">
+                  <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
+                </Box>
+                <Text fontWeight="medium" color="text-primary">
+                  {texts.children.documents.placeholder?.dragDrop?.[language]}
                 </Text>
-              </Box>
+                <Text fontSize="sm" color="text-secondary">
+                  {texts.children.documents.placeholder?.orClick?.[language]}
+                </Text>
+                <Text fontSize="xs" color="text-muted">
+                  PDF, DOC, TXT, PNG, JPG (max 5MB)
+                </Text>
+              </VStack>
+            ) : (
+              <HStack
+                gap={3}
+                p={3}
+                bg="bg-surface"
+                borderRadius="md"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Box boxSize={6} color="brand.primary.500">
+                  <Icon as={FiFile as React.ElementType} w={6} h={6} />
+                </Box>
+                <VStack align="start" flex={1} gap={0}>
+                  <Text fontWeight="medium" fontSize="sm" lineClamp={1}>
+                    {uploadFile.name}
+                  </Text>
+                  <Text fontSize="xs" color="text-muted">
+                    {formatFileSize(uploadFile.size)}
+                  </Text>
+                </VStack>
+                <Button size="sm" variant="ghost" colorPalette="red" onClick={handleRemoveFile}>
+                  <Icon as={FiX as React.ElementType} />
+                </Button>
+              </HStack>
             )}
-          </Dialog.Content>
-        </Dialog.Positioner>
-
-      </Portal>
-    </Dialog.Root>
+          </Box>
+        </Field.Root>
+        {isUploading && uploadProgress > 0 && (
+          <Box>
+            <Progress.Root value={uploadProgress} size="sm" colorPalette="blue">
+              <Progress.Track>
+                <Progress.Range />
+              </Progress.Track>
+            </Progress.Root>
+            <Text fontSize="sm" color="gray.600" mt={2}>
+              {uploadProgress}%
+            </Text>
+          </Box>
+        )}
+      </VStack>
+    </CustomModal>
   );
 };
 

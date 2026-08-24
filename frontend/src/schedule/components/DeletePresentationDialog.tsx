@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, Portal } from '@chakra-ui/react';
+import { CustomDialog } from '@frontend/shared/ui/dialog';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
 import { useAppToast } from '@frontend/shared/hooks/useAppToast';
@@ -50,40 +50,20 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
   };
 
   return (
-    <Dialog.Root
-      open={isOpen}
-      initialFocusEl={() => cancelRef.current}
-      role='alertdialog'
-      onOpenChange={e => {
-        if (!e.open) {
-          onClose();
-        }
-      }}>
-      <Portal>
-
-        <Dialog.Backdrop>
-          <Dialog.Positioner>
-            <Dialog.Content>
-              <Dialog.Header fontSize="lg" fontWeight="bold">
-                {texts.schedule.curriculum.deletePresentation[language]}
-              </Dialog.Header>
-              <Dialog.Body>
-                {texts.schedule.curriculum.deleteConfirmMessage[language]}
-              </Dialog.Body>
-              <Dialog.Footer>
-                <Button ref={cancelRef} variant="secondary" onClick={onClose}>
-                  {texts.common.cancel[language]}
-                </Button>
-                <Button variant="delete" onClick={handleDelete} ml={3} loading={isDeleting}>
-                  {texts.common.delete[language]}
-                </Button>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Dialog.Backdrop>
-
-      </Portal>
-    </Dialog.Root>
+    <CustomDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={handleDelete}
+      title={texts.schedule.curriculum.deletePresentation[language]}
+      cancelLabel={texts.common.cancel[language]}
+      confirmLabel={texts.common.delete[language]}
+      cancelRef={cancelRef}
+      cancelVariant="secondary"
+      confirmVariant="delete"
+      isConfirmLoading={isDeleting}
+    >
+      {texts.schedule.curriculum.deleteConfirmMessage[language]}
+    </CustomDialog>
   );
 };
 

@@ -297,4 +297,8 @@ export const common = {
     cs: 'Zrušit',
     en: 'Cancel',
   },
+  confirm: {
+    cs: 'Potvrdit',
+    en: 'Confirm',
+  },
 };

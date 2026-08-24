@@ -1,4 +1,5 @@
-import { Button, VStack, Box, Text, NativeSelect, Field, Dialog, Portal } from '@chakra-ui/react';
+import { Button, VStack, Box, Text, NativeSelect, Field, Dialog } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { texts } from '@frontend/texts';
@@ -14,7 +15,8 @@ interface ManageClassTeachersModalProps {
   classData: Class;
   availableTeachers: Teacher[];
   onSave: (selection: { teacherId: number; assistantId: number | null }) => Promise<void>;
-  size?: Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
+  size?:
+    Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
 }
 
 interface FormErrors {
@@ -113,84 +115,72 @@ export const ManageClassTeachersModal = ({
   };
 
   return (
-    <Dialog.Root open={isOpen} size={size} onOpenChange={e => {
-      if (!e.open) {
-        onClose();
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={size}
+      title={texts.classes.manageTeachersTitle[language]}
+      buttons={
+        <>
+          <Button colorPalette="blue" mr={3} onClick={handleSave} loading={isSubmitting}>
+            {texts.common.save[language]}
+          </Button>
+          <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
+        </>
       }
-    }}>
-      <Portal>
-
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>{texts.classes.manageTeachersTitle[language]}</Dialog.Header>
-            <Dialog.CloseTrigger />
-            <Dialog.Body>
-              <VStack gap={4} align="stretch">
-                <Box>
-                  <Text mb={2} fontWeight="medium">
-                    {texts.classes.teachers[language]}
-                  </Text>
-                  <VStack gap={3} align="stretch">
-                    <Field.Root invalid={!!errors.teacherId} required>
-                      <Field.Label>{texts.classes.teacher[language]}</Field.Label>
-                      <NativeSelect.Root>
-                        <NativeSelect.Field
-                          placeholder={texts.classes.selectTeacher[language]}
-                          value={teacherId ?? ''}
-                          onChange={(e) => {
-                            const value = e.target.value ? Number(e.target.value) : null;
-                            handleTeacherChange(value);
-                          }}>
-                          {availableTeachers.map((teacher) => (
-                            <option key={teacher.id} value={teacher.id}>
-                              {teacher.firstname} {teacher.surname}
-                            </option>
-                          ))}
-                        </NativeSelect.Field>
-                        <NativeSelect.Indicator />
-                      </NativeSelect.Root>
-                      {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
-                    </Field.Root>
-                    <Field.Root invalid={!!errors.assistantId} required>
-                      <Field.Label>{texts.classes.assistant[language]}</Field.Label>
-                      <NativeSelect.Root>
-                        <NativeSelect.Field
-                          placeholder={texts.classes.selectAssistant[language]}
-                          value={assistantId ?? ''}
-                          onChange={(e) => {
-                            const value = e.target.value ? Number(e.target.value) : null;
-                            handleAssistantChange(value);
-                          }}>
-                          {availableTeachers.map((teacher) => (
-                            <option
-                              key={teacher.id}
-                              value={teacher.id}
-                              disabled={teacherId === teacher.id}
-                            >
-                              {teacher.firstname} {teacher.surname}
-                            </option>
-                          ))}
-                        </NativeSelect.Field>
-                        <NativeSelect.Indicator />
-                      </NativeSelect.Root>
-                      {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
-                    </Field.Root>
-                  </VStack>
-                </Box>
-              </VStack>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button colorPalette="blue" mr={3} onClick={handleSave} loading={isSubmitting}>
-                {texts.common.save[language]}
-              </Button>
-              <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
-
-      </Portal>
-    </Dialog.Root>
+    >
+      <VStack gap={4} align="stretch">
+        <Box>
+          <Text mb={2} fontWeight="medium">
+            {texts.classes.teachers[language]}
+          </Text>
+          <VStack gap={3} align="stretch">
+            <Field.Root invalid={!!errors.teacherId} required>
+              <Field.Label>{texts.classes.teacher[language]}</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  placeholder={texts.classes.selectTeacher[language]}
+                  value={teacherId ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ? Number(e.target.value) : null;
+                    handleTeacherChange(value);
+                  }}
+                >
+                  {availableTeachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.firstname} {teacher.surname}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+              {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
+            </Field.Root>
+            <Field.Root invalid={!!errors.assistantId} required>
+              <Field.Label>{texts.classes.assistant[language]}</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  placeholder={texts.classes.selectAssistant[language]}
+                  value={assistantId ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ? Number(e.target.value) : null;
+                    handleAssistantChange(value);
+                  }}
+                >
+                  {availableTeachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
+                      {teacher.firstname} {teacher.surname}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+              {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
+            </Field.Root>
+          </VStack>
+        </Box>
+      </VStack>
+    </CustomModal>
   );
 };
 

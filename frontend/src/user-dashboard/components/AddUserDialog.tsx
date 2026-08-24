@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Input, NativeSelect, Field, Dialog, Portal } from '@chakra-ui/react';
+import { Button, Input, NativeSelect, Field } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
@@ -62,56 +63,48 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={e => {
-      if (!e.open) {
-        onClose();
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      title={texts.userDashboard.addUser[language]}
+      buttons={
+        <>
+          <Button variant="ghost" mr={3} onClick={onClose}>
+            {texts.common.cancel[language]}
+          </Button>
+          <Button colorPalette="blue" type="submit" loading={isSubmitting}>
+            {texts.userDashboard.submit[language]}
+          </Button>
+        </>
       }
-    }}>
-      <Portal>
-
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content as="form" onSubmit={handleSubmit}>
-            <Dialog.Header>{texts.userDashboard.addUser[language]}</Dialog.Header>
-            <Dialog.Body>
-              <Field.Root required>
-                <Field.Label>{texts.userDashboard.emailLabel[language]}</Field.Label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@example.com"
-                />
-              </Field.Root>
-              <Field.Root mt={4} required>
-                <Field.Label>{texts.userDashboard.roleLabel[language]}</Field.Label>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    value={role}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                      setRole(e.target.value as 'admin' | 'teacher' | 'parent')
-                    }>
-                    <option value="admin">{texts.userDashboard.table.roles.admin[language]}</option>
-                    <option value="teacher">{texts.userDashboard.table.roles.teacher[language]}</option>
-                    <option value="parent">{texts.userDashboard.table.roles.parent[language]}</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              </Field.Root>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button variant="ghost" mr={3} onClick={onClose}>
-                {texts.common.cancel[language]}
-              </Button>
-              <Button colorPalette="blue" type="submit" loading={isSubmitting}>
-                {texts.userDashboard.submit[language]}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
-
-      </Portal>
-    </Dialog.Root>
+    >
+      <Field.Root required>
+        <Field.Label>{texts.userDashboard.emailLabel[language]}</Field.Label>
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="email@example.com"
+        />
+      </Field.Root>
+      <Field.Root mt={4} required>
+        <Field.Label>{texts.userDashboard.roleLabel[language]}</Field.Label>
+        <NativeSelect.Root>
+          <NativeSelect.Field
+            value={role}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setRole(e.target.value as 'admin' | 'teacher' | 'parent')
+            }
+          >
+            <option value="admin">{texts.userDashboard.table.roles.admin[language]}</option>
+            <option value="teacher">{texts.userDashboard.table.roles.teacher[language]}</option>
+            <option value="parent">{texts.userDashboard.table.roles.parent[language]}</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+      </Field.Root>
+    </CustomModal>
   );
 };
 

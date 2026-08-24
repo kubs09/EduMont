@@ -1,4 +1,5 @@
-import { Button, Input, NativeSelect, Textarea, Field, Dialog, Portal } from '@chakra-ui/react';
+import { Button, Input, NativeSelect, Textarea, Field, Dialog } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -20,7 +21,8 @@ interface EditClassInfoModalProps {
     teacherId: number;
     assistantId: number;
   }) => Promise<void>;
-  size?: Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
+  size?:
+    Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
 }
 
 interface FormErrors {
@@ -108,76 +110,64 @@ export const EditClassInfoModal = ({
   const isFormValid = name && description;
 
   return (
-    <Dialog.Root open={isOpen} size={size} onOpenChange={e => {
-      if (!e.open) {
-        onClose();
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={size}
+      title={texts.classes.editClassTitle[language]}
+      buttons={
+        <>
+          <Button
+            colorPalette="blue"
+            mr={3}
+            onClick={handleSave}
+            loading={isSubmitting}
+            disabled={!isFormValid && !isSubmitting}
+          >
+            {texts.common.save[language]}
+          </Button>
+          <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
+        </>
       }
-    }}>
-      <Portal>
-
-        <Dialog.Backdrop />
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>{texts.classes.editClassTitle[language]}</Dialog.Header>
-            <Dialog.CloseTrigger />
-            <Dialog.Body>
-              <Field.Root invalid={!!errors.name} required>
-                <Field.Label>{texts.classes.name[language]}</Field.Label>
-                <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
-                {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
-              </Field.Root>
-              <Field.Root mt={4} invalid={!!errors.description} required>
-                <Field.Label>{texts.classes.description[language]}</Field.Label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => handleDescriptionChange(e.target.value)}
-                />
-                {errors.description && <Field.ErrorText>{errors.description}</Field.ErrorText>}
-              </Field.Root>
-              <Field.Root mt={4} required>
-                <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
-                    onChange={(e) => {
-                      const [minAgeValue, maxAgeValue] = e.target.value
-                        .split('-')
-                        .map((value) => Number(value));
-                      const matchedGroup = classAgeGroups.find(
-                        (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
-                      );
-                      if (matchedGroup) {
-                        setSelectedGroup(matchedGroup);
-                        setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
-                      }
-                    }}>
-                    {classAgeGroups.map((group) => (
-                      <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
-                        {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
-                        {texts.classes.years[language]}
-                      </option>
-                    ))}
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              </Field.Root>
-            </Dialog.Body>
-            <Dialog.Footer>
-              <Button
-                colorPalette="blue"
-                mr={3}
-                onClick={handleSave}
-                loading={isSubmitting}
-                disabled={!isFormValid && !isSubmitting}
-              >
-                {texts.common.save[language]}
-              </Button>
-              <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
-
-      </Portal>
-    </Dialog.Root>
+    >
+      <Field.Root invalid={!!errors.name} required>
+        <Field.Label>{texts.classes.name[language]}</Field.Label>
+        <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
+        {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
+      </Field.Root>
+      <Field.Root mt={4} invalid={!!errors.description} required>
+        <Field.Label>{texts.classes.description[language]}</Field.Label>
+        <Textarea value={description} onChange={(e) => handleDescriptionChange(e.target.value)} />
+        {errors.description && <Field.ErrorText>{errors.description}</Field.ErrorText>}
+      </Field.Root>
+      <Field.Root mt={4} required>
+        <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
+        <NativeSelect.Root>
+          <NativeSelect.Field
+            value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+            onChange={(e) => {
+              const [minAgeValue, maxAgeValue] = e.target.value
+                .split('-')
+                .map((value) => Number(value));
+              const matchedGroup = classAgeGroups.find(
+                (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
+              );
+              if (matchedGroup) {
+                setSelectedGroup(matchedGroup);
+                setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+              }
+            }}
+          >
+            {classAgeGroups.map((group) => (
+              <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
+                {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
+                {texts.classes.years[language]}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+      </Field.Root>
+    </CustomModal>
   );
 };

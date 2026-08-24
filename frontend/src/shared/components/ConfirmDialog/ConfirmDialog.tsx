@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Dialog, Portal } from '@chakra-ui/react';
+import { CustomDialog } from '@frontend/shared/ui/dialog';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -26,41 +26,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   leastDestructiveRef,
   isConfirmLoading,
 }) => (
-  <Dialog.Root
-    open={isOpen}
-    initialFocusEl={() => leastDestructiveRef?.current ?? null}
-    role='alertdialog'
-    onOpenChange={e => {
-      if (!e.open) {
-        onClose();
-      }
-    }}>
-    <Portal>
-
-      <Dialog.Backdrop>
-        <Dialog.Positioner>
-          <Dialog.Content>
-            <Dialog.Header>{title}</Dialog.Header>
-            <Dialog.Body>{message}</Dialog.Body>
-            <Dialog.Footer>
-              <Button ref={leastDestructiveRef} onClick={onClose}>
-                {cancelLabel}
-              </Button>
-              <Button
-                colorPalette={confirmColorScheme}
-                onClick={onConfirm}
-                ml={3}
-                loading={isConfirmLoading}
-              >
-                {confirmLabel}
-              </Button>
-            </Dialog.Footer>
-          </Dialog.Content>
-        </Dialog.Positioner>
-      </Dialog.Backdrop>
-
-    </Portal>
-</Dialog.Root>
+  <CustomDialog
+    isOpen={isOpen}
+    onClose={onClose}
+    onConfirm={onConfirm}
+    title={title}
+    cancelLabel={cancelLabel}
+    confirmLabel={confirmLabel}
+    confirmColorScheme={confirmColorScheme}
+    cancelRef={leastDestructiveRef}
+    isConfirmLoading={isConfirmLoading}
+  >
+    {message}
+  </CustomDialog>
 );
 
 export default ConfirmDialog;
