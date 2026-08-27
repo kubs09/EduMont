@@ -57,13 +57,13 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
       resetForm();
       setShowPasswordForm(false);
     } catch (error) {
-      if (error.errors) {
+      if (error.issues) {
         const validationErrors: Record<string, string> = {};
         interface ZodError {
           path: string[];
           message: string;
         }
-        (error.errors as ZodError[]).forEach((err: ZodError) => {
+        (error.issues as ZodError[]).forEach((err: ZodError) => {
           validationErrors[err.path[0]] = err.message;
         });
         setErrors(validationErrors);

@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, Heading, Stack, Text, Button, Input, ButtonGroup, Field } from '@chakra-ui/react';
+import {
+  Box,
+  Card,
+  Heading,
+  Stack,
+  Text,
+  Button,
+  Input,
+  ButtonGroup,
+  Field,
+} from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
@@ -54,9 +64,9 @@ const EditProfilePage = () => {
 
       navigate(ROUTES.PROFILE);
     } catch (error) {
-      if (error.errors) {
+      if (error.issues) {
         const validationErrors: Record<string, string> = {};
-        error.errors.forEach((err: { path: string[]; message: string }) => {
+        error.issues.forEach((err: { path: string[]; message: string }) => {
           validationErrors[err.path[0]] = err.message;
         });
         setErrors(validationErrors);

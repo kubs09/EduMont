@@ -162,9 +162,9 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
       onSuccess();
       onClose();
     } catch (error) {
-      if (error.errors) {
+      if (error.issues) {
         const validationErrors: Record<string, string> = {};
-        error.errors.forEach((err: { path: string[]; message: string }) => {
+        error.issues.forEach((err: { path: string[]; message: string }) => {
           validationErrors[err.path[0]] = err.message;
         });
         setErrors(validationErrors);

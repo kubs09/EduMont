@@ -101,7 +101,7 @@ export const ManageClassTeachersModal = ({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: FormErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const path = err.path[0] as string;
           newErrors[path as keyof FormErrors] = err.message;
         });
