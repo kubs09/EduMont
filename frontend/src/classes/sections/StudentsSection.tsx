@@ -90,7 +90,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
   return (
     <Box w="full" overflowX="auto">
       <Table.ScrollArea w="full" maxW="100%" overflowX="auto">
-        <Table.Root variant="simple" size="md" minW="max-content">
+        <Table.Root variant="line" size="md" minW="max-content">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeader>{texts.common.childrenTable.name[language]}</Table.ColumnHeader>

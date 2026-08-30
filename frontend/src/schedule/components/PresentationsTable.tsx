@@ -83,7 +83,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
 
   return (
     <Table.ScrollArea>
-      <Table.Root variant="simple" size="md">
+      <Table.Root variant="line" size="md">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeader>{texts.schedule.name[language]}</Table.ColumnHeader>

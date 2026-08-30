@@ -39,9 +39,10 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
               </Box>
               <Accordion.ItemIndicator />
             </Accordion.ItemTrigger>
-            <Accordion.ItemContent pb={4}><Accordion.ItemBody>
+            <Accordion.ItemContent pb={4}>
+              <Accordion.ItemBody>
                 <Table.ScrollArea>
-                  <Table.Root variant="simple" size="sm">
+                  <Table.Root variant="line" size="sm">
                     <Table.Header>
                       <Table.Row>
                         <Table.ColumnHeader>{texts.schedule.ageGroup[language]}</Table.ColumnHeader>
@@ -64,21 +65,33 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
                                 aria-label={texts.schedule.curriculum.moveUp[language]}
                                 size="sm"
                                 disabled={index === 0}
-                                onClick={() => onReorder(presentation, 'up')}><FiArrowUp /></IconButton>
+                                onClick={() => onReorder(presentation, 'up')}
+                              >
+                                <FiArrowUp />
+                              </IconButton>
                               <IconButton
                                 aria-label={texts.schedule.curriculum.moveDown[language]}
                                 size="sm"
                                 disabled={index === categoryPresentations.length - 1}
-                                onClick={() => onReorder(presentation, 'down')}><FiArrowDown /></IconButton>
+                                onClick={() => onReorder(presentation, 'down')}
+                              >
+                                <FiArrowDown />
+                              </IconButton>
                               <IconButton
                                 aria-label={texts.common.edit[language]}
                                 size="sm"
-                                onClick={() => onEdit(presentation)}><FiEdit2 /></IconButton>
+                                onClick={() => onEdit(presentation)}
+                              >
+                                <FiEdit2 />
+                              </IconButton>
                               <IconButton
                                 aria-label={texts.common.delete[language]}
                                 size="sm"
                                 colorPalette="red"
-                                onClick={() => onDelete(presentation.id)}><FiTrash2 /></IconButton>
+                                onClick={() => onDelete(presentation.id)}
+                              >
+                                <FiTrash2 />
+                              </IconButton>
                             </HStack>
                           </Table.Cell>
                         </Table.Row>
@@ -86,7 +99,8 @@ const PresentationsAccordion: React.FC<PresentationsAccordionProps> = ({
                     </Table.Body>
                   </Table.Root>
                 </Table.ScrollArea>
-              </Accordion.ItemBody></Accordion.ItemContent>
+              </Accordion.ItemBody>
+            </Accordion.ItemContent>
           </Accordion.Item>
         );
       })}

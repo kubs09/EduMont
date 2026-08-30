@@ -209,7 +209,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
             </Tabs.Root>
           )}
           <Table.ScrollArea>
-            <Table.Root variant="simple" size="md">
+            <Table.Root variant="line" size="md">
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeader>

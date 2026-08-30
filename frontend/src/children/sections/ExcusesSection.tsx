@@ -119,7 +119,7 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
         <Text variant="empty">{texts.children.excuse.historyEmpty[language]}</Text>
       ) : (
         <>
-          <Table.Root variant="simple" size="md">
+          <Table.Root variant="line" size="md">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader>{texts.children.excuse.dateFrom[language]}</Table.ColumnHeader>

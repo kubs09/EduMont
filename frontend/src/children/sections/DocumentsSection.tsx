@@ -32,7 +32,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
     <VStack align="stretch" gap={4}>
       {documents.length > 0 ? (
         <Table.ScrollArea>
-          <Table.Root variant="simple" size="md">
+          <Table.Root variant="line" size="md">
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader>{texts.children.documents.title[language]}</Table.ColumnHeader>

@@ -125,7 +125,7 @@ const ChildrenPage = () => {
         <Text>{texts.children.noChildren[language]}</Text>
       ) : (
         <Box overflowX="auto">
-          <Table.Root variant="simple" size={{ base: 'sm', md: 'md' }}>
+          <Table.Root variant="line" size={{ base: 'sm', md: 'md' }}>
             <Table.Header display={{ base: 'none', md: 'table-header-group' }}>
               <Table.Row>
                 <Table.ColumnHeader>
