@@ -1,10 +1,12 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import React from 'react';
-import theme from './design/theme';
+import system from './design/theme';
+import { Toaster } from './shared/ui/toaster';
 import Routes from './Routes';
 import { ROUTES } from './shared/route';
 import { LanguageProvider } from './shared/contexts/LanguageContext';
+import { ColorModeProvider } from './shared/contexts/ColorContext';
 import Header from './shared/atoms/header/Header';
 import Footer from './shared/atoms/footer/Footer';
 import { SnackbarProvider } from 'notistack';
@@ -19,17 +21,19 @@ function App(): React.ReactElement {
 
   return (
     <React.StrictMode>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <ChakraProvider theme={theme}>
-        <LanguageProvider>
-          <SnackbarProvider maxSnack={3}>
-            <BrowserRouter>
-              <Header />
-              <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
-              <Footer />
-            </BrowserRouter>
-          </SnackbarProvider>
-        </LanguageProvider>
+      <ChakraProvider value={system}>
+        <ColorModeProvider>
+          <LanguageProvider>
+            <SnackbarProvider maxSnack={3}>
+              <BrowserRouter>
+                <Header />
+                <Routes isAuthenticated={isAuthenticated} onLoginSuccess={handleLoginSuccess} />
+                <Footer />
+              </BrowserRouter>
+            </SnackbarProvider>
+          </LanguageProvider>
+          <Toaster />
+        </ColorModeProvider>
       </ChakraProvider>
     </React.StrictMode>
   );

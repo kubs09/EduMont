@@ -1,16 +1,8 @@
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Button,
-  useToast,
-} from '@chakra-ui/react';
+import { CustomDialog } from '@frontend/shared/ui/dialog';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface DeleteDocumentDialogProps {
   isOpen: boolean;
@@ -29,7 +21,7 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
   onDocumentDeleted,
 }) => {
   const cancelRef = React.useRef(null);
-  const toast = useToast();
+  const toast = useAppToast();
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDelete = async () => {
@@ -59,24 +51,20 @@ const DeleteDocumentDialog: React.FC<DeleteDocumentDialogProps> = ({
   };
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {texts.children.documents.deleteConfirmation[language]}
-          </AlertDialogHeader>
-          <AlertDialogBody>{texts.children.documents.deleteMessage[language]}</AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} variant="secondary" onClick={onClose}>
-              {texts.common.cancel[language]}
-            </Button>
-            <Button variant="delete" onClick={handleDelete} ml={3} isLoading={isDeleting}>
-              {texts.common.delete[language]}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+    <CustomDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={handleDelete}
+      title={texts.children.documents.deleteConfirmation[language]}
+      cancelLabel={texts.common.cancel[language]}
+      confirmLabel={texts.common.delete[language]}
+      cancelRef={cancelRef}
+      cancelVariant="secondary"
+      confirmVariant="delete"
+      isConfirmLoading={isDeleting}
+    >
+      {texts.children.documents.deleteMessage[language]}
+    </CustomDialog>
   );
 };
 

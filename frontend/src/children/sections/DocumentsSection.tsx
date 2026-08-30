@@ -1,20 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Text,
-  VStack,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  HStack,
-  IconButton,
-} from '@chakra-ui/react';
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { Box, Button, Text, VStack, Table, HStack, IconButton, Link } from '@chakra-ui/react';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { Document } from '@frontend/types/document';
 import { Child } from '@frontend/types/child';
@@ -43,78 +29,81 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
   const [selectedDocument, setSelectedDocument] = React.useState<Document | null>(null);
 
   return (
-    <VStack align="stretch" spacing={4}>
+    <VStack align="stretch" gap={4}>
       {documents.length > 0 ? (
-        <TableContainer>
-          <Table variant="simple" size="md">
-            <Thead>
-              <Tr>
-                <Th>{texts.children.documents.title[language]}</Th>
-                <Th>{texts.children.documents.file[language]}</Th>
-                <Th>{texts.children.documents.type[language]}</Th>
-                <Th>{texts.children.documents.createdAt[language]}</Th>
-                <Th>{texts.common.actions[language]}</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+        <Table.ScrollArea>
+          <Table.Root variant="line" size="md">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>{texts.children.documents.title[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.children.documents.file[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.children.documents.type[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>
+                  {texts.children.documents.createdAt[language]}
+                </Table.ColumnHeader>
+                <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {documents.map((doc) => (
-                <Tr key={doc.id}>
-                  <Td>
+                <Table.Row key={doc.id}>
+                  <Table.Cell>
                     <Text fontWeight="medium">{doc.title}</Text>
                     {doc.description && (
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="text-secondary">
                         {doc.description}
                       </Text>
                     )}
-                  </Td>
-                  <Td>
-                    <Text
-                      as="a"
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Link
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      color="blue.500"
+                      color="fg-brand"
                       textDecoration="underline"
                     >
                       {doc.file_name || doc.file_url}
-                    </Text>
-                  </Td>
-                  <Td>
+                    </Link>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Text>{doc.mime_type || '-'}</Text>
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Text>
                       {doc.created_at ? new Date(doc.created_at).toLocaleDateString(language) : '-'}
                     </Text>
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     {canDelete && (
-                      <HStack spacing={2}>
+                      <HStack gap={2}>
                         <IconButton
                           aria-label="delete"
-                          icon={<DeleteIcon />}
                           size="sm"
                           variant="delete"
                           onClick={() => {
                             setSelectedDocument(doc);
                             setDeleteDialogOpen(true);
                           }}
-                        />
+                        >
+                          <FiTrash2 />
+                        </IconButton>
                       </HStack>
                     )}
-                  </Td>
-                </Tr>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </Table.ScrollArea>
       ) : (
         <Text variant="empty">{texts.children.documents.noDocuments[language]}</Text>
       )}
 
       {canUpload && (
         <Box>
-          <Button leftIcon={<AddIcon />} variant="brand" onClick={() => setIsModalOpen(true)}>
+          <Button variant="brand" onClick={() => setIsModalOpen(true)}>
+            <FiPlus />
             {texts.children.documents.uploadDocument[language]}
           </Button>
         </Box>

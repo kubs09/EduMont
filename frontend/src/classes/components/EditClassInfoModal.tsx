@@ -1,20 +1,5 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Select,
-  Textarea,
-  ThemingProps,
-  FormErrorMessage,
-} from '@chakra-ui/react';
+import { Button, Input, NativeSelect, Textarea, Field, Dialog } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -36,7 +21,8 @@ interface EditClassInfoModalProps {
     teacherId: number;
     assistantId: number;
   }) => Promise<void>;
-  size?: ThemingProps['size'] | { base: string; md: string };
+  size?:
+    Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
 }
 
 interface FormErrors {
@@ -108,7 +94,7 @@ export const EditClassInfoModal = ({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: FormErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const path = err.path[0] as string;
           newErrors[path as keyof FormErrors] = err.message;
         });
@@ -124,64 +110,64 @@ export const EditClassInfoModal = ({
   const isFormValid = name && description;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={size}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{texts.classes.editClassTitle[language]}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <FormControl isInvalid={!!errors.name} isRequired>
-            <FormLabel>{texts.classes.name[language]}</FormLabel>
-            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
-            {errors.name && <FormErrorMessage>{errors.name}</FormErrorMessage>}
-          </FormControl>
-          <FormControl mt={4} isInvalid={!!errors.description} isRequired>
-            <FormLabel>{texts.classes.description[language]}</FormLabel>
-            <Textarea
-              value={description}
-              onChange={(e) => handleDescriptionChange(e.target.value)}
-            />
-            {errors.description && <FormErrorMessage>{errors.description}</FormErrorMessage>}
-          </FormControl>
-          <FormControl mt={4} isRequired>
-            <FormLabel>{texts.classes.ageRange[language]}</FormLabel>
-            <Select
-              value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
-              onChange={(e) => {
-                const [minAgeValue, maxAgeValue] = e.target.value
-                  .split('-')
-                  .map((value) => Number(value));
-                const matchedGroup = classAgeGroups.find(
-                  (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
-                );
-                if (matchedGroup) {
-                  setSelectedGroup(matchedGroup);
-                  setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
-                }
-              }}
-            >
-              {classAgeGroups.map((group) => (
-                <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
-                  {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
-                  {texts.classes.years[language]}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
-        </ModalBody>
-        <ModalFooter>
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={size}
+      title={texts.classes.editClassTitle[language]}
+      buttons={
+        <>
           <Button
-            colorScheme="blue"
+            variant="brand"
             mr={3}
             onClick={handleSave}
-            isLoading={isSubmitting}
-            isDisabled={!isFormValid && !isSubmitting}
+            loading={isSubmitting}
+            disabled={!isFormValid && !isSubmitting}
           >
             {texts.common.save[language]}
           </Button>
           <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </>
+      }
+    >
+      <Field.Root invalid={!!errors.name} required>
+        <Field.Label>{texts.classes.name[language]}</Field.Label>
+        <Input value={name} onChange={(e) => handleNameChange(e.target.value)} />
+        {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
+      </Field.Root>
+      <Field.Root mt={4} invalid={!!errors.description} required>
+        <Field.Label>{texts.classes.description[language]}</Field.Label>
+        <Textarea value={description} onChange={(e) => handleDescriptionChange(e.target.value)} />
+        {errors.description && <Field.ErrorText>{errors.description}</Field.ErrorText>}
+      </Field.Root>
+      <Field.Root mt={4} required>
+        <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
+        <NativeSelect.Root>
+          <NativeSelect.Field
+            value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+            onChange={(e) => {
+              const [minAgeValue, maxAgeValue] = e.target.value
+                .split('-')
+                .map((value) => Number(value));
+              const matchedGroup = classAgeGroups.find(
+                (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
+              );
+              if (matchedGroup) {
+                setSelectedGroup(matchedGroup);
+                setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+              }
+            }}
+          >
+            {classAgeGroups.map((group) => (
+              <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
+                {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
+                {texts.classes.years[language]}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
+      </Field.Root>
+    </CustomModal>
   );
 };

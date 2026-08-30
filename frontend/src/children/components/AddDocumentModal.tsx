@@ -4,27 +4,23 @@ import {
   Button,
   Text,
   VStack,
-  useToast,
-  FormControl,
-  FormLabel,
   Input,
   Textarea,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   Progress,
   HStack,
   Icon,
+  Field,
 } from '@chakra-ui/react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { FiUploadCloud, FiFile, FiX } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { createDocument } from '@frontend/services/api';
 import { Child } from '@frontend/types/child';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
+import { createDocumentSchema, DocumentFormData } from '@frontend/shared/validation/documentSchema';
 
 interface AddDocumentModalProps {
   isOpen: boolean;
@@ -41,21 +37,23 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
   language,
   onDocumentsUpdate,
 }) => {
-  const toast = useToast();
-  const [uploadFile, setUploadFile] = React.useState<File | null>(null);
-  const [uploadTitle, setUploadTitle] = React.useState('');
-  const [uploadDescription, setUploadDescription] = React.useState('');
-  const [isUploading, setIsUploading] = React.useState(false);
+  const toast = useAppToast();
   const [uploadProgress, setUploadProgress] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const resetForm = () => {
-    setUploadFile(null);
-    setUploadTitle('');
-    setUploadDescription('');
-    setUploadProgress(0);
-  };
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm<DocumentFormData>({
+    resolver: zodResolver(createDocumentSchema(language)),
+    defaultValues: { title: '', description: '', file: undefined },
+  });
 
   const readFileAsDataUrl = (file: File) =>
     new Promise<string>((resolve, reject) => {
@@ -67,31 +65,25 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
 
   const isProduction = import.meta.env.PROD;
 
-  const handleUploadDocument = async () => {
-    if (!childData.id || !uploadFile) return;
+  const handleClose = () => {
+    reset({ title: '', description: '', file: undefined });
+    setUploadProgress(0);
+    onClose();
+  };
 
-    const maxBytes = 5 * 1024 * 1024;
-    if (uploadFile.size > maxBytes) {
-      toast({
-        title: texts.children.errors.documentTooLarge.title[language],
-        description: texts.children.errors.documentTooLarge.description[language],
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
+  const onSubmit = async (data: DocumentFormData) => {
+    // The schema's top-level refine already guarantees `file` is defined here.
+    const file = data.file as File;
 
     try {
-      setIsUploading(true);
       setUploadProgress(0);
 
-      const title = uploadTitle.trim() || uploadFile.name;
+      const title = data.title?.trim() || file.name;
 
       if (isProduction) {
         const uploadUrlResponse = await api.post('/api/documents/upload-url', {
-          fileName: uploadFile.name,
-          fileType: uploadFile.type,
+          fileName: file.name,
+          fileType: file.type,
           childId: childData.id,
           classId: childData.class_id || undefined,
         });
@@ -102,9 +94,9 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
         const uploadResponse = await fetch(uploadUrl, {
           method: 'PUT',
           headers: {
-            'Content-Type': uploadFile.type || 'application/octet-stream',
+            'Content-Type': file.type || 'application/octet-stream',
           },
-          body: uploadFile,
+          body: file,
         });
 
         if (!uploadResponse.ok) {
@@ -117,25 +109,25 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
 
         await createDocument({
           title,
-          description: uploadDescription.trim() || undefined,
+          description: data.description?.trim() || undefined,
           file_url: fileUrl,
-          file_name: uploadFile.name,
-          mime_type: uploadFile.type || undefined,
-          size_bytes: uploadFile.size,
+          file_name: file.name,
+          mime_type: file.type || undefined,
+          size_bytes: file.size,
           child_id: childData.id,
           class_id: childData.class_id || undefined,
         });
       } else {
-        const dataUrl = await readFileAsDataUrl(uploadFile);
+        const dataUrl = await readFileAsDataUrl(file);
         setUploadProgress(50);
 
         await createDocument({
           title,
-          description: uploadDescription.trim() || undefined,
+          description: data.description?.trim() || undefined,
           file_url: dataUrl,
-          file_name: uploadFile.name,
-          mime_type: uploadFile.type || undefined,
-          size_bytes: uploadFile.size,
+          file_name: file.name,
+          mime_type: file.type || undefined,
+          size_bytes: file.size,
           child_id: childData.id,
           class_id: childData.class_id || undefined,
         });
@@ -143,8 +135,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
         setUploadProgress(100);
       }
 
-      resetForm();
-      onClose();
+      handleClose();
       await onDocumentsUpdate();
 
       toast({
@@ -161,14 +152,15 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
         isClosable: true,
       });
     } finally {
-      setIsUploading(false);
       setUploadProgress(0);
     }
   };
 
-  const handleClose = () => {
-    resetForm();
-    onClose();
+  const selectFile = (file: File) => {
+    setValue('file', file, { shouldValidate: true });
+    if (!getValues('title')) {
+      setValue('title', file.name);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -187,25 +179,19 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      setUploadFile(files[0]);
-      if (!uploadTitle) {
-        setUploadTitle(files[0].name);
-      }
+      selectFile(files[0]);
     }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      setUploadFile(files[0]);
-      if (!uploadTitle) {
-        setUploadTitle(files[0].name);
-      }
+      selectFile(files[0]);
     }
   };
 
   const handleRemoveFile = () => {
-    setUploadFile(null);
+    setValue('file', undefined, { shouldValidate: true });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -220,31 +206,46 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="lg">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{texts.children.documents.uploadDocument[language]}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack align="stretch" spacing={4}>
-            <FormControl>
-              <FormLabel>{texts.children.documents.documentTitle[language]}</FormLabel>
-              <Input
-                value={uploadTitle}
-                onChange={(event) => setUploadTitle(event.target.value)}
-                placeholder={texts.children.documents.placeholder.title[language]}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>{texts.children.documents.documentDescription[language]}</FormLabel>
-              <Textarea
-                value={uploadDescription}
-                onChange={(event) => setUploadDescription(event.target.value)}
-                placeholder={texts.children.documents.placeholder.description[language]}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel>{texts.children.documents.file[language]}</FormLabel>
+    <CustomModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      onSubmit={handleSubmit(onSubmit)}
+      size="lg"
+      title={texts.children.documents.uploadDocument[language]}
+      buttons={
+        <>
+          <Button variant="ghost" mr={3} onClick={handleClose}>
+            {texts.common?.cancel?.[language] || 'Cancel'}
+          </Button>
+          <Button type="submit" loading={isSubmitting} variant="brand">
+            {texts.children.documents.uploadDocument[language]}
+          </Button>
+        </>
+      }
+    >
+      <VStack align="stretch" gap={4}>
+        <Field.Root invalid={!!errors.title}>
+          <Field.Label>{texts.children.documents.documentTitle[language]}</Field.Label>
+          <Input
+            {...register('title')}
+            placeholder={texts.children.documents.placeholder.title[language]}
+          />
+          <Field.ErrorText>{errors.title?.message}</Field.ErrorText>
+        </Field.Root>
+        <Field.Root invalid={!!errors.description}>
+          <Field.Label>{texts.children.documents.documentDescription[language]}</Field.Label>
+          <Textarea
+            {...register('description')}
+            placeholder={texts.children.documents.placeholder.description[language]}
+          />
+          <Field.ErrorText>{errors.description?.message}</Field.ErrorText>
+        </Field.Root>
+        <Controller
+          name="file"
+          control={control}
+          render={({ field: { value } }) => (
+            <Field.Root invalid={!!errors.file}>
+              <Field.Label>{texts.children.documents.file[language]}</Field.Label>
               <Box
                 border="2px dashed"
                 borderColor={isDragging ? 'brand.primary.500' : 'border-color'}
@@ -267,9 +268,9 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                   onChange={handleFileSelect}
                   accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
                 />
-                {!uploadFile ? (
-                  <VStack spacing={2}>
-                    <Box w={12} h={12} color="gray.500">
+                {!value ? (
+                  <VStack gap={2}>
+                    <Box w={12} h={12} color="text-muted">
                       <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
                     </Box>
                     <Text fontWeight="medium" color="text-primary">
@@ -284,7 +285,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                   </VStack>
                 ) : (
                   <HStack
-                    spacing={3}
+                    gap={3}
                     p={3}
                     bg="bg-surface"
                     borderRadius="md"
@@ -293,46 +294,38 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                     <Box boxSize={6} color="brand.primary.500">
                       <Icon as={FiFile as React.ElementType} w={6} h={6} />
                     </Box>
-                    <VStack align="start" flex={1} spacing={0}>
-                      <Text fontWeight="medium" fontSize="sm" noOfLines={1}>
-                        {uploadFile.name}
+                    <VStack align="start" flex={1} gap={0}>
+                      <Text fontWeight="medium" fontSize="sm" lineClamp={1}>
+                        {value.name}
                       </Text>
                       <Text fontSize="xs" color="text-muted">
-                        {formatFileSize(uploadFile.size)}
+                        {formatFileSize(value.size)}
                       </Text>
                     </VStack>
-                    <Button size="sm" variant="ghost" colorScheme="red" onClick={handleRemoveFile}>
+                    <Button size="sm" variant="ghost" colorPalette="red" onClick={handleRemoveFile}>
                       <Icon as={FiX as React.ElementType} />
                     </Button>
                   </HStack>
                 )}
               </Box>
-            </FormControl>
-          </VStack>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose}>
-            {texts.common?.cancel?.[language] || 'Cancel'}
-          </Button>
-          <Button
-            onClick={handleUploadDocument}
-            isLoading={isUploading}
-            isDisabled={!uploadFile}
-            colorScheme="blue"
-          >
-            {texts.children.documents.uploadDocument[language]}
-          </Button>
-        </ModalFooter>
-        {isUploading && uploadProgress > 0 && (
-          <Box px={6} pb={4}>
-            <Progress value={uploadProgress} size="sm" colorScheme="blue" />
-            <Text fontSize="sm" color="gray.600" mt={2}>
-              {uploadProgress}%
-            </Text>
-          </Box>
-        )}
-      </ModalContent>
-    </Modal>
+              <Field.ErrorText>{errors.file?.message}</Field.ErrorText>
+              {isSubmitting && uploadProgress > 0 && (
+                <Box mt={2} w="100%">
+                  <Progress.Root value={uploadProgress} size="sm">
+                    <Progress.Track>
+                      <Progress.Range bg="bg-brand-solid" />
+                    </Progress.Track>
+                  </Progress.Root>
+                  <Text fontSize="sm" color="text-secondary" mt={2}>
+                    {uploadProgress}%
+                  </Text>
+                </Box>
+              )}
+            </Field.Root>
+          )}
+        />
+      </VStack>
+    </CustomModal>
   );
 };
 

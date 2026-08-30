@@ -6,15 +6,13 @@ import {
   HStack,
   VStack,
   useDisclosure,
-  useToast,
   Spinner,
   Center,
   Card,
-  CardBody,
   Text,
-  Select,
+  NativeSelect,
 } from '@chakra-ui/react';
-import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
@@ -29,11 +27,12 @@ import {
 import AddEditPresentationModal from '../components/AddEditPresentationModal';
 import PresentationsAccordion from '../components/PresentationsAccordion';
 import DeletePresentationDialog from '../components/DeletePresentationDialog';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const SchedulePage: React.FC = () => {
   const { language } = useLanguage();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const toast = useToast();
+  const { open, onOpen, onClose } = useDisclosure();
+  const toast = useAppToast();
 
   const [presentations, setPresentations] = useState<CategoryPresentation[]>([]);
   const [selectedPresentation, setPresentation] = useState<CategoryPresentation | null>(null);
@@ -91,7 +90,7 @@ const SchedulePage: React.FC = () => {
   }, [presentations, selectedAgeGroup]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return;
 
     let maxOrderValue = 1;
     const category = formData.category || '';
@@ -109,7 +108,7 @@ const SchedulePage: React.FC = () => {
     }
 
     setMaxOrder(maxOrderValue);
-  }, [formData.category, formData.age_group, isOpen, presentations, editingPresentation]);
+  }, [formData.category, formData.age_group, open, presentations, editingPresentation]);
 
   const handleOpenModal = (presentation?: CategoryPresentation) => {
     if (presentation) {
@@ -273,54 +272,57 @@ const SchedulePage: React.FC = () => {
 
   return (
     <Box p={{ base: 4, md: 6 }}>
-      <VStack spacing={6} align="stretch">
-        <Card>
-          <CardBody>
-            <VStack spacing={4} mb={6} align="stretch">
-              <HStack justify="space-between" spacing={2}>
+      <VStack gap={6} align="stretch">
+        <Card.Root>
+          <Card.Body>
+            <VStack gap={4} mb={6} align="stretch">
+              <HStack justify="space-between" gap={2}>
                 <Heading size={{ base: 'md', md: 'lg' }}>
                   {texts.schedule.curriculum.curriculumManagement[language]}
                 </Heading>
-                <HStack spacing={2}>
+                <HStack gap={2}>
                   <Button
-                    leftIcon={<RepeatIcon />}
                     variant="outline"
+                    aria-label={texts.common.refresh[language]}
                     onClick={loadPresentations}
                     size={{ base: 'sm', md: 'md' }}
                     px={{ base: '8px', md: 'auto' }}
                   >
+                    <FiRefreshCw />
                     <Box display={{ base: 'none', md: 'inline' }}>
                       {texts.common.refresh[language]}
                     </Box>
                   </Button>
                   <Button
-                    leftIcon={<AddIcon />}
-                    colorScheme="blue"
+                    aria-label={texts.schedule.addEntry[language]}
+                    variant="brand"
                     onClick={() => handleOpenModal()}
                     size={{ base: 'sm', md: 'md' }}
                     px={{ base: '8px', md: 'auto' }}
                   >
+                    <FiPlus />
                     <Box display={{ base: 'none', md: 'inline' }}>
                       {texts.schedule.addEntry[language]}
                     </Box>
                   </Button>
                 </HStack>
               </HStack>
-              <HStack spacing={2}>
+              <HStack gap={2}>
                 <Text variant="filter">{texts.schedule.ageGroup[language]}:</Text>
-                <Select
-                  size="sm"
-                  value={selectedAgeGroup}
-                  borderRadius="md"
-                  onChange={(e) => setSelectedAgeGroup(e.target.value)}
-                  w="fit-content"
-                >
-                  {ageGroups.map((ageGroup) => (
-                    <option key={ageGroup} value={ageGroup}>
-                      {ageGroup}
-                    </option>
-                  ))}
-                </Select>
+                <NativeSelect.Root size="sm" w="fit-content">
+                  <NativeSelect.Field
+                    value={selectedAgeGroup}
+                    borderRadius="md"
+                    onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  >
+                    {ageGroups.map((ageGroup) => (
+                      <option key={ageGroup} value={ageGroup}>
+                        {ageGroup}
+                      </option>
+                    ))}
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
               </HStack>
             </VStack>
 
@@ -335,12 +337,12 @@ const SchedulePage: React.FC = () => {
               }}
               language={language}
             />
-          </CardBody>
-        </Card>
+          </Card.Body>
+        </Card.Root>
       </VStack>
 
       <AddEditPresentationModal
-        isOpen={isOpen}
+        isOpen={open}
         onClose={onClose}
         categories={categories}
         editingPresentation={editingPresentation}

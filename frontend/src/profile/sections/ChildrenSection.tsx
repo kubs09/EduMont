@@ -122,9 +122,9 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
 
   return (
     <Section title={texts.children.titleParent[language]} cardProps={{ mb: 6 }}>
-      <Stack spacing={4}>
+      <Stack gap={4}>
         {children.length > 0 ? (
-          <VStack align="start" spacing={2} w="full">
+          <VStack align="start" gap={2} w="full">
             {children.map((child) => (
               <Box bg={subtleBg} p={2} borderRadius="md" w="full" key={child.id}>
                 {(() => {
@@ -132,7 +132,7 @@ const ChildrenSection = ({ onOpenChildren, subtleBg }: ChildrenSectionProps) => 
                   const activeExcuse = getDisplayExcuse(childExcuses);
                   return (
                     <HStack justify="space-between" w="full">
-                      <HStack spacing={2}>
+                      <HStack gap={2}>
                         <Button
                           variant="ghost"
                           onClick={() => navigate(`${ROUTES.CHILDREN}/${child.id}`)}

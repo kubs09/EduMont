@@ -1,24 +1,24 @@
 import { ReactNode } from 'react';
-import { Card, CardBody, CardHeader, Heading, type CardProps } from '@chakra-ui/react';
+import { Card, Heading } from '@chakra-ui/react';
 
 interface SectionProps {
   title?: string;
   children: ReactNode;
-  cardProps?: CardProps;
+  cardProps?: Card.RootProps;
 }
 
 const Section = ({ title, children, cardProps }: SectionProps) => {
   return (
-    <Card bg="bg-surface" borderColor="border-color" color="text-primary" {...cardProps}>
+    <Card.Root bg="bg-surface" borderColor="border-color" color="text-primary" {...cardProps}>
       {title && (
-        <CardHeader>
+        <Card.Header>
           <Heading size="md">{title}</Heading>
-        </CardHeader>
+        </Card.Header>
       )}
-      <CardBody w="full" maxW="100%" overflowX="auto">
+      <Card.Body w="full" maxW="100%" overflowX="auto">
         {children}
-      </CardBody>
-    </Card>
+      </Card.Body>
+    </Card.Root>
   );
 };
 

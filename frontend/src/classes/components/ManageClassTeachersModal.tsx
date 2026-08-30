@@ -1,21 +1,5 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Button,
-  VStack,
-  Box,
-  Text,
-  FormControl,
-  FormLabel,
-  Select,
-  ThemingProps,
-  FormErrorMessage,
-} from '@chakra-ui/react';
+import { Button, VStack, Box, Text, NativeSelect, Field, Dialog } from '@chakra-ui/react';
+import { CustomModal } from '@frontend/shared/ui/modal';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { texts } from '@frontend/texts';
@@ -31,7 +15,8 @@ interface ManageClassTeachersModalProps {
   classData: Class;
   availableTeachers: Teacher[];
   onSave: (selection: { teacherId: number; assistantId: number | null }) => Promise<void>;
-  size?: ThemingProps['size'] | { base: string; md: string };
+  size?:
+    Dialog.RootProps['size'] | { base: Dialog.RootProps['size']; md: Dialog.RootProps['size'] };
 }
 
 interface FormErrors {
@@ -116,7 +101,7 @@ export const ManageClassTeachersModal = ({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: FormErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const path = err.path[0] as string;
           newErrors[path as keyof FormErrors] = err.message;
         });
@@ -130,70 +115,72 @@ export const ManageClassTeachersModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size={size}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{texts.classes.manageTeachersTitle[language]}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4} align="stretch">
-            <Box>
-              <Text mb={2} fontWeight="medium">
-                {texts.classes.teachers[language]}
-              </Text>
-              <VStack spacing={3} align="stretch">
-                <FormControl isInvalid={!!errors.teacherId} isRequired>
-                  <FormLabel>{texts.classes.teacher[language]}</FormLabel>
-                  <Select
-                    placeholder={texts.classes.selectTeacher[language]}
-                    value={teacherId ?? ''}
-                    onChange={(e) => {
-                      const value = e.target.value ? Number(e.target.value) : null;
-                      handleTeacherChange(value);
-                    }}
-                  >
-                    {availableTeachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.firstname} {teacher.surname}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.teacherId && <FormErrorMessage>{errors.teacherId}</FormErrorMessage>}
-                </FormControl>
-                <FormControl isInvalid={!!errors.assistantId} isRequired>
-                  <FormLabel>{texts.classes.assistant[language]}</FormLabel>
-                  <Select
-                    placeholder={texts.classes.selectAssistant[language]}
-                    value={assistantId ?? ''}
-                    onChange={(e) => {
-                      const value = e.target.value ? Number(e.target.value) : null;
-                      handleAssistantChange(value);
-                    }}
-                  >
-                    {availableTeachers.map((teacher) => (
-                      <option
-                        key={teacher.id}
-                        value={teacher.id}
-                        disabled={teacherId === teacher.id}
-                      >
-                        {teacher.firstname} {teacher.surname}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.assistantId && <FormErrorMessage>{errors.assistantId}</FormErrorMessage>}
-                </FormControl>
-              </VStack>
-            </Box>
-          </VStack>
-        </ModalBody>
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={handleSave} isLoading={isSubmitting}>
+    <CustomModal
+      isOpen={isOpen}
+      onClose={onClose}
+      size={size}
+      title={texts.classes.manageTeachersTitle[language]}
+      buttons={
+        <>
+          <Button variant="brand" mr={3} onClick={handleSave} loading={isSubmitting}>
             {texts.common.save[language]}
           </Button>
           <Button onClick={onClose}>{texts.common.cancel[language]}</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </>
+      }
+    >
+      <VStack gap={4} align="stretch">
+        <Box>
+          <Text mb={2} fontWeight="medium">
+            {texts.classes.teachers[language]}
+          </Text>
+          <VStack gap={3} align="stretch">
+            <Field.Root invalid={!!errors.teacherId} required>
+              <Field.Label>{texts.classes.teacher[language]}</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  placeholder={texts.classes.selectTeacher[language]}
+                  value={teacherId ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ? Number(e.target.value) : null;
+                    handleTeacherChange(value);
+                  }}
+                >
+                  {availableTeachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.firstname} {teacher.surname}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+              {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
+            </Field.Root>
+            <Field.Root invalid={!!errors.assistantId} required>
+              <Field.Label>{texts.classes.assistant[language]}</Field.Label>
+              <NativeSelect.Root>
+                <NativeSelect.Field
+                  placeholder={texts.classes.selectAssistant[language]}
+                  value={assistantId ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value ? Number(e.target.value) : null;
+                    handleAssistantChange(value);
+                  }}
+                >
+                  {availableTeachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
+                      {teacher.firstname} {teacher.surname}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator />
+              </NativeSelect.Root>
+              {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
+            </Field.Root>
+          </VStack>
+        </Box>
+      </VStack>
+    </CustomModal>
   );
 };
 

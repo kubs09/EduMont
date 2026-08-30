@@ -1,5 +1,5 @@
 import { Heading, Text, Button, Center, VStack, Icon } from '@chakra-ui/react';
-import { WarningIcon } from '@chakra-ui/icons';
+import { FiAlertTriangle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 import { texts } from '@frontend/texts';
@@ -20,15 +20,15 @@ const NotFoundPage = () => {
 
   return (
     <Center h="100vh">
-      <VStack spacing={6}>
-        <Icon as={WarningIcon} color="red.500" boxSize={16} />
+      <VStack gap={6}>
+        <Icon as={FiAlertTriangle} color="text-danger" boxSize={16} />
         <Heading size="xl">{texts.staticPages.notFoundTitle[language]}</Heading>
         <Text>
           {isAuthenticated
             ? texts.staticPages.backMessage[language]
             : texts.staticPages.loginMessage[language]}
         </Text>
-        <Button colorScheme="blue" onClick={handleButtonClick}>
+        <Button variant="brand" onClick={handleButtonClick}>
           {isAuthenticated
             ? texts.staticPages.backButton[language]
             : texts.staticPages.loginButton[language]}

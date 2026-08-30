@@ -6,7 +6,7 @@ export const classTeachersSchema = (language: 'en' | 'cs') =>
     .object({
       teacherId: z
         .number({
-          invalid_type_error: texts.classes.validation.teacherValid[language],
+          error: () => texts.classes.validation.teacherValid[language],
         })
         .int({ message: texts.classes.validation.teacherValid[language] })
         .nullable()
@@ -16,7 +16,7 @@ export const classTeachersSchema = (language: 'en' | 'cs') =>
 
       assistantId: z
         .number({
-          invalid_type_error: texts.classes.validation.assistantValid[language],
+          error: () => texts.classes.validation.assistantValid[language],
         })
         .int({ message: texts.classes.validation.assistantValid[language] })
         .nullable()

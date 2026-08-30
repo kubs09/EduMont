@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,19 +7,16 @@ import {
   Box,
   Button,
   Container,
-  FormControl,
-  FormErrorMessage,
   Input,
   VStack,
   Heading,
   Icon,
   Circle,
   Text,
-  useColorModeValue,
   Card,
-  CardBody,
+  Field,
 } from '@chakra-ui/react';
-import { LockIcon } from '@chakra-ui/icons';
+import { FiLock } from 'react-icons/fi';
 import { login } from '@frontend/services/api/auth';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -71,42 +69,42 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <Container maxW="md">
-      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
-        <CardBody>
-          <VStack spacing={8}>
+      <Card.Root p={8} mt={5} boxShadow="lg" borderRadius="md">
+        <Card.Body>
+          <VStack gap={8}>
             <Circle size="40px" bg={iconBg} color="white">
-              <Icon as={LockIcon} />
+              <Icon as={FiLock} />
             </Circle>
 
             <Heading as="h1" size="lg" color="text-primary">
               {texts.login.signIn.title[language]}
             </Heading>
 
-            {error && <Text color="red.500">{error}</Text>}
+            {error && <Text color="text-danger">{error}</Text>}
 
             <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-              <VStack spacing={4}>
-                <FormControl isInvalid={!!errors.email}>
+              <VStack gap={4}>
+                <Field.Root invalid={!!errors.email}>
                   <Input
                     type="email"
                     placeholder={texts.login.signIn.emailPlaceholder[language]}
                     variant="outline"
                     {...register('email')}
                   />
-                  <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
-                </FormControl>
+                  <Field.ErrorText>{errors.email && errors.email.message}</Field.ErrorText>
+                </Field.Root>
 
-                <FormControl isInvalid={!!errors.password}>
+                <Field.Root invalid={!!errors.password}>
                   <Input
                     type="password"
                     placeholder={texts.login.signIn.passwordPlaceholder[language]}
                     variant="outline"
                     {...register('password')}
                   />
-                  <FormErrorMessage>{errors.password && errors.password.message}</FormErrorMessage>
-                </FormControl>
+                  <Field.ErrorText>{errors.password && errors.password.message}</Field.ErrorText>
+                </Field.Root>
 
-                <Button type="submit" variant="brand" width="100%" mt={4} isLoading={loading}>
+                <Button type="submit" variant="brand" width="100%" mt={4} loading={loading}>
                   {texts.login.signIn.loginButton[language]}
                 </Button>
 
@@ -120,8 +118,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </VStack>
             </Box>
           </VStack>
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
     </Container>
   );
 };

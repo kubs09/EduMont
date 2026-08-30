@@ -1,17 +1,7 @@
 import { useEffect, useState } from 'react';
-import {
-  Box,
-  Container,
-  Grid,
-  GridItem,
-  Heading,
-  IconButton,
-  Stack,
-  Text,
-  useColorModeValue,
-  useToast,
-} from '@chakra-ui/react';
-import { ChevronLeftIcon } from '@chakra-ui/icons';
+import { useColorModeValue } from '../shared/contexts/ColorContext';
+import { Box, Container, Grid, GridItem, Heading, IconButton, Stack, Text } from '@chakra-ui/react';
+import { FiChevronLeft } from 'react-icons/fi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -19,12 +9,13 @@ import { getUserById } from '@frontend/services/api';
 import { ApiError, User } from '@frontend/types/user';
 import { Section } from '@frontend/shared/components';
 import { ROUTES } from '@frontend/shared/route';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const UserProfilePage = () => {
   const { id } = useParams();
   const { language } = useLanguage();
   const navigate = useNavigate();
-  const toast = useToast();
+  const toast = useAppToast();
   const [user, setUser] = useState<User | null>(null);
   const subtleBg = useColorModeValue('gray.50', 'whiteAlpha.50');
 
@@ -77,11 +68,12 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
               onClick={() => navigate(-1)}
-            />
+            >
+              <FiChevronLeft />
+            </IconButton>
           </GridItem>
           <GridItem>
             <Heading size={{ base: 'md', md: 'lg' }} textAlign="center">
@@ -91,14 +83,15 @@ const UserProfilePage = () => {
           <GridItem>
             <IconButton
               aria-label={texts.children.backButton[language]}
-              icon={<ChevronLeftIcon />}
               variant="ghost"
               size={{ base: 'sm', md: 'md' }}
               visibility="hidden"
-            />
+            >
+              <FiChevronLeft />
+            </IconButton>
           </GridItem>
         </Grid>
-        <Stack spacing={4}>
+        <Stack gap={4}>
           <Box bg={subtleBg} p={3} borderRadius="md">
             <Text fontWeight="bold">{texts.profile.firstName[language]}</Text>
             <Text>{user.firstname}</Text>

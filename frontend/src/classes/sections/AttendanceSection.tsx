@@ -1,20 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Box,
-  Button,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  Tooltip,
-  useToast,
-  HStack,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
+import { Box, Button, Table, Text, HStack } from '@chakra-ui/react';
+import { Tooltip } from '@frontend/shared/ui/tooltip';
 import { texts } from '@frontend/texts';
 import { Class, ClassAttendanceRow } from '@frontend/types/class';
 import {
@@ -25,6 +12,7 @@ import {
 } from '@frontend/shared/components';
 import { checkInChild, checkOutChild, getClassAttendance } from '@frontend/services/api/class';
 import { ChildExcuse } from '@frontend/types/child';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface AttendanceTabProps {
   classData: Class;
@@ -45,7 +33,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   currentUserId,
   excusesByChildId,
 }) => {
-  const toast = useToast();
+  const toast = useAppToast();
   const [rows, setRows] = useState<ClassAttendanceRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [actionChildId, setActionChildId] = useState<number | null>(null);
@@ -275,7 +263,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
 
   return (
     <Box w="full" overflowX="auto">
-      <HStack spacing={4} mb={4} align="center" flexWrap="wrap">
+      <HStack gap={4} mb={4} align="center" flexWrap="wrap">
         <Text variant="filter">{texts.classes.detail.attendanceDate[language]}:</Text>
         <DatePicker
           viewType="day"
@@ -313,35 +301,35 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
           {texts.classes.detail.attendanceLoading[language]}
         </Text>
       ) : (
-        <TableContainer w="full" maxW="100%" overflowX="auto">
-          <Table variant="simple" size="md" minW="max-content">
-            <Thead>
-              <Tr>
+        <Table.ScrollArea w="full" maxW="100%" overflowX="auto">
+          <Table.Root variant="line" size="md" minW="max-content">
+            <Table.Header>
+              <Table.Row>
                 {showActionColumn && (
-                  <Th display={{ base: 'table-cell', md: 'none' }}>
+                  <Table.ColumnHeader display={{ base: 'table-cell', md: 'none' }}>
                     {texts.common.actions[language]}
-                  </Th>
+                  </Table.ColumnHeader>
                 )}
-                <Th display={{ base: 'table-cell', md: 'none' }}>
+                <Table.ColumnHeader display={{ base: 'table-cell', md: 'none' }}>
                   {texts.classes.student[language]}
-                </Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.common.childrenTable.name[language]}
-                </Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.detail.checkIn[language]}
-                </Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.detail.checkOut[language]}
-                </Th>
+                </Table.ColumnHeader>
                 {showActionColumn && (
-                  <Th display={{ base: 'none', md: 'table-cell' }}>
+                  <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                     {texts.common.actions[language]}
-                  </Th>
+                  </Table.ColumnHeader>
                 )}
-              </Tr>
-            </Thead>
-            <Tbody>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {paginatedRows.map((row) => {
                 const checkInText = row.check_in_at
                   ? formatTime(row.check_in_at)
@@ -376,14 +364,18 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 ) : null;
                 const renderExcuseStatus = (color: string) => (
                   <Tooltip
-                    label={excuseTooltip}
-                    hasArrow
-                    placement="top"
+                    content={excuseTooltip}
+                    showArrow
                     openDelay={200}
-                    bg={tooltipBg}
-                    color={tooltipTextColor}
-                    borderWidth="1px"
-                    borderColor={tooltipBorderColor}
+                    contentProps={{
+                      bg: tooltipBg,
+                      color: tooltipTextColor,
+                      borderWidth: '1px',
+                      borderColor: tooltipBorderColor,
+                    }}
+                    positioning={{
+                      placement: 'top',
+                    }}
                   >
                     <Text color={color} fontSize="sm">
                       {texts.children.excuse.status[language]}
@@ -391,19 +383,19 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                   </Tooltip>
                 );
                 return (
-                  <Tr key={row.id}>
+                  <Table.Row key={row.id}>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
-                      <Td display={{ base: 'table-cell', md: 'none' }}>
+                      <Table.Cell display={{ base: 'table-cell', md: 'none' }}>
                         {isExcused ? (
                           renderExcuseStatus(excusedColor)
                         ) : (
-                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                          <HStack gap={2} w="full" justifyContent="flex-start">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleCheckIn(row.id)}
-                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                              isLoading={actionChildId === row.id}
+                              disabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              loading={actionChildId === row.id}
                             >
                               {texts.classes.detail.checkIn[language]}
                             </Button>
@@ -411,47 +403,47 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               size="sm"
                               variant="outline"
                               onClick={() => handleCheckOut(row.id)}
-                              isDisabled={
+                              disabled={
                                 !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
                               }
-                              isLoading={actionChildId === row.id}
+                              loading={actionChildId === row.id}
                             >
                               {texts.classes.detail.checkOut[language]}
                             </Button>
                           </HStack>
                         )}
-                      </Td>
+                      </Table.Cell>
                     )}
-                    <Td>
-                      <HStack spacing={2} align="center" flexWrap="wrap">
+                    <Table.Cell>
+                      <HStack gap={2} align="center" flexWrap="wrap">
                         <Text>
                           {row.firstname} {row.surname}
                         </Text>
                         {isExcused && renderExcuseStatus('orange.500')}
                       </HStack>
-                    </Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckIn(row.check_in_at) ? 'red.500' : 'inherit'}>
                         {checkInText}
                       </Text>
-                    </Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
                       <Text color={isLateCheckOut(row.check_out_at) ? 'red.500' : 'inherit'}>
                         {checkOutText}
                       </Text>
-                    </Td>
+                    </Table.Cell>
                     {(canManageAttendance || canParentManageChild(row.id)) && (
-                      <Td display={{ base: 'none', md: 'table-cell' }}>
+                      <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
                         {isExcused ? (
                           renderExcuseStatus('orange.500')
                         ) : (
-                          <HStack spacing={2} w="full" justifyContent="flex-start">
+                          <HStack gap={2} w="full" justifyContent="flex-start">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleCheckIn(row.id)}
-                              isDisabled={!!row.check_in_at || !isCheckInWindowOpen}
-                              isLoading={actionChildId === row.id}
+                              disabled={!!row.check_in_at || !isCheckInWindowOpen}
+                              loading={actionChildId === row.id}
                             >
                               {texts.classes.detail.checkIn[language]}
                             </Button>
@@ -459,23 +451,23 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                               size="sm"
                               variant="outline"
                               onClick={() => handleCheckOut(row.id)}
-                              isDisabled={
+                              disabled={
                                 !row.check_in_at || !!row.check_out_at || !isCheckOutWindowOpen
                               }
-                              isLoading={actionChildId === row.id}
+                              loading={actionChildId === row.id}
                             >
                               {texts.classes.detail.checkOut[language]}
                             </Button>
                           </HStack>
                         )}
-                      </Td>
+                      </Table.Cell>
                     )}
-                  </Tr>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </Table.ScrollArea>
       )}
       {!isLoading && filteredRows.length > 0 && (
         <TablePagination

@@ -1,16 +1,8 @@
 import React from 'react';
-import {
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Button,
-  useToast,
-} from '@chakra-ui/react';
+import { CustomDialog } from '@frontend/shared/ui/dialog';
 import { texts } from '@frontend/texts';
 import api from '@frontend/services/apiConfig';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface DeletePresentationDialogProps {
   isOpen: boolean;
@@ -28,7 +20,7 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
   onPresentationDeleted,
 }) => {
   const cancelRef = React.useRef(null);
-  const toast = useToast();
+  const toast = useAppToast();
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   const handleDelete = async () => {
@@ -58,26 +50,20 @@ const DeletePresentationDialog: React.FC<DeletePresentationDialogProps> = ({
   };
 
   return (
-    <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
-      <AlertDialogOverlay>
-        <AlertDialogContent>
-          <AlertDialogHeader fontSize="lg" fontWeight="bold">
-            {texts.schedule.curriculum.deletePresentation[language]}
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            {texts.schedule.curriculum.deleteConfirmMessage[language]}
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} variant="secondary" onClick={onClose}>
-              {texts.common.cancel[language]}
-            </Button>
-            <Button variant="delete" onClick={handleDelete} ml={3} isLoading={isDeleting}>
-              {texts.common.delete[language]}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+    <CustomDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      onConfirm={handleDelete}
+      title={texts.schedule.curriculum.deletePresentation[language]}
+      cancelLabel={texts.common.cancel[language]}
+      confirmLabel={texts.common.delete[language]}
+      cancelRef={cancelRef}
+      cancelVariant="secondary"
+      confirmVariant="delete"
+      isConfirmLoading={isDeleting}
+    >
+      {texts.schedule.curriculum.deleteConfirmMessage[language]}
+    </CustomDialog>
   );
 };
 

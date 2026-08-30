@@ -26,7 +26,7 @@ const ContactSection = ({
 
   return (
     <Section title={texts.profile.contactInfo[language]} cardProps={{ mb: 6, w: 'full' }}>
-      <Stack spacing={4} w="full">
+      <Stack gap={4} w="full">
         <Box bg={subtleBg} p={3} borderRadius="md" w="full">
           <Text fontWeight="bold">{texts.profile.firstName[language]}</Text>
           <Text>{firstName}</Text>

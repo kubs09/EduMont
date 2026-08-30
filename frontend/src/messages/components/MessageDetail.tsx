@@ -1,6 +1,6 @@
 import React from 'react';
-import { VStack, HStack, Text, IconButton, Button, Box } from '@chakra-ui/react';
-import { DeleteIcon, EmailIcon } from '@chakra-ui/icons';
+import { VStack, HStack, Text, IconButton, Button, Box, Icon } from '@chakra-ui/react';
+import { FiTrash2, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageDetailProps } from '@frontend/types/message';
 
@@ -12,12 +12,13 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
 }) => {
   if (!message) {
     return (
-      <VStack h="100%" justify="center" spacing={{ base: 3, md: 4 }}>
-        <EmailIcon boxSize={{ base: 12, md: 16 }} color="gray.400" />
-        <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.500" textAlign="center">
+      <VStack h="100%" justify="center" gap={{ base: 3, md: 4 }}>
+        <Icon as={FiMail} boxSize={{ base: 12, md: 16 }} color="text-muted" />
+        <Text fontSize={{ base: 'lg', md: 'xl' }} color="text-muted" textAlign="center">
           {translations.title}
         </Text>
-        <Button leftIcon={<EmailIcon />} size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
+        <Button size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
+          <FiMail />
           {translations.compose}
         </Button>
       </VStack>
@@ -25,20 +26,20 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
   }
 
   return (
-    <VStack align="stretch" spacing={{ base: 4, md: 6 }} h="100%">
+    <VStack align="stretch" gap={{ base: 4, md: 6 }} h="100%">
       <VStack
         align="stretch"
-        spacing={{ base: 2, md: 3 }}
+        gap={{ base: 2, md: 3 }}
         p={{ base: 3, md: 4 }}
         borderRadius="md"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="border-color"
       >
-        <HStack justify="space-between" spacing={{ base: 2, sm: 3 }} align="center">
+        <HStack justify="space-between" gap={{ base: 2, sm: 3 }} align="center">
           <Text
             fontSize={{ base: 'md', sm: 'lg', md: '2xl' }}
             fontWeight="semibold"
-            noOfLines={{ base: 2, md: 1 }}
+            lineClamp={{ base: 2, md: 1 }}
             flex="1"
           >
             {message.subject}
@@ -46,22 +47,23 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           <IconButton
             flexShrink={0}
             size={{ base: 'sm', md: 'md' }}
-            icon={<DeleteIcon />}
             aria-label={translations.delete}
             onClick={() => onDelete(message.id)}
-            colorScheme="red"
+            colorPalette="red"
             variant="ghost"
-          />
+          >
+            <FiTrash2 />
+          </IconButton>
         </HStack>
 
         <VStack
           align="stretch"
-          spacing={{ base: 0.5, md: 1 }}
+          gap={{ base: 0.5, md: 1 }}
           pt={{ base: 1, md: 2 }}
           borderTopWidth="1px"
-          borderColor="gray.200"
+          borderColor="border-color"
         >
-          <HStack fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" flexWrap="wrap">
+          <HStack fontSize={{ base: 'xs', md: 'sm' }} color="text-secondary" flexWrap="wrap">
             <Text fontWeight="medium" minW={{ base: '50px', md: '60px' }}>
               {translations.from}:
             </Text>
@@ -71,7 +73,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           </HStack>
           <HStack
             fontSize={{ base: 'xs', md: 'sm' }}
-            color="gray.600"
+            color="text-secondary"
             flexWrap="wrap"
             align="flex-start"
           >
@@ -84,7 +86,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
                 .join(', ')}
             </Text>
           </HStack>
-          <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" pt={{ base: 0.5, md: 1 }}>
+          <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-muted" pt={{ base: 0.5, md: 1 }}>
             {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
           </Text>
         </VStack>

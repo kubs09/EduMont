@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  GridItem,
-  Button,
-  useColorModeValue,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-} from '@chakra-ui/react';
-import { EmailIcon, RepeatIcon } from '@chakra-ui/icons';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
+import { Box, Grid, GridItem, Button, Tabs } from '@chakra-ui/react';
+import { FiMail, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import {
@@ -132,22 +122,12 @@ const Messages: React.FC = () => {
     <Box p={3}>
       <Grid templateColumns="repeat(12, 1fr)" gap={4}>
         <GridItem colSpan={12}>
-          <Button
-            variant="brand"
-            leftIcon={<EmailIcon />}
-            onClick={() => setComposeOpen(true)}
-            mb={2}
-            mr={2}
-          >
+          <Button variant="brand" onClick={() => setComposeOpen(true)} mb={2} mr={2}>
+            <FiMail />
             {t.compose[language]}
           </Button>
-          <Button
-            variant="secondary"
-            leftIcon={<RepeatIcon />}
-            onClick={fetchMessages}
-            isLoading={isRefreshing}
-            mb={2}
-          >
+          <Button variant="secondary" onClick={fetchMessages} loading={isRefreshing} mb={2}>
+            <FiRefreshCw />
             {texts.common.refresh[language]}
           </Button>
         </GridItem>
@@ -161,16 +141,13 @@ const Messages: React.FC = () => {
             h={{ base: 'calc(50vh - 100px)', md: 'calc(100vh - 250px)' }}
             overflow="hidden"
           >
-            <Tabs isFitted variant="enclosed">
-              <TabList>
-                <Tab>{t.inbox[language]}</Tab>
-                <Tab>{t.sent[language]}</Tab>
-              </TabList>
-              <TabPanels
-                overflow="auto"
-                maxH={{ base: 'calc(50vh - 170px)', md: 'calc(100vh - 320px)' }}
-              >
-                <TabPanel p={0}>
+            <Tabs.Root fitted variant="enclosed" defaultValue="inbox">
+              <Tabs.List>
+                <Tabs.Trigger value="inbox">{t.inbox[language]}</Tabs.Trigger>
+                <Tabs.Trigger value="sent">{t.sent[language]}</Tabs.Trigger>
+              </Tabs.List>
+              <Box overflow="auto" maxH={{ base: 'calc(50vh - 170px)', md: 'calc(100vh - 320px)' }}>
+                <Tabs.Content value="inbox" p={0}>
                   <MessageList
                     messages={filterAndSortMessages(receivedMessages)}
                     selectedMessageId={selectedMessage?.id}
@@ -182,8 +159,8 @@ const Messages: React.FC = () => {
                     sortDirection={sortDirection}
                     onSortChange={setSortDirection}
                   />
-                </TabPanel>
-                <TabPanel p={0}>
+                </Tabs.Content>
+                <Tabs.Content value="sent" p={0}>
                   <MessageList
                     messages={filterAndSortMessages(sentMessages)}
                     selectedMessageId={selectedMessage?.id}
@@ -195,9 +172,9 @@ const Messages: React.FC = () => {
                     sortDirection={sortDirection}
                     onSortChange={setSortDirection}
                   />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+                </Tabs.Content>
+              </Box>
+            </Tabs.Root>
           </Box>
         </GridItem>
 

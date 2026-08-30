@@ -1,18 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  Text,
-  VStack,
-  Box,
-  Link as ChakraLink,
-  useColorModeValue,
-} from '@chakra-ui/react';
+import { Table, Text, VStack, Box, Link as ChakraLink } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { Class } from '@frontend/types/class';
@@ -44,7 +31,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const canViewParentProfile = isAdmin || isTeacher;
-  const linkColor = useColorModeValue('blue.600', 'blue.300');
+  const linkColor = 'fg-brand';
   const visibleChildren = useMemo(() => {
     const allChildren = classData.children;
     if (isAdmin || isTeacher) return allChildren;
@@ -102,43 +89,49 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
 
   return (
     <Box w="full" overflowX="auto">
-      <TableContainer w="full" maxW="100%" overflowX="auto">
-        <Table variant="simple" size="md" minW="max-content">
-          <Thead>
-            <Tr>
-              <Th>{texts.common.childrenTable.name[language]}</Th>
-              <Th>{texts.common.childrenTable.age[language]}</Th>
-              {(isAdmin || isTeacher) && <Th>{texts.common.childrenTable.parent[language]}</Th>}
-              <Th>{texts.children.excuse.status[language]}</Th>
-              {isParent && <Th>{texts.common.actions[language]}</Th>}
-            </Tr>
-          </Thead>
-          <Tbody>
+      <Table.ScrollArea w="full" maxW="100%" overflowX="auto">
+        <Table.Root variant="line" size="md" minW="max-content">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>{texts.common.childrenTable.name[language]}</Table.ColumnHeader>
+              <Table.ColumnHeader>{texts.common.childrenTable.age[language]}</Table.ColumnHeader>
+              {(isAdmin || isTeacher) && (
+                <Table.ColumnHeader>
+                  {texts.common.childrenTable.parent[language]}
+                </Table.ColumnHeader>
+              )}
+              <Table.ColumnHeader>{texts.children.excuse.status[language]}</Table.ColumnHeader>
+              {isParent && (
+                <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>
+              )}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {paginatedChildren.map((child) => {
               const activeExcuse = getActiveExcuse(child.id);
               const childName = `${child.firstname} ${child.surname}`;
               return (
-                <Tr key={child.id}>
-                  <Td>
+                <Table.Row key={child.id}>
+                  <Table.Cell>
                     <Text>
                       {child.firstname} {child.surname}
                     </Text>
-                  </Td>
-                  <Td>{child.age}</Td>
+                  </Table.Cell>
+                  <Table.Cell>{child.age}</Table.Cell>
                   {(isAdmin || isTeacher) && (
-                    <Td>
-                      <VStack align="start" spacing={1}>
+                    <Table.Cell>
+                      <VStack align="start" gap={1}>
                         {child.parents.map((parent) => {
                           const fullName = `${parent.firstname} ${parent.surname}`;
                           return (
                             <Text key={`${child.id}-parent-name-${parent.id}`}>
                               {canViewParentProfile ? (
-                                <ChakraLink
-                                  as={RouterLink}
-                                  to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
-                                  color={linkColor}
-                                >
-                                  {fullName}
+                                <ChakraLink asChild color={linkColor}>
+                                  <RouterLink
+                                    to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                                  >
+                                    {fullName}
+                                  </RouterLink>
                                 </ChakraLink>
                               ) : (
                                 fullName
@@ -147,26 +140,26 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                           );
                         })}
                       </VStack>
-                    </Td>
+                    </Table.Cell>
                   )}
                   {activeExcuse ? (
-                    <Td>
+                    <Table.Cell>
                       <Text fontSize="sm" color="orange.500">
                         {texts.children.excuse.status[language]} (
                         {formatExcuseDate(activeExcuse.date_from)}
                         {' - '}
                         {formatExcuseDate(activeExcuse.date_to)})
                       </Text>
-                    </Td>
+                    </Table.Cell>
                   ) : (
-                    <Td>
-                      <Text fontSize="sm" color="gray.500">
+                    <Table.Cell>
+                      <Text fontSize="sm" color="text-muted">
                         -
                       </Text>
-                    </Td>
+                    </Table.Cell>
                   )}
                   {isParent && (
-                    <Td>
+                    <Table.Cell>
                       <ChildExcuseAction
                         childId={child.id}
                         childName={childName}
@@ -176,14 +169,14 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                         size="xs"
                         variant="outline"
                       />
-                    </Td>
+                    </Table.Cell>
                   )}
-                </Tr>
+                </Table.Row>
               );
             })}
-          </Tbody>
-        </Table>
-      </TableContainer>
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
       {visibleChildren.length > 0 && (
         <TablePagination
           currentPage={safeCurrentPage}

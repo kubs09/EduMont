@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Stack } from '@chakra-ui/react';
+import { Alert, Button, Stack } from '@chakra-ui/react';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import texts from '@frontend/texts';
 
@@ -30,7 +30,7 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
   };
 
   return (
-    <Alert
+    <Alert.Root
       status="warning"
       variant="subtle"
       flexDirection="column"
@@ -39,24 +39,24 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
       gap={3}
       p={4}
     >
-      <Stack direction="row" align="center" spacing={3}>
-        <AlertIcon />
-        <AlertTitle>{title}</AlertTitle>
+      <Stack direction="row" align="center" gap={3}>
+        <Alert.Indicator />
+        <Alert.Title>{title}</Alert.Title>
       </Stack>
-      <AlertDescription>{message}</AlertDescription>
+      <Alert.Description>{message}</Alert.Description>
       {showAction && (
         <Button
-          colorScheme="blue"
+          variant="brand"
           onClick={handleRequestPermission}
-          isLoading={isLoading}
+          loading={isLoading}
           loadingText={actionLabel}
-          isDisabled={premissionSubmitted}
+          disabled={premissionSubmitted}
         >
           {premissionSubmitted
             ? texts.classes.detail.requestSentButton[language]
             : texts.classes.detail.requestPermissionButton[language]}
         </Button>
       )}
-    </Alert>
+    </Alert.Root>
   );
 };
