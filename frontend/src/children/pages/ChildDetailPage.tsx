@@ -291,7 +291,13 @@ const ChildDetailPage = () => {
     {
       id: 'information',
       label: texts.children.title[language],
-      content: <InformationSection childData={childData} language={language} />,
+      content: (
+        <InformationSection
+          childData={childData}
+          language={language}
+          canViewParentProfile={canViewParentProfile}
+        />
+      ),
     },
     {
       id: 'presentations',
@@ -373,10 +379,16 @@ const ChildDetailPage = () => {
               <IconButton
                 aria-label={texts.children.backButton[language]}
                 size="sm"
-                onClick={() => navigate(ROUTES.CHILDREN)}><FiChevronLeft /></IconButton>
+                onClick={() => navigate(ROUTES.CHILDREN)}
+              >
+                <FiChevronLeft />
+              </IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button onClick={() => navigate(ROUTES.CHILDREN)} size="md" px={4} minW="auto"><FiChevronLeft />{texts.children.backButton[language]}</Button>
+              <Button onClick={() => navigate(ROUTES.CHILDREN)} size="md" px={4} minW="auto">
+                <FiChevronLeft />
+                {texts.children.backButton[language]}
+              </Button>
             </Box>
             <Box flex={{ base: '0 0 auto', md: '1' }} display={{ base: 'none', md: 'block' }} />
             <Heading
@@ -400,12 +412,18 @@ const ChildDetailPage = () => {
                     aria-label={texts.profile.edit[language]}
                     variant="brand"
                     size={{ base: 'sm', md: 'md' }}
-                    onClick={() => setIsEditModalOpen(true)}><FiEdit2 /></IconButton>
+                    onClick={() => setIsEditModalOpen(true)}
+                  >
+                    <FiEdit2 />
+                  </IconButton>
                   <IconButton
                     aria-label={texts.common.delete[language]}
                     variant="delete"
                     size={{ base: 'sm', md: 'md' }}
-                    onClick={() => setIsDeleteConfirmOpen(true)}><FiTrash2 /></IconButton>
+                    onClick={() => setIsDeleteConfirmOpen(true)}
+                  >
+                    <FiTrash2 />
+                  </IconButton>
                 </HStack>
               )}
             </Box>

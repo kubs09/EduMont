@@ -19,9 +19,14 @@ import { formatDate } from '@frontend/shared/components/DatePicker/utils/utils';
 interface InformationTabProps {
   childData: Child;
   language: 'cs' | 'en';
+  canViewParentProfile: boolean;
 }
 
-const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) => {
+const InformationTab: React.FC<InformationTabProps> = ({
+  childData,
+  language,
+  canViewParentProfile,
+}) => {
   const navigate = useNavigate();
   const age = new Date().getFullYear() - new Date(childData.date_of_birth).getFullYear();
   const linkColor = 'fg-brand';
@@ -83,11 +88,17 @@ const InformationTab: React.FC<InformationTabProps> = ({ childData, language }) 
                   const fullName = `${parent.firstname} ${parent.surname}`;
                   return (
                     <Text key={`${parent.id}`}>
-                      <ChakraLink asChild color={linkColor}>
-                        <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}>
-                          {fullName}
-                        </RouterLink>
-                      </ChakraLink>
+                      {canViewParentProfile ? (
+                        <ChakraLink asChild color={linkColor}>
+                          <RouterLink
+                            to={ROUTES.PROFILE_DETAIL.replace(':id', parent.id.toString())}
+                          >
+                            {fullName}
+                          </RouterLink>
+                        </ChakraLink>
+                      ) : (
+                        fullName
+                      )}
                     </Text>
                   );
                 })}
