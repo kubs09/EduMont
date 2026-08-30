@@ -115,7 +115,7 @@ const ChildrenPage = () => {
           <Heading>{texts.children.title[language]}</Heading>
         )}
         {isAdmin && (
-          <Button colorPalette="blue" onClick={() => setIsAddChildModalOpen(true)}>
+          <Button variant="brand" onClick={() => setIsAddChildModalOpen(true)}>
             {texts.children.addChild.title[language]}
           </Button>
         )}
@@ -128,7 +128,9 @@ const ChildrenPage = () => {
           <Table.Root variant="simple" size={{ base: 'sm', md: 'md' }}>
             <Table.Header display={{ base: 'none', md: 'table-header-group' }}>
               <Table.Row>
-                <Table.ColumnHeader>{texts.common.childrenTable.firstname[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>
+                  {texts.common.childrenTable.firstname[language]}
+                </Table.ColumnHeader>
                 <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.common.childrenTable.surname[language]}
                 </Table.ColumnHeader>
@@ -176,8 +178,12 @@ const ChildrenPage = () => {
                   }}
                   onClick={() => handleViewDetail(child.id)}
                 >
-                  <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>{child.firstname}</Table.Cell>
-                  <Table.Cell display={{ base: 'none', md: 'table-cell' }}>{child.surname}</Table.Cell>
+                  <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>
+                    {child.firstname}
+                  </Table.Cell>
+                  <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
+                    {child.surname}
+                  </Table.Cell>
                   <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
                   </Table.Cell>
@@ -208,9 +214,12 @@ const ChildrenPage = () => {
                         onClick={() => {
                           setChildToDelete(child);
                           onOpen();
-                        }}><FiTrash2 /></IconButton>
+                        }}
+                      >
+                        <FiTrash2 />
+                      </IconButton>
                     )}
-                    {!isAdmin && <Icon as={FiChevronRight} boxSize={6} color="gray.500" />}
+                    {!isAdmin && <Icon as={FiChevronRight} boxSize={6} color="text-muted" />}
                   </Table.Cell>
                 </Table.Row>
               ))}

@@ -33,24 +33,26 @@ const MonthPicker: React.FC<MonthPickerProps> = ({
       />
 
       <Grid templateColumns="repeat(3, 1fr)" gap={2} width="100%">
-        {texts.common.datePicker.months[language].map((month, index) => (
-          <GridItem key={index}>
-            <Button
-              size="sm"
-              variant="outline"
-              width="100%"
-              onClick={() => handleMonthSelect(index)}
-              colorPalette={
-                value.substring(0, 7) ===
-                `${displayYear}-${(index + 1).toString().padStart(2, '0')}`
-                  ? 'blue'
-                  : 'gray'
-              }
-            >
-              {month}
-            </Button>
-          </GridItem>
-        ))}
+        {texts.common.datePicker.months[language].map((month, index) => {
+          const isSelected =
+            value.substring(0, 7) === `${displayYear}-${(index + 1).toString().padStart(2, '0')}`;
+
+          return (
+            <GridItem key={index}>
+              <Button
+                size="sm"
+                variant="outline"
+                width="100%"
+                onClick={() => handleMonthSelect(index)}
+                borderColor={isSelected ? 'fg-brand' : undefined}
+                color={isSelected ? 'fg-brand' : undefined}
+                _hover={{ bg: isSelected ? 'bg-brand-subtle' : 'gray.100' }}
+              >
+                {month}
+              </Button>
+            </GridItem>
+          );
+        })}
       </Grid>
     </VStack>
   );

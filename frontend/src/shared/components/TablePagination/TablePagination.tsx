@@ -47,13 +47,15 @@ const TablePagination: React.FC<TablePaginationProps> = ({
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage - 1)}
-          disabled={!canGoPrevious}><FiChevronLeft /></IconButton>
+          disabled={!canGoPrevious}
+        >
+          <FiChevronLeft />
+        </IconButton>
         {pages.map((page) => (
           <Button
             key={page}
             size="sm"
-            variant={page === safeCurrentPage ? 'solid' : 'ghost'}
-            colorPalette={page === safeCurrentPage ? 'blue' : 'gray'}
+            variant={page === safeCurrentPage ? 'brand' : 'ghost'}
             onClick={() => onPageChange(page)}
             disabled={isDisabled}
           >
@@ -65,16 +67,19 @@ const TablePagination: React.FC<TablePaginationProps> = ({
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage + 1)}
-          disabled={!canGoNext}><FiChevronRight /></IconButton>
+          disabled={!canGoNext}
+        >
+          <FiChevronRight />
+        </IconButton>
       </HStack>
       {startRecord && endRecord && totalCount && (
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color="text-muted">
           {texts.common.pagination.showing[language]} {startRecord}-{endRecord}{' '}
           {texts.common.pagination.ofPage[language]} {totalCount}
         </Text>
       )}
       {!startRecord && (
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color="text-muted">
           {texts.common.pagination.page[language]} {safeCurrentPage}{' '}
           {texts.common.pagination.ofPage[language]} {totalPages}
         </Text>

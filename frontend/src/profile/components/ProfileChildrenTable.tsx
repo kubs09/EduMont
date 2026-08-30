@@ -12,13 +12,21 @@ const ProfileChildrenTable = ({ children }: ProfileChildrenTableProps) => {
 
   return (
     <Table.ScrollArea>
-      <Table.Root variant="simple" size={{ base: 'sm', md: 'md' }}>
+      <Table.Root variant="line" size={{ base: 'sm', md: 'md' }}>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader whiteSpace="nowrap">{texts.common.childrenTable.firstname[language]}</Table.ColumnHeader>
-            <Table.ColumnHeader whiteSpace="nowrap">{texts.common.childrenTable.surname[language]}</Table.ColumnHeader>
-            <Table.ColumnHeader whiteSpace="nowrap">{texts.common.childrenTable.age[language]}</Table.ColumnHeader>
-            <Table.ColumnHeader whiteSpace="nowrap">{texts.common.childrenTable.notes[language]}</Table.ColumnHeader>
+            <Table.ColumnHeader whiteSpace="nowrap">
+              {texts.common.childrenTable.firstname[language]}
+            </Table.ColumnHeader>
+            <Table.ColumnHeader whiteSpace="nowrap">
+              {texts.common.childrenTable.surname[language]}
+            </Table.ColumnHeader>
+            <Table.ColumnHeader whiteSpace="nowrap">
+              {texts.common.childrenTable.age[language]}
+            </Table.ColumnHeader>
+            <Table.ColumnHeader whiteSpace="nowrap">
+              {texts.common.childrenTable.notes[language]}
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>{children}</Table.Body>

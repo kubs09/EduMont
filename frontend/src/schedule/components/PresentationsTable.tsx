@@ -76,7 +76,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
   if (presentations.length === 0) {
     return (
       <Box textAlign="center" py={8}>
-        <Text color="gray.500">{texts.schedule.noEntries[language]}</Text>
+        <Text color="text-muted">{texts.schedule.noEntries[language]}</Text>
       </Box>
     );
   }
@@ -144,15 +144,21 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                     <IconButton
                       aria-label={texts.schedule.editEntry[language]}
                       size="sm"
-                      colorPalette="blue"
+                      color="fg-brand"
                       variant="ghost"
-                      onClick={() => onEdit?.(presentation)}><FiEdit2 /></IconButton>
+                      onClick={() => onEdit?.(presentation)}
+                    >
+                      <FiEdit2 />
+                    </IconButton>
                     <IconButton
                       aria-label={texts.schedule.deleteEntry[language]}
                       size="sm"
                       colorPalette="red"
                       variant="ghost"
-                      onClick={() => onDelete?.(presentation)}><FiTrash2 /></IconButton>
+                      onClick={() => onDelete?.(presentation)}
+                    >
+                      <FiTrash2 />
+                    </IconButton>
                   </HStack>
                 </Table.Cell>
               )}

@@ -75,7 +75,7 @@ const ClassesPage = () => {
       >
         <Heading>{texts.classes.title[language]}</Heading>
         {isAdmin && (
-          <Button colorPalette="blue" onClick={() => setIsCreateModalOpen(true)}>
+          <Button variant="brand" onClick={() => setIsCreateModalOpen(true)}>
             {texts.classes.addClass[language]}
           </Button>
         )}
@@ -130,8 +130,12 @@ const ClassesPage = () => {
                     }}
                     onClick={() => handleViewDetail(cls.id)}
                   >
-                    <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>{cls.name}</Table.Cell>
-                    <Table.Cell display={{ base: 'none', md: 'table-cell' }}>{cls.description}</Table.Cell>
+                    <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>
+                      {cls.name}
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
+                      {cls.description}
+                    </Table.Cell>
                     <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                       <VStack align="start" gap={1}>
                         <Text fontSize={{ base: 'sm', md: 'md' }}>
@@ -158,7 +162,7 @@ const ClassesPage = () => {
                       </VStack>
                     </Table.Cell>
                     <Table.Cell>
-                      <Icon as={FiChevronRight} boxSize={6} color="gray.500" />
+                      <Icon as={FiChevronRight} boxSize={6} color="text-muted" />
                     </Table.Cell>
                   </Table.Row>
                 );

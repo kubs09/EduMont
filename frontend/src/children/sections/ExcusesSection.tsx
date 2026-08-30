@@ -125,8 +125,12 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                 <Table.ColumnHeader>{texts.children.excuse.dateFrom[language]}</Table.ColumnHeader>
                 <Table.ColumnHeader>{texts.children.excuse.dateTo[language]}</Table.ColumnHeader>
                 <Table.ColumnHeader>{texts.children.excuse.reason[language]}</Table.ColumnHeader>
-                <Table.ColumnHeader>{texts.children.excuse.submittedBy[language]}</Table.ColumnHeader>
-                {isParent && <Table.ColumnHeader>{texts.children.excuse.actions[language]}</Table.ColumnHeader>}
+                <Table.ColumnHeader>
+                  {texts.children.excuse.submittedBy[language]}
+                </Table.ColumnHeader>
+                {isParent && (
+                  <Table.ColumnHeader>{texts.children.excuse.actions[language]}</Table.ColumnHeader>
+                )}
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -147,8 +151,10 @@ const ExcusesSection: React.FC<ExcusesSectionProps> = ({
                     <Table.Cell>
                       {parentName ? (
                         hasParentLink ? (
-                          <ChakraLink asChild color="blue.500">
-                            <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', parentId.toString())}>
+                          <ChakraLink asChild color="fg-brand">
+                            <RouterLink
+                              to={ROUTES.PROFILE_DETAIL.replace(':id', parentId.toString())}
+                            >
                               {parentName}
                             </RouterLink>
                           </ChakraLink>

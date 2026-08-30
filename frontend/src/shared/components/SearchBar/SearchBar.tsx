@@ -25,7 +25,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <InputGroup
       maxW="400px"
-      startElement={<Icon as={FiSearch} color="gray.400" />}
+      startElement={<Icon as={FiSearch} color="text-muted" />}
       endElement={
         value ? (
           <IconButton aria-label="Clear search" size="xs" variant="ghost" onClick={handleClear}>

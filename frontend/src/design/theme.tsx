@@ -219,7 +219,7 @@ const textRecipe = defineRecipe({
         color: 'text-muted',
       },
       link: {
-        color: 'blue.500',
+        color: 'fg-brand',
         _hover: {
           textDecoration: 'underline',
         },
@@ -339,38 +339,62 @@ const system = createSystem(defaultConfig, {
       colors: {
         'bg-canvas': {
           value: {
-            base: 'brand.light.bg',
-            _dark: 'brand.dark.bg',
+            base: '{colors.brand.light.bg}',
+            _dark: '{colors.brand.dark.bg}',
           },
         },
         'bg-surface': {
           value: {
-            base: 'brand.light.surface',
-            _dark: 'brand.dark.surface',
+            base: '{colors.brand.light.surface}',
+            _dark: '{colors.brand.dark.surface}',
           },
         },
         'border-color': {
           value: {
-            base: 'brand.light.border',
-            _dark: 'brand.dark.border',
+            base: '{colors.brand.light.border}',
+            _dark: '{colors.brand.dark.border}',
           },
         },
         'text-primary': {
           value: {
-            base: 'brand.light.text.primary',
-            _dark: 'brand.dark.text.primary',
+            base: '{colors.brand.light.text.primary}',
+            _dark: '{colors.brand.dark.text.primary}',
           },
         },
         'text-secondary': {
           value: {
-            base: 'brand.light.text.secondary',
-            _dark: 'brand.dark.text.secondary',
+            base: '{colors.brand.light.text.secondary}',
+            _dark: '{colors.brand.dark.text.secondary}',
           },
         },
         'text-muted': {
           value: {
-            base: 'brand.light.text.muted',
-            _dark: 'brand.dark.text.muted',
+            base: '{colors.brand.light.text.muted}',
+            _dark: '{colors.brand.dark.text.muted}',
+          },
+        },
+        'text-danger': {
+          value: {
+            base: '{colors.red.500}',
+            _dark: '{colors.red.300}',
+          },
+        },
+        'fg-brand': {
+          value: {
+            base: '{colors.brand.primary.900}',
+            _dark: '{colors.brand.primary.400}',
+          },
+        },
+        'bg-brand-subtle': {
+          value: {
+            base: '{colors.brand.primary.300}',
+            _dark: '{colors.brand.primary.700}',
+          },
+        },
+        'bg-brand-solid': {
+          value: {
+            base: '{colors.brand.primary.900}',
+            _dark: '{colors.brand.primary.700}',
           },
         },
       },

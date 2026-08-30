@@ -92,7 +92,7 @@ const UserDashboard: React.FC = () => {
         <Card.Header>
           <HStack justify="space-between">
             <Heading>{texts.userDashboard.title[language]}</Heading>
-            <Button colorPalette="blue" onClick={() => setIsAddUserOpen(true)}>
+            <Button variant="brand" onClick={() => setIsAddUserOpen(true)}>
               {texts.userDashboard.addUserButton[language]}
             </Button>
           </HStack>

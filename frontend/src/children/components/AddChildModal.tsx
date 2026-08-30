@@ -201,7 +201,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           <Button variant="ghost" mr={3} onClick={onClose}>
             {texts.common.cancel[language]}
           </Button>
-          <Button colorPalette="blue" onClick={handleSubmit} loading={isSubmitting}>
+          <Button variant="brand" onClick={handleSubmit} loading={isSubmitting}>
             {texts.children.addChild.submit[language]}
           </Button>
         </>
@@ -265,7 +265,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
               <NativeSelect.Indicator />
             </NativeSelect.Root>
           ) : (
-            <Box p={2} color="red.500">
+            <Box p={2} color="text-danger">
               {texts.children.classSelection.noneFound[language]}
             </Box>
           )}

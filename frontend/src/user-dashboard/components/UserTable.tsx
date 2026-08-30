@@ -1,5 +1,14 @@
 import React, { useEffect } from 'react';
-import { Table, Spinner, Center, Text, IconButton, useDisclosure } from '@chakra-ui/react';
+import {
+  Table,
+  Spinner,
+  Center,
+  Text,
+  IconButton,
+  useDisclosure,
+  Link as ChakraLink,
+} from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 import { FiTrash2 } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -7,6 +16,7 @@ import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components'
 import { User, UserTableProps } from '@frontend/types/user';
 import { CustomTable } from '@frontend/shared/ui/table';
 import { CustomDialog } from '@frontend/shared/ui/dialog';
+import { ROUTES } from '@frontend/shared/route';
 
 const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = null, onDelete }) => {
   const { language } = useLanguage();
@@ -40,7 +50,7 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
   if (error) {
     return (
       <Center p={8}>
-        <Text color="red.500">{error}</Text>
+        <Text color="text-danger">{error}</Text>
       </Center>
     );
   }
@@ -56,7 +66,11 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading = false, error = nu
             texts.userDashboard.table.actions[language],
           ]}
           data={paginatedUsers.map((user) => [
-            `${user.firstname} ${user.surname}`,
+            <ChakraLink key={user.id} asChild variant="underline">
+              <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', user.id.toString())}>
+                {`${user.firstname} ${user.surname}`}
+              </RouterLink>
+            </ChakraLink>,
             user.email,
             texts.userDashboard.table.roles[user.role][language],
           ])}

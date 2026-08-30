@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { Table, Text, VStack, Box, Link as ChakraLink } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { texts } from '@frontend/texts';
@@ -32,7 +31,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const canViewParentProfile = isAdmin || isTeacher;
-  const linkColor = useColorModeValue('blue.600', 'blue.300');
+  const linkColor = 'fg-brand';
   const visibleChildren = useMemo(() => {
     const allChildren = classData.children;
     if (isAdmin || isTeacher) return allChildren;
@@ -154,7 +153,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({
                     </Table.Cell>
                   ) : (
                     <Table.Cell>
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize="sm" color="text-muted">
                         -
                       </Text>
                     </Table.Cell>

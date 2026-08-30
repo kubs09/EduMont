@@ -122,7 +122,7 @@ export const ManageClassTeachersModal = ({
       title={texts.classes.manageTeachersTitle[language]}
       buttons={
         <>
-          <Button colorPalette="blue" mr={3} onClick={handleSave} loading={isSubmitting}>
+          <Button variant="brand" mr={3} onClick={handleSave} loading={isSubmitting}>
             {texts.common.save[language]}
           </Button>
           <Button onClick={onClose}>{texts.common.cancel[language]}</Button>

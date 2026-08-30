@@ -217,7 +217,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
           <Button variant="ghost" mr={3} onClick={handleClose}>
             {texts.common?.cancel?.[language] || 'Cancel'}
           </Button>
-          <Button type="submit" loading={isSubmitting} colorPalette="blue">
+          <Button type="submit" loading={isSubmitting} variant="brand">
             {texts.children.documents.uploadDocument[language]}
           </Button>
         </>
@@ -270,7 +270,7 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
                 />
                 {!value ? (
                   <VStack gap={2}>
-                    <Box w={12} h={12} color="gray.500">
+                    <Box w={12} h={12} color="text-muted">
                       <Icon as={FiUploadCloud as React.ElementType} w={12} h={12} />
                     </Box>
                     <Text fontWeight="medium" color="text-primary">
@@ -311,12 +311,12 @@ const AddDocumentModal: React.FC<AddDocumentModalProps> = ({
               <Field.ErrorText>{errors.file?.message}</Field.ErrorText>
               {isSubmitting && uploadProgress > 0 && (
                 <Box mt={2} w="100%">
-                  <Progress.Root value={uploadProgress} size="sm" colorPalette="blue">
+                  <Progress.Root value={uploadProgress} size="sm">
                     <Progress.Track>
-                      <Progress.Range />
+                      <Progress.Range bg="bg-brand-solid" />
                     </Progress.Track>
                   </Progress.Root>
-                  <Text fontSize="sm" color="gray.600" mt={2}>
+                  <Text fontSize="sm" color="text-secondary" mt={2}>
                     {uploadProgress}%
                   </Text>
                 </Box>

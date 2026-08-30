@@ -28,7 +28,12 @@ const Tabs: React.FC<TabsProps> = ({
   isLazy = false,
   isFitted = false,
 }) => {
-  const defaultValue = getTabValue(tabs[defaultIndex], defaultIndex);
+  if (tabs.length === 0) {
+    return null;
+  }
+
+  const resolvedDefaultIndex = tabs[defaultIndex] ? defaultIndex : 0;
+  const defaultValue = getTabValue(tabs[resolvedDefaultIndex]!, resolvedDefaultIndex);
 
   return (
     <ChakraTabs.Root

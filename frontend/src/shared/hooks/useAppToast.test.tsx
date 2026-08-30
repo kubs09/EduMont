@@ -13,4 +13,13 @@ describe('useAppToast', () => {
     const { result } = renderHook(() => useAppToast(), { wrapper });
     expect(typeof result.current).toBe('function');
   });
+
+  it('returns the same function reference across re-renders', () => {
+    const { result, rerender } = renderHook(() => useAppToast(), { wrapper });
+    const firstRender = result.current;
+
+    rerender();
+
+    expect(result.current).toBe(firstRender);
+  });
 });

@@ -38,7 +38,9 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                 <Table.ColumnHeader>{texts.children.documents.title[language]}</Table.ColumnHeader>
                 <Table.ColumnHeader>{texts.children.documents.file[language]}</Table.ColumnHeader>
                 <Table.ColumnHeader>{texts.children.documents.type[language]}</Table.ColumnHeader>
-                <Table.ColumnHeader>{texts.children.documents.createdAt[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader>
+                  {texts.children.documents.createdAt[language]}
+                </Table.ColumnHeader>
                 <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>
               </Table.Row>
             </Table.Header>
@@ -48,7 +50,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                   <Table.Cell>
                     <Text fontWeight="medium">{doc.title}</Text>
                     {doc.description && (
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="text-secondary">
                         {doc.description}
                       </Text>
                     )}
@@ -58,7 +60,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      color="blue.500"
+                      color="fg-brand"
                       textDecoration="underline"
                     >
                       {doc.file_name || doc.file_url}
@@ -82,7 +84,10 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
                           onClick={() => {
                             setSelectedDocument(doc);
                             setDeleteDialogOpen(true);
-                          }}><FiTrash2 /></IconButton>
+                          }}
+                        >
+                          <FiTrash2 />
+                        </IconButton>
                       </HStack>
                     )}
                   </Table.Cell>
@@ -97,7 +102,10 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 
       {canUpload && (
         <Box>
-          <Button variant="brand" onClick={() => setIsModalOpen(true)}><FiPlus />{texts.children.documents.uploadDocument[language]}</Button>
+          <Button variant="brand" onClick={() => setIsModalOpen(true)}>
+            <FiPlus />
+            {texts.children.documents.uploadDocument[language]}
+          </Button>
         </Box>
       )}
 

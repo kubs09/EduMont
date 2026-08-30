@@ -147,9 +147,9 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                               e.stopPropagation();
                               handleMonthSelect(index);
                             }}
-                            bg={displayMonth === index ? 'blue.50' : 'transparent'}
-                            color={displayMonth === index ? 'blue.600' : 'inherit'}
-                            _hover={{ bg: displayMonth === index ? 'blue.100' : 'gray.100' }}
+                            bg={displayMonth === index ? 'bg-brand-subtle' : 'transparent'}
+                            color={displayMonth === index ? 'fg-brand' : 'inherit'}
+                            _hover={{ bg: displayMonth === index ? 'bg-brand-subtle' : 'gray.100' }}
                             justifyContent="flex-start"
                           >
                             {month}
@@ -205,9 +205,9 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                           e.stopPropagation();
                           handleYearSelect(year);
                         }}
-                        bg={displayYear === year ? 'blue.50' : 'transparent'}
-                        color={displayYear === year ? 'blue.600' : 'inherit'}
-                        _hover={{ bg: displayYear === year ? 'blue.100' : 'gray.100' }}
+                        bg={displayYear === year ? 'bg-brand-subtle' : 'transparent'}
+                        color={displayYear === year ? 'fg-brand' : 'inherit'}
+                        _hover={{ bg: displayYear === year ? 'bg-brand-subtle' : 'gray.100' }}
                         justifyContent="flex-start"
                       >
                         {year}

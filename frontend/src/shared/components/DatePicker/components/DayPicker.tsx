@@ -60,8 +60,10 @@ const DayPicker: React.FC<DayPickerProps> = ({
             height="32px"
             minH="32px"
             onClick={() => handleDaySelect(day)}
-            colorPalette={isSelected ? 'blue' : 'gray'}
+            borderColor={isSelected ? 'fg-brand' : undefined}
+            color={isSelected ? 'fg-brand' : undefined}
             fontSize="sm"
+            _hover={{ bg: isSelected ? 'bg-brand-subtle' : 'gray.100' }}
           >
             {day}
           </Button>
@@ -86,7 +88,7 @@ const DayPicker: React.FC<DayPickerProps> = ({
       <Grid templateColumns="repeat(7, 1fr)" gap={1} width="100%" maxW="280px">
         {texts.common.datePicker.weekdays[language].map((day, index) => (
           <GridItem key={`header-${index}`}>
-            <Text fontSize="xs" textAlign="center" fontWeight="bold" color="gray.500" mb={1}>
+            <Text fontSize="xs" textAlign="center" fontWeight="bold" color="text-muted" mb={1}>
               {day}
             </Text>
           </GridItem>

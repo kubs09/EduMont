@@ -21,14 +21,14 @@ const NotFoundPage = () => {
   return (
     <Center h="100vh">
       <VStack gap={6}>
-        <Icon as={FiAlertTriangle} color="red.500" boxSize={16} />
+        <Icon as={FiAlertTriangle} color="text-danger" boxSize={16} />
         <Heading size="xl">{texts.staticPages.notFoundTitle[language]}</Heading>
         <Text>
           {isAuthenticated
             ? texts.staticPages.backMessage[language]
             : texts.staticPages.loginMessage[language]}
         </Text>
-        <Button colorPalette="blue" onClick={handleButtonClick}>
+        <Button variant="brand" onClick={handleButtonClick}>
           {isAuthenticated
             ? texts.staticPages.backButton[language]
             : texts.staticPages.loginButton[language]}

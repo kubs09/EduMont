@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { toaster } from '@frontend/shared/ui/toaster';
 
 interface AppToastOptions {
@@ -9,7 +10,7 @@ interface AppToastOptions {
 }
 
 export const useAppToast = () => {
-  return (options: AppToastOptions) => {
+  return useCallback((options: AppToastOptions) => {
     toaster.create({
       title: options.title,
       description: options.description,
@@ -17,5 +18,5 @@ export const useAppToast = () => {
       duration: options.duration,
       closable: options.isClosable,
     });
-  };
+  }, []);
 };

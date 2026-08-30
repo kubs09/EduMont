@@ -13,11 +13,14 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
   if (!message) {
     return (
       <VStack h="100%" justify="center" gap={{ base: 3, md: 4 }}>
-        <Icon as={FiMail} boxSize={{ base: 12, md: 16 }} color="gray.400" />
-        <Text fontSize={{ base: 'lg', md: 'xl' }} color="gray.500" textAlign="center">
+        <Icon as={FiMail} boxSize={{ base: 12, md: 16 }} color="text-muted" />
+        <Text fontSize={{ base: 'lg', md: 'xl' }} color="text-muted" textAlign="center">
           {translations.title}
         </Text>
-        <Button size={{ base: 'sm', md: 'md' }} onClick={onCompose}><FiMail />{translations.compose}</Button>
+        <Button size={{ base: 'sm', md: 'md' }} onClick={onCompose}>
+          <FiMail />
+          {translations.compose}
+        </Button>
       </VStack>
     );
   }
@@ -30,7 +33,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
         p={{ base: 3, md: 4 }}
         borderRadius="md"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="border-color"
       >
         <HStack justify="space-between" gap={{ base: 2, sm: 3 }} align="center">
           <Text
@@ -47,7 +50,10 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
             aria-label={translations.delete}
             onClick={() => onDelete(message.id)}
             colorPalette="red"
-            variant="ghost"><FiTrash2 /></IconButton>
+            variant="ghost"
+          >
+            <FiTrash2 />
+          </IconButton>
         </HStack>
 
         <VStack
@@ -55,9 +61,9 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           gap={{ base: 0.5, md: 1 }}
           pt={{ base: 1, md: 2 }}
           borderTopWidth="1px"
-          borderColor="gray.200"
+          borderColor="border-color"
         >
-          <HStack fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" flexWrap="wrap">
+          <HStack fontSize={{ base: 'xs', md: 'sm' }} color="text-secondary" flexWrap="wrap">
             <Text fontWeight="medium" minW={{ base: '50px', md: '60px' }}>
               {translations.from}:
             </Text>
@@ -67,7 +73,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
           </HStack>
           <HStack
             fontSize={{ base: 'xs', md: 'sm' }}
-            color="gray.600"
+            color="text-secondary"
             flexWrap="wrap"
             align="flex-start"
           >
@@ -80,7 +86,7 @@ const MessageDetail: React.FC<MessageDetailProps> = ({
                 .join(', ')}
             </Text>
           </HStack>
-          <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500" pt={{ base: 0.5, md: 1 }}>
+          <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-muted" pt={{ base: 0.5, md: 1 }}>
             {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
           </Text>
         </VStack>

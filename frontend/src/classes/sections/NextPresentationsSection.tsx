@@ -184,8 +184,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
             <Tabs.Root
               value={activeCategory || categoryOptions[0] || ''}
               onValueChange={(details) => setActiveCategory(details.value)}
-              variant='subtle'
-              colorPalette="blue"
+              variant="subtle"
               mb={4}
             >
               <Tabs.List flexWrap="wrap" gap={2}>
@@ -194,7 +193,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
                     key={category}
                     value={category}
                     _selected={{
-                      bg: 'blue.500',
+                      bg: 'bg-brand-solid',
                       color: 'white',
                     }}
                     _hover={{
@@ -213,10 +212,16 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
             <Table.Root variant="simple" size="md">
               <Table.Header>
                 <Table.Row>
-                  <Table.ColumnHeader>{texts.common.childrenTable.name[language]}</Table.ColumnHeader>
+                  <Table.ColumnHeader>
+                    {texts.common.childrenTable.name[language]}
+                  </Table.ColumnHeader>
                   <Table.ColumnHeader>{texts.classes.detail.category[language]}</Table.ColumnHeader>
-                  <Table.ColumnHeader>{texts.classes.detail.presentation[language]}</Table.ColumnHeader>
-                  {(isAdmin || isTeacher) && <Table.ColumnHeader>{texts.classes.detail.notes[language]}</Table.ColumnHeader>}
+                  <Table.ColumnHeader>
+                    {texts.classes.detail.presentation[language]}
+                  </Table.ColumnHeader>
+                  {(isAdmin || isTeacher) && (
+                    <Table.ColumnHeader>{texts.classes.detail.notes[language]}</Table.ColumnHeader>
+                  )}
                 </Table.Row>
               </Table.Header>
               <Table.Body>

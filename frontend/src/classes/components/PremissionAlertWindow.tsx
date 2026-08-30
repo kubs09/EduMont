@@ -46,7 +46,7 @@ export const PermissionAlertWindow: React.FC<PermissionAlertWindowProps> = ({
       <Alert.Description>{message}</Alert.Description>
       {showAction && (
         <Button
-          colorPalette="blue"
+          variant="brand"
           onClick={handleRequestPermission}
           loading={isLoading}
           loadingText={actionLabel}

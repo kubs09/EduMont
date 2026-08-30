@@ -80,7 +80,7 @@ const InviteSignupPage: React.FC = () => {
                 <Input type="password" {...register('confirmPassword')} />
                 <Field.ErrorText>{errors.confirmPassword?.message}</Field.ErrorText>
               </Field.Root>
-              <Button mt={5} type="submit" colorPalette="blue" width="full" loading={isLoading}>
+              <Button mt={5} type="submit" variant="brand" width="full" loading={isLoading}>
                 {texts.signUp.form.submit[language]}
               </Button>
             </VStack>

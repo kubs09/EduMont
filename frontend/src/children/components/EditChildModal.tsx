@@ -185,7 +185,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
           <Button variant="ghost" mr={3} onClick={onClose}>
             {texts.common.cancel[language]}
           </Button>
-          <Button colorPalette="blue" onClick={handleSubmit} loading={isSubmitting}>
+          <Button variant="brand" onClick={handleSubmit} loading={isSubmitting}>
             {texts.common.save[language]}
           </Button>
         </>
@@ -247,7 +247,7 @@ const EditChildModal = ({ isOpen, onClose, childData, onSave }: EditChildModalPr
             <NativeSelect.Indicator />
           </NativeSelect.Root>
         ) : (
-          <Box p={2} color="red.500">
+          <Box p={2} color="text-danger">
             {texts.children.classSelection.noneFound[language]}
           </Box>
         )}

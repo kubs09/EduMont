@@ -206,7 +206,8 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
         <NativeSelect.Root size="sm" maxW="220px">
           <NativeSelect.Field
             value={selectedCategory}
-            onChange={(event) => setSelectedCategory(event.target.value)}>
+            onChange={(event) => setSelectedCategory(event.target.value)}
+          >
             {categories.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -235,7 +236,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                   <Text fontWeight="medium">{presentation.name}</Text>
                 </Table.Cell>
                 <Table.Cell>
-                  <Badge colorPalette="blue" variant="outline">
+                  <Badge borderColor="fg-brand" color="fg-brand" variant="outline">
                     {presentation.display_order}
                   </Badge>
                 </Table.Cell>
@@ -299,7 +300,7 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
                       </Button>
                     </VStack>
                   ) : (
-                    <Text color="gray.500">-</Text>
+                    <Text color="text-muted">-</Text>
                   )}
                 </Table.Cell>
               </Table.Row>

@@ -77,7 +77,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
           <Button variant="ghost" mr={3} onClick={onClose}>
             {texts.common.cancel[language]}
           </Button>
-          <Button colorPalette="blue" type="submit" loading={isSubmitting}>
+          <Button variant="brand" type="submit" loading={isSubmitting}>
             {texts.userDashboard.submit[language]}
           </Button>
         </>

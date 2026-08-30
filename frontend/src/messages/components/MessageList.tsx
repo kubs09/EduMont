@@ -30,7 +30,7 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const { language } = useLanguage();
   const t = texts.messages;
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
+  const selectedBg = 'bg-brand-subtle';
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const unreadBg = useColorModeValue('gray.50', 'gray.800');
   const unreadFontWeight = 'bold';
@@ -38,7 +38,7 @@ const MessageList: React.FC<MessageListProps> = ({
   return (
     <VStack gap={0}>
       <VStack w="full" p={2}>
-        <InputGroup startElement={<Icon as={FiSearch} color="gray.500" />}>
+        <InputGroup startElement={<Icon as={FiSearch} color="text-muted" />}>
           <Input
             placeholder={t.search[language]}
             value={searchQuery}
@@ -60,8 +60,8 @@ const MessageList: React.FC<MessageListProps> = ({
       </VStack>
       {messages.length === 0 ? (
         <VStack p={3} gap={3}>
-          <Icon as={FiMail} boxSize={12} color="gray.400" />
-          <Text color="gray.500" fontWeight="medium">
+          <Icon as={FiMail} boxSize={12} color="text-muted" />
+          <Text color="text-muted" fontWeight="medium">
             {searchQuery ? t.noMessagesFound[language] : emptyMessage}
           </Text>
         </VStack>
@@ -92,7 +92,7 @@ const MessageList: React.FC<MessageListProps> = ({
                     >
                       {message.subject}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" lineClamp={1}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-secondary" lineClamp={1}>
                       {message.from_user_id === currentUserId ? (
                         <>
                           {t.to[language]}:{' '}
@@ -107,7 +107,7 @@ const MessageList: React.FC<MessageListProps> = ({
                         </>
                       )}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-muted">
                       {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
                     </Text>
                   </VStack>

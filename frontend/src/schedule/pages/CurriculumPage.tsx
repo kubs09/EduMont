@@ -283,18 +283,28 @@ const SchedulePage: React.FC = () => {
                 <HStack gap={2}>
                   <Button
                     variant="outline"
+                    aria-label={texts.common.refresh[language]}
                     onClick={loadPresentations}
                     size={{ base: 'sm', md: 'md' }}
-                    px={{ base: '8px', md: 'auto' }}><FiRefreshCw /><Box display={{ base: 'none', md: 'inline' }}>
+                    px={{ base: '8px', md: 'auto' }}
+                  >
+                    <FiRefreshCw />
+                    <Box display={{ base: 'none', md: 'inline' }}>
                       {texts.common.refresh[language]}
-                    </Box></Button>
+                    </Box>
+                  </Button>
                   <Button
-                    colorPalette="blue"
+                    aria-label={texts.schedule.addEntry[language]}
+                    variant="brand"
                     onClick={() => handleOpenModal()}
                     size={{ base: 'sm', md: 'md' }}
-                    px={{ base: '8px', md: 'auto' }}><FiPlus /><Box display={{ base: 'none', md: 'inline' }}>
+                    px={{ base: '8px', md: 'auto' }}
+                  >
+                    <FiPlus />
+                    <Box display={{ base: 'none', md: 'inline' }}>
                       {texts.schedule.addEntry[language]}
-                    </Box></Button>
+                    </Box>
+                  </Button>
                 </HStack>
               </HStack>
               <HStack gap={2}>
@@ -303,7 +313,8 @@ const SchedulePage: React.FC = () => {
                   <NativeSelect.Field
                     value={selectedAgeGroup}
                     borderRadius="md"
-                    onChange={(e) => setSelectedAgeGroup(e.target.value)}>
+                    onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                  >
                     {ageGroups.map((ageGroup) => (
                       <option key={ageGroup} value={ageGroup}>
                         {ageGroup}

@@ -177,7 +177,7 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
       buttons={
         <>
           <Button
-            colorPalette="blue"
+            variant="brand"
             mr={3}
             onClick={handleSubmit}
             loading={isSubmitting}

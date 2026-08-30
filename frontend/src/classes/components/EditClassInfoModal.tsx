@@ -118,7 +118,7 @@ export const EditClassInfoModal = ({
       buttons={
         <>
           <Button
-            colorPalette="blue"
+            variant="brand"
             mr={3}
             onClick={handleSave}
             loading={isSubmitting}

@@ -80,7 +80,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               {texts.login.signIn.title[language]}
             </Heading>
 
-            {error && <Text color="red.500">{error}</Text>}
+            {error && <Text color="text-danger">{error}</Text>}
 
             <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
               <VStack gap={4}>

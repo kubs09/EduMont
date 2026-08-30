@@ -76,9 +76,11 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
             height="32px"
             minH="32px"
             onClick={() => handleWeekSelect(day)}
-            colorPalette={isSelectedWeek ? 'blue' : 'gray'}
-            bg={isSelectedWeek ? 'blue.50' : 'transparent'}
+            borderColor={isSelectedWeek ? 'fg-brand' : undefined}
+            color={isSelectedWeek ? 'fg-brand' : undefined}
+            bg={isSelectedWeek ? 'bg-brand-subtle' : 'transparent'}
             fontSize="sm"
+            _hover={{ bg: isSelectedWeek ? 'bg-brand-subtle' : 'gray.100' }}
           >
             {day}
           </Button>
@@ -116,7 +118,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
         showMonth={true}
       />
 
-      <Text fontSize="sm" color="gray.600" textAlign="center">
+      <Text fontSize="sm" color="text-secondary" textAlign="center">
         {texts.common.datePicker.selectWeek[language]}
       </Text>
 
@@ -126,7 +128,7 @@ const WeekPicker: React.FC<WeekPickerProps> = ({
           : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         ).map((day, index) => (
           <GridItem key={`header-${index}`}>
-            <Text fontSize="xs" textAlign="center" fontWeight="bold" color="gray.500" mb={1}>
+            <Text fontSize="xs" textAlign="center" fontWeight="bold" color="text-muted" mb={1}>
               {day}
             </Text>
           </GridItem>

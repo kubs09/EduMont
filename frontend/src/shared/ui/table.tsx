@@ -4,7 +4,7 @@ import { useColorModeValue } from '../contexts/ColorContext';
 
 interface CustomTableProps extends TableRootProps {
   headers: string[];
-  data: string[][];
+  data: React.ReactNode[][];
   actions?: (rowIndex: number) => React.ReactNode;
 }
 
