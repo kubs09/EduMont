@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tabs as ChakraTabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
+import { Tabs as ChakraTabs } from '@chakra-ui/react';
 
 export interface TabItem {
   label: string;
@@ -11,11 +11,13 @@ interface TabsProps {
   tabs: TabItem[];
   defaultIndex?: number;
   onChange?: (index: number) => void;
-  variant?: 'line' | 'enclosed' | 'enclosed-colored' | 'soft-rounded' | 'solid-rounded';
+  variant?: 'outline' | 'line' | 'subtle' | 'plain' | 'enclosed';
   colorScheme?: string;
   isLazy?: boolean;
   isFitted?: boolean;
 }
+
+const getTabValue = (tab: TabItem, index: number) => tab.id || String(index);
 
 const Tabs: React.FC<TabsProps> = ({
   tabs,
@@ -26,27 +28,39 @@ const Tabs: React.FC<TabsProps> = ({
   isLazy = false,
   isFitted = false,
 }) => {
-  return (
-    <ChakraTabs
-      defaultIndex={defaultIndex}
-      onChange={onChange}
-      variant={variant}
-      colorScheme={colorScheme}
-      isLazy={isLazy}
-      isFitted={isFitted}
-    >
-      <TabList>
-        {tabs.map((tab, index) => (
-          <Tab key={tab.id || index}>{tab.label}</Tab>
-        ))}
-      </TabList>
+  if (tabs.length === 0) {
+    return null;
+  }
 
-      <TabPanels>
+  const resolvedDefaultIndex = tabs[defaultIndex] ? defaultIndex : 0;
+  const defaultValue = getTabValue(tabs[resolvedDefaultIndex]!, resolvedDefaultIndex);
+
+  return (
+    <ChakraTabs.Root
+      defaultValue={defaultValue}
+      onValueChange={(details) => {
+        const index = tabs.findIndex((tab, i) => getTabValue(tab, i) === details.value);
+        onChange?.(index);
+      }}
+      variant={variant}
+      colorPalette={colorScheme}
+      lazyMount={isLazy}
+      fitted={isFitted}
+    >
+      <ChakraTabs.List>
         {tabs.map((tab, index) => (
-          <TabPanel key={tab.id || index}>{tab.content}</TabPanel>
+          <ChakraTabs.Trigger key={getTabValue(tab, index)} value={getTabValue(tab, index)}>
+            {tab.label}
+          </ChakraTabs.Trigger>
         ))}
-      </TabPanels>
-    </ChakraTabs>
+      </ChakraTabs.List>
+
+      {tabs.map((tab, index) => (
+        <ChakraTabs.Content key={getTabValue(tab, index)} value={getTabValue(tab, index)}>
+          {tab.content}
+        </ChakraTabs.Content>
+      ))}
+    </ChakraTabs.Root>
   );
 };
 

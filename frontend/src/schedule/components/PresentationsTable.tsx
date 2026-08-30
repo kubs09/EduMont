@@ -1,19 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-  IconButton,
-  HStack,
-  Text,
-  Badge,
-  Box,
-} from '@chakra-ui/react';
-import { EditIcon, DeleteIcon } from '@chakra-ui/icons';
+import { Table, IconButton, HStack, Text, Badge, Box } from '@chakra-ui/react';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { Presentation } from '@frontend/types/presentation';
@@ -89,37 +76,37 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
   if (presentations.length === 0) {
     return (
       <Box textAlign="center" py={8}>
-        <Text color="gray.500">{texts.schedule.noEntries[language]}</Text>
+        <Text color="text-muted">{texts.schedule.noEntries[language]}</Text>
       </Box>
     );
   }
 
   return (
-    <TableContainer>
-      <Table variant="simple" size="md">
-        <Thead>
-          <Tr>
-            <Th>{texts.schedule.name[language]}</Th>
-            <Th>{texts.schedule.category[language]}</Th>
-            <Th>{texts.schedule.status.label[language]}</Th>
-            {showChild && <Th>{texts.schedule.child[language]}</Th>}
-            {showClass && <Th>{texts.schedule.class[language]}</Th>}
-            <Th>{texts.schedule.notes[language]}</Th>
-            {canEdit && <Th>{texts.common.actions[language]}</Th>}
-          </Tr>
-        </Thead>
-        <Tbody>
+    <Table.ScrollArea>
+      <Table.Root variant="line" size="md">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>{texts.schedule.name[language]}</Table.ColumnHeader>
+            <Table.ColumnHeader>{texts.schedule.category[language]}</Table.ColumnHeader>
+            <Table.ColumnHeader>{texts.schedule.status.label[language]}</Table.ColumnHeader>
+            {showChild && <Table.ColumnHeader>{texts.schedule.child[language]}</Table.ColumnHeader>}
+            {showClass && <Table.ColumnHeader>{texts.schedule.class[language]}</Table.ColumnHeader>}
+            <Table.ColumnHeader>{texts.schedule.notes[language]}</Table.ColumnHeader>
+            {canEdit && <Table.ColumnHeader>{texts.common.actions[language]}</Table.ColumnHeader>}
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
           {paginatedpresentations.map((presentation) => (
-            <Tr key={presentation.id}>
-              <Td>
+            <Table.Row key={presentation.id}>
+              <Table.Cell>
                 <Text fontWeight="medium">{presentation.name}</Text>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 <Text>{presentation.category || '-'}</Text>
-              </Td>
-              <Td>
+              </Table.Cell>
+              <Table.Cell>
                 <Badge
-                  colorScheme={getStatusColor(presentation.status)}
+                  colorPalette={getStatusColor(presentation.status)}
                   variant="subtle"
                   px={2}
                   py={1}
@@ -127,20 +114,20 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                 >
                   {getStatusText(presentation.status)}
                 </Badge>
-              </Td>
+              </Table.Cell>
               {showChild && (
-                <Td>
+                <Table.Cell>
                   <Text>
                     {presentation.child_firstname} {presentation.child_surname}
                   </Text>
-                </Td>
+                </Table.Cell>
               )}
               {showClass && (
-                <Td>
+                <Table.Cell>
                   <Text>{presentation.class_name}</Text>
-                </Td>
+                </Table.Cell>
               )}
-              <Td>
+              <Table.Cell>
                 <Text
                   maxW="250px"
                   overflow="hidden"
@@ -150,33 +137,35 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
                 >
                   {presentation.notes || '-'}
                 </Text>
-              </Td>
+              </Table.Cell>
               {canEdit && (
-                <Td>
-                  <HStack spacing={2}>
+                <Table.Cell>
+                  <HStack gap={2}>
                     <IconButton
                       aria-label={texts.schedule.editEntry[language]}
-                      icon={<EditIcon />}
                       size="sm"
-                      colorScheme="blue"
+                      color="fg-brand"
                       variant="ghost"
                       onClick={() => onEdit?.(presentation)}
-                    />
+                    >
+                      <FiEdit2 />
+                    </IconButton>
                     <IconButton
                       aria-label={texts.schedule.deleteEntry[language]}
-                      icon={<DeleteIcon />}
                       size="sm"
-                      colorScheme="red"
+                      colorPalette="red"
                       variant="ghost"
                       onClick={() => onDelete?.(presentation)}
-                    />
+                    >
+                      <FiTrash2 />
+                    </IconButton>
                   </HStack>
-                </Td>
+                </Table.Cell>
               )}
-            </Tr>
+            </Table.Row>
           ))}
-        </Tbody>
-      </Table>
+        </Table.Body>
+      </Table.Root>
       <TablePagination
         currentPage={currentPage}
         totalPages={totalPages}
@@ -184,7 +173,7 @@ const PresentationTable: React.FC<PresentationTableProps> = ({
         pageSize={PAGE_SIZE}
         totalCount={presentations.length}
       />
-    </TableContainer>
+    </Table.ScrollArea>
   );
 };
 

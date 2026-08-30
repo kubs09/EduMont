@@ -3,19 +3,14 @@ import {
   Box,
   Heading,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Text,
-  useToast,
   IconButton,
   useDisclosure,
   Button,
   VStack,
+  Icon,
 } from '@chakra-ui/react';
-import { DeleteIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { FiTrash2, FiChevronRight } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -26,16 +21,17 @@ import AddChildModal from '../components/AddChildModal';
 import React from 'react';
 import { ConfirmDialog } from '@frontend/shared/components/ConfirmDialog';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ChildrenPage = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [children, setChildren] = useState<Child[]>([]);
-  const toast = useToast();
+  const toast = useAppToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
   const [childToDelete, setChildToDelete] = useState<Child | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const userRole = localStorage.getItem('userRole');
   const isParent = userRole === 'parent';
@@ -119,7 +115,7 @@ const ChildrenPage = () => {
           <Heading>{texts.children.title[language]}</Heading>
         )}
         {isAdmin && (
-          <Button colorScheme="blue" onClick={() => setIsAddChildModalOpen(true)}>
+          <Button variant="brand" onClick={() => setIsAddChildModalOpen(true)}>
             {texts.children.addChild.title[language]}
           </Button>
         )}
@@ -129,34 +125,36 @@ const ChildrenPage = () => {
         <Text>{texts.children.noChildren[language]}</Text>
       ) : (
         <Box overflowX="auto">
-          <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
-            <Thead display={{ base: 'none', md: 'table-header-group' }}>
-              <Tr>
-                <Th>{texts.common.childrenTable.firstname[language]}</Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
+          <Table.Root variant="line" size={{ base: 'sm', md: 'md' }}>
+            <Table.Header display={{ base: 'none', md: 'table-header-group' }}>
+              <Table.Row>
+                <Table.ColumnHeader>
+                  {texts.common.childrenTable.firstname[language]}
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.common.childrenTable.surname[language]}
-                </Th>
-                <Th display={{ base: 'none', lg: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>
                   {texts.common.childrenTable.age[language]}
-                </Th>
+                </Table.ColumnHeader>
                 {!isParent && (
                   <>
-                    <Th display={{ base: 'none', xl: 'table-cell' }}>
+                    <Table.ColumnHeader display={{ base: 'none', xl: 'table-cell' }}>
                       {texts.common.childrenTable.parent[language]}
-                    </Th>
-                    <Th display={{ base: 'none', xl: 'table-cell' }}>
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader display={{ base: 'none', xl: 'table-cell' }}>
                       {texts.common.childrenTable.parentEmail[language]}
-                    </Th>
+                    </Table.ColumnHeader>
                   </>
                 )}
-                <Th display={{ base: 'none', xl: 'table-cell' }}>
+                <Table.ColumnHeader display={{ base: 'none', xl: 'table-cell' }}>
                   {texts.common.actions[language]}
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {paginatedChildren.map((child, index) => (
-                <Tr
+                <Table.Row
                   key={child.id}
                   cursor="pointer"
                   transition="all 0.2s"
@@ -180,48 +178,53 @@ const ChildrenPage = () => {
                   }}
                   onClick={() => handleViewDetail(child.id)}
                 >
-                  <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{child.firstname}</Td>
-                  <Td display={{ base: 'none', md: 'table-cell' }}>{child.surname}</Td>
-                  <Td display={{ base: 'none', lg: 'table-cell' }}>
+                  <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>
+                    {child.firstname}
+                  </Table.Cell>
+                  <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
+                    {child.surname}
+                  </Table.Cell>
+                  <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
                     {new Date().getFullYear() - new Date(child.date_of_birth).getFullYear()}
-                  </Td>
+                  </Table.Cell>
                   {!isParent && (
                     <>
-                      <Td display={{ base: 'none', xl: 'table-cell' }}>
-                        <VStack align="start" spacing={1}>
+                      <Table.Cell display={{ base: 'none', xl: 'table-cell' }}>
+                        <VStack align="start" gap={1}>
                           {formatParentNames(child.parents).map((name, parentIndex) => (
                             <Text key={`${child.id}-parent-name-${parentIndex}`}>{name}</Text>
                           ))}
                         </VStack>
-                      </Td>
-                      <Td display={{ base: 'none', xl: 'table-cell' }}>
-                        <VStack align="start" spacing={1}>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: 'none', xl: 'table-cell' }}>
+                        <VStack align="start" gap={1}>
                           {formatParentEmails(child.parents).map((email, parentIndex) => (
                             <Text key={`${child.id}-parent-email-${parentIndex}`}>{email}</Text>
                           ))}
                         </VStack>
-                      </Td>
+                      </Table.Cell>
                     </>
                   )}
-                  <Td onClick={(e) => e.stopPropagation()}>
+                  <Table.Cell onClick={(e) => e.stopPropagation()}>
                     {isAdmin && (
                       <IconButton
                         aria-label="Delete child"
-                        icon={<DeleteIcon />}
-                        colorScheme="red"
+                        colorPalette="red"
                         size="sm"
                         onClick={() => {
                           setChildToDelete(child);
                           onOpen();
                         }}
-                      />
+                      >
+                        <FiTrash2 />
+                      </IconButton>
                     )}
-                    {!isAdmin && <ChevronRightIcon boxSize={6} color="gray.500" />}
-                  </Td>
-                </Tr>
+                    {!isAdmin && <Icon as={FiChevronRight} boxSize={6} color="text-muted" />}
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
           <TablePagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -242,7 +245,7 @@ const ChildrenPage = () => {
 
       {isAdmin && (
         <ConfirmDialog
-          isOpen={isOpen}
+          isOpen={open}
           leastDestructiveRef={cancelRef}
           onClose={onClose}
           onConfirm={() => childToDelete && handleDeleteChild(childToDelete.id)}

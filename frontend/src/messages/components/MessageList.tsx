@@ -1,18 +1,17 @@
 import React from 'react';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import {
   List,
-  ListItem,
   Text,
   VStack,
-  Divider,
-  useColorModeValue,
   Input,
   InputGroup,
-  InputLeftElement,
   HStack,
   Button,
+  Icon,
+  Separator,
 } from '@chakra-ui/react';
-import { Search2Icon, TriangleDownIcon, TriangleUpIcon, EmailIcon } from '@chakra-ui/icons';
+import { FiSearch, FiChevronDown, FiChevronUp, FiMail } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { MessageListProps } from '@frontend/types/message';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -31,22 +30,19 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const { language } = useLanguage();
   const t = texts.messages;
-  const selectedBg = useColorModeValue('blue.50', 'blue.900');
+  const selectedBg = 'bg-brand-subtle';
   const hoverBg = useColorModeValue('gray.100', 'gray.700');
   const unreadBg = useColorModeValue('gray.50', 'gray.800');
   const unreadFontWeight = 'bold';
 
   return (
-    <VStack spacing={0}>
+    <VStack gap={0}>
       <VStack w="full" p={2}>
-        <InputGroup>
-          <InputLeftElement pointerEvents="none">
-            <Search2Icon color="gray.500" />
-          </InputLeftElement>
+        <InputGroup startElement={<Icon as={FiSearch} color="text-muted" />}>
           <Input
             placeholder={t.search[language]}
             value={searchQuery}
-            variant="filled"
+            variant="subtle"
             onChange={(e) => onSearchChange(e.target.value)}
             size="sm"
           />
@@ -55,27 +51,27 @@ const MessageList: React.FC<MessageListProps> = ({
           <Button
             size="sm"
             variant="ghost"
-            leftIcon={sortDirection === 'desc' ? <TriangleDownIcon /> : <TriangleUpIcon />}
             onClick={() => onSortChange(sortDirection === 'desc' ? 'asc' : 'desc')}
           >
+            {sortDirection === 'desc' ? <FiChevronDown /> : <FiChevronUp />}
             {t.sortDate[language]}
           </Button>
         </HStack>
       </VStack>
       {messages.length === 0 ? (
-        <VStack p={3} spacing={3}>
-          <EmailIcon boxSize={12} color="gray.400" />
-          <Text color="gray.500" fontWeight="medium">
+        <VStack p={3} gap={3}>
+          <Icon as={FiMail} boxSize={12} color="text-muted" />
+          <Text color="text-muted" fontWeight="medium">
             {searchQuery ? t.noMessagesFound[language] : emptyMessage}
           </Text>
         </VStack>
       ) : (
-        <List spacing={0} w="full">
+        <List.Root gap={0} w="full">
           {messages.map((message) => {
             const isUnread = message.to_user_id === currentUserId && !message.read_at;
             return (
               <React.Fragment key={message.id}>
-                <ListItem
+                <List.Item
                   p={{ base: 2, md: 3 }}
                   cursor="pointer"
                   bg={
@@ -88,15 +84,15 @@ const MessageList: React.FC<MessageListProps> = ({
                   _hover={{ bg: selectedMessageId === message.id ? selectedBg : hoverBg }}
                   onClick={() => onMessageClick(message.id)}
                 >
-                  <VStack align="stretch" spacing={{ base: 0.5, md: 1 }}>
+                  <VStack align="stretch" gap={{ base: 0.5, md: 1 }}>
                     <Text
                       fontWeight={isUnread ? unreadFontWeight : 'normal'}
                       fontSize={{ base: 'sm', md: 'md' }}
-                      noOfLines={1}
+                      lineClamp={1}
                     >
                       {message.subject}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.600" noOfLines={1}>
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-secondary" lineClamp={1}>
                       {message.from_user_id === currentUserId ? (
                         <>
                           {t.to[language]}:{' '}
@@ -111,16 +107,16 @@ const MessageList: React.FC<MessageListProps> = ({
                         </>
                       )}
                     </Text>
-                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="gray.500">
+                    <Text fontSize={{ base: 'xs', md: 'sm' }} color="text-muted">
                       {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm')}
                     </Text>
                   </VStack>
-                </ListItem>
-                <Divider />
+                </List.Item>
+                <Separator />
               </React.Fragment>
             );
           })}
-        </List>
+        </List.Root>
       )}
     </VStack>
   );

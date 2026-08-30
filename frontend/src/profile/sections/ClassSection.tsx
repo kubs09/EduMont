@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@frontend/shared/route';
 
 interface ClassSectionProps {
-  onOpenClasses: () => void;
   subtleBg?: string;
 }
 
@@ -33,9 +32,9 @@ const ClassSection = ({ subtleBg }: ClassSectionProps) => {
 
   return (
     <Section title={texts.classes.teacherClassMenuItem[language]} cardProps={{ mb: 6 }}>
-      <Stack spacing={4}>
+      <Stack gap={4}>
         {classes.length > 0 ? (
-          <VStack align="start" spacing={2} w="full">
+          <VStack align="start" gap={2} w="full">
             {classes.map((classItem) => (
               <Box bg={subtleBg} p={2} borderRadius="md" w="full" key={classItem.id}>
                 <Button

@@ -1,18 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  Box,
-  Input,
-  VStack,
-  Text,
-  HStack,
-  useDisclosure,
-  InputGroup,
-  InputRightElement,
-  IconButton,
-  Portal,
-  useOutsideClick,
-} from '@chakra-ui/react';
-import { CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { Box, Input, VStack, Text, HStack, useDisclosure, InputGroup, IconButton, Portal, Icon } from '@chakra-ui/react';
+import { FiX, FiChevronDown } from 'react-icons/fi';
+import { useOutsideClick } from '@frontend/shared/hooks/useOutsideClick';
 import { ComboboxProps, ComboboxOption } from './types';
 
 const Combobox: React.FC<ComboboxProps> = ({
@@ -27,7 +16,7 @@ const Combobox: React.FC<ComboboxProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<ComboboxOption[]>(options);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
@@ -62,7 +51,7 @@ const Combobox: React.FC<ComboboxProps> = ({
     if (onInputChange) {
       onInputChange(newValue);
     }
-    if (!isOpen) {
+    if (!open) {
       onOpen();
     }
   };
@@ -99,41 +88,40 @@ const Combobox: React.FC<ComboboxProps> = ({
   return (
     <Box position="relative" width="100%" ref={containerRef}>
       <Box position="relative" ref={inputWrapperRef}>
-        <InputGroup>
+        <InputGroup
+          endElement={
+            isClearable && hasValue ? (
+              <IconButton
+                aria-label="Clear selection"
+                size="sm"
+                variant="ghost"
+                onClick={handleClear}
+                disabled={isDisabled}
+                color="text-muted"
+                _hover={{ color: 'text-primary' }}
+              >
+                <FiX />
+              </IconButton>
+            ) : (
+              <Icon as={FiChevronDown} color="text-muted" />
+            )
+          }
+        >
           <Input
             ref={inputRef}
             placeholder={placeholder}
             value={isMulti ? inputValue : inputValue || displayValue}
             onChange={handleInputChange}
             onFocus={onOpen}
-            isDisabled={isDisabled}
+            disabled={isDisabled}
             pr={isClearable && hasValue ? '2.5rem' : '2rem'}
             variant="outline"
           />
-          {isClearable && hasValue && (
-            <InputRightElement width="2.5rem">
-              <IconButton
-                aria-label="Clear selection"
-                icon={<CloseIcon />}
-                size="sm"
-                variant="ghost"
-                onClick={handleClear}
-                isDisabled={isDisabled}
-                color="text-muted"
-                _hover={{ color: 'text-primary' }}
-              />
-            </InputRightElement>
-          )}
-          {!isClearable || !hasValue ? (
-            <InputRightElement pointerEvents="none">
-              <ChevronDownIcon color="text-muted" />
-            </InputRightElement>
-          ) : null}
         </InputGroup>
       </Box>
 
-      {isOpen && (
-        <Portal containerRef={inputWrapperRef}>
+      {open && (
+        <Portal container={inputWrapperRef}>
           <Box
             position="absolute"
             top="100%"
@@ -150,7 +138,7 @@ const Combobox: React.FC<ComboboxProps> = ({
             zIndex={10}
           >
             {filteredOptions.length > 0 ? (
-              <VStack spacing={0} align="stretch">
+              <VStack gap={0} align="stretch">
                 {filteredOptions.map((option) => {
                   const isSelected = Array.isArray(value)
                     ? value.includes(option.value)
@@ -192,7 +180,7 @@ const Combobox: React.FC<ComboboxProps> = ({
       )}
 
       {isMulti && selectedOptions.length > 0 && (
-        <VStack align="stretch" spacing={2} mt={3}>
+        <VStack align="stretch" gap={2} mt={3}>
           {selectedOptions.map((option) => (
             <HStack
               key={option.value}
@@ -207,14 +195,12 @@ const Combobox: React.FC<ComboboxProps> = ({
               </Text>
               <IconButton
                 aria-label="Remove selection"
-                icon={<CloseIcon />}
                 size="xs"
                 variant="ghost"
                 onClick={() => handleSelectOption(option.value)}
-                isDisabled={isDisabled}
+                disabled={isDisabled}
                 color="text-muted"
-                _hover={{ color: 'text-primary' }}
-              />
+                _hover={{ color: 'text-primary' }}><FiX /></IconButton>
             </HStack>
           ))}
         </VStack>

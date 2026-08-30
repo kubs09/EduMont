@@ -35,6 +35,17 @@ export const userDashboard = {
     created: common.templates.success.created(userEntity),
     deleted: common.templates.success.deleted(userEntity),
   },
+  validation: {
+    emailRequired: common.templates.validation.required(
+      { cs: 'Emailová adresa', en: 'Email address' },
+      'fem'
+    ),
+    invalidEmail: common.templates.validation.invalidEmail,
+    roleRequired: {
+      cs: 'Vyberte roli',
+      en: 'Please select a role',
+    },
+  },
   title: {
     cs: 'Seznam uživatelů',
     en: 'User List',

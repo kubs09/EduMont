@@ -1,4 +1,4 @@
-import { Box, Flex, Hide, Show, Text } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import ColorModeToggle from '../color-mode-toggle';
 import { useAtomColors } from '@frontend/design/colorModeUtils';
 
@@ -20,12 +20,12 @@ const Footer = () => {
       borderColor="border-color"
     >
       <Box>
-        <Show above="md">
+        <Box hideBelow="md">
           <ColorModeToggle size="md" />
-        </Show>
-        <Hide above="md">
+        </Box>
+        <Box hideFrom="md">
           <ColorModeToggle size="sm" />
-        </Hide>
+        </Box>
       </Box>
       <Text fontSize="sm">©2025, Šimon Kubín, Vysoká Škola Ekonomická</Text>
     </Flex>

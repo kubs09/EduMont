@@ -4,15 +4,13 @@ import {
   IconButton,
   useDisclosure,
   Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverBody,
   VStack,
   Button,
   Grid,
   GridItem,
+  Icon,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiChevronRight, FiChevronDown } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 
 interface DatePickerHeaderProps {
@@ -32,8 +30,8 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
   language,
   showMonth = true,
 }) => {
-  const { isOpen: isYearOpen, onOpen: onYearOpen, onClose: onYearClose } = useDisclosure();
-  const { isOpen: isMonthOpen, onOpen: onMonthOpen, onClose: onMonthClose } = useDisclosure();
+  const { open: isYearOpen, onOpen: onYearOpen, onClose: onYearClose } = useDisclosure();
+  const { open: isMonthOpen, onOpen: onMonthOpen, onClose: onMonthClose } = useDisclosure();
 
   const currentYear = new Date().getFullYear();
   const yearRange = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
@@ -81,16 +79,15 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
   };
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- stops click propagation only, not a real interactive element
+    // eslint-disable-next-line jsx-a11y-x/no-static-element-interactions, jsx-a11y-x/click-events-have-key-events -- stops click propagation only, not a real interactive element
     <div onClick={(e) => e.stopPropagation()}>
-      <HStack justify="space-between" width="100%" spacing={2}>
+      <HStack justify="space-between" width="100%" gap={2}>
         <IconButton
           aria-label={
             showMonth
               ? texts.common.datePicker.previousMonth[language]
               : texts.common.datePicker.previousYear[language]
           }
-          icon={<ChevronLeftIcon />}
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
@@ -101,22 +98,29 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
             }
           }}
           variant="ghost"
-        />
+        >
+          <FiChevronLeft />
+        </IconButton>
 
-        <HStack spacing={1} flex={1} justify="center">
+        <HStack gap={1} flex={1} justify="center">
           {showMonth && displayMonth !== undefined && (
-            <Popover
-              isOpen={isMonthOpen}
-              onClose={onMonthClose}
-              placement="bottom"
-              strategy="fixed"
-              closeOnBlur={false}
+            <Popover.Root
+              open={isMonthOpen}
+              closeOnInteractOutside={false}
+              onOpenChange={(e) => {
+                if (!e.open) {
+                  onMonthClose();
+                }
+              }}
+              positioning={{
+                placement: 'bottom',
+                strategy: 'fixed',
+              }}
             >
-              <PopoverTrigger>
+              <Popover.Trigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  rightIcon={<ChevronDownIcon boxSize={3} />}
                   onClick={(e) => {
                     e.stopPropagation();
                     onMonthOpen();
@@ -126,48 +130,56 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                   _hover={{ bg: 'gray.100' }}
                 >
                   {texts.common.datePicker.months[language][displayMonth]}
+                  <Icon as={FiChevronDown} boxSize={3} />
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent width="200px">
-                <PopoverBody p={2}>
-                  <Grid templateColumns="repeat(1, 1fr)" gap={1}>
-                    {texts.common.datePicker.months[language].map((month, index) => (
-                      <GridItem key={index}>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          width="100%"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMonthSelect(index);
-                          }}
-                          bg={displayMonth === index ? 'blue.50' : 'transparent'}
-                          color={displayMonth === index ? 'blue.600' : 'inherit'}
-                          _hover={{ bg: displayMonth === index ? 'blue.100' : 'gray.100' }}
-                          justifyContent="flex-start"
-                        >
-                          {month}
-                        </Button>
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </PopoverBody>
-              </PopoverContent>
-            </Popover>
+              </Popover.Trigger>
+              <Popover.Positioner>
+                <Popover.Content width="200px">
+                  <Popover.Body p={2}>
+                    <Grid templateColumns="repeat(1, 1fr)" gap={1}>
+                      {texts.common.datePicker.months[language].map((month, index) => (
+                        <GridItem key={index}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            width="100%"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMonthSelect(index);
+                            }}
+                            bg={displayMonth === index ? 'bg-brand-subtle' : 'transparent'}
+                            color={displayMonth === index ? 'fg-brand' : 'inherit'}
+                            _hover={{ bg: displayMonth === index ? 'bg-brand-subtle' : 'gray.100' }}
+                            justifyContent="flex-start"
+                          >
+                            {month}
+                          </Button>
+                        </GridItem>
+                      ))}
+                    </Grid>
+                  </Popover.Body>
+                </Popover.Content>
+              </Popover.Positioner>
+            </Popover.Root>
           )}
 
-          <Popover
-            isOpen={isYearOpen}
-            onClose={onYearClose}
-            placement="bottom"
-            strategy="fixed"
-            closeOnBlur={false}
+          <Popover.Root
+            open={isYearOpen}
+            closeOnInteractOutside={false}
+            onOpenChange={(e) => {
+              if (!e.open) {
+                onYearClose();
+              }
+            }}
+            positioning={{
+              placement: 'bottom',
+              strategy: 'fixed',
+            }}
           >
-            <PopoverTrigger>
+            <Popover.Trigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                rightIcon={<ChevronDownIcon boxSize={3} />}
                 onClick={(e) => {
                   e.stopPropagation();
                   onYearOpen();
@@ -177,32 +189,35 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
                 _hover={{ bg: 'gray.100' }}
               >
                 {displayYear}
+                <Icon as={FiChevronDown} boxSize={3} />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent width="180px" maxH="250px" overflowY="auto">
-              <PopoverBody p={2}>
-                <VStack spacing={1} align="stretch">
-                  {yearRange.map((year) => (
-                    <Button
-                      key={year}
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleYearSelect(year);
-                      }}
-                      bg={displayYear === year ? 'blue.50' : 'transparent'}
-                      color={displayYear === year ? 'blue.600' : 'inherit'}
-                      _hover={{ bg: displayYear === year ? 'blue.100' : 'gray.100' }}
-                      justifyContent="flex-start"
-                    >
-                      {year}
-                    </Button>
-                  ))}
-                </VStack>
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
+            </Popover.Trigger>
+            <Popover.Positioner>
+              <Popover.Content width="180px" maxH="250px" overflowY="auto">
+                <Popover.Body p={2}>
+                  <VStack gap={1} align="stretch">
+                    {yearRange.map((year) => (
+                      <Button
+                        key={year}
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleYearSelect(year);
+                        }}
+                        bg={displayYear === year ? 'bg-brand-subtle' : 'transparent'}
+                        color={displayYear === year ? 'fg-brand' : 'inherit'}
+                        _hover={{ bg: displayYear === year ? 'bg-brand-subtle' : 'gray.100' }}
+                        justifyContent="flex-start"
+                      >
+                        {year}
+                      </Button>
+                    ))}
+                  </VStack>
+                </Popover.Body>
+              </Popover.Content>
+            </Popover.Positioner>
+          </Popover.Root>
         </HStack>
 
         <IconButton
@@ -211,7 +226,6 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
               ? texts.common.datePicker.nextMonth[language]
               : texts.common.datePicker.nextYear[language]
           }
-          icon={<ChevronRightIcon />}
           size="sm"
           onClick={(e) => {
             e.stopPropagation();
@@ -222,7 +236,9 @@ const DatePickerHeader: React.FC<DatePickerHeaderProps> = ({
             }
           }}
           variant="ghost"
-        />
+        >
+          <FiChevronRight />
+        </IconButton>
       </HStack>
     </div>
   );

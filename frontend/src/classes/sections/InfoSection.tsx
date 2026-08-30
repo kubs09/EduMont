@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   Alert,
-  AlertIcon,
   Box,
   Button,
   Grid,
@@ -60,21 +59,19 @@ const InfoTab: React.FC<InfoTabProps> = ({
     if (!teacher) return '-';
     const fullName = `${teacher.firstname} ${teacher.surname}`;
     return (
-      <ChakraLink
-        as={RouterLink}
-        to={ROUTES.PROFILE_DETAIL.replace(':id', teacher.id.toString())}
-        variant="link"
-      >
-        {fullName}
+      <ChakraLink asChild variant="underline">
+        <RouterLink to={ROUTES.PROFILE_DETAIL.replace(':id', teacher.id.toString())}>
+          {fullName}
+        </RouterLink>
       </ChakraLink>
     );
   };
 
   return (
-    <VStack align="stretch" spacing={6}>
+    <VStack align="stretch" gap={6}>
       <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={{ base: 4, md: 6, lg: 8 }}>
         <GridItem>
-          <VStack align="stretch" spacing={4}>
+          <VStack align="stretch" gap={4}>
             <Box>
               <Text fontWeight="bold">{texts.classes.name[language]}</Text>
               <Text>{classData.name}</Text>
@@ -90,7 +87,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
           </VStack>
         </GridItem>
         <GridItem>
-          <VStack align="stretch" spacing={4}>
+          <VStack align="stretch" gap={4}>
             <Box>
               <Text fontWeight="bold">{texts.classes.detail.teacher[language]}</Text>
               <Text>{renderTeacherName(primaryTeacher)}</Text>
@@ -103,7 +100,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
         </GridItem>
       </Grid>
       {isAdmin && (
-        <Stack mt={2} direction={{ base: 'column', sm: 'row' }} spacing={4} w="full">
+        <Stack mt={2} direction={{ base: 'column', sm: 'row' }} gap={4} w="full">
           <Button variant="brand" onClick={onEditClick} size="md" w={{ base: 'full', sm: 'auto' }}>
             {texts.classes.editInfo[language]}
           </Button>
@@ -118,8 +115,8 @@ const InfoTab: React.FC<InfoTabProps> = ({
         </Stack>
       )}
       {!isAdmin && permissionRequested && requestingAdmin && !permissionGranted && (
-        <Alert status="info" borderRadius="md">
-          <AlertIcon />
+        <Alert.Root status="info" borderRadius="md">
+          <Alert.Indicator />
           <Box flex="1">
             <Text>
               {
@@ -128,9 +125,9 @@ const InfoTab: React.FC<InfoTabProps> = ({
                 )[language]
               }
             </Text>
-            <Stack mt={3} direction={{ base: 'column', sm: 'row' }} spacing={3}>
+            <Stack mt={3} direction={{ base: 'column', sm: 'row' }} gap={3}>
               <Button
-                colorScheme="green"
+                colorPalette="green"
                 onClick={onAcceptPermission}
                 size="sm"
                 w={{ base: 'full', sm: 'auto' }}
@@ -138,7 +135,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
                 {texts.classes.detail.permissionAcceptButton[language]}
               </Button>
               <Button
-                colorScheme="red"
+                colorPalette="red"
                 variant="outline"
                 onClick={onDenyPermission}
                 size="sm"
@@ -148,7 +145,7 @@ const InfoTab: React.FC<InfoTabProps> = ({
               </Button>
             </Stack>
           </Box>
-        </Alert>
+        </Alert.Root>
       )}
     </VStack>
   );

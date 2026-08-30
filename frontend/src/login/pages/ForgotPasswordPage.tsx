@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
+import { useColorModeValue } from '../../shared/contexts/ColorContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Box,
   Button,
   Container,
-  FormControl,
-  FormErrorMessage,
   Input,
   VStack,
   Heading,
   Text,
-  useToast,
   Card,
   Icon,
   Circle,
-  useColorModeValue,
+  Field,
 } from '@chakra-ui/react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { requestPasswordReset } from '@frontend/services/api';
@@ -26,12 +24,13 @@ import {
   ForgotPasswordFormData,
 } from '../schemas/ForgotPasswordSchema';
 import { useNavigate } from 'react-router';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ForgotPasswordPage = () => {
   const { language } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const navigate = useNavigate();
 
   const iconBg = useColorModeValue('brand.primary.900', 'brand.primary.700');
@@ -77,8 +76,8 @@ const ForgotPasswordPage = () => {
 
   return (
     <Container maxW="md">
-      <Card p={8} mt={5} boxShadow="lg" borderRadius="md">
-        <VStack spacing={8}>
+      <Card.Root p={8} mt={5} boxShadow="lg" borderRadius="md">
+        <VStack gap={8}>
           <Circle size="40px" bg={iconBg} color="white">
             <Box>
               <Icon as={FaQuestionCircle as React.ElementType} w={12} h={12} />
@@ -91,22 +90,22 @@ const ForgotPasswordPage = () => {
           <Text textAlign="center">{texts.login.forgotPassword.description[language]}</Text>
 
           <Box as="form" w="100%" onSubmit={handleSubmit(onSubmit)}>
-            <VStack spacing={4}>
-              <FormControl isInvalid={!!errors.email} isDisabled={loading || submitted}>
+            <VStack gap={4}>
+              <Field.Root invalid={!!errors.email} disabled={loading || submitted}>
                 <Input
                   type="email"
                   placeholder={texts.login.forgotPassword.emailPlaceholder[language]}
                   {...register('email')}
                 />
-                <FormErrorMessage>{errors.email && errors.email.message}</FormErrorMessage>
-              </FormControl>
+                <Field.ErrorText>{errors.email && errors.email.message}</Field.ErrorText>
+              </Field.Root>
 
               <Button
                 type="submit"
                 variant="brand"
                 width="100%"
                 mt={4}
-                isLoading={loading}
+                loading={loading}
                 disabled={submitted}
               >
                 {texts.login.forgotPassword.submitButton[language]}
@@ -123,7 +122,7 @@ const ForgotPasswordPage = () => {
             </VStack>
           </Box>
         </VStack>
-      </Card>
+      </Card.Root>
     </Container>
   );
 };

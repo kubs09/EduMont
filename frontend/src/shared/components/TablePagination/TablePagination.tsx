@@ -1,6 +1,6 @@
 import React from 'react';
 import { HStack, IconButton, Button, Text } from '@chakra-ui/react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 
@@ -40,45 +40,46 @@ const TablePagination: React.FC<TablePaginationProps> = ({
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   return (
-    <HStack justifyContent="space-between" mt={4} spacing={4} flexWrap="wrap">
-      <HStack spacing={1}>
+    <HStack justifyContent="space-between" mt={4} gap={4} flexWrap="wrap">
+      <HStack gap={1}>
         <IconButton
           aria-label="Previous page"
-          icon={<ChevronLeftIcon />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage - 1)}
-          isDisabled={!canGoPrevious}
-        />
+          disabled={!canGoPrevious}
+        >
+          <FiChevronLeft />
+        </IconButton>
         {pages.map((page) => (
           <Button
             key={page}
             size="sm"
-            variant={page === safeCurrentPage ? 'solid' : 'ghost'}
-            colorScheme={page === safeCurrentPage ? 'blue' : 'gray'}
+            variant={page === safeCurrentPage ? 'brand' : 'ghost'}
             onClick={() => onPageChange(page)}
-            isDisabled={isDisabled}
+            disabled={isDisabled}
           >
             {page}
           </Button>
         ))}
         <IconButton
           aria-label="Next page"
-          icon={<ChevronRightIcon />}
           size="sm"
           variant="outline"
           onClick={() => onPageChange(safeCurrentPage + 1)}
-          isDisabled={!canGoNext}
-        />
+          disabled={!canGoNext}
+        >
+          <FiChevronRight />
+        </IconButton>
       </HStack>
       {startRecord && endRecord && totalCount && (
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color="text-muted">
           {texts.common.pagination.showing[language]} {startRecord}-{endRecord}{' '}
           {texts.common.pagination.ofPage[language]} {totalCount}
         </Text>
       )}
       {!startRecord && (
-        <Text fontSize="sm" color="gray.500">
+        <Text fontSize="sm" color="text-muted">
           {texts.common.pagination.page[language]} {safeCurrentPage}{' '}
           {texts.common.pagination.ofPage[language]} {totalPages}
         </Text>

@@ -1,27 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Text,
-  VStack,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Table, Text, VStack, Icon } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import api from '@frontend/services/apiConfig';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRightIcon } from '@chakra-ui/icons';
+import { FiChevronRight } from 'react-icons/fi';
 import { DEFAULT_PAGE_SIZE, TablePagination } from '@frontend/shared/components';
 import { Class } from '@frontend/types/class';
 import CreateClassModal from '../components/CreateClassModal';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ClassesPage = () => {
   const navigate = useNavigate();
@@ -30,7 +17,7 @@ const ClassesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 
   useEffect(() => {
@@ -88,7 +75,7 @@ const ClassesPage = () => {
       >
         <Heading>{texts.classes.title[language]}</Heading>
         {isAdmin && (
-          <Button colorScheme="blue" onClick={() => setIsCreateModalOpen(true)}>
+          <Button variant="brand" onClick={() => setIsCreateModalOpen(true)}>
             {texts.classes.addClass[language]}
           </Button>
         )}
@@ -97,29 +84,29 @@ const ClassesPage = () => {
         <Text>{texts.classes.noClasses[language]}</Text>
       ) : (
         <Box overflowX="auto">
-          <Table variant="simple" size={{ base: 'sm', md: 'md' }}>
-            <Thead display={{ base: 'none', md: 'table-header-group' }}>
-              <Tr>
-                <Th>{texts.classes.name[language]}</Th>
-                <Th display={{ base: 'none', md: 'table-cell' }}>
+          <Table.Root variant="line" size={{ base: 'sm', md: 'md' }}>
+            <Table.Header display={{ base: 'none', md: 'table-header-group' }}>
+              <Table.Row>
+                <Table.ColumnHeader>{texts.classes.name[language]}</Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', md: 'table-cell' }}>
                   {texts.classes.description[language]}
-                </Th>
-                <Th display={{ base: 'none', lg: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', lg: 'table-cell' }}>
                   {texts.classes.teachers[language]}
-                </Th>
-                <Th display={{ base: 'none', xl: 'table-cell' }}>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader display={{ base: 'none', xl: 'table-cell' }}>
                   {texts.classes.students[language]}
-                </Th>
-                <Th width="4"></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+                <Table.ColumnHeader width="4"></Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {paginatedClasses.map((cls, index) => {
                 const primaryTeacher = getPrimaryTeacher(cls);
                 const assistantTeacher = getAssistantTeacher(cls);
 
                 return (
-                  <Tr
+                  <Table.Row
                     key={cls.id}
                     cursor="pointer"
                     transition="all 0.2s"
@@ -143,10 +130,14 @@ const ClassesPage = () => {
                     }}
                     onClick={() => handleViewDetail(cls.id)}
                   >
-                    <Td fontWeight={{ base: 'semibold', md: 'normal' }}>{cls.name}</Td>
-                    <Td display={{ base: 'none', md: 'table-cell' }}>{cls.description}</Td>
-                    <Td display={{ base: 'none', lg: 'table-cell' }}>
-                      <VStack align="start" spacing={1}>
+                    <Table.Cell fontWeight={{ base: 'semibold', md: 'normal' }}>
+                      {cls.name}
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', md: 'table-cell' }}>
+                      {cls.description}
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', lg: 'table-cell' }}>
+                      <VStack align="start" gap={1}>
                         <Text fontSize={{ base: 'sm', md: 'md' }}>
                           {texts.classes.teacher[language]}:{' '}
                           {primaryTeacher
@@ -160,24 +151,24 @@ const ClassesPage = () => {
                             : '-'}
                         </Text>
                       </VStack>
-                    </Td>
-                    <Td display={{ base: 'none', xl: 'table-cell' }}>
-                      <VStack align="start" spacing={1}>
+                    </Table.Cell>
+                    <Table.Cell display={{ base: 'none', xl: 'table-cell' }}>
+                      <VStack align="start" gap={1}>
                         {getAcceptedChildren(cls).map((child) => (
                           <Text key={child.id} fontSize={{ base: 'sm', md: 'md' }}>
                             {child.firstname} {child.surname}
                           </Text>
                         ))}
                       </VStack>
-                    </Td>
-                    <Td>
-                      <ChevronRightIcon boxSize={6} color="gray.500" />
-                    </Td>
-                  </Tr>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Icon as={FiChevronRight} boxSize={6} color="text-muted" />
+                    </Table.Cell>
+                  </Table.Row>
                 );
               })}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
           <TablePagination
             currentPage={currentPage}
             totalPages={totalPages}

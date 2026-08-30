@@ -50,7 +50,8 @@ router.get('/', auth, async (req, res) => {
     `);
 
     res.json(result.rows);
-  } catch {
+  } catch (error) {
+    console.error('Fetch messages error:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
@@ -110,7 +111,8 @@ router.get('/:id', auth, async (req, res) => {
     }
 
     res.json(result.rows[0]);
-  } catch {
+  } catch (error) {
+    console.error('Fetch message error:', error);
     res.status(500).json({ error: 'Failed to fetch message' });
   }
 });

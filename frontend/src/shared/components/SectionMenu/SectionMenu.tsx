@@ -1,18 +1,16 @@
 import { useEffect, useState } from 'react';
+import { useColorModeValue } from '../../contexts/ColorContext';
 import {
   Button,
   Card,
-  CardBody,
   Heading,
   HStack,
   IconButton,
-  Collapse,
+  Collapsible,
   VStack,
   useBreakpointValue,
-  useColorModeValue,
-  type CardProps,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 export interface SectionMenuItem {
   key: string;
@@ -25,7 +23,7 @@ export interface SectionMenuProps {
   sections: SectionMenuItem[];
   activeKey: string;
   onChange: (key: string) => void;
-  cardProps?: CardProps;
+  cardProps?: Card.RootProps;
 }
 
 const SectionMenu = ({ title, sections, activeKey, onChange, cardProps }: SectionMenuProps) => {
@@ -44,50 +42,53 @@ const SectionMenu = ({ title, sections, activeKey, onChange, cardProps }: Sectio
   }, [isMobile]);
 
   return (
-    <Card
+    <Card.Root
       w={{ base: 'full', md: '240px' }}
       bg={menuBg}
       position={{ base: 'static', md: 'sticky' }}
       top={{ md: 6 }}
       {...cardProps}
     >
-      <CardBody p={{ base: 2, md: 4 }}>
+      <Card.Body p={{ base: 2, md: 4 }}>
         <HStack justify="space-between" mb={{ base: 2, md: 4 }}>
           <Heading size={{ base: 'sm', md: 'md' }}>{title}</Heading>
           {isMobile && (
             <IconButton
               aria-label={title}
-              icon={isMenuOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen((open) => !open)}
-            />
+            >
+              {isMenuOpen ? <FiChevronUp /> : <FiChevronDown />}
+            </IconButton>
           )}
         </HStack>
-        <Collapse in={!isMobile || isMenuOpen} animateOpacity>
-          <VStack spacing={{ base: 1, md: 2 }} align="stretch">
-            {visibleSections.map((section) => {
-              const isActive = section.key === activeKey;
-              return (
-                <Button
-                  key={section.key}
-                  variant="ghost"
-                  justifyContent="flex-start"
-                  size={{ base: 'sm', md: 'md' }}
-                  onClick={() => onChange(section.key)}
-                  bg={isActive ? menuActiveBg : 'transparent'}
-                  color={isActive ? menuActiveColor : menuTextColor}
-                  fontWeight={isActive ? 'semibold' : 'normal'}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  {section.label}
-                </Button>
-              );
-            })}
-          </VStack>
-        </Collapse>
-      </CardBody>
-    </Card>
+        <Collapsible.Root open={!isMobile || isMenuOpen}>
+          <Collapsible.Content>
+            <VStack gap={{ base: 1, md: 2 }} align="stretch">
+              {visibleSections.map((section) => {
+                const isActive = section.key === activeKey;
+                return (
+                  <Button
+                    key={section.key}
+                    variant="ghost"
+                    justifyContent="flex-start"
+                    size={{ base: 'sm', md: 'md' }}
+                    onClick={() => onChange(section.key)}
+                    bg={isActive ? menuActiveBg : 'transparent'}
+                    color={isActive ? menuActiveColor : menuTextColor}
+                    fontWeight={isActive ? 'semibold' : 'normal'}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    {section.label}
+                  </Button>
+                );
+              })}
+            </VStack>
+          </Collapsible.Content>
+        </Collapsible.Root>
+      </Card.Body>
+    </Card.Root>
   );
 };
 

@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Card,
-  CardBody,
   Flex,
   Grid,
   GridItem,
@@ -12,9 +11,8 @@ import {
   HStack,
   IconButton,
   VStack,
-  useToast,
 } from '@chakra-ui/react';
-import { ChevronLeftIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { FiChevronLeft, FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { useParams, useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -39,12 +37,13 @@ import {
   PresentationsSection,
   ExcusesSection,
 } from '../sections';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 const ChildDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const [childData, setChildData] = useState<Child | null>(null);
   const [presentations, setPresentations] = useState<Presentation[]>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -296,10 +295,7 @@ const ChildDetailPage = () => {
         <InformationSection
           childData={childData}
           language={language}
-          canEdit={canEdit}
           canViewParentProfile={canViewParentProfile}
-          onEditClick={() => setIsEditModalOpen(true)}
-          onDeleteClick={() => setIsDeleteConfirmOpen(true)}
         />
       ),
     },
@@ -376,25 +372,21 @@ const ChildDetailPage = () => {
 
   return (
     <Box p={{ base: 2, md: 4 }} pb={{ base: 20, md: 24 }}>
-      <Card>
-        <CardBody>
+      <Card.Root>
+        <Card.Body>
           <Flex align="center" mb={4} wrap="wrap" gap={2}>
             <Box display={{ base: 'block', md: 'none' }} order={{ base: 1, md: 1 }}>
               <IconButton
                 aria-label={texts.children.backButton[language]}
-                icon={<ChevronLeftIcon />}
                 size="sm"
                 onClick={() => navigate(ROUTES.CHILDREN)}
-              />
+              >
+                <FiChevronLeft />
+              </IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button
-                leftIcon={<ChevronLeftIcon />}
-                onClick={() => navigate(ROUTES.CHILDREN)}
-                size="md"
-                px={4}
-                minW="auto"
-              >
+              <Button onClick={() => navigate(ROUTES.CHILDREN)} size="md" px={4} minW="auto">
+                <FiChevronLeft />
                 {texts.children.backButton[language]}
               </Button>
             </Box>
@@ -415,21 +407,23 @@ const ChildDetailPage = () => {
               order={{ base: 2, md: 3 }}
             >
               {canEdit && (
-                <HStack spacing={2}>
+                <HStack gap={2}>
                   <IconButton
                     aria-label={texts.profile.edit[language]}
-                    icon={<EditIcon />}
                     variant="brand"
                     size={{ base: 'sm', md: 'md' }}
                     onClick={() => setIsEditModalOpen(true)}
-                  />
+                  >
+                    <FiEdit2 />
+                  </IconButton>
                   <IconButton
                     aria-label={texts.common.delete[language]}
-                    icon={<DeleteIcon />}
                     variant="delete"
                     size={{ base: 'sm', md: 'md' }}
                     onClick={() => setIsDeleteConfirmOpen(true)}
-                  />
+                  >
+                    <FiTrash2 />
+                  </IconButton>
                 </HStack>
               )}
             </Box>
@@ -444,7 +438,7 @@ const ChildDetailPage = () => {
               />
             </GridItem>
             <GridItem minW={0}>
-              <VStack align="stretch" spacing={6}>
+              <VStack align="stretch" gap={6}>
                 {sectionItems
                   .filter((item) => item.isVisible !== false)
                   .filter((item) => item.id === activeSectionId)
@@ -456,8 +450,8 @@ const ChildDetailPage = () => {
               </VStack>
             </GridItem>
           </Grid>
-        </CardBody>
-      </Card>
+        </Card.Body>
+      </Card.Root>
       {canEdit && childData && (
         <EditChildModal
           isOpen={isEditModalOpen}

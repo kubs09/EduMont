@@ -1,25 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Box,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  Tabs,
-  TabList,
-  Tab,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, Table, Text, Tabs } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { Class, NextPresentation } from '@frontend/types/class';
 import TablePagination from '@frontend/shared/components/TablePagination/TablePagination';
 import { ChildExcuse } from '@frontend/types/child';
 import { PermissionAlertWindow } from '../components/PremissionAlertWindow';
 import { requestPermission, checkPermissionRequest } from '@frontend/services/api/permission';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface PresentationsTabProps {
   classData: Class;
@@ -44,7 +31,7 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
   const [permissionRequested, setPermissionRequested] = useState(false);
-  const toast = useToast();
+  const toast = useAppToast();
   const PAGE_SIZE = 4;
 
   useEffect(() => {
@@ -194,19 +181,19 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
       ) : (
         <Box>
           {categoryOptions.length > 1 && (
-            <Tabs
-              index={Math.max(categoryOptions.indexOf(activeCategory || ''), 0)}
-              onChange={(index) => setActiveCategory(categoryOptions[index])}
-              variant="soft-rounded"
-              colorScheme="blue"
+            <Tabs.Root
+              value={activeCategory || categoryOptions[0] || ''}
+              onValueChange={(details) => setActiveCategory(details.value)}
+              variant="subtle"
               mb={4}
             >
-              <TabList flexWrap="wrap" gap={2}>
+              <Tabs.List flexWrap="wrap" gap={2}>
                 {categoryOptions.map((category) => (
-                  <Tab
+                  <Tabs.Trigger
                     key={category}
+                    value={category}
                     _selected={{
-                      bg: 'blue.500',
+                      bg: 'bg-brand-solid',
                       color: 'white',
                     }}
                     _hover={{
@@ -216,35 +203,41 @@ const PresentationsTab: React.FC<PresentationsTabProps> = ({
                     color={{ base: 'gray.700', _dark: 'gray.200' }}
                   >
                     {category}
-                  </Tab>
+                  </Tabs.Trigger>
                 ))}
-              </TabList>
-            </Tabs>
+              </Tabs.List>
+            </Tabs.Root>
           )}
-          <TableContainer>
-            <Table variant="simple" size="md">
-              <Thead>
-                <Tr>
-                  <Th>{texts.common.childrenTable.name[language]}</Th>
-                  <Th>{texts.classes.detail.category[language]}</Th>
-                  <Th>{texts.classes.detail.presentation[language]}</Th>
-                  {(isAdmin || isTeacher) && <Th>{texts.classes.detail.notes[language]}</Th>}
-                </Tr>
-              </Thead>
-              <Tbody>
+          <Table.ScrollArea>
+            <Table.Root variant="line" size="md">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader>
+                    {texts.common.childrenTable.name[language]}
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader>{texts.classes.detail.category[language]}</Table.ColumnHeader>
+                  <Table.ColumnHeader>
+                    {texts.classes.detail.presentation[language]}
+                  </Table.ColumnHeader>
+                  {(isAdmin || isTeacher) && (
+                    <Table.ColumnHeader>{texts.classes.detail.notes[language]}</Table.ColumnHeader>
+                  )}
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
                 {paginatedPresentations.map((presentation) => (
-                  <Tr key={`${presentation.child_id}-${presentation.id}`}>
-                    <Td>
+                  <Table.Row key={`${presentation.child_id}-${presentation.id}`}>
+                    <Table.Cell>
                       {presentation.child_firstname} {presentation.child_surname}
-                    </Td>
-                    <Td>{presentation.category}</Td>
-                    <Td>{presentation.name}</Td>
-                    {(isAdmin || isTeacher) && <Td>{presentation.notes || '-'}</Td>}
-                  </Tr>
+                    </Table.Cell>
+                    <Table.Cell>{presentation.category}</Table.Cell>
+                    <Table.Cell>{presentation.name}</Table.Cell>
+                    {(isAdmin || isTeacher) && <Table.Cell>{presentation.notes || '-'}</Table.Cell>}
+                  </Table.Row>
                 ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
+              </Table.Body>
+            </Table.Root>
+          </Table.ScrollArea>
         </Box>
       )}
       {visiblePresentations.length > 0 && (

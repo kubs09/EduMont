@@ -1,18 +1,5 @@
-import {
-  Button,
-  Flex,
-  Heading,
-  ButtonGroup,
-  Image,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Show,
-  Hide,
-  Circle,
-} from '@chakra-ui/react';
-import { ChevronDownIcon, EmailIcon } from '@chakra-ui/icons';
+import { Box, Button, Flex, Heading, ButtonGroup, Image, Menu, Circle } from '@chakra-ui/react';
+import { FiChevronDown, FiMail } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -122,17 +109,17 @@ const Header = () => {
       zIndex={1000}
     >
       <Button
-        variant="unstyled"
         onClick={() => navigate(ROUTES.HOME)}
         _hover={{ opacity: 0.8 }}
         display="flex"
         alignItems="center"
+        unstyled
       >
         <Flex align="center" gap={{ base: 2, md: 4 }}>
           <Image src={icon} alt="EduMont logo" height={{ base: '40px', md: '50px' }} />
-          <Hide below="md">
+          <Box hideBelow="md">
             <Heading size={{ base: 'lg', md: 'xl' }}>EduMont</Heading>
-          </Hide>
+          </Box>
         </Flex>
       </Button>
       <Flex gap={{ base: 2, md: 4 }} align="center">
@@ -140,13 +127,9 @@ const Header = () => {
           <Button
             position="relative"
             variant="brand"
-            leftIcon={<EmailIcon />}
             onClick={handleMessages}
             size={{ base: 'sm', md: 'md' }}
-            px={{ base: 2, md: 4 }}
-          >
-            <Hide below="md">{texts.messages.title[language]}</Hide>
-            {unreadCount > 0 && (
+            px={{ base: 2, md: 4 }}><FiMail /><Box hideBelow="md">{texts.messages.title[language]}</Box>{unreadCount > 0 && (
               <Circle
                 size="20px"
                 bg="red.500"
@@ -159,10 +142,9 @@ const Header = () => {
               >
                 {unreadCount}
               </Circle>
-            )}
-          </Button>
+            )}</Button>
         )}
-        <ButtonGroup spacing={{ base: 1, md: 2 }}>
+        <ButtonGroup gap={{ base: 1, md: 2 }}>
           <Button
             variant={language === 'cs' ? 'brand' : 'outline'}
             onClick={() => setLanguage('cs')}
@@ -183,44 +165,74 @@ const Header = () => {
           </Button>
         </ButtonGroup>
         {isAuthenticated ? (
-          <Menu>
-            <MenuButton
-              variant="brand"
-              as={Button}
-              rightIcon={<ChevronDownIcon />}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              <Hide below="md">{userName}</Hide>
-              <Show below="md">👤</Show>
-            </MenuButton>
-            <MenuList bg={menuBg} borderColor={menuBorderColor}>
-              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleProfile}>
-                {texts.profile.menuItem[language]}
-              </MenuItem>
-              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleClasses}>
-                {isTeacher && <>{texts.classes.teacherClassMenuItem[language]}</>}
-                {!isTeacher && <>{texts.classes.menuItem[language]}</>}
-              </MenuItem>
-              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleChildren}>
-                {isParent && <>{texts.children.menuItem[language]}</>}{' '}
-                {isAdmin && <>{texts.classes.students[language]}</>}
-                {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
-              </MenuItem>
-              {isAdmin && (
-                <>
-                  <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handlepresentation}>
-                    {texts.schedule.menuItem[language]}
-                  </MenuItem>
-                  <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleUserDashboard}>
-                    {texts.userDashboard.menuItem[language]}
-                  </MenuItem>
-                </>
-              )}
-              <MenuItem bg={menuBg} _hover={{ bg: menuHoverBg }} onClick={handleLogout}>
-                {texts.login.signIn.logout[language]}
-              </MenuItem>
-            </MenuList>
-          </Menu>
+          <Menu.Root>
+            <Menu.Trigger asChild>
+              <Button variant="brand" size={{ base: 'sm', md: 'md' }}>
+                <Box hideBelow="md">{userName}</Box>
+                <Box hideFrom="md">👤</Box>
+                <FiChevronDown />
+              </Button>
+            </Menu.Trigger>
+            <Menu.Positioner>
+              <Menu.Content bg={menuBg} borderColor={menuBorderColor}>
+                <Menu.Item
+                  value="profile"
+                  bg={menuBg}
+                  _hover={{ bg: menuHoverBg }}
+                  onClick={handleProfile}
+                >
+                  {texts.profile.menuItem[language]}
+                </Menu.Item>
+                <Menu.Item
+                  value="classes"
+                  bg={menuBg}
+                  _hover={{ bg: menuHoverBg }}
+                  onClick={handleClasses}
+                >
+                  {isTeacher && <>{texts.classes.teacherClassMenuItem[language]}</>}
+                  {!isTeacher && <>{texts.classes.menuItem[language]}</>}
+                </Menu.Item>
+                <Menu.Item
+                  value="children"
+                  bg={menuBg}
+                  _hover={{ bg: menuHoverBg }}
+                  onClick={handleChildren}
+                >
+                  {isParent && <>{texts.children.menuItem[language]}</>}{' '}
+                  {isAdmin && <>{texts.classes.students[language]}</>}
+                  {isTeacher && <>{texts.classes.teacherMenuItem[language]}</>}
+                </Menu.Item>
+                {isAdmin && (
+                  <>
+                    <Menu.Item
+                      value="presentation"
+                      bg={menuBg}
+                      _hover={{ bg: menuHoverBg }}
+                      onClick={handlepresentation}
+                    >
+                      {texts.schedule.menuItem[language]}
+                    </Menu.Item>
+                    <Menu.Item
+                      value="user-dashboard"
+                      bg={menuBg}
+                      _hover={{ bg: menuHoverBg }}
+                      onClick={handleUserDashboard}
+                    >
+                      {texts.userDashboard.menuItem[language]}
+                    </Menu.Item>
+                  </>
+                )}
+                <Menu.Item
+                  value="logout"
+                  bg={menuBg}
+                  _hover={{ bg: menuHoverBg }}
+                  onClick={handleLogout}
+                >
+                  {texts.login.signIn.logout[language]}
+                </Menu.Item>
+              </Menu.Content>
+            </Menu.Positioner>
+          </Menu.Root>
         ) : (
           <Button variant="brand" onClick={handleLogin} size={{ base: 'sm', md: 'md' }}>
             {texts.login.signIn.loginButton[language]}

@@ -5,7 +5,7 @@ export const presentationSchema = (language: 'en' | 'cs') =>
   z.object({
     category: z
       .string({
-        invalid_type_error: texts.schedule.validation.categoryValid[language],
+        error: () => texts.schedule.validation.categoryValid[language],
       })
       .min(1, { message: texts.schedule.validation.categoryRequired[language] }),
 
@@ -17,13 +17,13 @@ export const presentationSchema = (language: 'en' | 'cs') =>
 
     age_group: z
       .string({
-        invalid_type_error: texts.schedule.validation.ageGroupValid[language],
+        error: () => texts.schedule.validation.ageGroupValid[language],
       })
       .min(1, { message: texts.schedule.validation.ageGroupRequired[language] }),
 
     display_order: z
       .number({
-        invalid_type_error: texts.schedule.validation.orderValid[language],
+        error: () => texts.schedule.validation.orderValid[language],
       })
       .int({ message: texts.schedule.validation.orderValid[language] })
       .positive({ message: texts.schedule.validation.orderValid[language] }),

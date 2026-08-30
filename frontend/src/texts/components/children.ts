@@ -53,16 +53,6 @@ export const children = {
         en: 'File upload failed. Please try again.',
       },
     },
-    documentTooLarge: {
-      title: {
-        cs: 'Chyba při nahrávání dokumentu',
-        en: 'Error uploading document',
-      },
-      description: {
-        cs: 'Soubor je příliš velký. Maximální povolená velikost je 5 MB.',
-        en: 'File is too large. Maximum allowed size is 5 MB.',
-      },
-    },
     documentDeleteFailed: {
       title: {
         cs: 'Chyba při mazání dokumentu',
@@ -112,6 +102,26 @@ export const children = {
     surnameLength: common.templates.validation.minLength({ cs: 'Příjmení', en: 'Surname' }, 2),
     surnameMaxLength: common.templates.validation.maxLength({ cs: 'Příjmení', en: 'Surname' }, 100),
     notesMaxLength: common.templates.validation.maxLength({ cs: 'Poznámky', en: 'Notes' }, 1000),
+    documentTitleMaxLength: common.templates.validation.maxLength(
+      { cs: 'Název dokumentu', en: 'Document title' },
+      200
+    ),
+    documentDescriptionMaxLength: common.templates.validation.maxLength(
+      { cs: 'Popis', en: 'Description' },
+      1000
+    ),
+    documentFileRequired: {
+      cs: 'Vyberte soubor k nahrání',
+      en: 'Please select a file to upload',
+    },
+    documentFileTooLarge: {
+      cs: 'Soubor je příliš velký. Maximální povolená velikost je 5 MB.',
+      en: 'File is too large. Maximum allowed size is 5 MB.',
+    },
+    documentInvalidFileType: {
+      cs: 'Nepodporovaný typ souboru. Povolené formáty: PDF, DOC, DOCX, TXT, PNG, JPG.',
+      en: 'Unsupported file type. Allowed formats: PDF, DOC, DOCX, TXT, PNG, JPG.',
+    },
     dateFormat: {
       cs: 'Neplatný formát data. Použijte RRRR-MM-DD',
       en: 'Invalid date format. Use YYYY-MM-DD',

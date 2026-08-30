@@ -1,15 +1,5 @@
 import { useState } from 'react';
-import {
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  Stack,
-  Switch,
-  VStack,
-  useToast,
-} from '@chakra-ui/react';
+import { Button, Input, Stack, Switch, VStack, Field } from '@chakra-ui/react';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { Section } from '@frontend/shared/components';
@@ -18,6 +8,7 @@ import {
   createPasswordChangeSchema,
   PasswordChangeSchema,
 } from '@frontend/shared/validation/passwordSchema';
+import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 
 interface SettingsSectionProps {
   messageNotifications: boolean;
@@ -26,7 +17,7 @@ interface SettingsSectionProps {
 
 const SettingsSection = ({ messageNotifications, onToggleNotifications }: SettingsSectionProps) => {
   const { language } = useLanguage();
-  const toast = useToast();
+  const toast = useAppToast();
   const userId = Number(localStorage.getItem('userId'));
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [formData, setFormData] = useState<PasswordChangeSchema>({
@@ -66,13 +57,13 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
       resetForm();
       setShowPasswordForm(false);
     } catch (error) {
-      if (error.errors) {
+      if (error.issues) {
         const validationErrors: Record<string, string> = {};
         interface ZodError {
           path: string[];
           message: string;
         }
-        (error.errors as ZodError[]).forEach((err: ZodError) => {
+        (error.issues as ZodError[]).forEach((err: ZodError) => {
           validationErrors[err.path[0]] = err.message;
         });
         setErrors(validationErrors);
@@ -98,18 +89,23 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
   };
 
   return (
-    <Stack spacing={6}>
+    <Stack gap={6}>
       <Section title={texts.profile.notifications.title[language]}>
-        <FormControl display="flex" alignItems="center">
-          <FormLabel htmlFor="message-notifications" mb="0">
+        <Field.Root display="flex" alignItems="center">
+          <Field.Label htmlFor="message-notifications" mb="0">
             {texts.profile.notifications.messages[language]}
-          </FormLabel>
-          <Switch
+          </Field.Label>
+          <Switch.Root
             id="message-notifications"
-            isChecked={messageNotifications}
-            onChange={onToggleNotifications}
-          />
-        </FormControl>
+            checked={messageNotifications}
+            onCheckedChange={() => onToggleNotifications()}
+          >
+            <Switch.HiddenInput />
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
+          </Switch.Root>
+        </Field.Root>
       </Section>
       <Section title={texts.profile.password[language]}>
         {!showPasswordForm ? (
@@ -118,41 +114,41 @@ const SettingsSection = ({ messageNotifications, onToggleNotifications }: Settin
           </Button>
         ) : (
           <form onSubmit={handleSubmit}>
-            <VStack spacing={4} align="stretch">
-              <FormControl isInvalid={!!errors.currentPassword}>
-                <FormLabel>{texts.profile.currentPassword[language]}</FormLabel>
+            <VStack gap={4} align="stretch">
+              <Field.Root invalid={!!errors.currentPassword}>
+                <Field.Label>{texts.profile.currentPassword[language]}</Field.Label>
                 <Input
                   type="password"
                   name="currentPassword"
-                  variant="filled"
+                  variant="subtle"
                   value={formData.currentPassword}
                   onChange={handleChange}
                 />
-                <FormErrorMessage>{errors.currentPassword}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.newPassword}>
-                <FormLabel>{texts.profile.newPassword[language]}</FormLabel>
+                <Field.ErrorText>{errors.currentPassword}</Field.ErrorText>
+              </Field.Root>
+              <Field.Root invalid={!!errors.newPassword}>
+                <Field.Label>{texts.profile.newPassword[language]}</Field.Label>
                 <Input
                   type="password"
                   name="newPassword"
-                  variant="filled"
+                  variant="subtle"
                   value={formData.newPassword}
                   onChange={handleChange}
                 />
-                <FormErrorMessage>{errors.newPassword}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!!errors.confirmPassword}>
-                <FormLabel>{texts.profile.confirmNewPassword[language]}</FormLabel>
+                <Field.ErrorText>{errors.newPassword}</Field.ErrorText>
+              </Field.Root>
+              <Field.Root invalid={!!errors.confirmPassword}>
+                <Field.Label>{texts.profile.confirmNewPassword[language]}</Field.Label>
                 <Input
                   type="password"
                   name="confirmPassword"
-                  variant="filled"
+                  variant="subtle"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
-                <FormErrorMessage>{errors.confirmPassword}</FormErrorMessage>
-              </FormControl>
-              <Button type="submit" variant="brand" isLoading={isSubmitting}>
+                <Field.ErrorText>{errors.confirmPassword}</Field.ErrorText>
+              </Field.Root>
+              <Button type="submit" variant="brand" loading={isSubmitting}>
                 {texts.profile.save[language]}
               </Button>
               <Button

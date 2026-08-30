@@ -1,14 +1,5 @@
 import React from 'react';
-import { FocusableElement } from '@chakra-ui/utils';
-import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
-  Button,
-} from '@chakra-ui/react';
+import { CustomDialog } from '@frontend/shared/ui/dialog';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -35,31 +26,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   leastDestructiveRef,
   isConfirmLoading,
 }) => (
-  <AlertDialog
+  <CustomDialog
     isOpen={isOpen}
-    leastDestructiveRef={leastDestructiveRef as React.RefObject<FocusableElement>}
     onClose={onClose}
+    onConfirm={onConfirm}
+    title={title}
+    cancelLabel={cancelLabel}
+    confirmLabel={confirmLabel}
+    confirmColorScheme={confirmColorScheme}
+    cancelRef={leastDestructiveRef}
+    isConfirmLoading={isConfirmLoading}
   >
-    <AlertDialogOverlay>
-      <AlertDialogContent>
-        <AlertDialogHeader>{title}</AlertDialogHeader>
-        <AlertDialogBody>{message}</AlertDialogBody>
-        <AlertDialogFooter>
-          <Button ref={leastDestructiveRef} onClick={onClose}>
-            {cancelLabel}
-          </Button>
-          <Button
-            colorScheme={confirmColorScheme}
-            onClick={onConfirm}
-            ml={3}
-            isLoading={isConfirmLoading}
-          >
-            {confirmLabel}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialogOverlay>
-  </AlertDialog>
+    {message}
+  </CustomDialog>
 );
 
 export default ConfirmDialog;
