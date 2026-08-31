@@ -5,7 +5,7 @@ import { Tooltip } from '@frontend/shared/ui/tooltip';
 import { texts } from '@frontend/texts';
 import { Class, ClassAttendanceRow } from '@frontend/types/class';
 import {
-  Combobox,
+  Select,
   DatePicker,
   DEFAULT_PAGE_SIZE,
   TablePagination,
@@ -275,15 +275,15 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
           <>
             <Text variant="filter">{texts.classes.student[language]}:</Text>
             <Box w={{ base: '100%', sm: '220px' }} maxW="220px">
-              <Combobox
+              <Select
                 options={classData.children.map((child) => ({
                   label: `${child.firstname} ${child.surname}`,
                   value: child.id,
                 }))}
                 placeholder={texts.classes.detail.filterByChild[language]}
-                onChange={(value: string | number | null) => {
-                  if (value) {
-                    const childId = Number(value);
+                onChange={(newValue) => {
+                  if (newValue) {
+                    const childId = Number(newValue);
                     setSelectedChildId(childId);
                   } else {
                     setSelectedChildId(null);
@@ -291,6 +291,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
                 }}
                 isClearable
                 value={selectedChildId}
+                minWidth="unset"
               />
             </Box>
           </>

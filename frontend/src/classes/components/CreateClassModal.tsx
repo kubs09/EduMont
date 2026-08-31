@@ -1,4 +1,5 @@
-import { Button, Input, Textarea, NativeSelect, Field } from '@chakra-ui/react';
+import { Button, Input, Textarea, Field } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
@@ -215,72 +216,56 @@ const CreateClassModal = ({ isOpen, onClose, onSuccess }: CreateClassModalProps)
       </Field.Root>
       <Field.Root mt={4} required>
         <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
-        <NativeSelect.Root>
-          <NativeSelect.Field
-            value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
-            onChange={(e) => {
-              const option = groupOptions.find((group) => group.value === e.target.value);
-              if (!option) return;
+        <Select
+          options={groupOptions}
+          value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+          isSearchable={false}
+          onChange={(newValue) => {
+            const option = groupOptions.find((group) => group.value === newValue);
+            if (!option) return;
 
-              const matchedGroup = classAgeGroups.find(
-                (group) => group.minAge === option.minAge && group.maxAge === option.maxAge
-              );
+            const matchedGroup = classAgeGroups.find(
+              (group) => group.minAge === option.minAge && group.maxAge === option.maxAge
+            );
 
-              if (matchedGroup) {
-                setSelectedGroup(matchedGroup);
-                setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
-              }
-            }}
-          >
-            {groupOptions.map((group) => (
-              <option key={group.value} value={group.value}>
-                {group.label}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+            if (matchedGroup) {
+              setSelectedGroup(matchedGroup);
+              setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+            }
+          }}
+        />
       </Field.Root>
       <Field.Root mt={4} invalid={!!errors.teacherId} required>
         <Field.Label>{texts.classes.teacher[language]}</Field.Label>
-        <NativeSelect.Root>
-          <NativeSelect.Field
-            placeholder={texts.classes.selectTeacher[language]}
-            value={teacherId ?? ''}
-            onChange={(e) => {
-              const value = e.target.value ? Number(e.target.value) : null;
-              handleTeacherChange(value);
-            }}
-          >
-            {availableTeachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.firstname} {teacher.surname}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Select
+          options={availableTeachers.map((teacher) => ({
+            label: `${teacher.firstname} ${teacher.surname}`,
+            value: teacher.id,
+          }))}
+          value={teacherId}
+          isSearchable={false}
+          placeholder={texts.classes.selectTeacher[language]}
+          onChange={(newValue) => {
+            handleTeacherChange(newValue ? Number(newValue) : null);
+          }}
+        />
         {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
       </Field.Root>
       <Field.Root mt={4} invalid={!!errors.assistantId}>
         <Field.Label>{texts.classes.assistant[language]}</Field.Label>
-        <NativeSelect.Root>
-          <NativeSelect.Field
-            placeholder={texts.classes.selectAssistant[language]}
-            value={assistantId ?? ''}
-            onChange={(e) => {
-              const value = e.target.value ? Number(e.target.value) : null;
-              handleAssistantChange(value);
-            }}
-          >
-            {availableTeachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
-                {teacher.firstname} {teacher.surname}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Select
+          options={availableTeachers.map((teacher) => ({
+            label: `${teacher.firstname} ${teacher.surname}`,
+            value: teacher.id,
+            disabled: teacherId === teacher.id,
+          }))}
+          value={assistantId}
+          isSearchable={false}
+          placeholder={texts.classes.selectAssistant[language]}
+          onChange={(newValue) => {
+            handleAssistantChange(newValue ? Number(newValue) : null);
+          }}
+        />
         {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
       </Field.Root>
     </CustomModal>
