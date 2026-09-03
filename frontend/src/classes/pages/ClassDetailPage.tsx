@@ -1,7 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AxiosError } from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Button, Card, Flex, Grid, GridItem, IconButton, Text, VStack } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  GridItem,
+  IconButton,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { FiChevronLeft } from 'react-icons/fi';
 import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
@@ -26,6 +36,7 @@ import { InfoSection, StudentsSection, ActivitiesSection, AttendanceSection } fr
 import { Class, NextPresentation } from '@frontend/types/class';
 import { User } from '@frontend/types/user';
 import { useAppToast } from '@frontend/shared/hooks/useAppToast';
+import { useRealtimeChannel } from '@frontend/shared/hooks/useRealtimeChannel';
 
 const transformClassData = (data: Class): Class => data;
 
@@ -47,6 +58,22 @@ const ClassDetailPage = () => {
   const [excusesByChildId, setExcusesByChildId] = useState<Record<number, ChildExcuse[]>>({});
   const [pendingPermissions, setPendingPermissions] = useState<PendingPermissionRequest[]>([]);
   const [hasGrantedPermission, setHasGrantedPermission] = useState(false);
+
+  const loadNextPresentations = useCallback(async () => {
+    if (!id) return;
+    try {
+      const presentations = await getClassNextPresentations(parseInt(id));
+      setNextPresentations(presentations);
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to load next presentations',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [id, toast]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,22 +109,6 @@ const ClassDetailPage = () => {
           }
         };
 
-        const fetchNextPresentations = async () => {
-          try {
-            if (!id) return;
-            const presentations = await getClassNextPresentations(parseInt(id));
-            setNextPresentations(presentations);
-          } catch {
-            toast({
-              title: 'Error',
-              description: 'Failed to load next presentations',
-              status: 'error',
-              duration: 5000,
-              isClosable: true,
-            });
-          }
-        };
-
         const fetchPendingPermissions = async () => {
           try {
             if (!id) return;
@@ -123,7 +134,7 @@ const ClassDetailPage = () => {
         fetchClassData();
         if (id) {
           if (shouldLoadPresentationData) {
-            fetchNextPresentations();
+            loadNextPresentations();
           }
           if (shouldLoadPermissionData) {
             fetchPendingPermissions();
@@ -146,7 +157,7 @@ const ClassDetailPage = () => {
     };
 
     fetchData();
-  }, [id, language, navigate, toast]);
+  }, [id, language, navigate, toast, loadNextPresentations]);
 
   useEffect(() => {
     if (!classData?.children?.length) {
@@ -259,6 +270,53 @@ const ClassDetailPage = () => {
       }
     }
   };
+
+  // Gate broadened beyond isCurrentUserTeacherOfClass (Task 9) so that admins with
+  // granted access, and teachers generally, also receive 'presentation_changed' —
+  // matching the mount effect's shouldLoadPresentationData (isAdmin || isTeacher).
+  // 'permission_requested' stays restricted to the class's actual teacher inside the
+  // handler below, since that event should only notify whoever can accept/deny it.
+  const classChannelName =
+    id && (isCurrentUserTeacherOfClass || isAdmin || isTeacher) ? `class:${id}` : null;
+  useRealtimeChannel(classChannelName, (eventType) => {
+    if (!id) return;
+    if (eventType === 'permission_requested') {
+      if (!isCurrentUserTeacherOfClass) return;
+      refreshPermissionState(parseInt(id));
+      toast({
+        title: texts.classes.notifications.permissionRequested[language],
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+    if (eventType === 'presentation_changed') {
+      loadNextPresentations();
+      return;
+    }
+    // 'poll' | 'reconnect' — refresh everything this page shows for the class
+    if (isCurrentUserTeacherOfClass) {
+      refreshPermissionState(parseInt(id));
+    }
+    loadNextPresentations();
+  });
+
+  const userChannelName = currentUserId && isAdmin ? `user:${currentUserId}` : null;
+  useRealtimeChannel(userChannelName, (eventType) => {
+    if (!id) return;
+    if (eventType === 'permission_decided') {
+      refreshPermissionState(parseInt(id));
+      toast({
+        title: texts.classes.notifications.permissionDecided[language],
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+    refreshPermissionState(parseInt(id));
+  });
 
   const handleAcceptPermission = async () => {
     if (!id) return;
@@ -420,10 +478,16 @@ const ClassDetailPage = () => {
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
                 onClick={() => navigate(ROUTES.CLASSES)}
-                size="md"><FiChevronLeft /></IconButton>
+                size="md"
+              >
+                <FiChevronLeft />
+              </IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button onClick={() => navigate(ROUTES.CLASSES)} size="md" px={4} minW="auto"><FiChevronLeft />{texts.classes.detail.backToList[language]}</Button>
+              <Button onClick={() => navigate(ROUTES.CLASSES)} size="md" px={4} minW="auto">
+                <FiChevronLeft />
+                {texts.classes.detail.backToList[language]}
+              </Button>
             </Box>
             <Text flex={1} textAlign="center" fontSize="2xl" fontWeight="bold">
               {classData.name}
@@ -432,10 +496,16 @@ const ClassDetailPage = () => {
               <IconButton
                 aria-label={texts.classes.detail.backToList[language]}
                 size="md"
-                visibility="hidden"><FiChevronLeft /></IconButton>
+                visibility="hidden"
+              >
+                <FiChevronLeft />
+              </IconButton>
             </Box>
             <Box display={{ base: 'none', md: 'block' }}>
-              <Button size="md" px={4} minW="auto" visibility="hidden"><FiChevronLeft />{texts.classes.detail.backToList[language]}</Button>
+              <Button size="md" px={4} minW="auto" visibility="hidden">
+                <FiChevronLeft />
+                {texts.classes.detail.backToList[language]}
+              </Button>
             </Box>
           </Flex>
           <Grid templateColumns={{ base: '1fr', lg: '240px 1fr' }} gap={6} alignItems="start">

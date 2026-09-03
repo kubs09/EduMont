@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Input,
-  NativeSelect,
-  Textarea,
-  NumberInput,
-  VStack,
-  Field,
-} from '@chakra-ui/react';
+import { Button, Input, Textarea, NumberInput, VStack, Field } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import {
   CategoryPresentation,
@@ -119,58 +112,54 @@ const AddEditPresentationModal: React.FC<AddEditPresentationModalProps> = ({
       <VStack gap={4}>
         <Field.Root required invalid={!!errors.category}>
           <Field.Label>{texts.schedule.category[language]}</Field.Label>
-          <NativeSelect.Root>
-            <NativeSelect.Field
-              value={formData.category || ''}
-              onChange={(e) => {
-                onFormDataChange({ ...formData, category: e.target.value });
-                if (errors.category) {
-                  setErrors((prev) => ({ ...prev, category: undefined }));
-                }
-              }}
-            >
-              <option value="">-- {texts.common.select[language]} --</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
+          <Select
+            options={categories.map((cat) => ({ label: cat, value: cat }))}
+            value={formData.category || null}
+            isSearchable={false}
+            placeholder={`-- ${texts.common.select[language]} --`}
+            onChange={(newValue) => {
+              onFormDataChange({ ...formData, category: (newValue as string) || '' });
+              if (errors.category) {
+                setErrors((prev) => ({ ...prev, category: undefined }));
+              }
+            }}
+          />
           {errors.category && <Field.ErrorText>{errors.category}</Field.ErrorText>}
         </Field.Root>
 
         <Field.Root required invalid={!!errors.age_group}>
           <Field.Label>{texts.schedule.ageGroup[language]}</Field.Label>
-          <NativeSelect.Root>
-            <NativeSelect.Field
-              value={formData.age_group || ''}
-              onChange={(e) => {
-                onFormDataChange({ ...formData, age_group: e.target.value });
-                if (errors.age_group) {
-                  setErrors((prev) => ({ ...prev, age_group: undefined }));
-                }
-              }}
-            >
-              <option value="">-- {texts.common.select[language]} --</option>
-              <option value="Infant">{texts.classes.ageGroups.infant[language]} (0-1)</option>
-              <option value="Toddler">{texts.classes.ageGroups.toddler[language]} (1-3)</option>
-              <option value="Early Childhood">
-                {texts.classes.ageGroups.earlyChildhood[language]} (3-6)
-              </option>
-              <option value="Lower Elementary">
-                {texts.classes.ageGroups.lowerElementary[language]} (6-9)
-              </option>
-              <option value="Upper Elementary">
-                {texts.classes.ageGroups.upperElementary[language]} (9-12)
-              </option>
-              <option value="Middle School">
-                {texts.classes.ageGroups.middleSchool[language]} (12-15)
-              </option>
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
+          <Select
+            options={[
+              { value: 'Infant', label: `${texts.classes.ageGroups.infant[language]} (0-1)` },
+              { value: 'Toddler', label: `${texts.classes.ageGroups.toddler[language]} (1-3)` },
+              {
+                value: 'Early Childhood',
+                label: `${texts.classes.ageGroups.earlyChildhood[language]} (3-6)`,
+              },
+              {
+                value: 'Lower Elementary',
+                label: `${texts.classes.ageGroups.lowerElementary[language]} (6-9)`,
+              },
+              {
+                value: 'Upper Elementary',
+                label: `${texts.classes.ageGroups.upperElementary[language]} (9-12)`,
+              },
+              {
+                value: 'Middle School',
+                label: `${texts.classes.ageGroups.middleSchool[language]} (12-15)`,
+              },
+            ]}
+            value={formData.age_group || null}
+            isSearchable={false}
+            placeholder={`-- ${texts.common.select[language]} --`}
+            onChange={(newValue) => {
+              onFormDataChange({ ...formData, age_group: (newValue as string) || '' });
+              if (errors.age_group) {
+                setErrors((prev) => ({ ...prev, age_group: undefined }));
+              }
+            }}
+          />
           {errors.age_group && <Field.ErrorText>{errors.age_group}</Field.ErrorText>}
         </Field.Root>
 

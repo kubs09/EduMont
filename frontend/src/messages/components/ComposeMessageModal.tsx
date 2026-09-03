@@ -6,7 +6,7 @@ import { CustomModal } from '@frontend/shared/ui/modal';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
 import { createMessageSchema, MessageFormData } from '../schemas/MessageSchema';
-import { Combobox } from '@frontend/shared/components';
+import { Select } from '@frontend/shared/components';
 import { User } from '@frontend/types/user';
 
 interface Props {
@@ -123,7 +123,7 @@ export const ComposeMessageModal: React.FC<Props> = ({ isOpen, onClose, onSend, 
             name="to_user_ids"
             control={control}
             render={({ field: { value, onChange } }) => (
-              <Combobox
+              <Select
                 options={buildComboboxOptions()}
                 value={value}
                 onChange={(newValue) => {

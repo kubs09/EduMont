@@ -6,11 +6,17 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { select: jest.fn(), transaction: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -174,6 +180,7 @@ describe('presentations status/reorder routes', () => {
 
       expect(res.status).toBe(404);
       expect(res.body).toEqual({ error: 'presentation not found for this child' });
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('200 happy path', async () => {
@@ -186,7 +193,7 @@ describe('presentations status/reorder routes', () => {
       // field (e.g. forgot updatedBy, or passed the wrong notes value) would
       // leave the call count unchanged but would fail the assertion below.
       let capturedSet;
-      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, category: null }])); // presentationResult
+      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, category: null, classId: 9 }])); // presentationResult
       tx.update.mockReturnValueOnce({
         set: jest.fn((setArg) => {
           capturedSet = setArg;
@@ -215,10 +222,13 @@ describe('presentations status/reorder routes', () => {
       );
       // category was null, so normalizeCategoryOrdering no-ops.
       expect(tx.select).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
+        classId: 9,
+      });
     });
 
     test('500 when the transaction throws an unexpected error', async () => {
-      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, category: null }])); // presentationResult
+      dbMock.select.mockReturnValueOnce(makeChain([{ id: 1, category: null, classId: 9 }])); // presentationResult
       dbMock.transaction.mockRejectedValueOnce(new Error('boom'));
 
       const res = await request(app)
@@ -306,12 +316,13 @@ describe('presentations status/reorder routes', () => {
 
       expect(res.status).toBe(404);
       expect(res.body).toEqual({ error: 'presentation not found for this child' });
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('400 "already at the top" when moving up with no earlier sibling', async () => {
       const tx = makeTxMock();
       dbMock.select.mockReturnValueOnce(
-        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 1 }])
+        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 1, classId: 9 }])
       );
       const { chain, getWhere, getOrderBy } = makeAdjacentRowChain([]); // no adjacent row above
       tx.select.mockReturnValueOnce(chain);
@@ -332,12 +343,13 @@ describe('presentations status/reorder routes', () => {
         )
       );
       expect(getOrderBy()).toEqual(desc(presentations.displayOrder));
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('400 "already at the bottom" when moving down with no later sibling', async () => {
       const tx = makeTxMock();
       dbMock.select.mockReturnValueOnce(
-        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 3 }])
+        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 3, classId: 9 }])
       );
       const { chain, getWhere, getOrderBy } = makeAdjacentRowChain([]); // no adjacent row below
       tx.select.mockReturnValueOnce(chain);
@@ -358,12 +370,13 @@ describe('presentations status/reorder routes', () => {
         )
       );
       expect(getOrderBy()).toEqual(asc(presentations.displayOrder));
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('200 happy path, swapping two siblings', async () => {
       const tx = makeTxMock();
       dbMock.select.mockReturnValueOnce(
-        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2 }])
+        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2, classId: 9 }])
       );
       const {
         chain: adjacentChain,
@@ -420,12 +433,15 @@ describe('presentations status/reorder routes', () => {
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
       expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
+        classId: 9,
+      });
     });
 
     test('200 happy path, swapping two siblings (down direction)', async () => {
       const tx = makeTxMock();
       dbMock.select.mockReturnValueOnce(
-        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2 }])
+        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2, classId: 9 }])
       );
       const {
         chain: adjacentChain,
@@ -481,11 +497,14 @@ describe('presentations status/reorder routes', () => {
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
       expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
+        classId: 9,
+      });
     });
 
     test('500 when the transaction throws an unexpected error', async () => {
       dbMock.select.mockReturnValueOnce(
-        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2 }])
+        makeChain([{ id: 1, category: 'Practical Life', displayOrder: 2, classId: 9 }])
       );
       dbMock.transaction.mockRejectedValueOnce(new Error('boom'));
 

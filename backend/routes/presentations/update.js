@@ -6,6 +6,7 @@ import { db } from '#backend/config/database.js';
 import { classChildren, presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
+import { publishEvent } from '#backend/utils/realtime.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
   validationModule;
 
@@ -77,6 +78,9 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return { status: 200, body: updated[0] };
     });
 
+    if (result.status === 200) {
+      publishEvent(`class:${class_id}`, 'presentation_changed', { classId: class_id });
+    }
     res.status(result.status).json(result.body);
   } catch (err) {
     console.error('Error updating presentation:', err);

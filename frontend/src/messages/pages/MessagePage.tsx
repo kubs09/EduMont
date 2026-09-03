@@ -15,10 +15,9 @@ import { useSnackbar } from 'notistack';
 import ComposeMessageModal from '../components/ComposeMessageModal';
 import MessageList from '../components/MessageList';
 import MessageDetail from '../components/MessageDetail';
+import { useRealtimeChannel } from '@frontend/shared/hooks/useRealtimeChannel';
 import { Message } from '@frontend/types/message';
 import { User } from '@frontend/types/user';
-
-const POLL_INTERVAL = 60 * 1000;
 
 type SortDirection = 'asc' | 'desc';
 
@@ -62,10 +61,12 @@ const Messages: React.FC = () => {
   useEffect(() => {
     fetchMessages();
     fetchUsers();
-
-    const interval = setInterval(fetchMessages, POLL_INTERVAL);
-    return () => clearInterval(interval);
   }, [fetchMessages, fetchUsers]);
+
+  const currentUserIdForChannel = JSON.parse(localStorage.getItem('user') || '{}').id;
+  useRealtimeChannel(currentUserIdForChannel ? `user:${currentUserIdForChannel}` : null, () => {
+    fetchMessages();
+  });
 
   const handleMessageClick = async (id: number) => {
     try {

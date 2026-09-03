@@ -10,8 +10,8 @@ import {
   Center,
   Card,
   Text,
-  NativeSelect,
 } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -309,20 +309,15 @@ const SchedulePage: React.FC = () => {
               </HStack>
               <HStack gap={2}>
                 <Text variant="filter">{texts.schedule.ageGroup[language]}:</Text>
-                <NativeSelect.Root size="sm" w="fit-content">
-                  <NativeSelect.Field
-                    value={selectedAgeGroup}
-                    borderRadius="md"
-                    onChange={(e) => setSelectedAgeGroup(e.target.value)}
-                  >
-                    {ageGroups.map((ageGroup) => (
-                      <option key={ageGroup} value={ageGroup}>
-                        {ageGroup}
-                      </option>
-                    ))}
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
+                <Select
+                  options={ageGroups.map((ageGroup) => ({ label: ageGroup, value: ageGroup }))}
+                  value={selectedAgeGroup}
+                  isSearchable={false}
+                  isClearable={false}
+                  width="fit-content"
+                  minWidth="unset"
+                  onChange={(newValue) => setSelectedAgeGroup(newValue as string)}
+                />
               </HStack>
             </VStack>
 

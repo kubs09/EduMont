@@ -6,6 +6,7 @@ import { db } from '#backend/config/database.js';
 import { presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validation from './validation.js';
+import { publishEvent } from '#backend/utils/realtime.js';
 const { STATUS_VALUES, canEditChildpresentation, normalizeCategoryOrdering } = validation;
 
 router.put('/children/:childId/:presentationId/status', authenticateToken, async (req, res) => {
@@ -41,7 +42,11 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
     }
 
     const presentationResult = await db
-      .select({ id: presentations.id, category: presentations.category })
+      .select({
+        id: presentations.id,
+        category: presentations.category,
+        classId: presentations.classId,
+      })
       .from(presentations)
       .where(and(eq(presentations.id, presentationId), eq(presentations.childId, childId)));
 
@@ -66,6 +71,9 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
       return result[0];
     });
 
+    publishEvent(`class:${presentationResult[0].classId}`, 'presentation_changed', {
+      classId: presentationResult[0].classId,
+    });
     res.json(updated);
   } catch (error) {
     console.error('Error updating presentation status:', error);
@@ -103,6 +111,7 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
         id: presentations.id,
         category: presentations.category,
         displayOrder: presentations.displayOrder,
+        classId: presentations.classId,
       })
       .from(presentations)
       .where(and(eq(presentations.id, presentationId), eq(presentations.childId, childId)));
@@ -182,6 +191,9 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
       return res.status(400).json({ error: result.error });
     }
 
+    publishEvent(`class:${currentPresentation.classId}`, 'presentation_changed', {
+      classId: currentPresentation.classId,
+    });
     res.json({ success: true, message: `Presentation moved ${direction}` });
   } catch (error) {
     console.error('Error reordering presentations:', error);

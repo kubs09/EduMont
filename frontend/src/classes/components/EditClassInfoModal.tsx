@@ -1,4 +1,5 @@
-import { Button, Input, NativeSelect, Textarea, Field, Dialog } from '@chakra-ui/react';
+import { Button, Input, Textarea, Field, Dialog } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useEffect, useState } from 'react';
 import { texts } from '@frontend/texts';
@@ -142,31 +143,25 @@ export const EditClassInfoModal = ({
       </Field.Root>
       <Field.Root mt={4} required>
         <Field.Label>{texts.classes.ageRange[language]}</Field.Label>
-        <NativeSelect.Root>
-          <NativeSelect.Field
-            value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
-            onChange={(e) => {
-              const [minAgeValue, maxAgeValue] = e.target.value
-                .split('-')
-                .map((value) => Number(value));
-              const matchedGroup = classAgeGroups.find(
-                (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
-              );
-              if (matchedGroup) {
-                setSelectedGroup(matchedGroup);
-                setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
-              }
-            }}
-          >
-            {classAgeGroups.map((group) => (
-              <option key={group.key} value={`${group.minAge}-${group.maxAge}`}>
-                {texts.classes.ageGroups[group.key][language]} - {group.minAge} - {group.maxAge}{' '}
-                {texts.classes.years[language]}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Select
+          options={classAgeGroups.map((group) => ({
+            label: `${texts.classes.ageGroups[group.key][language]} - ${group.minAge} - ${group.maxAge} ${texts.classes.years[language]}`,
+            value: `${group.minAge}-${group.maxAge}`,
+          }))}
+          value={`${selectedGroup.minAge}-${selectedGroup.maxAge}`}
+          isSearchable={false}
+          onChange={(newValue) => {
+            if (typeof newValue !== 'string') return;
+            const [minAgeValue, maxAgeValue] = newValue.split('-').map((v) => Number(v));
+            const matchedGroup = classAgeGroups.find(
+              (group) => group.minAge === minAgeValue && group.maxAge === maxAgeValue
+            );
+            if (matchedGroup) {
+              setSelectedGroup(matchedGroup);
+              setErrors((prev) => ({ ...prev, minAge: undefined, maxAge: undefined }));
+            }
+          }}
+        />
       </Field.Root>
     </CustomModal>
   );

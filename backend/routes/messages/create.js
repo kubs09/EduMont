@@ -9,6 +9,7 @@ import process from 'process';
 const { sendEmail } = mailConfig;
 import getMessageNotificationEmail from '#backend/templates/messageNotificationEmail.js';
 import { getAllowedRecipients } from './helpers.js';
+import { publishEvent } from '#backend/utils/realtime.js';
 
 router.post('/', auth, async (req, res) => {
   try {
@@ -79,10 +80,14 @@ router.post('/', auth, async (req, res) => {
         }
       }
 
-      return insertedMessages[0];
+      return { first: insertedMessages[0], allInserted: insertedMessages };
     });
 
-    res.status(201).json(insertedFirstMessage);
+    for (const message of insertedFirstMessage.allInserted) {
+      publishEvent(`user:${message.to_user_id}`, 'message_received', { messageId: message.id });
+    }
+
+    res.status(201).json(insertedFirstMessage.first);
   } catch (error) {
     if (error.message === 'invalidRecipients') {
       return res.status(403).json({ error: 'Some recipients are not allowed' });
