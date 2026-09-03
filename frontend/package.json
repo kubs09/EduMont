@@ -11,6 +11,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@mui/icons-material": "^5.x",
     "@mui/material": "^5.x",
+    "@supabase/supabase-js": "^2.39.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",

@@ -4,11 +4,17 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { select: jest.fn(), insert: jest.fn(), update: jest.fn(), delete: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -208,6 +214,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('403 for a parent without access to that child', async () => {
@@ -220,6 +227,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('403 for an unrecognized role', async () => {
@@ -230,6 +238,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('404 when the child is not linked to the class', async () => {
@@ -242,6 +251,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(404);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('409 when already checked in for that date', async () => {
@@ -257,6 +267,7 @@ describe('classes routes: attendance', () => {
       expect(res.status).toBe(409);
       expect(dbMock.insert).not.toHaveBeenCalled();
       expect(dbMock.update).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('201 creating a new attendance row when none exists yet for that date', async () => {
@@ -280,6 +291,9 @@ describe('classes routes: attendance', () => {
       expect(res.status).toBe(201);
       expect(res.body).toEqual(created);
       expect(dbMock.update).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
+        classId: 1,
+      });
     });
 
     test('200 updating the existing row when one exists for that date but has no check_in_at', async () => {
@@ -303,6 +317,9 @@ describe('classes routes: attendance', () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updated);
       expect(dbMock.insert).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
+        classId: 1,
+      });
     });
   });
 
@@ -363,6 +380,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('403 for a parent without access to that child', async () => {
@@ -375,6 +393,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('403 for an unrecognized role', async () => {
@@ -385,6 +404,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(403);
       expect(dbMock.select).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('404 when the child is not linked to the class', async () => {
@@ -397,6 +417,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(404);
       expect(dbMock.select).toHaveBeenCalledTimes(1);
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('409 when not checked in yet for that date', async () => {
@@ -411,6 +432,22 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(409);
       expect(dbMock.update).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
+    });
+
+    test('409 when not checked in yet for that date (row exists with null check_in_at)', async () => {
+      dbMock.select
+        .mockReturnValueOnce(makeChain([{ classId: 1 }])) // isChildInClass
+        .mockReturnValueOnce(makeChain([{ id: 5, checkInAt: null, checkOutAt: null }])); // existing - row present, never checked in
+
+      const res = await request(app)
+        .post('/api/classes/1/attendance/check-out')
+        .set('Authorization', authHeader({ id: 1, role: 'admin' }))
+        .send(validBody);
+
+      expect(res.status).toBe(409);
+      expect(dbMock.update).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('409 when already checked out', async () => {
@@ -433,6 +470,7 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(409);
       expect(dbMock.update).not.toHaveBeenCalled();
+      expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
     });
 
     test('200 on successful check-out', async () => {
@@ -458,6 +496,9 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updated);
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
+        classId: 1,
+      });
     });
   });
 });

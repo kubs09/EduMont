@@ -5,12 +5,11 @@ import { texts } from '@frontend/texts';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { ROUTES } from '@frontend/shared/route';
 import icon from './icon.png';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getMessages } from '@frontend/services/api';
 import { getClasses } from '@frontend/services/api/class';
 import { useAtomColors, useMenuColors } from '@frontend/design/colorModeUtils';
-
-const POLL_INTERVAL = 5000;
+import { useRealtimeChannel } from '@frontend/shared/hooks/useRealtimeChannel';
 
 const Header = () => {
   const { language, setLanguage } = useLanguage();
@@ -25,25 +24,28 @@ const Header = () => {
   const isParent = userRole === 'parent';
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    const fetchUnreadCount = async () => {
-      try {
-        const messages = await getMessages();
-        const unread = messages.filter(
-          (m) => m.to_user_id === parseInt(localStorage.getItem('userId') || '0') && !m.read_at
-        ).length;
-        setUnreadCount(unread);
-      } catch (error) {
-        console.error('Failed to fetch unread count:', error);
-      }
-    };
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const messages = await getMessages();
+      const unread = messages.filter(
+        (m) => m.to_user_id === parseInt(localStorage.getItem('userId') || '0') && !m.read_at
+      ).length;
+      setUnreadCount(unread);
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  }, []);
 
+  useEffect(() => {
     if (isAuthenticated) {
       fetchUnreadCount();
-      const interval = setInterval(fetchUnreadCount, POLL_INTERVAL);
-      return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchUnreadCount]);
+
+  const userId = localStorage.getItem('userId');
+  useRealtimeChannel(isAuthenticated && userId ? `user:${userId}` : null, () => {
+    fetchUnreadCount();
+  });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -129,7 +131,11 @@ const Header = () => {
             variant="brand"
             onClick={handleMessages}
             size={{ base: 'sm', md: 'md' }}
-            px={{ base: 2, md: 4 }}><FiMail /><Box hideBelow="md">{texts.messages.title[language]}</Box>{unreadCount > 0 && (
+            px={{ base: 2, md: 4 }}
+          >
+            <FiMail />
+            <Box hideBelow="md">{texts.messages.title[language]}</Box>
+            {unreadCount > 0 && (
               <Circle
                 size="20px"
                 bg="red.500"
@@ -142,7 +148,8 @@ const Header = () => {
               >
                 {unreadCount}
               </Circle>
-            )}</Button>
+            )}
+          </Button>
         )}
         <ButtonGroup gap={{ base: 1, md: 2 }}>
           <Button

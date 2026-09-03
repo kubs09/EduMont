@@ -53,6 +53,16 @@ export const classes = {
       en: 'Failed to check out',
     },
   },
+  notifications: {
+    permissionRequested: {
+      cs: 'Byla podána nová žádost o oprávnění pro tuto třídu.',
+      en: 'A new permission request has been submitted for this class.',
+    },
+    permissionDecided: {
+      cs: 'Vaše žádost o oprávnění byla vyřízena.',
+      en: 'Your permission request has been resolved.',
+    },
+  },
   success: {
     updated: common.templates.success.updated(classEntity),
     permissionRequestSent: {

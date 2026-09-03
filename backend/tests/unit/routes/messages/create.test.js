@@ -5,11 +5,17 @@ import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { transaction: jest.fn() };
 const mailMock = { sendEmail: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: mailMock,
   sendEmail: mailMock.sendEmail,
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -79,6 +85,9 @@ describe('POST /api/messages', () => {
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual(insertedMessage);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:2', 'message_received', {
+      messageId: 10,
+    });
   });
 
   test('201 sending to multiple recipients, one row per recipient sharing subject/content', async () => {
@@ -111,6 +120,38 @@ describe('POST /api/messages', () => {
       { fromUserId: 1, toUserId: 2, subject: 'Hi', content: 'Hello there' },
       { fromUserId: 1, toUserId: 3, subject: 'Hi', content: 'Hello there' },
     ]);
+  });
+
+  test('publishes a message_received event per recipient', async () => {
+    const tx = makeTxMock();
+    const insertedMessages = [
+      { id: 10, to_user_id: 2, from_user_id: 1, subject: 'Hi', content: 'Hello there' },
+      { id: 11, to_user_id: 3, from_user_id: 1, subject: 'Hi', content: 'Hello there' },
+    ];
+    tx.execute.mockResolvedValueOnce({ rows: [{ id: 2 }, { id: 3 }] });
+    tx.select
+      .mockReturnValueOnce(makeChain([{ firstname: 'Ada', surname: 'Lovelace' }]))
+      .mockReturnValueOnce(
+        makeChain([
+          { id: 2, email: 'r2@example.com', messageNotifications: false },
+          { id: 3, email: 'r3@example.com', messageNotifications: false },
+        ])
+      );
+    tx.insert.mockReturnValueOnce(makeChain(insertedMessages));
+    dbMock.transaction.mockImplementation((cb) => cb(tx));
+
+    await request(app)
+      .post('/api/messages')
+      .set('Authorization', authHeader({ id: 1, role: 'admin' }))
+      .send({ to_user_ids: [2, 3], subject: 'Hi', content: 'Hello there' });
+
+    expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(2);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:2', 'message_received', {
+      messageId: 10,
+    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:3', 'message_received', {
+      messageId: 11,
+    });
   });
 
   test('notification email sent only to recipients with messageNotifications true, with the sender name interpolated', async () => {

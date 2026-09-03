@@ -13,6 +13,7 @@ import {
 import { checkInChild, checkOutChild, getClassAttendance } from '@frontend/services/api/class';
 import { ChildExcuse } from '@frontend/types/child';
 import { useAppToast } from '@frontend/shared/hooks/useAppToast';
+import { useRealtimeChannel } from '@frontend/shared/hooks/useRealtimeChannel';
 
 interface AttendanceTabProps {
   classData: Class;
@@ -187,6 +188,10 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
   React.useEffect(() => {
     loadAttendance();
   }, [loadAttendance]);
+
+  useRealtimeChannel(`class:${classData.id}`, () => {
+    loadAttendance();
+  });
 
   React.useEffect(() => {
     if (currentPage !== safeCurrentPage) {

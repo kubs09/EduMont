@@ -4,11 +4,17 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { transaction: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -76,6 +82,7 @@ describe('POST /api/permissions/accept', () => {
     expect(res.body).toEqual({
       error: 'You do not have permission to approve requests for this class',
     });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('404 when there is no pending permission request for the class', async () => {
@@ -90,6 +97,7 @@ describe('POST /api/permissions/accept', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'No pending permission request found for this class' });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('200 sets granted true and sends an English notification message by default', async () => {
@@ -116,6 +124,9 @@ describe('POST /api/permissions/accept', () => {
       subject: 'Your permission request for class "Sunflowers" has been accepted',
       content:
         'Your permission request for presentations in class "Sunflowers" has been accepted. You now have access to presentations.',
+    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:9', 'permission_decided', {
+      classId: 5,
     });
   });
 
@@ -205,6 +216,7 @@ describe('POST /api/permissions/deny', () => {
     expect(res.body).toEqual({
       error: 'You do not have permission to deny requests for this class',
     });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('404 when there is no pending permission request for the class', async () => {
@@ -219,6 +231,7 @@ describe('POST /api/permissions/deny', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'No pending permission request found for this class' });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('200 deletes the row and sends an English notification message by default', async () => {
@@ -245,6 +258,9 @@ describe('POST /api/permissions/deny', () => {
       toUserId: 9,
       subject: 'Your permission request for class "Sunflowers" has been denied',
       content: 'Your permission request for presentations in class "Sunflowers" has been denied.',
+    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:9', 'permission_decided', {
+      classId: 5,
     });
   });
 

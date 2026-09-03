@@ -6,11 +6,17 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { select: jest.fn(), transaction: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -152,6 +158,7 @@ describe('PUT /api/presentations/:id', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'presentation not found' });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test("403 when the caller can't edit the new child_id, not the previous one", async () => {
@@ -204,6 +211,7 @@ describe('PUT /api/presentations/:id', () => {
 
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ error: 'Child is not assigned to this class' });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('200 when only the category changes: previous-category renormalization runs', async () => {
@@ -232,6 +240,9 @@ describe('PUT /api/presentations/:id', () => {
     // Only the route's own field update touched tx.update; neither normalizeCategoryOrdering
     // call needed to change a row's status given the mocked data above.
     expect(tx.update).toHaveBeenCalledTimes(1);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:20', 'presentation_changed', {
+      classId: 20,
+    });
   });
 
   test('200 when only child_id changes: previous-category renormalization runs', async () => {
