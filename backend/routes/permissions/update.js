@@ -13,6 +13,7 @@ import {
 } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getUserChannel } from '#backend/utils/realtimeChannels.js';
 
 router.post('/accept', auth, async (req, res) => {
   try {
@@ -102,7 +103,7 @@ router.post('/accept', auth, async (req, res) => {
     });
 
     if (result.status === 200) {
-      publishEvent(`user:${result.requester_id}`, 'permission_decided', {
+      publishEvent(getUserChannel(result.requester_id), 'permission_decided', {
         classId: class_id,
       });
     }
@@ -202,7 +203,7 @@ router.post('/deny', auth, async (req, res) => {
     });
 
     if (result.status === 200) {
-      publishEvent(`user:${result.requester_id}`, 'permission_decided', {
+      publishEvent(getUserChannel(result.requester_id), 'permission_decided', {
         classId: class_id,
       });
     }

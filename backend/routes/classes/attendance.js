@@ -11,6 +11,7 @@ import {
 } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 
 const isValidDateString = (value) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
@@ -202,7 +203,7 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
           notes: req.body.notes || null,
         })
         .returning();
-      publishEvent(`class:${classId}`, 'attendance_changed', { classId });
+      publishEvent(getClassChannel(classId), 'attendance_changed', { classId });
       return res.status(201).json(inserted[0]);
     }
 
@@ -217,7 +218,7 @@ router.post('/:id/attendance/check-in', auth, async (req, res) => {
       .where(eq(classAttendance.id, existing[0].id))
       .returning();
 
-    publishEvent(`class:${classId}`, 'attendance_changed', { classId });
+    publishEvent(getClassChannel(classId), 'attendance_changed', { classId });
     return res.status(200).json(updated[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to check in child', details: error.message });
@@ -309,7 +310,7 @@ router.post('/:id/attendance/check-out', auth, async (req, res) => {
       .where(eq(classAttendance.id, existing[0].id))
       .returning();
 
-    publishEvent(`class:${classId}`, 'attendance_changed', { classId });
+    publishEvent(getClassChannel(classId), 'attendance_changed', { classId });
     return res.status(200).json(updated[0]);
   } catch (error) {
     res.status(500).json({ error: 'Failed to check out child', details: error.message });

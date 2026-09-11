@@ -17,6 +17,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -189,9 +195,11 @@ describe('POST /api/presentations', () => {
     // category was omitted, so normalizeCategoryOrdering no-ops: only the
     // classChildren check should have hit tx.select.
     expect(tx.select).toHaveBeenCalledTimes(1);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:20', 'presentation_changed', {
-      classId: 20,
-    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
   });
 
   test('defaults display_order from the matching category_presentations row when omitted', async () => {

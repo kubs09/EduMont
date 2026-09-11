@@ -7,6 +7,7 @@ import { presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validation from './validation.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 const { STATUS_VALUES, canEditChildpresentation, normalizeCategoryOrdering } = validation;
 
 router.put('/children/:childId/:presentationId/status', authenticateToken, async (req, res) => {
@@ -71,7 +72,7 @@ router.put('/children/:childId/:presentationId/status', authenticateToken, async
       return result[0];
     });
 
-    publishEvent(`class:${presentationResult[0].classId}`, 'presentation_changed', {
+    publishEvent(getClassChannel(presentationResult[0].classId), 'presentation_changed', {
       classId: presentationResult[0].classId,
     });
     res.json(updated);
@@ -191,7 +192,7 @@ router.put('/children/:childId/:presentationId/reorder', authenticateToken, asyn
       return res.status(400).json({ error: result.error });
     }
 
-    publishEvent(`class:${currentPresentation.classId}`, 'presentation_changed', {
+    publishEvent(getClassChannel(currentPresentation.classId), 'presentation_changed', {
       classId: currentPresentation.classId,
     });
     res.json({ success: true, message: `Presentation moved ${direction}` });

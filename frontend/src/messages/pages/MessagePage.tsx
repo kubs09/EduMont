@@ -63,8 +63,8 @@ const Messages: React.FC = () => {
     fetchUsers();
   }, [fetchMessages, fetchUsers]);
 
-  const currentUserIdForChannel = JSON.parse(localStorage.getItem('user') || '{}').id;
-  useRealtimeChannel(currentUserIdForChannel ? `user:${currentUserIdForChannel}` : null, () => {
+  const realtimeUserChannel = localStorage.getItem('realtimeUserChannel');
+  useRealtimeChannel(realtimeUserChannel ? realtimeUserChannel : null, () => {
     fetchMessages();
   });
 

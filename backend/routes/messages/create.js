@@ -10,6 +10,7 @@ const { sendEmail } = mailConfig;
 import getMessageNotificationEmail from '#backend/templates/messageNotificationEmail.js';
 import { getAllowedRecipients } from './helpers.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getUserChannel } from '#backend/utils/realtimeChannels.js';
 
 router.post('/', auth, async (req, res) => {
   try {
@@ -84,7 +85,9 @@ router.post('/', auth, async (req, res) => {
     });
 
     for (const message of insertedFirstMessage.allInserted) {
-      publishEvent(`user:${message.to_user_id}`, 'message_received', { messageId: message.id });
+      publishEvent(getUserChannel(message.to_user_id), 'message_received', {
+        messageId: message.id,
+      });
     }
 
     res.status(201).json(insertedFirstMessage.first);

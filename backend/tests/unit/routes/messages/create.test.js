@@ -18,6 +18,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -85,7 +91,7 @@ describe('POST /api/messages', () => {
 
     expect(res.status).toBe(201);
     expect(res.body).toEqual(insertedMessage);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:2', 'message_received', {
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user-channel:2', 'message_received', {
       messageId: 10,
     });
   });
@@ -146,10 +152,10 @@ describe('POST /api/messages', () => {
       .send({ to_user_ids: [2, 3], subject: 'Hi', content: 'Hello there' });
 
     expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(2);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:2', 'message_received', {
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user-channel:2', 'message_received', {
       messageId: 10,
     });
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:3', 'message_received', {
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user-channel:3', 'message_received', {
       messageId: 11,
     });
   });

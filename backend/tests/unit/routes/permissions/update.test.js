@@ -17,6 +17,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -125,7 +131,7 @@ describe('POST /api/permissions/accept', () => {
       content:
         'Your permission request for presentations in class "Sunflowers" has been accepted. You now have access to presentations.',
     });
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:9', 'permission_decided', {
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user-channel:9', 'permission_decided', {
       classId: 5,
     });
   });
@@ -259,7 +265,7 @@ describe('POST /api/permissions/deny', () => {
       subject: 'Your permission request for class "Sunflowers" has been denied',
       content: 'Your permission request for presentations in class "Sunflowers" has been denied.',
     });
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user:9', 'permission_decided', {
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('user-channel:9', 'permission_decided', {
       classId: 5,
     });
   });

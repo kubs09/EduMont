@@ -13,6 +13,7 @@ import {
 } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 
 router.get('/check', auth, async (req, res) => {
   try {
@@ -289,7 +290,7 @@ router.post('/request', auth, async (req, res) => {
     });
 
     if (result.body.already_requested === false) {
-      publishEvent(`class:${resource_id}`, 'permission_requested', { classId: resource_id });
+      publishEvent(getClassChannel(resource_id), 'permission_requested', { classId: resource_id });
     }
 
     res.status(result.status).json(result.body);

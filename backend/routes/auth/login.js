@@ -8,6 +8,7 @@ import { users } from '#backend/db/schema.js';
 import passwordService from './services/password.js';
 import tokenService from './services/token.js';
 import validationService from './services/validation.js';
+import { getUserChannel } from '#backend/utils/realtimeChannels.js';
 
 const { comparePassword } = passwordService;
 const { generateJwtToken } = tokenService;
@@ -99,6 +100,7 @@ router.post('/login', async (req, res) => {
       email: user.email,
       messageNotifications: user.messageNotifications,
       phone: user.phone,
+      realtimeUserChannel: getUserChannel(user.id),
     });
   } catch (error) {
     console.error('🔴 Login error:', {

@@ -7,6 +7,7 @@ import { presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validation from './validation.js';
 import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 const { canEditChildpresentation, normalizeDisplayOrder } = validation;
 
 // Delete a presentation entry
@@ -53,7 +54,9 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     });
 
     if (result.status === 200) {
-      publishEvent(`class:${result.classId}`, 'presentation_changed', { classId: result.classId });
+      publishEvent(getClassChannel(result.classId), 'presentation_changed', {
+        classId: result.classId,
+      });
     }
     res.status(result.status).json(result.body);
   } catch (err) {

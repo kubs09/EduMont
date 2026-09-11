@@ -277,7 +277,9 @@ const ClassDetailPage = () => {
   // 'permission_requested' stays restricted to the class's actual teacher inside the
   // handler below, since that event should only notify whoever can accept/deny it.
   const classChannelName =
-    id && (isCurrentUserTeacherOfClass || isAdmin || isTeacher) ? `class:${id}` : null;
+    classData?.realtimeChannel && (isCurrentUserTeacherOfClass || isAdmin || isTeacher)
+      ? classData.realtimeChannel
+      : null;
   useRealtimeChannel(classChannelName, (eventType) => {
     if (!id) return;
     if (eventType === 'permission_requested') {
@@ -302,7 +304,9 @@ const ClassDetailPage = () => {
     loadNextPresentations();
   });
 
-  const userChannelName = currentUserId && isAdmin ? `user:${currentUserId}` : null;
+  const realtimeUserChannel = localStorage.getItem('realtimeUserChannel');
+  const userChannelName =
+    currentUserId && isAdmin && realtimeUserChannel ? realtimeUserChannel : null;
   useRealtimeChannel(userChannelName, (eventType) => {
     if (!id) return;
     if (eventType === 'permission_decided') {

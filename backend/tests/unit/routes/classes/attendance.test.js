@@ -17,6 +17,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -291,9 +297,11 @@ describe('classes routes: attendance', () => {
       expect(res.status).toBe(201);
       expect(res.body).toEqual(created);
       expect(dbMock.update).not.toHaveBeenCalled();
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
-        classId: 1,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:1',
+        'attendance_changed',
+        { classId: 1 }
+      );
     });
 
     test('200 updating the existing row when one exists for that date but has no check_in_at', async () => {
@@ -317,9 +325,11 @@ describe('classes routes: attendance', () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updated);
       expect(dbMock.insert).not.toHaveBeenCalled();
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
-        classId: 1,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:1',
+        'attendance_changed',
+        { classId: 1 }
+      );
     });
   });
 
@@ -496,9 +506,11 @@ describe('classes routes: attendance', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updated);
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:1', 'attendance_changed', {
-        classId: 1,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:1',
+        'attendance_changed',
+        { classId: 1 }
+      );
     });
   });
 });

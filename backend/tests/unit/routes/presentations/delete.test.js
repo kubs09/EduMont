@@ -19,6 +19,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -114,9 +120,11 @@ describe('DELETE /api/presentations/:id', () => {
     expect(res.body).toEqual({ message: 'presentation entry deleted successfully' });
     // category was null, so normalizeDisplayOrder no-ops: only the existence check hit tx.select.
     expect(tx.select).toHaveBeenCalledTimes(1);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:7', 'presentation_changed', {
-      classId: 7,
-    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:7',
+      'presentation_changed',
+      { classId: 7 }
+    );
   });
 
   test('200 renumbers remaining presentations in the same category via normalizeDisplayOrder', async () => {

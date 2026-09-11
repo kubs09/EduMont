@@ -19,6 +19,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -222,9 +228,11 @@ describe('presentations status/reorder routes', () => {
       );
       // category was null, so normalizeCategoryOrdering no-ops.
       expect(tx.select).not.toHaveBeenCalled();
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
-        classId: 9,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:9',
+        'presentation_changed',
+        { classId: 9 }
+      );
     });
 
     test('500 when the transaction throws an unexpected error', async () => {
@@ -433,9 +441,11 @@ describe('presentations status/reorder routes', () => {
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
       expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
-        classId: 9,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:9',
+        'presentation_changed',
+        { classId: 9 }
+      );
     });
 
     test('200 happy path, swapping two siblings (down direction)', async () => {
@@ -497,9 +507,11 @@ describe('presentations status/reorder routes', () => {
       // ...and the adjacent sibling (id 88) takes the target's old slot (order 2).
       expect(updateSetCalls[1]).toEqual(expect.objectContaining({ displayOrder: 2, updatedBy: 1 }));
       expect(updateWhereCalls[1]).toEqual(eq(presentations.id, 88));
-      expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:9', 'presentation_changed', {
-        classId: 9,
-      });
+      expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+        'class-channel:9',
+        'presentation_changed',
+        { classId: 9 }
+      );
     });
 
     test('500 when the transaction throws an unexpected error', async () => {

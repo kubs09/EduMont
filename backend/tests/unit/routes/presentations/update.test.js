@@ -19,6 +19,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -219,7 +225,7 @@ describe('PUT /api/presentations/:id', () => {
     // child_id is unchanged (stays 10, matching validUpdate) — only category changes.
     const updatedRow = { id: 1, childId: 10, classId: 20, category: 'New Category' };
     tx.select
-      .mockReturnValueOnce(makeChain([{ childId: 10, category: 'Old Category' }])) // existence check
+      .mockReturnValueOnce(makeChain([{ childId: 10, category: 'Old Category', classId: 20 }])) // existence check
       .mockReturnValueOnce(makeChain([{ classId: 20 }])) // classChildren check
       .mockReturnValueOnce(makeChain([{ id: 1, status: 'to be presented' }])) // normalizeCategoryOrdering(new category) — already desired, no update
       .mockReturnValueOnce(makeChain([])); // normalizeCategoryOrdering(previous category) — no rows left, no-op
@@ -240,9 +246,13 @@ describe('PUT /api/presentations/:id', () => {
     // Only the route's own field update touched tx.update; neither normalizeCategoryOrdering
     // call needed to change a row's status given the mocked data above.
     expect(tx.update).toHaveBeenCalledTimes(1);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:20', 'presentation_changed', {
-      classId: 20,
-    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
+    // class_id is unchanged (20 -> 20), so only a single notification should fire.
+    expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(1);
   });
 
   test('200 when only child_id changes: previous-category renormalization runs', async () => {
@@ -250,7 +260,7 @@ describe('PUT /api/presentations/:id', () => {
     // category is unchanged ('Same Category' throughout) — only child_id changes (5 -> 10).
     const updatedRow = { id: 1, childId: 10, classId: 20, category: 'Same Category' };
     tx.select
-      .mockReturnValueOnce(makeChain([{ childId: 5, category: 'Same Category' }])) // existence check
+      .mockReturnValueOnce(makeChain([{ childId: 5, category: 'Same Category', classId: 20 }])) // existence check
       .mockReturnValueOnce(makeChain([{ classId: 20 }])) // classChildren check
       .mockReturnValueOnce(makeChain([{ id: 1, status: 'to be presented' }])) // normalizeCategoryOrdering(new child_id/category) — already desired, no update
       .mockReturnValueOnce(makeChain([])); // normalizeCategoryOrdering(previous child_id/category) — no rows left, no-op
@@ -269,13 +279,19 @@ describe('PUT /api/presentations/:id', () => {
     // is sufficient to trigger it.
     expect(tx.select).toHaveBeenCalledTimes(4);
     expect(tx.update).toHaveBeenCalledTimes(1);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
+    expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(1);
   });
 
   test('200 when neither child_id nor category changes: no previous-category renormalization', async () => {
     const tx = makeTxMock();
     const updatedRow = { id: 1, childId: 10, classId: 20, category: 'Same Category' };
     tx.select
-      .mockReturnValueOnce(makeChain([{ childId: 10, category: 'Same Category' }])) // existence check
+      .mockReturnValueOnce(makeChain([{ childId: 10, category: 'Same Category', classId: 20 }])) // existence check
       .mockReturnValueOnce(makeChain([{ classId: 20 }])) // classChildren check
       .mockReturnValueOnce(makeChain([{ id: 1, status: 'to be presented' }])); // normalizeCategoryOrdering(current category) — already desired, no update
     tx.update.mockReturnValueOnce(makeChain([updatedRow]));
@@ -292,6 +308,43 @@ describe('PUT /api/presentations/:id', () => {
     // when neither child_id nor category changed from the stored row.
     expect(tx.select).toHaveBeenCalledTimes(3);
     expect(tx.update).toHaveBeenCalledTimes(1);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
+    expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(1);
+  });
+
+  test('200 when class_id changes: publishes to both the previous and new class channels', async () => {
+    const tx = makeTxMock();
+    // child_id and category are unchanged — only class_id changes (15 -> 20, per validUpdate).
+    const updatedRow = { id: 1, childId: 10, classId: 20, category: 'Same Category' };
+    tx.select
+      .mockReturnValueOnce(makeChain([{ childId: 10, category: 'Same Category', classId: 15 }])) // existence check: previously in class 15
+      .mockReturnValueOnce(makeChain([{ classId: 20 }])) // classChildren check: child is assigned to the new class 20
+      .mockReturnValueOnce(makeChain([{ id: 1, status: 'to be presented' }])); // normalizeCategoryOrdering(current category) — already desired, no update
+    tx.update.mockReturnValueOnce(makeChain([updatedRow]));
+    dbMock.transaction.mockImplementation((cb) => cb(tx));
+
+    const res = await request(app)
+      .put('/api/presentations/1')
+      .set('Authorization', authHeader({ id: 1, role: 'admin' }))
+      .send({ ...validUpdate, category: 'Same Category', status: 'to be presented' });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(updatedRow);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledTimes(2);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:15',
+      'presentation_changed',
+      { classId: 15 }
+    );
   });
 
   test('500 when the transaction throws an unexpected error', async () => {

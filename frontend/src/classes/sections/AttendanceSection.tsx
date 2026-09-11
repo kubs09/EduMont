@@ -189,7 +189,7 @@ const AttendanceTab: React.FC<AttendanceTabProps> = ({
     loadAttendance();
   }, [loadAttendance]);
 
-  useRealtimeChannel(`class:${classData.id}`, () => {
+  useRealtimeChannel(classData.realtimeChannel ?? null, () => {
     loadAttendance();
   });
 

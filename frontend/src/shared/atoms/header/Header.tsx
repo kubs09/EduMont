@@ -42,8 +42,8 @@ const Header = () => {
     }
   }, [isAuthenticated, fetchUnreadCount]);
 
-  const userId = localStorage.getItem('userId');
-  useRealtimeChannel(isAuthenticated && userId ? `user:${userId}` : null, () => {
+  const realtimeUserChannel = localStorage.getItem('realtimeUserChannel');
+  useRealtimeChannel(isAuthenticated && realtimeUserChannel ? realtimeUserChannel : null, () => {
     fetchUnreadCount();
   });
 

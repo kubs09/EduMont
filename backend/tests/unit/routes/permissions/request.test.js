@@ -17,6 +17,12 @@ jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
   publishEvent: realtimeMock.publishEvent,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 jest.unstable_mockModule('#backend/config/database.js', () => ({
   __esModule: true,
   default: { query: jest.fn() },
@@ -379,9 +385,11 @@ describe('POST /api/permissions/request', () => {
         ),
       },
     ]);
-    expect(realtimeMock.publishEvent).toHaveBeenCalledWith('class:5', 'permission_requested', {
-      classId: 5,
-    });
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:5',
+      'permission_requested',
+      { classId: 5 }
+    );
   });
 
   test('201 with resource_type and reason included in the message content', async () => {
