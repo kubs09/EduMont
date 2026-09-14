@@ -62,7 +62,7 @@ const Select: React.FC<SelectProps> = ({
   }, [inputValue, options, isSearchable]);
 
   const getDisplayValue = () => {
-    if (!value || (Array.isArray(value) && value.length === 0)) return '';
+    if (value === null || (Array.isArray(value) && value.length === 0)) return '';
     if (Array.isArray(value)) {
       return options
         .filter((opt) => value.includes(opt.value))
@@ -80,14 +80,14 @@ const Select: React.FC<SelectProps> = ({
       onInputChange(newValue);
     }
     if (!open) {
-      onOpen();
+      openListboxWithHighlight();
     }
   };
 
   // The option to land on when the listbox opens: the current single-select
   // value if it's still in the list, otherwise the first enabled option.
   const getInitialHighlightIndex = () => {
-    if (!isMulti && value) {
+    if (!isMulti && value !== null) {
       const selectedIndex = filteredOptions.findIndex((option) => option.value === value);
       if (selectedIndex !== -1) return selectedIndex;
     }
@@ -119,9 +119,11 @@ const Select: React.FC<SelectProps> = ({
     return index >= 0 && index < filteredOptions.length ? index : currentIndex;
   };
 
-  const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
-    if (isDisabled) return;
-
+  // Shared listbox navigation: Arrow keys, Home/End, Enter-to-select, and
+  // Escape-to-close. Deliberately excludes Space so callers can decide
+  // whether Space opens/selects (the button trigger) or types a character
+  // (the searchable input) — see handleTriggerKeyDown/handleInputKeyDown.
+  const handleListboxKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
@@ -158,7 +160,6 @@ const Select: React.FC<SelectProps> = ({
         }
         break;
       case 'Enter':
-      case ' ':
         e.preventDefault();
         if (!open) {
           openListboxWithHighlight();
@@ -175,6 +176,27 @@ const Select: React.FC<SelectProps> = ({
       default:
         break;
     }
+  };
+
+  const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
+    if (isDisabled) return;
+    if (e.key === ' ') {
+      e.preventDefault();
+      if (!open) {
+        openListboxWithHighlight();
+      } else if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+        handleSelectOption(filteredOptions[highlightedIndex]);
+      }
+      return;
+    }
+    handleListboxKeyDown(e);
+  };
+
+  // Space is not special-cased here — it must fall through to the input's
+  // default behavior and type a literal space character.
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isDisabled) return;
+    handleListboxKeyDown(e);
   };
 
   const handleSelectOption = (option: SelectOption) => {
@@ -203,7 +225,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   const displayValue = getDisplayValue();
-  const hasValue = Array.isArray(value) ? value.length > 0 : !!value;
+  const hasValue = Array.isArray(value) ? value.length > 0 : value !== null;
   const selectedOptions = Array.isArray(value)
     ? options.filter((option) => value.includes(option.value))
     : [];
@@ -232,10 +254,22 @@ const Select: React.FC<SelectProps> = ({
           <InputGroup endElement={endElement}>
             <Input
               ref={inputRef}
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              aria-controls={listboxId}
+              aria-autocomplete="list"
+              aria-disabled={isDisabled}
+              aria-activedescendant={
+                open && highlightedIndex >= 0
+                  ? `${listboxId}-option-${highlightedIndex}`
+                  : undefined
+              }
               placeholder={placeholder}
               value={isMulti ? inputValue : inputValue || displayValue}
               onChange={handleInputChange}
-              onFocus={onOpen}
+              onFocus={openListboxWithHighlight}
+              onKeyDown={handleInputKeyDown}
               disabled={isDisabled}
               pr={isClearable && hasValue ? '2.5rem' : '2rem'}
               variant="outline"
@@ -248,6 +282,7 @@ const Select: React.FC<SelectProps> = ({
               tabIndex={isDisabled ? -1 : 0}
               aria-haspopup="listbox"
               aria-expanded={open}
+              aria-disabled={isDisabled}
               aria-controls={listboxId}
               aria-activedescendant={
                 open && highlightedIndex >= 0
@@ -320,6 +355,7 @@ const Select: React.FC<SelectProps> = ({
                       id={`${listboxId}-option-${index}`}
                       role="option"
                       aria-selected={isSelected}
+                      aria-disabled={option.disabled}
                       p={2}
                       px={4}
                       cursor={option.disabled ? 'not-allowed' : 'pointer'}
