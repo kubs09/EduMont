@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Textarea, NativeSelect, VStack, Field } from '@chakra-ui/react';
+import { Button, Input, Textarea, VStack, Field } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -194,22 +195,18 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
       <VStack gap={4}>
         <Field.Root required invalid={!!errors.child_id}>
           <Field.Label>{texts.schedule.child[language]}</Field.Label>
-          <NativeSelect.Root>
-            <NativeSelect.Field
-              value={formData.child_id}
-              onChange={(e) => handleChange('child_id', e.target.value)}
-              placeholder={`${texts.common.select[language]} ${texts.schedule.child[
-                language
-              ].toLowerCase()}`}
-            >
-              {childrenData.map((child: Child) => (
-                <option key={child.id} value={child.id}>
-                  {child.firstname} {child.surname}
-                </option>
-              ))}
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
+          <Select
+            options={childrenData.map((child: Child) => ({
+              label: `${child.firstname} ${child.surname}`,
+              value: child.id,
+            }))}
+            value={formData.child_id ? Number(formData.child_id) : null}
+            isSearchable={false}
+            onChange={(newValue) => handleChange('child_id', newValue ? String(newValue) : '')}
+            placeholder={`${texts.common.select[language]} ${texts.schedule.child[
+              language
+            ].toLowerCase()}`}
+          />
           <Field.ErrorText>{errors.child_id}</Field.ErrorText>
         </Field.Root>
 
@@ -235,23 +232,25 @@ const PresentationModal: React.FC<PresentationModalProps> = ({
 
         <Field.Root required invalid={!!errors.status}>
           <Field.Label>{texts.schedule.status.label[language]}</Field.Label>
-          <NativeSelect.Root>
-            <NativeSelect.Field
-              value={formData.status}
-              onChange={(e) => handleChange('status', e.target.value)}
-            >
-              <option value="prerequisites not met">
-                {texts.schedule.status.options.prerequisitesNotMet[language]}
-              </option>
-              <option value="to be presented">
-                {texts.schedule.status.options.toBePresented[language]}
-              </option>
-              <option value="presented">{texts.schedule.status.options.presented[language]}</option>
-              <option value="practiced">{texts.schedule.status.options.practiced[language]}</option>
-              <option value="mastered">{texts.schedule.status.options.mastered[language]}</option>
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
+          <Select
+            options={[
+              {
+                value: 'prerequisites not met',
+                label: texts.schedule.status.options.prerequisitesNotMet[language],
+              },
+              {
+                value: 'to be presented',
+                label: texts.schedule.status.options.toBePresented[language],
+              },
+              { value: 'presented', label: texts.schedule.status.options.presented[language] },
+              { value: 'practiced', label: texts.schedule.status.options.practiced[language] },
+              { value: 'mastered', label: texts.schedule.status.options.mastered[language] },
+            ]}
+            value={formData.status}
+            isSearchable={false}
+            isClearable={false}
+            onChange={(newValue) => handleChange('status', newValue as string)}
+          />
           <Field.ErrorText>{errors.status}</Field.ErrorText>
         </Field.Root>
 

@@ -4,11 +4,23 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { select: jest.fn(), transaction: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
+}));
+
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -299,6 +311,7 @@ describe('POST /api/permissions/request', () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: 'Class not found' });
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('200 already_requested: true when a request is already pending, with no message insert', async () => {
@@ -325,6 +338,7 @@ describe('POST /api/permissions/request', () => {
       already_requested: true,
     });
     expect(tx.insert).toHaveBeenCalledTimes(1);
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('201 with one message per teacher on the class', async () => {
@@ -371,6 +385,11 @@ describe('POST /api/permissions/request', () => {
         ),
       },
     ]);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:5',
+      'permission_requested',
+      { classId: 5 }
+    );
   });
 
   test('201 with resource_type and reason included in the message content', async () => {

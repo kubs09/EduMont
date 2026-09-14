@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Box, HStack, Text, Badge, Table, NativeSelect, Button, VStack } from '@chakra-ui/react';
+import { Box, HStack, Text, Badge, Table, Button, VStack } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { texts } from '@frontend/texts';
 import { Presentation } from '@frontend/types/presentation';
 import { updateChildPresentationStatus } from '@frontend/services/api/presentation';
@@ -67,7 +68,9 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
 
   const categories = useMemo(() => {
     const unique = new Set(
-      presentations.map((presentation) => presentation.category).filter((category) => category)
+      presentations
+        .map((presentation) => presentation.category)
+        .filter((category): category is string => Boolean(category))
     );
     return Array.from(unique).sort();
   }, [presentations]);
@@ -203,19 +206,15 @@ const PresentationsSection: React.FC<PresentationsSectionProps> = ({
     <Box>
       <HStack mb={3} gap={2} align="center">
         <Text variant="filter">{texts.schedule.category[language]}:</Text>
-        <NativeSelect.Root size="sm" maxW="220px">
-          <NativeSelect.Field
-            value={selectedCategory}
-            onChange={(event) => setSelectedCategory(event.target.value)}
-          >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Select
+          options={categories.map((category) => ({ label: category, value: category }))}
+          value={selectedCategory}
+          isSearchable={false}
+          isClearable={false}
+          width="220px"
+          minWidth="unset"
+          onChange={(newValue) => setSelectedCategory(newValue as string)}
+        />
       </HStack>
       <Table.ScrollArea>
         <Table.Root variant="line" size="md">

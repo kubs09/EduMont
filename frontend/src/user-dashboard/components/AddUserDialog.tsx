@@ -1,7 +1,8 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Input, NativeSelect, Field } from '@chakra-ui/react';
+import { Button, Input, Field } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useLanguage } from '@frontend/shared/contexts/LanguageContext';
 import { texts } from '@frontend/texts';
@@ -21,6 +22,7 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
@@ -90,14 +92,23 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({ isOpen, onClose, onUserAd
       </Field.Root>
       <Field.Root mt={4} required invalid={!!errors.role}>
         <Field.Label>{texts.userDashboard.roleLabel[language]}</Field.Label>
-        <NativeSelect.Root>
-          <NativeSelect.Field {...register('role')}>
-            <option value="admin">{texts.userDashboard.table.roles.admin[language]}</option>
-            <option value="teacher">{texts.userDashboard.table.roles.teacher[language]}</option>
-            <option value="parent">{texts.userDashboard.table.roles.parent[language]}</option>
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Controller
+          name="role"
+          control={control}
+          render={({ field: { value, onChange } }) => (
+            <Select
+              options={[
+                { value: 'admin', label: texts.userDashboard.table.roles.admin[language] },
+                { value: 'teacher', label: texts.userDashboard.table.roles.teacher[language] },
+                { value: 'parent', label: texts.userDashboard.table.roles.parent[language] },
+              ]}
+              value={value}
+              isSearchable={false}
+              isClearable={false}
+              onChange={(newValue) => onChange(newValue as UserFormData['role'])}
+            />
+          )}
+        />
         <Field.ErrorText>{errors.role?.message}</Field.ErrorText>
       </Field.Root>
     </CustomModal>

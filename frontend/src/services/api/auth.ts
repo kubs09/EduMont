@@ -19,6 +19,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       })
     );
     localStorage.setItem('userPhone', response.data.phone || '');
+    localStorage.setItem('realtimeUserChannel', response.data.realtimeUserChannel || '');
     localStorage.setItem(
       'userSettings',
       JSON.stringify({

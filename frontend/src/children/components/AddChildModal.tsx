@@ -1,4 +1,4 @@
-import { Button, Input, Textarea, Box, NativeSelect, Field } from '@chakra-ui/react';
+import { Button, Input, Textarea, Box, Field } from '@chakra-ui/react';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createChild } from '@frontend/services/api';
@@ -10,7 +10,7 @@ import DatePicker from '@frontend/shared/components/DatePicker/components/DatePi
 import { getUsers } from '@frontend/services/api/user';
 import { User } from '@frontend/types/user';
 import { Class } from '@frontend/types/class';
-import { Combobox } from '@frontend/shared/components/Combobox';
+import { Select } from '@frontend/shared/components/Select';
 import { useAppToast } from '@frontend/shared/hooks/useAppToast';
 interface AddChildModalProps {
   isOpen: boolean;
@@ -209,7 +209,7 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
     >
       <Field.Root required invalid={!!errors.parent_ids} mb={4}>
         <Field.Label>{texts.common.childrenTable.parent[language]}</Field.Label>
-        <Combobox
+        <Select
           options={parentOptions.map((parent) => ({
             label: parent.label,
             value: parent.id,
@@ -250,20 +250,17 @@ const AddChildModal = ({ isOpen, onClose, onSuccess }: AddChildModalProps) => {
           {isLoadingClasses ? (
             <Box p={2}>{texts.children.classSelection.loading[language]}</Box>
           ) : availableClasses.length > 0 ? (
-            <NativeSelect.Root disabled={isLoadingClasses}>
-              <NativeSelect.Field
-                value={selectedClassId ? selectedClassId.toString() : ''}
-                onChange={(e) => setSelectedClassId(e.target.value ? Number(e.target.value) : null)}
-                placeholder={texts.classes.selectClass[language]}
-              >
-                {availableClasses.map((cls) => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.name} (Ages {cls.min_age}-{cls.max_age})
-                  </option>
-                ))}
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
+            <Select
+              options={availableClasses.map((cls) => ({
+                label: `${cls.name} (Ages ${cls.min_age}-${cls.max_age})`,
+                value: cls.id,
+              }))}
+              value={selectedClassId}
+              onChange={(newValue) => setSelectedClassId(newValue ? Number(newValue) : null)}
+              placeholder={texts.classes.selectClass[language]}
+              isSearchable={false}
+              isDisabled={isLoadingClasses}
+            />
           ) : (
             <Box p={2} color="text-danger">
               {texts.children.classSelection.noneFound[language]}

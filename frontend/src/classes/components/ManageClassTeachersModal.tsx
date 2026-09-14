@@ -1,4 +1,5 @@
-import { Button, VStack, Box, Text, NativeSelect, Field, Dialog } from '@chakra-ui/react';
+import { Button, VStack, Box, Text, Field, Dialog } from '@chakra-ui/react';
+import { Select } from '@frontend/shared/components/Select';
 import { CustomModal } from '@frontend/shared/ui/modal';
 import { useState, useEffect } from 'react';
 import { z } from 'zod';
@@ -137,44 +138,35 @@ export const ManageClassTeachersModal = ({
           <VStack gap={3} align="stretch">
             <Field.Root invalid={!!errors.teacherId} required>
               <Field.Label>{texts.classes.teacher[language]}</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
-                  placeholder={texts.classes.selectTeacher[language]}
-                  value={teacherId ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value ? Number(e.target.value) : null;
-                    handleTeacherChange(value);
-                  }}
-                >
-                  {availableTeachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.firstname} {teacher.surname}
-                    </option>
-                  ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
+              <Select
+                options={availableTeachers.map((teacher) => ({
+                  label: `${teacher.firstname} ${teacher.surname}`,
+                  value: teacher.id,
+                }))}
+                value={teacherId}
+                isSearchable={false}
+                placeholder={texts.classes.selectTeacher[language]}
+                onChange={(newValue) => {
+                  handleTeacherChange(newValue ? Number(newValue) : null);
+                }}
+              />
               {errors.teacherId && <Field.ErrorText>{errors.teacherId}</Field.ErrorText>}
             </Field.Root>
             <Field.Root invalid={!!errors.assistantId} required>
               <Field.Label>{texts.classes.assistant[language]}</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
-                  placeholder={texts.classes.selectAssistant[language]}
-                  value={assistantId ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value ? Number(e.target.value) : null;
-                    handleAssistantChange(value);
-                  }}
-                >
-                  {availableTeachers.map((teacher) => (
-                    <option key={teacher.id} value={teacher.id} disabled={teacherId === teacher.id}>
-                      {teacher.firstname} {teacher.surname}
-                    </option>
-                  ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
+              <Select
+                options={availableTeachers.map((teacher) => ({
+                  label: `${teacher.firstname} ${teacher.surname}`,
+                  value: teacher.id,
+                  disabled: teacherId === teacher.id,
+                }))}
+                value={assistantId}
+                isSearchable={false}
+                placeholder={texts.classes.selectAssistant[language]}
+                onChange={(newValue) => {
+                  handleAssistantChange(newValue ? Number(newValue) : null);
+                }}
+              />
               {errors.assistantId && <Field.ErrorText>{errors.assistantId}</Field.ErrorText>}
             </Field.Root>
           </VStack>

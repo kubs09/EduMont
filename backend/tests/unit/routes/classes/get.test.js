@@ -17,6 +17,12 @@ jest.unstable_mockModule('#backend/config/database.js', () => ({
   db: dbMock,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+}));
+
 const { default: app } = await import('#backend/server.js');
 
 const authHeader = (user) => `Bearer ${signTestToken(user)}`;
@@ -122,7 +128,7 @@ describe('classes routes: GET', () => {
         .set('Authorization', authHeader({ id: 7, role: 'parent' }));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ id: 5, name: 'Sunflowers' });
+      expect(res.body).toEqual({ id: 5, name: 'Sunflowers', realtimeChannel: 'class-channel:5' });
     });
 
     test('200 for a teacher', async () => {
@@ -133,7 +139,7 @@ describe('classes routes: GET', () => {
         .set('Authorization', authHeader({ id: 9, role: 'teacher' }));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ id: 5, name: 'Sunflowers' });
+      expect(res.body).toEqual({ id: 5, name: 'Sunflowers', realtimeChannel: 'class-channel:5' });
     });
 
     test('200 for an admin', async () => {
@@ -144,7 +150,7 @@ describe('classes routes: GET', () => {
         .set('Authorization', authHeader({ id: 1, role: 'admin' }));
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ id: 5, name: 'Sunflowers' });
+      expect(res.body).toEqual({ id: 5, name: 'Sunflowers', realtimeChannel: 'class-channel:5' });
     });
   });
 
