@@ -299,25 +299,6 @@ const textareaRecipe = defineRecipe({
   },
 });
 
-const nativeSelectSlotRecipe = defineSlotRecipe({
-  slots: ['field'],
-  variants: {
-    variant: {
-      outline: {
-        field: {
-          bg: 'bg-surface',
-          borderColor: 'border-color',
-          color: 'text-primary',
-          _focus: {
-            borderColor: 'brand.primary.500',
-            boxShadow: '0 0 0 1px var(--chakra-colors-brand-primary-500)',
-          },
-        },
-      },
-    },
-  },
-});
-
 const system = createSystem(defaultConfig, {
   globalCss: {
     body: {
@@ -411,7 +392,6 @@ const system = createSystem(defaultConfig, {
     slotRecipes: {
       card: cardSlotRecipe,
       table: tableSlotRecipe,
-      nativeSelect: nativeSelectSlotRecipe,
     },
   },
 });

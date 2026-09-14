@@ -21,6 +21,7 @@ export interface Class {
   max_age: number;
   teachers: ClassTeacher[];
   children: ClassChild[];
+  realtimeChannel?: string;
 }
 
 export interface CreateClassData {

@@ -13,6 +13,7 @@ import {
   users,
 } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 
 const teachersListFragment = sql`COALESCE(
   (SELECT json_agg(json_build_object(
@@ -189,7 +190,7 @@ router.get('/:id', auth, async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Class not found' });
     }
-    res.json(rows[0]);
+    res.json({ ...rows[0], realtimeChannel: getClassChannel(classId) });
   } catch (error) {
     console.error('Error fetching class details:', error);
     res.status(500).json({ error: 'Failed to fetch class details' });

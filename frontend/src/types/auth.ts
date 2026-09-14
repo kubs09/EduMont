@@ -7,6 +7,7 @@ export interface LoginResponse {
   id: number;
   phone: string;
   messageNotifications: boolean;
+  realtimeUserChannel?: string;
 }
 
 export interface LoginPageProps {

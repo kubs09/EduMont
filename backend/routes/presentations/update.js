@@ -6,6 +6,8 @@ import { db } from '#backend/config/database.js';
 import { classChildren, presentations } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
+import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
   validationModule;
 
@@ -26,7 +28,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     const result = await db.transaction(async (tx) => {
       const presentationResult = await tx
-        .select({ childId: presentations.childId, category: presentations.category })
+        .select({
+          childId: presentations.childId,
+          category: presentations.category,
+          classId: presentations.classId,
+        })
         .from(presentations)
         .where(eq(presentations.id, presentationId));
       if (presentationResult.length === 0) {
@@ -35,6 +41,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
       const previousChildId = presentationResult[0].childId;
       const previousCategory = presentationResult[0].category;
+      const previousClassId = presentationResult[0].classId;
 
       const canEdit = await canEditChildpresentation(req.user.id, req.user.role, child_id);
       if (!canEdit) {
@@ -74,9 +81,17 @@ router.put('/:id', authenticateToken, async (req, res) => {
         await normalizeCategoryOrdering(tx, previousChildId, previousCategory);
       }
 
-      return { status: 200, body: updated[0] };
+      return { status: 200, body: updated[0], previousClassId };
     });
 
+    if (result.status === 200) {
+      publishEvent(getClassChannel(class_id), 'presentation_changed', { classId: class_id });
+      if (result.previousClassId !== class_id) {
+        publishEvent(getClassChannel(result.previousClassId), 'presentation_changed', {
+          classId: result.previousClassId,
+        });
+      }
+    }
     res.status(result.status).json(result.body);
   } catch (err) {
     console.error('Error updating presentation:', err);

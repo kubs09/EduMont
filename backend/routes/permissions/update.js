@@ -12,6 +12,8 @@ import {
   users,
 } from '#backend/db/schema.js';
 import auth from '#backend/middleware/auth.js';
+import { publishEvent } from '#backend/utils/realtime.js';
+import { getUserChannel } from '#backend/utils/realtimeChannels.js';
 
 router.post('/accept', auth, async (req, res) => {
   try {
@@ -93,9 +95,18 @@ router.post('/accept', auth, async (req, res) => {
         content: messageContent,
       });
 
-      return { status: 200, body: { message: 'Permission request accepted successfully' } };
+      return {
+        status: 200,
+        body: { message: 'Permission request accepted successfully' },
+        requester_id,
+      };
     });
 
+    if (result.status === 200) {
+      publishEvent(getUserChannel(result.requester_id), 'permission_decided', {
+        classId: class_id,
+      });
+    }
     res.status(result.status).json(result.body);
   } catch (error) {
     console.error('Permission accept error:', error);
@@ -184,9 +195,18 @@ router.post('/deny', auth, async (req, res) => {
         content: messageContent,
       });
 
-      return { status: 200, body: { message: 'Permission request denied successfully' } };
+      return {
+        status: 200,
+        body: { message: 'Permission request denied successfully' },
+        requester_id,
+      };
     });
 
+    if (result.status === 200) {
+      publishEvent(getUserChannel(result.requester_id), 'permission_decided', {
+        classId: class_id,
+      });
+    }
     res.status(result.status).json(result.body);
   } catch (error) {
     console.error('Permission deny error:', error);

@@ -11,6 +11,8 @@ import {
 } from '#backend/db/schema.js';
 import authenticateToken from '#backend/middleware/auth.js';
 import validationModule from './validation.js';
+import { publishEvent } from '#backend/utils/realtime.js';
+import { getClassChannel } from '#backend/utils/realtimeChannels.js';
 const { validatepresentation, canEditChildpresentation, normalizeCategoryOrdering } =
   validationModule;
 
@@ -93,6 +95,7 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: result.error });
     }
 
+    publishEvent(getClassChannel(class_id), 'presentation_changed', { classId: class_id });
     res.status(201).json(result.presentation);
   } catch (err) {
     console.error('Error creating presentation:', err);

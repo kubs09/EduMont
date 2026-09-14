@@ -4,11 +4,23 @@ import { makeChain } from '../../../helpers/drizzleMock.js';
 import { signTestToken } from '../../../helpers/auth.js';
 
 const dbMock = { select: jest.fn(), transaction: jest.fn() };
+const realtimeMock = { publishEvent: jest.fn() };
 
 jest.unstable_mockModule('#backend/config/mail.js', () => ({
   __esModule: true,
   default: { sendEmail: jest.fn() },
   sendEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('#backend/utils/realtime.js', () => ({
+  __esModule: true,
+  publishEvent: realtimeMock.publishEvent,
+}));
+
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
 }));
 
 jest.unstable_mockModule('#backend/config/database.js', () => ({
@@ -152,6 +164,7 @@ describe('POST /api/presentations', () => {
     expect(res.status).toBe(400);
     expect(res.body).toEqual({ error: 'Child is not assigned to this class' });
     expect(tx.insert).not.toHaveBeenCalled();
+    expect(realtimeMock.publishEvent).not.toHaveBeenCalled();
   });
 
   test('201 happy path', async () => {
@@ -182,6 +195,11 @@ describe('POST /api/presentations', () => {
     // category was omitted, so normalizeCategoryOrdering no-ops: only the
     // classChildren check should have hit tx.select.
     expect(tx.select).toHaveBeenCalledTimes(1);
+    expect(realtimeMock.publishEvent).toHaveBeenCalledWith(
+      'class-channel:20',
+      'presentation_changed',
+      { classId: 20 }
+    );
   });
 
   test('defaults display_order from the matching category_presentations row when omitted', async () => {

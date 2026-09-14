@@ -21,6 +21,12 @@ jest.unstable_mockModule('#backend/config/database.js', () => ({
   db: dbMock,
 }));
 
+jest.unstable_mockModule('#backend/utils/realtimeChannels.js', () => ({
+  __esModule: true,
+  getUserChannel: jest.fn((id) => `user-channel:${id}`),
+  getClassChannel: jest.fn((id) => `class-channel:${id}`),
+}));
+
 const { default: app } = await import('#backend/server.js');
 
 describe('POST /api/login', () => {
@@ -101,6 +107,7 @@ describe('POST /api/login', () => {
       email: 'user@example.com',
       messageNotifications: true,
       phone: '555-1234',
+      realtimeUserChannel: 'user-channel:42',
     });
   });
 });
