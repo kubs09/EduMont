@@ -44,7 +44,9 @@ const Header = () => {
 
   const realtimeUserChannel = localStorage.getItem('realtimeUserChannel');
   useRealtimeChannel(isAuthenticated && realtimeUserChannel ? realtimeUserChannel : null, () => {
-    fetchUnreadCount();
+    if (isAuthenticated) {
+      fetchUnreadCount();
+    }
   });
 
   const handleLogout = () => {

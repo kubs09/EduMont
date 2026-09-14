@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import {
   Box,
   Input,
@@ -30,15 +30,25 @@ const Select: React.FC<SelectProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<SelectOption[]>(options);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const { open, onOpen, onClose } = useDisclosure();
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   useOutsideClick({
     ref: containerRef,
     handler: onClose,
   });
+
+  // Covers every path the listbox can close through (Escape, outside click,
+  // a selection committing), not just the keyboard handler below.
+  useEffect(() => {
+    if (!open) {
+      setHighlightedIndex(-1);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!isSearchable) {
@@ -74,20 +84,96 @@ const Select: React.FC<SelectProps> = ({
     }
   };
 
+  // The option to land on when the listbox opens: the current single-select
+  // value if it's still in the list, otherwise the first enabled option.
+  const getInitialHighlightIndex = () => {
+    if (!isMulti && value) {
+      const selectedIndex = filteredOptions.findIndex((option) => option.value === value);
+      if (selectedIndex !== -1) return selectedIndex;
+    }
+    return filteredOptions.findIndex((option) => !option.disabled);
+  };
+
+  const openListboxWithHighlight = () => {
+    onOpen();
+    setHighlightedIndex(getInitialHighlightIndex());
+  };
+
   const handleTriggerClick = () => {
     if (isDisabled) return;
     if (open) {
       onClose();
     } else {
-      onOpen();
+      openListboxWithHighlight();
     }
+  };
+
+  // Moves from currentIndex toward the next enabled option in `direction`,
+  // skipping disabled ones. Clamps at the ends rather than wrapping, matching
+  // native <select> behavior.
+  const findNextEnabledIndex = (currentIndex: number, direction: 1 | -1) => {
+    let index = currentIndex;
+    do {
+      index += direction;
+    } while (index >= 0 && index < filteredOptions.length && filteredOptions[index].disabled);
+    return index >= 0 && index < filteredOptions.length ? index : currentIndex;
   };
 
   const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
     if (isDisabled) return;
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleTriggerClick();
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (!open) {
+          openListboxWithHighlight();
+        } else {
+          setHighlightedIndex((prev) => findNextEnabledIndex(prev, 1));
+        }
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (!open) {
+          openListboxWithHighlight();
+        } else {
+          setHighlightedIndex((prev) => findNextEnabledIndex(prev, -1));
+        }
+        break;
+      case 'Home':
+        if (open) {
+          e.preventDefault();
+          const firstEnabled = filteredOptions.findIndex((option) => !option.disabled);
+          if (firstEnabled !== -1) setHighlightedIndex(firstEnabled);
+        }
+        break;
+      case 'End':
+        if (open) {
+          e.preventDefault();
+          for (let i = filteredOptions.length - 1; i >= 0; i -= 1) {
+            if (!filteredOptions[i].disabled) {
+              setHighlightedIndex(i);
+              break;
+            }
+          }
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (!open) {
+          openListboxWithHighlight();
+        } else if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+          handleSelectOption(filteredOptions[highlightedIndex]);
+        }
+        break;
+      case 'Escape':
+        if (open) {
+          e.preventDefault();
+          onClose();
+        }
+        break;
+      default:
+        break;
     }
   };
 
@@ -162,6 +248,12 @@ const Select: React.FC<SelectProps> = ({
               tabIndex={isDisabled ? -1 : 0}
               aria-haspopup="listbox"
               aria-expanded={open}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                open && highlightedIndex >= 0
+                  ? `${listboxId}-option-${highlightedIndex}`
+                  : undefined
+              }
               onClick={handleTriggerClick}
               onKeyDown={handleTriggerKeyDown}
               width="100%"
@@ -199,6 +291,7 @@ const Select: React.FC<SelectProps> = ({
       {open && (
         <Portal container={inputWrapperRef}>
           <Box
+            id={listboxId}
             role="listbox"
             position="absolute"
             top="100%"
@@ -216,20 +309,28 @@ const Select: React.FC<SelectProps> = ({
           >
             {filteredOptions.length > 0 ? (
               <VStack gap={0} align="stretch">
-                {filteredOptions.map((option) => {
+                {filteredOptions.map((option, index) => {
                   const isSelected = Array.isArray(value)
                     ? value.includes(option.value)
                     : value === option.value;
+                  const isHighlighted = index === highlightedIndex;
                   return (
                     <Box
                       key={option.value}
+                      id={`${listboxId}-option-${index}`}
                       role="option"
                       aria-selected={isSelected}
                       p={2}
                       px={4}
                       cursor={option.disabled ? 'not-allowed' : 'pointer'}
                       opacity={option.disabled ? 0.5 : 1}
-                      bg={isSelected ? 'brand.primary.500' : 'transparent'}
+                      bg={
+                        isSelected
+                          ? 'brand.primary.500'
+                          : isHighlighted
+                            ? 'brand.primary.300'
+                            : 'transparent'
+                      }
                       color={isSelected ? 'white' : 'text-primary'}
                       _hover={
                         option.disabled
@@ -243,8 +344,12 @@ const Select: React.FC<SelectProps> = ({
                       }
                       _dark={{
                         color: isSelected ? 'white' : 'text-primary',
+                        bg: isSelected || !isHighlighted ? undefined : 'whiteAlpha.100',
                       }}
                       onClick={() => handleSelectOption(option)}
+                      onMouseEnter={() => {
+                        if (!option.disabled) setHighlightedIndex(index);
+                      }}
                       transition="background-color 0.2s"
                     >
                       {option.label}
