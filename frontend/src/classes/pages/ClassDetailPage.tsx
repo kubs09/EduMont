@@ -297,11 +297,17 @@ const ClassDetailPage = () => {
       loadNextPresentations();
       return;
     }
-    // 'poll' | 'reconnect' — refresh everything this page shows for the class
-    if (isCurrentUserTeacherOfClass) {
+    // 'poll' | 'reconnect' fire on a timer even when classChannelName is null
+    // (useRealtimeChannel only skips the socket subscription, not the
+    // fallback poll) — so gate by the actual role condition that determines
+    // whether this data was ever loaded (matching the mount effect's
+    // shouldLoadPresentationData/shouldLoadPermissionData), not by
+    // classChannelName or isAdmin alone. Either of those would also disable
+    // this refresh for eligible non-admin teachers.
+    if (isAdmin || isTeacher) {
       refreshPermissionState(parseInt(id));
+      loadNextPresentations();
     }
-    loadNextPresentations();
   });
 
   const realtimeUserChannel = localStorage.getItem('realtimeUserChannel');
@@ -319,7 +325,12 @@ const ClassDetailPage = () => {
       });
       return;
     }
-    refreshPermissionState(parseInt(id));
+    // 'poll' | 'reconnect' — this channel only ever carries data relevant to
+    // the admin tracking their own permission request, so gate the fallback
+    // refresh accordingly rather than running it for every viewer.
+    if (isAdmin) {
+      refreshPermissionState(parseInt(id));
+    }
   });
 
   const handleAcceptPermission = async () => {
