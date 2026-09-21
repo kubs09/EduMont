@@ -243,18 +243,22 @@ const cardSlotRecipe = defineSlotRecipe({
   },
 });
 
-const tableSlotRecipe = defineSlotRecipe({
-  slots: ['row'],
+export const tableSlotRecipe = defineSlotRecipe({
+  // Mirrors Chakra's own table anatomy order exactly (see the test in
+  // theme.test.ts for why: this array is merged with Chakra's built-in
+  // one by index, so a mismatched order/length silently renames slots).
+  slots: ['root', 'header', 'body', 'row', 'columnHeader', 'cell', 'footer', 'caption'],
   variants: {
     variant: {
-      simple: {
+      line: {
         row: {
           _hover: {
-            bg: 'gray.200',
-            _dark: {
-              bg: 'whiteAlpha.50',
-            },
+            bg: 'bg-brand-subtle',
           },
+        },
+        columnHeader: {
+          bg: 'brand.primary.900',
+          color: 'white',
         },
       },
     },

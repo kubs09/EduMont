@@ -121,11 +121,14 @@ const ClassesPage = () => {
                       md: 'transparent',
                     }}
                     bg={{
-                      base: ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0 ? 'gray.50' : 'white',
+                      base:
+                        ((currentPage - 1) * PAGE_SIZE + index) % 2 === 0
+                          ? 'transparent'
+                          : 'bg-surface',
                       md: 'transparent',
                     }}
                     _hover={{
-                      bg: { base: 'gray.100', md: 'gray.50' },
+                      bg: 'bg-brand-subtle',
                       transform: { base: 'translateX(2px)', md: 'none' },
                     }}
                     onClick={() => handleViewDetail(cls.id)}
