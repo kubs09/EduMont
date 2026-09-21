@@ -1,6 +1,5 @@
 import React from 'react';
 import { Table, TableRootProps } from '@chakra-ui/react';
-import { useColorModeValue } from '../contexts/ColorContext';
 
 interface CustomTableProps extends TableRootProps {
   headers: string[];
@@ -9,13 +8,9 @@ interface CustomTableProps extends TableRootProps {
 }
 
 export const CustomTable: React.FC<CustomTableProps> = ({ headers, data, actions, ...props }) => {
-  const headerBg = useColorModeValue('gray.100', 'gray.700');
-  const rowBg = useColorModeValue('white', 'gray.800');
-  const rowHoverBg = useColorModeValue('gray.50', 'gray.700');
-
   return (
     <Table.Root {...props}>
-      <Table.Header bg={headerBg}>
+      <Table.Header>
         <Table.Row>
           {headers.map((header, index) => (
             <Table.ColumnHeader key={index}>{header}</Table.ColumnHeader>
@@ -24,7 +19,7 @@ export const CustomTable: React.FC<CustomTableProps> = ({ headers, data, actions
       </Table.Header>
       <Table.Body>
         {data.map((row, rowIndex) => (
-          <Table.Row key={rowIndex} bg={rowBg} _hover={{ bg: rowHoverBg }}>
+          <Table.Row key={rowIndex}>
             {row.map((cell, cellIndex) => (
               <Table.Cell key={cellIndex}>{cell}</Table.Cell>
             ))}
